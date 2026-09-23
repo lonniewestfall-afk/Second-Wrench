@@ -1,0 +1,3 @@
+# Static site. Repository root is the publish directory. No build step.
+[build]
+  publish = "."
