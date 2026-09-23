@@ -65,3 +65,4 @@ Support: lonnie@secondwrench.co
 - Contactor/capacitor Advanced is **not** offered from this silent Basic path.
 - Node type: observation.
 - Brand: scarlet wrench + dark charcoal/grey/walnut — never green.
+- **HP Wave-1 overlay:** when the heat-pump outdoor-not-running stamp is set, `disconnect_appears_on` and `disconnect_appears_off` → `call_pro` `hp_outdoor_not_running_wave1`. Wet, fused, and operate-lever stops stay the AC safety terminals. No capacitor conclude.

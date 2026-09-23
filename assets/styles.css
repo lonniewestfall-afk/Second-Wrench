@@ -45,6 +45,7 @@ body{background:var(--paper);font-family:Inter,ui-sans-serif,-apple-system,Blink
 .hero-card{background:linear-gradient(145deg,#2c2d32,#202125);border:1px solid #64646b;box-shadow:0 18px 35px #00000045;padding:29px;border-radius:15px}
 .hero-card:before{background:linear-gradient(160deg,#7071794d,#34363b10);border:1px solid #65677055;inset:-8px 12px 8px -8px;border-radius:15px;transform:rotate(-2deg)}
 .hero-card .card-kicker{color:#b8b9c0;font-size:.68rem}
+.lane-label{margin:14px 0 8px;font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:#b8b9c0;font-weight:700}
 .hero-card h2{font-size:1.65rem;color:#fff}
 .symptom-button{background:#1c1d21;border-color:#505159;border-radius:10px;min-height:106px;color:#f2f2f4}
 .symptom-button:hover{background:#343036;border-color:#c98490;transform:translateY(-1px)}
