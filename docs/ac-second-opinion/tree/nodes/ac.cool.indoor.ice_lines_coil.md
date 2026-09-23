@@ -44,6 +44,7 @@ If you see ice: do **not** keep running the system to “force cool.” Do not c
 
 ## notes
 - Implements ice keep-running gate language from conventions/safety-gates.md without a separate Wave-1 id for `ac.gate.ice_keep_running` — choice fires equivalent exit.
+- **Wave-2:** Commander CUT standalone `ac.gate.ice_keep_running` — keep ice keep-running **INLINED** on this node only (no standalone gate file).
 - **deferred_node:** `ac.cool.indoor.thaw_off` as standalone instructional node; thaw text is inlined in Basic next_step for Wave-1.
 - Refrigerant / metering device diagnosis remains pro_only — never DIY.
 - Node type: observation / gate (conditional).

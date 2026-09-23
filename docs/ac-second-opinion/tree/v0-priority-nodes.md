@@ -53,3 +53,9 @@ Priority = highest beta value: safety first, then the six landings' entry nodes,
 
 **APPROVED 2026-09-22 by Donnie.** All 12 ids. Advanced DIY remains OFF.  
 **Deep-write status:** complete — see `tree/nodes/README.md`. Awaiting Commander review.
+
+---
+
+## Wave-2 pointer (Basic deep-write DONE; Advanced flag still off)
+
+Wave-1 rows 1–12 remain the approved Base set (plus Wave-2 edge patches). Wave-2 Basic 7 INCLUDE ids: **APPROVED + deep-write DONE** — see `tree/v0-wave2-node-ids.md` and `tree/nodes/README.md`. Capacitor Advanced: 8 deep-written specs in `tree/advanced/nodes/` — `advancedRepairsEnabled` stays **FALSE** (public_runtime=flag_off) until attorney/Terms + Commander second safety pass / flip.
