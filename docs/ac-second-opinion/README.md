@@ -8,7 +8,9 @@
 
 Specs only. No application code in this folder.
 
-**Wave-1 package:** READY FOR IMPLEMENTATION SPECS (Commander PASS 2026-09-22). Still no code until SCM/coding path.
+**Wave-1 package:** READY FOR IMPLEMENTATION SPECS (Commander PASS 2026-09-22).  
+**Wave-2 Basic:** APPROVED + deep-write DONE 2026-09-23. Implemented in the site tree with `advancedRepairsEnabled` false on the public build.  
+**Capacitor Advanced:** eight gated nodes under `tree/advanced/nodes/`. Public runtime stays flag-off.
 
 ---
 
@@ -71,9 +73,15 @@ ac-second-opinion/
     v0-outline.md                    ← cooling trunk + six live-beta landings
     v0-priority-nodes.md             ← 12 ids APPROVED 2026-09-22; deep-write DONE
     gaps-vs-live-beta.md             ← stubs, Advanced off, known gaps
-    nodes/                           ← Wave-1 full node specs (Commander review)
+    nodes/                           ← Wave-1 + Wave-2 Basic node specs
       README.md                      ← file list + live session entry order
       ac.*.md                        ← one file per approved id
+    v0-wave2-node-ids.md             ← Wave-2 INCLUDE list (7 Basic)
+    advanced/
+      capacitor-gated-outline.md     ← capacitor chain, flag-gated
+      nodes/                         ← 8 ac.adv.cap.* specs
+  legal/
+    disclaimer-change-log.md         ← counsel tracker (not attorney-approved)
 ```
 
 ## Related live beta landings

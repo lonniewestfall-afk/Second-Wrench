@@ -26,7 +26,7 @@ Pick the closest match. Every path already passed the safety gate. Answer only w
 | `landing_blank_tstat` | **next** `ac.tstat.blank.batteries` |
 | `landing_weak_airflow` | **next** `ac.cool.filter.check` |
 | `landing_water_or_ice` | **next** `ac.gate.water_near_electrical` |
-| `landing_unusual_noise` | **terminal** `call_pro` (reason: `unusual_noise_early`) — Wave-1: early pro handoff. Screech / grinding / metal-on-metal: shut Off if safe, then call pro. Electrical buzz + heat/smell should have been caught at safety gate. **deferred_node:** fuller noise tree (`ac.noise.*`) not in Wave-1. Optional later edge: if user clarifies “outdoor hum only while calling cool,” authors may route to `ac.start.outdoor_silent_vs_hum` — not wired live here to avoid soft-bypass of early call_pro. |
+| `landing_unusual_noise` | **next** `ac.noise.hazard_screen` — **Wave-2 edge** (replaces Wave-1 immediate terminal `call_pro` / `unusual_noise_early`). Hazard screen → clarify outdoor hum; only outdoor hum while Cool calling / fan not spinning → `ac.start.outdoor_silent_vs_hum`; else `call_pro` (`unusual_noise_unresolved`). Hazards → emergency_exit / call_pro, never soft continue. |
 
 ## diy_tier
 `basic`
@@ -35,7 +35,7 @@ Pick the closest match. Every path already passed the safety gate. Answer only w
 `false`
 
 ## hazard_exit
-`null`
+`null` (noise hazards owned by `ac.noise.hazard_screen`)
 
 ## audit_event
 `node_entered:ac.cool.landing.picker` · `answer_selected:<landing_*>`
@@ -49,7 +49,7 @@ Pick the closest match. Every path already passed the safety gate. Answer only w
 5. Water or ice  
 6. Unusual noise  
 
-### Live guided picker (later screen) — label map only; NO 13th Wave-1 id
+### Live guided picker (later screen) — label map only; NO extra Wave-1/2 diagnosis id
 | Guided live label | Maps to |
 |---|---|
 | “It runs, but the house is not cooling” | Not cooling → `landing_not_cooling` |
@@ -57,8 +57,10 @@ Pick the closest match. Every path already passed the safety gate. Answer only w
 | “The thermostat display is blank” | Blank thermostat → `landing_blank_tstat` |
 | “Airflow from the vents is weak” | Weak airflow → `landing_weak_airflow` |
 | “The outdoor unit seems inactive” | Will not start / `ac.start.outdoor_silent_vs_hum` family (same as inactive outdoor unit home card) |
-| “I only need a service-call note” | **Out of Wave-1 diagnosis landings** — notes only; terminal `insufficient_info` or deferred product path; not a 7th landing and not a new priority node |
+| “I only need a service-call note” | **Out of diagnosis landings** — notes only; terminal `insufficient_info` or deferred product path; not a 7th landing |
 
-- Home may show **inactive outdoor unit** as a card — still map to Will not start / silent-vs-hum family; do not invent a 13th approved id.
-- Draft Not cooling chain after mode/setpoint: filter → outdoor fan → ice.
+- Home may show **inactive outdoor unit** as a card — still map to Will not start / silent-vs-hum family.
+- Draft Not cooling chain after mode/setpoint: filter → outdoor fan → debris → ice.
+- **Wave-2 (2026-09-23):** unusual_noise → `ac.noise.hazard_screen` (not immediate `unusual_noise_early` call_pro).
+- Ice keep-running remains **inlined** on `ac.cool.indoor.ice_lines_coil` (no standalone `ac.gate.ice_keep_running`).
 - Node type: intake / landing.
