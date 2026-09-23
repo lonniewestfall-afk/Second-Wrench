@@ -1,0 +1,4 @@
+# Crawlers must be allowed to fetch pages to see noindex in HTML and HTTP headers.
+# This is NOT access control. Anyone with a link can open the beta.
+User-agent: *
+Allow: /
