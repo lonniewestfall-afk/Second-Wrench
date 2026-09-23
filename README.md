@@ -35,7 +35,7 @@ The decision tree in `assets/flow.js` owns every conclusion. There is no model c
 - Terminals are only DIY Basic `next_step`, `call_pro` (with a reason), `emergency_exit`, and `insufficient_info`.
 - Scope is cooling-only residential split central AC in the United States. Heat pumps, mini-splits, geothermal, and packaged equipment stay out of scope.
 - `formsEnabled` stays `false`. No secrets and no `.env`.
-- Brand on this beta matches the live site package: green square (`#184e42`) with lime “2W”, dark green theme color `#123d35`. Founder kept that look; do not recolor it.
+- Brand matches the live beta: dark walnut/charcoal theme, scarlet `#b82030`, white wrench in a scarlet rounded square. Theme color `#17181b`.
 
 ## What changed from the previous beta tree
 
