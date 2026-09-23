@@ -45,3 +45,4 @@ Optional activity sharing is **disabled** in this beta copy — do not enable.
 - UI live label example: “Agree and continue”; required checkbox must be checked before enable.
 - Version stamp seen live: `2026-09-13.1 · Scope and safety`.
 - Node type: intake.
+- **HP Wave-1 product route (2026-09-23):** the stored `agree_18_terms` edge stays `ac.cool.intake.system_confirm`. A heat-pump session (`hp.air_source.v0`) overrides that one edge at runtime to `hp.intake.system_confirm`. Consent text is not forked.

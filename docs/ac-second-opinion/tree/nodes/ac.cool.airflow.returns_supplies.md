@@ -65,3 +65,4 @@ Support: lonnie@secondwrench.co
 - After this node still weak → `call_pro` only — no Advanced.
 - Node type: observation / Basic DIY.
 - Brand: scarlet wrench + dark charcoal/grey/walnut — never green.
+- **HP Wave-1 overlay:** when `hp_handback=filter_airflow`, the three completed-check answers → `call_pro` `hp_basics_clear_after_filter`. AC answers stay on their Wave-2 terminals. Inaccessible and duct-work stops are unchanged.

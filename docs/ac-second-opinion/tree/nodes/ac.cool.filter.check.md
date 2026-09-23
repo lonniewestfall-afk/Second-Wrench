@@ -48,3 +48,4 @@ If you cannot safely access the filter without tools or cabinet teardown, choose
 - **Wave-2 edge (Commander APPROVED 2026-09-23):** Weak airflow + `filter_clean_ok` → `ac.cool.airflow.returns_supplies` (NOT short-circuit `weak_airflow_after_filter`). After returns/supplies still weak → `call_pro` (`weak_airflow_after_returns_supplies`). Not cooling chain unchanged → outdoor fan.
 - Node type: test / observation.
 - Wave-1 package: READY; Wave-2 edge patch applied 2026-09-23.
+- **HP Wave-1 overlay:** under `hp_handback=filter_airflow`, `filter_clean_ok` → `call_pro` `hp_basics_clear_after_filter` (not the outdoor fan). `filter_clean_weak_airflow`, shown only on that handback, → `ac.cool.airflow.returns_supplies`, then the same call-pro. AC landings are unchanged.

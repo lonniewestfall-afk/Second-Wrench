@@ -1,12 +1,19 @@
 /* Deterministic decision engine. No model calls and no free-text diagnosis routing.
  * Browser or Node. Every action comes from the current node's choices.
  *
- * Tree ac.cool.v0 — node keys ARE the approved spec ids.
- * Session entry: ac.gate.cluster_entry → ac.session.consent →
- *   ac.cool.intake.system_confirm → ac.cool.landing.picker.
+ * Trees:
+ * - ac.cool.v0 for cooling-only central AC sessions.
+ * - hp.air_source.v0 for air-source ducted heat-pump sessions (Wave-1 Basic).
+ * Session entry for both: ac.gate.cluster_entry → ac.session.consent.
+ * Consent text is shared. Product routing (not a second consent node):
+ *   AC agree → ac.cool.intake.system_confirm → ac.cool.landing.picker.
+ *   HP agree → hp.intake.system_confirm → hp.landing.picker.
  * Terminals (only): next_step (DIY Basic, or DIY Advanced only when
  *   SW_CONFIG.advancedRepairsEnabled === true) | call_pro (reason) |
  *   emergency_exit | insufficient_info.
+ * HP Advanced electrical is off: outdoor-not-running never reaches the
+ * capacitor/contactor conclude. HP handback never auto-enters outdoor
+ * fan, debris, or ice.
  *
  * Wave-2 Basic (2026-09-23), public:
  * - filter_clean_ok + landing weak_airflow → ac.cool.airflow.returns_supplies.
@@ -35,6 +42,7 @@
   'use strict';
 
   const TREE_VERSION = 'ac.cool.v0';
+  const TREE_HP = 'hp.air_source.v0';
   const ENTRY = 'ac.gate.cluster_entry';
   const CONSENT = 'ac.session.consent';
   const WAVE1 = [
@@ -70,6 +78,20 @@
     'ac.adv.cap.replace_like_for_like',
     'ac.adv.cap.reassemble_restore_test'
   ];
+  const HP_WAVE1 = [
+    'hp.intake.system_confirm',
+    'hp.landing.picker',
+    'hp.mode.thermostat_check',
+    'hp.mode.force_match_complaint',
+    'hp.mode.emergency_aux_off',
+    'hp.ambient.outdoor_band',
+    'hp.defrost.sanity',
+    'hp.heat.capacity_vs_dead',
+    'hp.observe.leaving_air_vs_mode',
+    'hp.rv.mode_asymmetric',
+    'hp.handback.ac_filter_airflow',
+    'hp.conclude.call_pro_defrost_valve_control'
+  ];
   const CONCLUDE = 'ac.cool.conclude.call_pro_capacitor_contactor';
   const LANDING = {
     landing_not_cooling: 'not_cooling',
@@ -78,6 +100,20 @@
     landing_weak_airflow: 'weak_airflow',
     landing_water_or_ice: 'water_or_ice',
     landing_unusual_noise: 'unusual_noise'
+  };
+  const HP_LANDING = {
+    landing_no_heat: 'no_heat',
+    landing_no_cool: 'no_cool',
+    landing_both_modes_fail: 'both_modes_fail',
+    landing_ice_outdoor: 'ice_outdoor',
+    landing_short_cycle: 'short_cycle',
+    landing_unusual_noise: 'unusual_noise'
+  };
+  const HP_BAND = {
+    band_mild_warm: 'mild_warm',
+    band_near_freezing: 'near_freezing',
+    band_well_below: 'well_below',
+    not_sure_ambient: 'unknown'
   };
 
   const o = (id, label, next, hint = '', fact = '', extra = {}) =>
@@ -106,7 +142,7 @@
     'ac.cool.intake.system_confirm': n('Your system', 'What kind of cooling system is this?',
       'Use an existing manual or what you already know. Do not remove a cover or climb to identify equipment.\n\nThis beta covers confirmed conventional, cooling-only split-system central AC (outdoor cooling-only condenser + indoor furnace or air handler).', [
         o('split_central_cool_only', 'Central AC with separate indoor and outdoor units', 'ac.cool.landing.picker', 'A cooling-only outdoor AC connected to an indoor furnace or air handler.', 'Residential split-system central AC reported.'),
-        o('heat_pump', 'A heat pump', '@heat_pump_deferred', 'Heat-pump-specific operation is not covered in this beta.', 'Heat pump reported.'),
+        o('heat_pump', 'A heat pump', 'hp.intake.system_confirm', 'Continue on the air-source heat pump check. Cooling-only steps stay on this AC path.', 'Heat pump reported. Switching to the heat pump tree.'),
         o('mini_window_portable', 'A mini-split, window, or portable unit', '@out_of_scope_equipment', 'Out of scope for this beta.', 'Ductless, window, or portable equipment reported.'),
         o('geo_packaged_other', 'Geothermal, packaged, or another system', '@out_of_scope_equipment', 'Out of scope for this beta.', 'Geothermal, packaged, or other out-of-scope equipment reported.'),
         o('not_sure', 'I am not sure', '@system_unconfirmed', 'Do not open covers to find out.')
@@ -135,8 +171,11 @@
         o('filter_dirty_clogged', 'Filter looks dirty or clogged', '@filter_replace_basic', 'Highest-yield Basic DIY.', 'Filter looks dirty or clogged.'),
         o('filter_clean_ok', 'Filter looks clean / recently replaced', {
           byLanding: { weak_airflow: 'ac.cool.airflow.returns_supplies' },
+          hpHandback: '@hp_basics_clear_after_filter',
+          hpHandbackWeak: 'ac.cool.airflow.returns_supplies',
           default: 'ac.cool.outdoor.fan_spinning'
         }, 'Weak airflow continues to returns and supplies. Not cooling continues to the outdoor fan.', 'Filter looks clean or was recently replaced.'),
+        o('filter_clean_weak_airflow', 'Filter looks clean, but airflow from the vents is weak', 'ac.cool.airflow.returns_supplies', 'Heat-pump handback only. Check returns and supplies, then stop for a professional.', 'Filter looks clean and supply airflow is weak.'),
         o('filter_missing', 'No filter installed', '@filter_missing_basic', 'Install correct size filter before more DIY.', 'No filter installed.'),
         o('cannot_check_safely', 'I cannot check safely', '@filter_inaccessible', 'Do not force access.')
       ]),
@@ -196,7 +235,10 @@
       'Before clarifying the sound, rule out danger. Choose from what you already know. Do not approach equipment to find sparks or smoke.\n\nIf any of these are happening now:\n\n- Burning smell or electrical heat smell from equipment\n- Sparks\n- Smoke or fire\n- Grinding metal-on-metal (violent, new, or worsening)\n\n…stop troubleshooting. Prefer emergency help or a licensed professional over continuing.\n\nFor immediate danger, get safe and call 911.', [
         o('noise_burning_sparks_smoke', 'Burning smell, sparks, smoke, or fire', '@noise_burning_sparks_smoke', 'Emergency stop. Do not keep diagnosing.', 'Burning smell, sparks, smoke, or fire with the noise.', { gate: 'burning_smell' }),
         o('noise_grinding_metal', 'Grinding metal-on-metal', '@grinding_metal_noise', 'Turn the system Off if safe, then call a pro.', 'Grinding metal-on-metal noise.', { gate: 'grinding_metal_noise' }),
-        o('noise_no_hazard_symptoms', 'None of those hazard signs — noise only', 'ac.noise.clarify_outdoor_hum', 'Continue to clarify the outdoor hum pattern.'),
+        o('noise_no_hazard_symptoms', 'None of those hazard signs — noise only', {
+          hpClear: '@unusual_noise_hp_wave1',
+          default: 'ac.noise.clarify_outdoor_hum'
+        }, 'Cooling-only AC continues to the outdoor hum check. A heat pump noise with no hazard stops for a professional.'),
         o('noise_unsure_hazard', 'Not sure if it is a hazard', '@uncertain', 'Prefer a safe halt. Do not continue into DIY.', 'Homeowner was not sure whether the noise was a hazard.', { gate: 'unsure_hazard' })
       ], { safetyGate: true }),
 
@@ -210,9 +252,18 @@
 
     'ac.cool.airflow.returns_supplies': n('Airflow', 'Returns and supplies',
       'The filter already looks clean or was just replaced. Check simple indoor airflow blockers.\n\nReturns (intake): is a return grille blocked by furniture, boxes, curtains, or a thick rug edge? Move furniture so the grille can breathe. Do not remove fixed drywall returns.\n\nSupplies (registers): are supply registers closed, covered by rugs, or blocked by furniture? Open closed vents that should be open for the rooms you want cooled.\n\nDo not cut or modify ducts, pull a register into a chase, open the blower cabinet, or seal ducts from this guide. If airflow is still weak after clearing furniture, rugs, and closed vents, call a licensed HVAC professional.', [
-        o('blocked_cleared_airflow_improved', 'Blocked return or supply cleared; airflow improved', '@returns_supplies_cleared', 'Basic step done. Retest comfort.', 'Blocked return or supply cleared; airflow improved.'),
-        o('blocked_cleared_still_weak', 'Cleared blockers; airflow still weak', '@weak_airflow_after_returns_supplies', 'No duct work from this guide.'),
-        o('no_blockers_found_still_weak', 'No furniture, rug, or vent blockers; still weak', '@weak_airflow_after_returns_supplies', 'Call a professional.'),
+        o('blocked_cleared_airflow_improved', 'Blocked return or supply cleared; airflow improved', {
+          hpHandback: '@hp_basics_clear_after_filter',
+          default: '@returns_supplies_cleared'
+        }, 'Basic step done. Retest comfort. A heat-pump handback stops for a professional after this check.', 'Blocked return or supply cleared; airflow improved.'),
+        o('blocked_cleared_still_weak', 'Cleared blockers; airflow still weak', {
+          hpHandback: '@hp_basics_clear_after_filter',
+          default: '@weak_airflow_after_returns_supplies'
+        }, 'No duct work from this guide.'),
+        o('no_blockers_found_still_weak', 'No furniture, rug, or vent blockers; still weak', {
+          hpHandback: '@hp_basics_clear_after_filter',
+          default: '@weak_airflow_after_returns_supplies'
+        }, 'Call a professional.'),
         o('cannot_check_safely', 'I cannot check returns or supplies safely', '@airflow_check_inaccessible', 'Do not force access.'),
         o('want_duct_work', 'I want to cut ducts, open a chase, or reach the blower', '@duct_work_rejected_not_basic', 'Not a Basic step.', { gate: 'duct_work_rejected_not_basic' })
       ]),
@@ -246,8 +297,14 @@
 
     'ac.cool.power.disconnect_visual': n('Outdoor disconnect', 'Visual position only',
       'From safe dry ground, look at the outdoor disconnect box near the condenser (usually on the wall within sight of the unit).\n\nCan you see whether the exterior handle or lever, or a visible On/Off marking, appears Off or On?\n\nStay back if the box is wet, damaged, buzzing, hot-smelling, or if weather makes the approach unsafe.\n\nThis step does not tell you to:\n\n- Operate or flip the exterior lever or handle\n- Open the disconnect door\n- Pull a fused pull-out block\n- Touch whip wires, lugs, or anything inside\n- Do any cover-off electrical work\n\nIf you would need to operate the disconnect, or the only path is a fused pull-out, an open door, or the inside of the box, or you cannot safely see Off/On from dry ground — call a licensed professional. Do not invent a manufacturer procedure you do not have.', [
-        o('disconnect_appears_on', 'From safe ground, the disconnect appears On', '@outdoor_silent_will_not_start', 'Visual only. Basic power visuals are exhausted.', 'Outdoor disconnect appears On from safe ground; outdoor unit still silent.'),
-        o('disconnect_appears_off', 'From safe ground, the disconnect appears Off', '@outdoor_disconnect_appears_off', 'Visual only. This may explain a silent outdoor unit.', 'Outdoor disconnect appears Off from safe ground.'),
+        o('disconnect_appears_on', 'From safe ground, the disconnect appears On', {
+          hpOutdoor: '@hp_outdoor_not_running_wave1',
+          default: '@outdoor_silent_will_not_start'
+        }, 'Visual only. Basic power visuals are exhausted. A heat pump does not continue into capacitor or contactor work.', 'Outdoor disconnect appears On from safe ground; outdoor unit still silent.'),
+        o('disconnect_appears_off', 'From safe ground, the disconnect appears Off', {
+          hpOutdoor: '@hp_outdoor_not_running_wave1',
+          default: '@outdoor_disconnect_appears_off'
+        }, 'Visual only. This may explain a silent outdoor unit. Do not operate the lever.', 'Outdoor disconnect appears Off from safe ground.'),
         o('cannot_see_position_safely', 'I cannot see Off/On safely from dry ground', '@disconnect_visual_inaccessible', 'Do not force the approach.'),
         o('need_to_operate_lever', 'I would need to flip or operate the exterior lever to continue', '@disconnect_operate_not_basic', 'Basic does not include operating the lever.', 'Would need to operate the disconnect lever.', { gate: 'disconnect_operate_not_basic' }),
         o('fused_pullout_or_open_door', 'It is a fused pull-out, or I would need to open the door or see inside', '@disconnect_open_or_fused', 'Always a professional.', 'Fused pull-out or open-door disconnect.', { gate: 'high_voltage_intent' }),
@@ -323,7 +380,151 @@
         o('abnormal_smell_spark', 'Abnormal smell or a spark after restore', '@restore_abnormal_smell_spark', 'Kill power if safe. Emergency stop.', 'Abnormal smell or spark after restore.', { gate: 'burning_smell' }),
         o('hum_no_start_after_replace', 'Hum and no start after the replacement', '@hum_no_start_after_cap_replace', 'Kill power if safe, then call a professional.', 'Hum with no start after capacitor replacement.', { gate: 'hum_no_start_after_cap_replace' }),
         o('cannot_reassemble', 'I cannot get the covers back on securely', '@cannot_reassemble_leave_power_off', 'Leave power Off.', 'Covers could not be reassembled. Power left Off.', { gate: 'cannot_reassemble_leave_power_off' })
-      ], { diyTier: 'advanced', safetyGate: true, caution: 'Covers must be on before power is restored. Never restore power with covers off.' })
+      ], { diyTier: 'advanced', safetyGate: true, caution: 'Covers must be on before power is restored. Never restore power with covers off.' }),
+
+    'hp.intake.system_confirm': n('Your system', 'Is this an air-source ducted heat pump?',
+      'Use what you already know or the equipment manual. Do not remove covers, climb on the outdoor unit, or open the air-handler cabinet to identify it.\n\nThis path covers an air-source heat pump with a separate outdoor unit that can heat and cool, and ducted indoor air through a furnace or air handler.\n\nIt does not cover cooling-only central AC (use the central AC check), ductless mini-splits, water-source or geothermal heat pumps, or packaged rooftop units you cannot confirm as an air-source ducted heat pump.\n\nIf the home has a heat pump plus a gas furnace, you may continue here for heat-pump mode checks. Gas smell, a carbon monoxide alarm, or furnace combustion work is not DIY. Use Stop / get help.', [
+        o('air_source_ducted_hp', 'Air-source ducted heat pump', 'hp.landing.picker', 'Outdoor unit heats and cools. Air moves through ducts. A gas furnace alongside it is OK for this confirm only.', 'Air-source ducted heat pump reported.'),
+        o('cool_only_split_ac', 'Cooling-only central AC', '@hp_cool_only_use_ac', 'Use the central AC check, not this path.', 'Cooling-only central AC reported on the heat pump check.'),
+        o('mini_split_ductless', 'Ductless mini-split', '@hp_mini_split_oos', 'Not this path.', 'Ductless mini-split reported.'),
+        o('water_source_geo', 'Water-source or geothermal', '@hp_water_source_oos', 'Not this path.', 'Water-source or geothermal equipment reported.'),
+        o('packaged_or_other', 'Packaged, rooftop, or another system I cannot confirm', '@hp_packaged_oos', 'Out of scope for this wave.', 'Packaged or unconfirmed equipment reported.'),
+        o('not_sure', 'I am not sure', '@hp_system_unconfirmed', 'Do not open covers to find out.')
+      ]),
+
+    'hp.landing.picker': n('What you noticed', 'What is going on with the heat pump?',
+      'Pick the closest match. You already passed the safety gate and confirmed an air-source ducted heat pump. Answer only what you know.\n\nIf anything new appears now — gas smell, smoke, sparks, a burning smell, or standing water at electrical equipment — use Stop / get help. Do not keep going.', [
+        o('landing_no_heat', 'No heat / not heating enough', 'hp.mode.thermostat_check', 'Mode, Emergency heat, outdoor temperature, and defrost come before any “dead unit” conclusion.', 'Complaint: No heat or not heating enough.'),
+        o('landing_no_cool', 'No cool / not cooling enough', 'hp.mode.thermostat_check', 'Mode first, then a leaving-air check.', 'Complaint: No cool or not cooling enough.'),
+        o('landing_both_modes_fail', 'Both heat and cool fail', 'hp.mode.thermostat_check', 'After mode is cleared, shared filter and airflow checks are the Basic path.', 'Complaint: Both heat and cool fail.'),
+        o('landing_ice_outdoor', 'Ice or heavy frost on the outdoor unit', 'hp.mode.thermostat_check', 'Defrost check later. Do not chip ice.', 'Complaint: Ice or heavy frost on the outdoor unit.'),
+        o('landing_short_cycle', 'Short cycling (starts, then stops quickly)', 'hp.mode.thermostat_check', 'Mode and Emergency heat only, then a professional. No deep electrical DIY.', 'Complaint: Short cycling.'),
+        o('landing_unusual_noise', 'Unusual noise', 'ac.noise.hazard_screen', 'Hazard screen first, then a professional. No capacitor, contactor, or inverter DIY.', 'Complaint: Unusual noise from the heat pump.')
+      ]),
+
+    'hp.mode.thermostat_check': n('Thermostat', 'Mode and call for your complaint',
+      'Without opening equipment or pulling the thermostat off the wall, look at the thermostat you already use.\n\n1. What mode is it in right now? (Heat, Cool, Auto, Emergency / Aux / Em Heat — wording varies by brand.)\n2. Is the setpoint in a direction that should actually call?\n   No heat: Heat, with the setpoint a few degrees above the room.\n   No cool: Cool, with the setpoint a few degrees below the room.\n3. Fan Auto or On is fine for this check.\n\nDo not open the furnace or air-handler cabinet. Do not change O/B jumper settings here.\n\nIf the display is blank or unreadable, say so. Do not pry the thermostat apart beyond normal battery access you already know from the manual.', [
+        o('mode_auto', 'Mode is Auto', 'hp.mode.force_match_complaint', 'Auto can hide the real complaint. Force Heat or Cool first.'),
+        o('mode_emergency_or_aux', 'Mode is Emergency / Aux / Em Heat', 'hp.mode.emergency_aux_off', 'The outdoor compressor is often commanded off on purpose.'),
+        o('mode_matches_complaint', 'Mode is Heat or Cool and matches my complaint; setpoint should be calling', 'hp.mode.emergency_aux_off', 'Still confirm Emergency / Aux is not also on.', 'Thermostat mode matches the complaint and the setpoint should be calling.'),
+        o('mode_wrong_for_complaint', 'Mode is wrong for my complaint (for example Cool when I need heat)', '@hp_mode_wrong_basic', 'Easy setting fix first.', 'Thermostat mode did not match the complaint.'),
+        o('tstat_blank_or_unreadable', 'Thermostat is blank or I cannot read the mode', 'ac.tstat.blank.batteries', 'Battery check only. Do not open equipment to find the mode.', 'Thermostat display is blank or unreadable.'),
+        o('not_sure', 'I am not sure', '@hp_mode_not_sure', 'Do not guess. Do not pull the thermostat off the wall.')
+      ]),
+
+    'hp.mode.force_match_complaint': n('Thermostat', 'Force Heat or Cool',
+      'Auto mode can call the wrong thing, which makes a heat pump look like a failed outdoor unit.\n\nWithout opening equipment:\n\n1. Set the mode to Heat if the complaint is no heat, poor heat, or ice in heating season. Set Cool if the complaint is no cool or poor cool.\n2. Move the setpoint 2–3°F past the room temperature in the call direction (above for heat, below for cool).\n3. Wait 5–10 minutes. Longer in very cold weather is fine. Watch from a safe distance. Do not remove covers.\n\nDo not set Emergency / Aux just to make heat faster unless you already understand that it may shut the compressor off on purpose.\n\nIf you smell burning or see sparks while waiting, use Stop / get help.', [
+        o('forced_problem_gone', 'Forced Heat or Cool — the problem went away', '@hp_auto_fixed_basic', 'Often an Auto or schedule issue, not a sealed-system repair.', 'Forced Heat or Cool and the problem went away.'),
+        o('forced_problem_remains', 'Forced Heat or Cool — the problem is still there', 'hp.mode.emergency_aux_off', 'Continue to the Emergency / Aux check.', 'Forced Heat or Cool and the problem remains.'),
+        o('could_not_change_mode', 'I cannot change the mode', '@hp_thermostat_mode_locked', 'Do not open low-voltage wiring to force it.', 'Thermostat would not accept Heat or Cool.'),
+        o('not_sure_waited', 'I am not sure / I did not wait', '@hp_force_not_waited', 'Do not judge the system after a few seconds.')
+      ]),
+
+    'hp.mode.emergency_aux_off': n('Thermostat', 'Is Emergency or Aux heat on by accident?',
+      'Many thermostats have Emergency Heat, Aux, or Em Heat. On a heat pump that often means the outdoor compressor is commanded off on purpose, and indoor heat comes from electric strips or a furnace only.\n\nCheck the display and any Aux / Emergency indicator. Do not open the air handler to look at strip sequencers. Do not measure amps.\n\nIf Emergency / Aux is on and you did not mean to use it, turn it Off and set normal Heat with the setpoint a few degrees above the room. Wait 10–15 minutes before judging the outdoor unit. If the complaint is cooling, set Cool instead and wait the same way.\n\nIf you are keeping Emergency / Aux on on purpose, an idle outdoor unit can be normal. The next Basic check is the filter and airflow.', [
+        o('emergency_was_on_now_off', 'Emergency / Aux was on — I turned it Off and set normal Heat or Cool', {
+          byHpLanding: { short_cycle: '@hp_short_cycle_after_mode_basics' },
+          default: 'hp.ambient.outdoor_band'
+        }, 'Wait 10–15 minutes in the prompt, then continue. Short cycling stops here for a professional.', 'Emergency or Aux was on and is now Off.'),
+        o('emergency_already_off', 'Emergency / Aux is already Off, or my thermostat does not have it', {
+          byHpLanding: { short_cycle: '@hp_short_cycle_after_mode_basics' },
+          default: 'hp.ambient.outdoor_band'
+        }, 'Continue. Short cycling stops here for a professional.', 'Emergency or Aux is already Off.'),
+        o('keeping_emergency_on_purpose', 'I am keeping Emergency / Aux on on purpose', 'hp.handback.ac_filter_airflow', 'Outdoor idle may be normal. Check the filter and airflow next. No strip-amp diagnosis.', 'Keeping Emergency or Aux on on purpose.'),
+        o('not_sure_emergency', 'I cannot tell if Emergency / Aux is on', '@hp_emergency_not_sure', 'Do not open the air handler to find strip wiring.')
+      ]),
+
+    'hp.ambient.outdoor_band': n('Outdoor temperature', 'Ballpark only',
+      'You do not need a precision thermometer. From what you already know (phone weather, an outdoor thermometer, or how it feels):\n\nMild / warm — well above freezing (roughly above 45°F / 7°C).\nNear freezing — frost possible (roughly 25–40°F / −4–4°C).\nWell below freezing — deep cold (roughly below 25°F / −4°C).\n\nThis is not a balance-point calculation. It only steers whether a normal defrost is plausible, and whether weak heat can be normal capacity drop versus no heat at all.\n\nDo not go outside into unsafe conditions just to answer. If you cannot estimate, say so.', [
+        o('band_mild_warm', 'Mild / warm — well above freezing', {
+          byHpLanding: {
+            ice_outdoor: 'hp.defrost.sanity',
+            no_heat: 'hp.heat.capacity_vs_dead'
+          },
+          default: 'hp.observe.leaving_air_vs_mode'
+        }, 'Ice still gets a defrost check. Mild no-heat skips the defrost wait. Cooling complaints go to the leaving-air check.', 'Outdoor band: mild / warm.'),
+        o('band_near_freezing', 'Near freezing — frost possible', 'hp.defrost.sanity', 'Defrost check before calling the unit failed.', 'Outdoor band: near freezing.'),
+        o('band_well_below', 'Well below freezing — deep cold', 'hp.defrost.sanity', 'Defrost check, then weak heat versus no heat.', 'Outdoor band: well below freezing.'),
+        o('not_sure_ambient', 'I am not sure', {
+          byHpLanding: {
+            no_heat: 'hp.defrost.sanity',
+            ice_outdoor: 'hp.defrost.sanity'
+          },
+          default: 'hp.observe.leaving_air_vs_mode'
+        }, 'Heat or ice complaints get a conservative defrost check. A cooling complaint continues to the leaving-air check.', 'Outdoor temperature band unknown.')
+      ]),
+
+    'hp.defrost.sanity': n('Cold weather', 'Could this be a normal defrost?',
+      'In heat mode when outdoor air is cold, frost on the outdoor coil can be normal. During automatic defrost, many heat pumps temporarily stop the outdoor fan, make a whoosh, hiss, or steam sound, blow cooler air indoors for a short time, and turn on auxiliary heat while the outdoor coil clears.\n\nFrom a safe distance only:\n\nDo not reach into the grille.\nDo not chip ice with tools, screwdrivers, hammers, or hot water.\nDo not remove panels or jump defrost sensors.\n\nWatch about 5–15 minutes. Does the outdoor unit recover into normal heat afterward (fan resumes, steam settles, heat returns)?\n\nHeavy ice plus keeping the system running to force heat is not a DIY continue. That risks compressor damage and water damage when the ice melts.\n\nBurning smell, smoke, sparks, or standing water at electrical equipment: Stop / get help.', [
+        o('looks_like_defrost_then_recover', 'Looked like defrost, then returned toward normal, and the original problem is gone', '@hp_defrost_recovered_ok', 'Occasional defrost in cold weather can be normal.', 'Defrost-like behavior, then the original problem was gone.'),
+        o('defrost_recovered_complaint_remains', 'Looked like defrost and recovered, but the original problem is still there', {
+          byHpLanding: { no_cool: 'hp.observe.leaving_air_vs_mode' },
+          default: 'hp.heat.capacity_vs_dead'
+        }, 'Heat, ice, or both-modes complaints continue to the capacity check. A cooling complaint goes to the leaving-air check.', 'Defrost-like behavior, then the original problem remained.'),
+        o('iced_solid_no_recover', 'Outdoor unit is iced solid or stuck and never returns to normal heat', 'hp.conclude.call_pro_defrost_valve_control', 'Possible defrost failure. No magnets, no jumping safeties, no gauges.', 'Outdoor unit iced solid and did not recover.'),
+        o('not_cold_or_not_applicable', 'Mild weather, no frost behavior, or this does not match', {
+          byHpLanding: { no_heat: 'hp.heat.capacity_vs_dead' },
+          default: 'hp.observe.leaving_air_vs_mode'
+        }, 'Skip the defrost wait.', 'Defrost wait does not apply.'),
+        o('want_keep_running_despite_ice', 'There is heavy ice, but I want to keep the system running', '@ice_keep_running', 'Hard stop. Turn the system Off. Do not chip ice.', 'Homeowner wanted to keep the heat pump running despite ice.', { gate: 'ice_keep_running' }),
+        o('not_sure', 'I am not sure', '@hp_defrost_not_sure', 'Do not force a defrost or open the unit.')
+      ], { safetyGate: true, caution: 'Do not chip ice, jump a sensor, or keep the system running through heavy ice.' }),
+
+    'hp.heat.capacity_vs_dead': n('Heat', 'Weak heat in the cold, or no heat at all?',
+      'Heat pumps deliver less heat as outdoor air gets colder. That can feel like the system is dying when it is still running and may call auxiliary heat for help.\n\nFrom what you can tell without meters or panel work:\n\nIs there some warm air, or at least air that is not ice-cold, from the supplies after a proper Heat call for 10–15 minutes or more?\nOr does supply air stay at room temperature or cold, with no useful heat?\nIf you know you have electric strips or a gas furnace for backup: does the house warm only when that backup runs, while the outdoor unit stays idle in normal Heat with Emergency Off?\n\nDo not measure strip amps. Do not open sequencers. Do not add refrigerant. Do not declare a bad compressor from this screen.', [
+        o('weak_but_some_heat', 'Some heat, but weak — especially in deep cold', {
+          byHpAmbient: {
+            near_freezing: '@hp_weak_heat_deep_cold',
+            well_below: '@hp_weak_heat_deep_cold',
+            mild_warm: 'hp.observe.leaving_air_vs_mode',
+            unknown: 'hp.observe.leaving_air_vs_mode'
+          },
+          default: 'hp.observe.leaving_air_vs_mode'
+        }, 'Deep cold with some heat is a capacity expectation. Mild or unknown weather continues to the leaving-air check.', 'Some heat, but weak.'),
+        o('no_heat_at_all', 'No useful heat — supply air stays cold or at room temperature', 'hp.observe.leaving_air_vs_mode', 'Continue the leaving-air check.', 'No useful heat from the supplies.'),
+        o('aux_only_seems_to_heat', 'The house only warms on Aux, Emergency, or the furnace; the outdoor unit stays idle in normal Heat', 'hp.observe.leaving_air_vs_mode', 'Continue the leaving-air check. No strip-amp DIY.', 'Backup heat seems to be the only heat; outdoor unit idle in normal Heat.'),
+        o('not_applicable_cool_landing', 'My complaint is cooling only, not a heat-capacity question', 'hp.observe.leaving_air_vs_mode', 'Skip to the leaving-air check.'),
+        o('not_sure_capacity', 'I am not sure', 'hp.observe.leaving_air_vs_mode', 'Do not open the air handler to check strips.')
+      ]),
+
+    'hp.observe.leaving_air_vs_mode': n('Outdoor unit', 'Leaving air versus the mode that is calling',
+      'With the thermostat calling Heat or Cool to match the complaint (not Auto, and Emergency Off), after the unit has been trying for several minutes and is not in an obvious defrost:\n\nFrom a safe distance (no covers off, nothing through the grille):\n\nIf Cool is calling, air leaving the outdoor coil often feels warmer than the surrounding outdoor air.\nIf Heat is calling and the unit is not in defrost, that air often feels cooler than the surrounding outdoor air.\n\nAlso note whether the outdoor unit seems to run at all, or stays silent when it should run.\n\nThis does not prove refrigerant charge or a reversing-valve part. It only sorts a one-mode problem, a both-modes airflow problem, or an outdoor unit that is not running.\n\nO versus B is specific to the manufacturer. Do not assume which way the valve is energized.\n\nBurning smell, sparks, smoke, or water at electrical equipment: Stop / get help.', [
+        o('leaving_air_matches_mode', 'Leaving air roughly matches the mode that is calling', 'hp.handback.ac_filter_airflow', 'Not an obvious mode-swap pattern. Shared filter and airflow checks are next. No refrigerant DIY.', 'Outdoor leaving air roughly matched the calling mode.'),
+        o('mode_asymmetric_feel', 'One mode feels right; the other blows the wrong-temperature air while the outdoor unit seems to run', 'hp.rv.mode_asymmetric', 'A professional pattern. Not a homeowner valve repair.', 'One mode felt right and the other felt wrong while the outdoor unit ran.'),
+        o('outdoor_not_running_when_should', 'Outdoor unit stays silent when Heat or Cool is calling (Emergency Off)', 'ac.cool.power.breaker_visual', 'Breaker door, then disconnect position only, then a professional. No capacitor or contactor DIY.', 'Outdoor unit silent while Heat or Cool was calling.'),
+        o('still_in_defrost_or_weird', 'It still looks like defrost, steam, or a stopped fan in the cold', {
+          hpDefrostAgain: 'hp.conclude.call_pro_defrost_valve_control',
+          default: 'hp.defrost.sanity'
+        }, 'One return to the defrost check. A second loop stops for a professional. Do not chip ice.', 'Outdoor unit still looked like defrost.'),
+        o('cannot_observe_safely', 'I cannot observe safely / I am not sure', '@hp_cannot_observe', 'Do not force access or remove covers.')
+      ], { caution: 'No covers off. This check does not prove refrigerant charge.' }),
+
+    'hp.rv.mode_asymmetric': n('Call a professional', 'One mode works and the other does not',
+      'You reported a pattern like one of these while the outdoor unit seemed to run:\n\nCool works, but heat blows cool or room-temperature air.\nHeat works, but cool blows warm air.\nA mode change used to make a brief whoosh or click, and now one mode never feels right.\n\nThat pattern often involves thermostat O/B configuration, outdoor control, or a reversing valve that is not shifting. It is not a homeowner refrigerant repair and not a magnet or jumper trick.\n\nDo not assume whether your brand energizes O or B in heat or cool.\nDo not force the valve with magnets or tools.\nDo not jump safeties or open electrical panels.\nDo not attach gauges or add or remove refrigerant.\n\nIf you recently replaced the thermostat, tell the professional. O/B setting mistakes are common. The outcome of a confirmed pattern is professional-only.', [
+        o('asymmetric_pattern_confirmed', 'Yes — one mode is OK and the other is wrong while the outdoor unit runs', 'hp.conclude.call_pro_defrost_valve_control', 'Professional only. No valve force-out and no electrical DIY.', 'Mode-asymmetric pattern confirmed.'),
+        o('pattern_not_really_asymmetric', 'On second thought, both modes fail and the outdoor unit does run', 'hp.handback.ac_filter_airflow', 'Shared filter and airflow checks. Not a valve diagnosis.', 'Pattern was not asymmetric; outdoor unit does run.'),
+        o('pattern_outdoor_not_running', 'On second thought, the outdoor unit is not running', 'ac.cool.power.breaker_visual', 'Breaker door, then disconnect position only, then a professional. No capacitor or contactor DIY.', 'Outdoor unit is not running.'),
+        o('recent_tstat_swap_ob_unsure', 'I replaced the thermostat and I am unsure about O/B', 'hp.conclude.call_pro_defrost_valve_control', 'A professional should verify it. Do not guess jumpers.', 'Thermostat was replaced and O/B is uncertain.'),
+        o('not_sure_pattern', 'I am not sure the pattern holds', {
+          hpFilterDone: '@hp_rv_pattern_unsure',
+          default: 'hp.handback.ac_filter_airflow'
+        }, 'If the filter was not checked yet, do that Basic step. Otherwise stop rather than invent a valve diagnosis.', 'Mode pattern uncertain.')
+      ], { diyTier: 'pro_only', caution: 'Do not force the reversing valve, jump a safety, or attach gauges.' }),
+
+    'hp.handback.ac_filter_airflow': n('Air filter', 'Shared filter and airflow checks',
+      'Mode, Emergency / Aux, outdoor temperature, and defrost are clear enough that the next Basic checks are the filter and, if the vents are weak, returns and supplies.\n\nThe filter screen is the same Basic check used for central AC. It is not permission to do capacitor, contactor, refrigerant, or panel work.\n\nAfter a clean filter, this heat-pump path does not continue to the outdoor fan, debris, or ice checks. Defrost can stop the outdoor fan, so those cooling-only steps would mislead.\n\nIf one mode was wrong while the outdoor unit ran, you should not be here.', [
+        o('proceed_ac_filter', 'Continue to the air filter check', 'ac.cool.filter.check', 'Shared Basic filter check.', 'Continuing to the shared filter check.'),
+        o('filter_already_done_this_session', 'I already checked or replaced the filter in this session', '@hp_basics_clear_after_filter', 'Mode and filter basics are done. Deeper work is a professional visit.', 'Filter already checked this session.'),
+        o('decline_handback', 'Skip — I want a professional without a filter check', '@hp_user_requests_pro_after_mode_clear', 'Allowed stop.', 'Asked for a professional without the filter check.'),
+        o('hazard_now', 'New hazard now (burning, smoke, sparks, water at electrical equipment, or gas)', '@hp_hazard_now', 'Stop. Do not keep diagnosing.', 'New hazard reported during the heat pump check.', { gate: 'hp_new_hazard' })
+      ]),
+
+    'hp.conclude.call_pro_defrost_valve_control': n('Call a professional', 'Defrost, reversing valve, or control',
+      'Homeowner Basic checks are no longer the right next step. Common professional buckets for what you described include a failed or stuck defrost, a reversing valve or outdoor control that is not shifting modes, or thermostat O/B configuration after a thermostat swap.\n\nThis is not a confirmed parts diagnosis. It is a reason to stop DIY and get service.\n\nDo not attempt from this guide:\n\nCapacitor or contactor work. Heat-pump Advanced electrical is off.\nInverter board, amp draw, strip sequencers, or the panel interior.\nRefrigerant gauges, charge, or reclaim.\nMagnets, jumping safeties, or forcing the reversing valve.\n\nLeave the system safe. Thermostat Off is fine if ice was involved. For outdoor power: visual / familiar storm shutoff only. If you already safely use the outdoor disconnect or breaker as a storm shutoff and conditions are dry, you may leave it Off the way you already know. This guide does not teach operating the disconnect lever as a diagnostic procedure. If you are unsure, wet, or unfamiliar, leave power alone and call.\n\nCall a licensed HVAC technician. You may tell them: heat-pump mode, Emergency, temperature, and defrost checks only; outdoor iced without recovery and/or one mode wrong; no covers removed; O versus B was not assumed.\n\nSupport: lonnie@secondwrench.co', [
+        o('ack_call_pro', 'Understood — call a professional', '@hp_defrost_valve_ob_control', 'Terminal acknowledgment.'),
+        o('want_diy_valve_or_electrical_anyway', 'I want to force the valve or do electrical work myself', '@hp_defrost_valve_ob_control', 'Not offered. Advanced electrical is off, and valve force-outs are professional-only.', 'Asked to force the valve or do electrical DIY.'),
+        o('want_diy_refrigerant_anyway', 'I want to add refrigerant or use gauges', '@hp_refrigerant_intent', 'Never a DIY step.', 'Asked to add refrigerant or use gauges.', { gate: 'refrigerant_intent' })
+      ], { diyTier: 'pro_only', caution: 'No capacitor, contactor, gauges, or reversing-valve force-out. The disconnect step is not a lever lesson.' })
   };
 
   const r = (tier, urgency, title, explanation, actions, avoid, source, outcome, reason, extra = {}) =>
@@ -367,8 +568,8 @@
       'emergency_exit', 'unsure_water_electrical', { gate: 'unsure_water_electrical' }),
     ice_keep_running: r('Stop / professional', 'Stop. Do not keep it running.', 'Ice plus forced running is not a DIY path.',
       'Keeping a system running with ice on the lines or coil risks compressor damage and water damage.',
-      ['Turn the system Off at the thermostat. Do not chip ice with tools.', 'Let the ice thaw, and schedule a licensed HVAC diagnosis before you rely on cooling again.'],
-      'Do not keep cooling on to force the house cold, and do not bypass this stop.', 'ice',
+      ['Turn the system Off at the thermostat. Do not chip ice with tools.', 'Let the ice thaw, and schedule a licensed HVAC diagnosis before you rely on heating or cooling again.'],
+      'Do not keep the system running to force heat or cooling, and do not bypass this stop.', 'ice',
       'emergency_exit', 'ice_keep_running', { gate: 'ice_keep_running' }),
     consent_declined: r('More information needed', 'Session ended', 'The check stops without agreement.',
       'This guide does not continue into a diagnosis path unless you agree to the beta terms and confirm you are 18 or older.',
@@ -694,7 +895,132 @@
       'Covers were on before power was restored. That does not certify the repair. If cooling fails, noise returns, or anything smells or sparks, stop and call a professional.',
       ['Leave the covers on.', 'Let the system run on Cool only as a normal call for cooling, and see whether comfort holds.', 'If the outdoor unit hums and does not start, or you smell something burning or see a spark, kill power if safe and call a licensed HVAC professional.'],
       'Do not run it with covers off, and do not replace the contactor because the first test looked fine.', 'electrical',
-      'next_step', 'next_step_advanced', { diyTier: 'advanced' })
+      'next_step', 'next_step_advanced', { diyTier: 'advanced' }),
+    hp_cool_only_use_ac: r('More information needed', 'Use the central AC check', 'This path is for an air-source ducted heat pump.',
+      'A cooling-only central air conditioner has its own check. This heat-pump path will not guess a cooling-only diagnosis.',
+      ['Go back home and start the central AC check.', 'Do not remove a cover to re-identify the equipment.'],
+      'Do not apply heat-pump mode steps to a cooling-only condenser.', 'scope',
+      'insufficient_info', 'hp_cool_only_use_ac'),
+    hp_mini_split_oos: r('More information needed', 'Outside this heat-pump check', 'A ductless mini-split is not covered here.',
+      'Mini-split guidance is a later phase. This check will not invent one.',
+      ['Use a technician who works on that equipment, or the manufacturer owner guidance.', 'Do not remove a cover to force an identification.'],
+      'Do not apply this ducted heat-pump guide to a mini-split.', 'scope',
+      'insufficient_info', 'hp_mini_split_oos'),
+    hp_water_source_oos: r('More information needed', 'Outside this heat-pump check', 'Water-source and geothermal equipment are not covered here.',
+      'That equipment is a later phase. Loop water and related work are not part of this check.',
+      ['Use a technician who works on that system.', 'Do not open covers or service a ground loop from this result.'],
+      'Do not apply this air-source guide to a water-source heat pump.', 'scope',
+      'insufficient_info', 'hp_water_source_oos'),
+    hp_packaged_oos: r('More information needed', 'Outside this heat-pump check', 'Packaged or unconfirmed equipment is not covered in this wave.',
+      'This path needs a confirmed air-source ducted heat pump.',
+      ['Use a technician for that equipment, or confirm the type from a manual you already have.', 'Do not climb or remove a cover to read a model number.'],
+      'Do not pretend this check covers every outdoor unit.', 'scope',
+      'insufficient_info', 'hp_packaged_oos'),
+    hp_system_unconfirmed: r('More information needed', 'Confirm the equipment first', 'This check needs a confirmed air-source ducted heat pump.',
+      'Do not open covers to find out what you have.',
+      ['Use the manual, or ask someone who already knows the equipment.', 'Start again when you can confirm an outdoor unit that heats and cools, with air moving through ducts.', 'If you cannot confirm it, use your HVAC company rather than guessing.'],
+      'Do not remove panels or climb to read a model number.', 'scope',
+      'insufficient_info', 'hp_system_unconfirmed'),
+    hp_mode_wrong_basic: r('Basic homeowner check', 'Set the mode that matches the complaint', 'The thermostat mode does not match what you need.',
+      'Fix the setting before any other check. Do not change O/B jumpers and do not open the cabinet.',
+      ['Set Heat if you need heat, or Cool if you need cool. Leave Emergency / Aux Off unless you already mean to use backup heat only.', 'Move the setpoint 2–3°F past the room temperature in the call direction.', 'Wait 10–15 minutes and retest. If the complaint remains with the mode correct, start a new heat pump check and continue from the mode question.'],
+      'Do not pull the thermostat off the wall or change wiring.', 'maintenance',
+      'next_step', 'hp_mode_wrong_basic', { diyTier: 'basic' }),
+    hp_mode_not_sure: r('More information needed', 'Read the mode before continuing', 'The next check waits on the thermostat display.',
+      'Do not guess the mode, and do not pull the thermostat off the wall.',
+      ['Read the mode and setpoint on the display, or use the thermostat manual.', 'Start the heat pump check again when you can say whether the mode matches the complaint.'],
+      'Do not open the furnace or air-handler cabinet, and do not change O/B jumpers.', 'maintenance',
+      'insufficient_info', 'hp_mode_not_sure'),
+    hp_auto_fixed_basic: r('Basic homeowner check', 'Leave it in Heat or Cool', 'Forcing Heat or Cool cleared the complaint.',
+      'Auto can call the wrong thing or sit in a deadband. That is a control setting, not a reason to open the outdoor unit.',
+      ['Leave the system in Heat or Cool to match what you need.', 'If you return to Auto later, follow the thermostat manual for the gap between the heat and cool setpoints.', 'Call a professional only if you want help programming the thermostat. If the problem returns while Heat or Cool is forced, start a new heat pump check.'],
+      'Do not open the outdoor unit, force the reversing valve, or change O/B jumpers because Auto was the problem.', 'maintenance',
+      'next_step', 'hp_auto_fixed_basic', { diyTier: 'basic' }),
+    hp_thermostat_mode_locked: r('Professional guidance', 'Do not force the thermostat wiring', 'The thermostat will not accept Heat or Cool.',
+      'Low-voltage wiring and O/B settings after a thermostat swap are a professional visit when you cannot change the mode from the display.',
+      ['Leave the thermostat on the wall.', 'Call a licensed HVAC professional. Tell them the mode could not be changed to Heat or Cool and you did not open wiring.'],
+      'Do not pull the thermostat off to move jumpers, and do not open the air handler.', 'safety',
+      'call_pro', 'thermostat_mode_locked_or_unchangeable'),
+    hp_force_not_waited: r('More information needed', 'Wait out the forced mode', 'A few seconds is not enough to judge a heat pump call.',
+      'Do not guess, and do not open equipment to speed it up.',
+      ['Stay in forced Heat or Cool, with the setpoint 2–3°F past the room temperature, for 5–10 minutes.', 'Then start the heat pump check again if the problem is still there.'],
+      'Do not set Emergency heat just to see a faster result, and do not open covers.', 'maintenance',
+      'insufficient_info', 'hp_force_not_waited'),
+    hp_short_cycle_after_mode_basics: r('Professional guidance', 'Short cycling needs a professional', 'Mode and Emergency / Aux basics are as far as this check goes for short cycling.',
+      'A system that starts and stops quickly can be a control, refrigerant, or electrical problem. Those are not homeowner steps in this wave.',
+      ['Leave the thermostat in the mode you already corrected. Off is fine if it keeps short cycling.', 'Call a licensed HVAC professional. Tell them the mode matched the complaint, Emergency / Aux was Off or you turned it Off, and the unit still short cycles. You did not open covers.'],
+      'Do not open panels, attach gauges, or replace a capacitor or contactor from short cycling.', 'safety',
+      'call_pro', 'short_cycle_after_mode_basics'),
+    hp_emergency_not_sure: r('More information needed', 'Confirm Emergency / Aux on the display', 'This check needs a clear Emergency / Aux answer.',
+      'Do not open the air handler to look at strip sequencers or measure amps.',
+      ['Use the thermostat manual or the labels on the display.', 'Start again when you can say whether Emergency / Aux is on.', 'If you still cannot tell, call a licensed HVAC professional.'],
+      'Do not open the cabinet or measure current to answer this.', 'safety',
+      'insufficient_info', 'hp_emergency_not_sure'),
+    hp_defrost_recovered_ok: r('Basic homeowner check', 'Leave it in normal Heat', 'The outdoor unit behaved like a defrost and then the complaint cleared.',
+      'Frost and a short defrost can be normal in cold weather. Ice that returns and stays is a professional visit.',
+      ['Leave the system in normal Heat, with Emergency / Aux Off unless you intentionally want backup heat only.', 'Expect an occasional defrost in cold weather: fan may stop, indoor air may cool briefly, then heat returns.', 'If ice comes back and the unit does not recover, turn the system Off, do not chip the ice, and call a licensed HVAC professional.'],
+      'Do not chip ice, jump a defrost sensor, or open the cabinet.', 'ice',
+      'next_step', 'hp_defrost_recovered_ok', { diyTier: 'basic' }),
+    hp_defrost_not_sure: r('More information needed', 'Do not force a defrost', 'It was not clear whether this was a normal defrost.',
+      'Do not chip ice or open panels to decide.',
+      ['Watch from a safe distance through one possible defrost, about 5–15 minutes, if you can do that without getting closer.', 'If you still cannot tell, or ice is heavy, turn the system Off and call a licensed HVAC professional. Tell them what the outdoor unit did.'],
+      'Do not chip ice, pour water on the coil, or jump a sensor.', 'ice',
+      'insufficient_info', 'hp_defrost_not_sure'),
+    hp_weak_heat_deep_cold: r('Basic homeowner check', 'Weak heat in deep cold can be normal capacity', 'There is some heat, and it is cold outside.',
+      'Heat pumps move less heat as outdoor air gets colder, and they may use auxiliary heat for help. That is not proof of a failed compressor. Ice that never clears is a different problem.',
+      ['Keep Emergency / Aux Off unless you intentionally want backup heat only.', 'Expect less heat, and possible auxiliary heat, in this outdoor temperature. Give a Heat call 10–15 minutes.', 'If airflow from the vents feels weak, check the filter you can already reach. If the outdoor unit is iced solid and never recovers, turn it Off, do not chip the ice, and call a licensed HVAC professional.'],
+      'Do not add refrigerant, measure strip amps, or open the air handler.', 'maintenance',
+      'next_step', 'hp_weak_heat_deep_cold', { diyTier: 'basic' }),
+    hp_cannot_observe: r('More information needed', 'Stop where you can see safely', 'The outdoor check needs a safe view.',
+      'Do not move closer because of weather, ice, a locked yard, or anything else that makes the area unsafe.',
+      ['Stay back. Note what you already saw for a professional.', 'If the home still needs heat or cooling and you cannot observe the outdoor unit, call a licensed HVAC professional.'],
+      'Do not remove covers or put anything through the grille.', 'safety',
+      'insufficient_info', 'hp_cannot_observe'),
+    hp_outdoor_not_running_wave1: r('Professional guidance', 'Outdoor unit not running — call a professional', 'Basic power visuals are the end of the heat-pump start check.',
+      'You can look at the breaker door and the outdoor disconnect position. This heat-pump path does not continue into capacitor or contactor work. Advanced electrical is off.',
+      ['Leave the thermostat Off if the outdoor unit stays silent while it should run.', 'Call a licensed HVAC professional. Tell them whether the breaker door looked On, Off, or not identifiable, and whether the outdoor disconnect appeared On or Off from safe ground. You did not operate the disconnect as a test and you did not remove covers.'],
+      'Do not flip the disconnect lever, open the disconnect door, pull a fuse, or replace a capacitor or contactor from this result.', 'electrical',
+      'call_pro', 'hp_outdoor_not_running_wave1'),
+    hp_rv_pattern_unsure: r('More information needed', 'Do not invent a valve diagnosis', 'The one-mode pattern was not clear, and the filter was already checked.',
+      'Unsure is not a reason to force the reversing valve or attach gauges.',
+      ['Write down which mode felt wrong, and whether the outdoor unit was running.', 'Call a licensed HVAC professional if comfort is still not acceptable. Tell them you did not change O/B jumpers or open covers.'],
+      'Do not force the valve with a magnet or tool, and do not add refrigerant.', 'safety',
+      'insufficient_info', 'hp_rv_pattern_unsure'),
+    hp_basics_clear_after_filter: r('Professional guidance', 'Basic heat-pump checks are done', 'Filter and airflow basics are as far as this wave goes.',
+      'Mode, Emergency / Aux, and the defrost screen were already considered. A clean filter, or returns and supplies when airflow was weak, does not prove the sealed system. This path does not continue to the outdoor fan, debris, or ice checks.',
+      ['Leave returns and supplies as they are. Do not start duct work.', 'Call a licensed HVAC professional if the home still does not heat or cool. Tell them the mode matched the complaint, what you saw for Emergency / Aux and outdoor ice or frost, and what the filter and vents looked like. No covers were removed.'],
+      'Do not move on to capacitor, contactor, refrigerant, or outdoor-fan diagnosis from this result.', 'maintenance',
+      'call_pro', 'hp_basics_clear_after_filter'),
+    hp_user_requests_pro_after_mode_clear: r('Professional guidance', 'Call a licensed HVAC professional', 'You chose to stop before the filter check.',
+      'That is a complete stop. Mode basics were the homeowner steps already offered.',
+      ['Leave the system in a safe mode. Off at the thermostat is enough.', 'Call a licensed HVAC professional and describe the complaint, the thermostat mode, and whether Emergency / Aux was on.'],
+      'Do not open electrical covers or attach gauges because you skipped the filter.', 'safety',
+      'call_pro', 'user_requests_pro_after_mode_clear'),
+    hp_defrost_valve_ob_control: r('Professional guidance', 'Call a licensed HVAC professional', 'Defrost, reversing valve, or control — not a homeowner repair.',
+      'This is a ranked reason to stop, not a confirmed parts diagnosis. Heat-pump Advanced electrical is off. Forcing the reversing valve is not a step in this guide.',
+      ['If ice was involved, set the thermostat Off. Do not chip the ice.', 'For outdoor power, use only a shutoff you already know from storms, and only if it is dry. This guide does not teach operating the disconnect lever. If you are unsure, leave power alone.', 'Call a licensed HVAC technician. You may say: Basic heat-pump checks only, outdoor iced without recovery and/or one mode wrong, no covers removed, O versus B not assumed.'],
+      'Do not replace a capacitor or contactor, open the panel, attach gauges, add refrigerant, or force the reversing valve with a magnet or jumper.', 'safety',
+      'call_pro', 'hp_defrost_valve_ob_control', { diyTier: 'pro_only' }),
+    hp_refrigerant_intent: r('Professional guidance', 'Do not add refrigerant or use gauges', 'Refrigerant work is not a homeowner step.',
+      'Asking to add refrigerant or attach gauges stops this guide. It does not unlock a procedure.',
+      ['Do not connect gauges, hoses, or a refrigerant cylinder.', 'Call a licensed HVAC professional with the certification required for that equipment.', 'If a leak alarm is sounding or you suspect a release, leave the area and use the safety stop. Do not keep diagnosing.'],
+      'Do not add or remove refrigerant, and do not open refrigerant lines.', 'refrigerant',
+      'call_pro', 'refrigerant_intent', { gate: 'refrigerant_intent' }),
+    hp_advanced_electrical_off: r('Professional guidance', 'Heat-pump electrical DIY is off', 'Capacitor and contactor work is not offered on a heat pump in this beta.',
+      'The cooling-only capacitor path does not apply here, even if that path exists for central AC. Advanced electrical stays off.',
+      ['Leave covers on.', 'Call a licensed HVAC professional. Tell them what the outdoor unit was doing and that you did not remove covers.'],
+      'Do not start a capacitor, contactor, inverter, or panel repair from this heat-pump check.', 'electrical',
+      'call_pro', 'hp_advanced_electrical_off', { diyTier: 'pro_only' }),
+    hp_hazard_now: r('Emergency', 'Stop. Get to safety.', 'A new hazard ends this check.',
+      'Gas, smoke, sparks, a burning smell, or water at electrical equipment is not a heat-pump DIY path.',
+      ['If you smell gas or a carbon monoxide alarm is sounding, leave the building and call for help from outside. Do not operate switches inside.', 'If there is smoke, fire, or sparks, get people away and call 911 from safety.', 'If water is at electrical equipment, stay clear. Shut power only from a dry place you already know.', 'Do not return to troubleshooting until the hazard has been handled.'],
+      'Do not keep diagnosing, open covers, or touch wet equipment.', 'safety',
+      'emergency_exit', 'hp_new_hazard', { gate: 'hp_new_hazard' }),
+    unusual_noise_hp_wave1: r('Professional guidance', 'This noise is not a homeowner parts path', 'No hazard was reported, and this heat-pump check does not diagnose the sound.',
+      'There is no heat-pump capacitor, contactor, or inverter repair on this path, and it does not continue into the cooling-only outdoor-hum check.',
+      ['If it is safe, set the thermostat Off.', 'Call a licensed HVAC professional. Describe what you heard and whether the outdoor fan was moving.', 'If you later smell burning or see smoke or sparks, get to safety and call 911. Do not return to this check.'],
+      'Do not open covers or buy a part from the noise alone.', 'safety',
+      'call_pro', 'unusual_noise_hp_wave1'),
   };
 
   function advancedEnabled() {
@@ -704,19 +1030,53 @@
   function targetsOf(next) {
     if (next && typeof next === 'object') {
       const found = [];
-      if (Object.prototype.hasOwnProperty.call(next, 'default')) found.push(next.default);
-      if (Object.prototype.hasOwnProperty.call(next, 'whenAdvanced')) found.push(next.whenAdvanced);
-      Object.keys(next.byLanding || {}).forEach(k => found.push(next.byLanding[k]));
+      const walk = value => {
+        if (typeof value === 'string') found.push(value);
+        else if (value && typeof value === 'object') Object.keys(value).forEach(k => walk(value[k]));
+      };
+      walk(next);
       return found;
     }
     return [next];
   }
   function targetsForFlag(next, flag) {
-    if (next && typeof next === 'object') {
-      if (Object.prototype.hasOwnProperty.call(next, 'whenAdvanced')) return [flag ? next.whenAdvanced : next.default];
-      return [next.default].concat(Object.keys(next.byLanding || {}).map(k => next.byLanding[k]));
+    if (next && typeof next === 'object' && Object.prototype.hasOwnProperty.call(next, 'whenAdvanced')) {
+      return [flag ? next.whenAdvanced : next.default];
     }
-    return [next];
+    return targetsOf(next);
+  }
+  function hpEdges(next) {
+    if (!next || typeof next !== 'object') return [next];
+    const replacing = ['hpClear', 'hpOutdoor', 'hpHandback', 'hpHandbackWeak'].filter(k => typeof next[k] === 'string');
+    if (replacing.length) return replacing.map(k => next[k]);
+    const found = [];
+    if (next.byHpLanding) Object.keys(next.byHpLanding).forEach(k => found.push(next.byHpLanding[k]));
+    if (next.byHpAmbient) Object.keys(next.byHpAmbient).forEach(k => found.push(next.byHpAmbient[k]));
+    if (typeof next.hpFilterDone === 'string') found.push(next.hpFilterDone);
+    if (typeof next.hpDefrostAgain === 'string') found.push(next.hpDefrostAgain);
+    if (typeof next.default === 'string') found.push(next.default);
+    if (!found.length && next.byLanding) Object.keys(next.byLanding).forEach(k => found.push(next.byLanding[k]));
+    if (next.whenAdvanced && typeof next.default === 'string' && found.indexOf(next.default) === -1) found.push(next.default);
+    return found;
+  }
+  function hpReachable() {
+    const seen = new Set();
+    const queue = ['hp.intake.system_confirm'];
+    while (queue.length) {
+      const id = queue.shift();
+      if (seen.has(id)) continue;
+      seen.add(id);
+      const node = nodes[id];
+      if (!node) continue;
+      node.options.forEach(op => {
+        hpEdges(op.next).forEach(target => {
+          if (!target || typeof target !== 'string') return;
+          if (target.charAt(0) === '@') seen.add(target);
+          else queue.push(target);
+        });
+      });
+    }
+    return seen;
   }
   function reachable(flag) {
     const seen = new Set();
@@ -800,17 +1160,53 @@
     if (!/must be on before you restore power/i.test(restore.body)) throw new Error('Covers-on lock missing');
     const replace = nodes['ac.adv.cap.replace_like_for_like'];
     if (!/Do not replace the contactor/i.test(replace.body)) throw new Error('Contactor exclusion missing');
+    HP_WAVE1.forEach(id => {
+      if (!nodes[id]) throw new Error('Missing HP node ' + id);
+      if (nodes[id].diyTier === 'advanced') throw new Error('HP node must not be Advanced ' + id);
+    });
+    if (nodes['hp.defrost.sanity'].safetyGate !== true) throw new Error('Defrost safety gate must be true');
+    if (nodes['hp.rv.mode_asymmetric'].diyTier !== 'pro_only') throw new Error('RV tier must be pro_only');
+    if (nodes['hp.conclude.call_pro_defrost_valve_control'].diyTier !== 'pro_only') throw new Error('HP conclude tier must be pro_only');
+    const agree = nodes[CONSENT].options.find(op => op.id === 'agree_18_terms');
+    if (!agree || agree.next !== 'ac.cool.intake.system_confirm') throw new Error('Consent agree edge forked');
+    if (!/18 or older/.test(agree.hint) || !/beta terms/.test(nodes[CONSENT].body)) throw new Error('Consent text forked');
+    HP_WAVE1.forEach(id => {
+      nodes[id].options.forEach(op => {
+        targetsOf(op.next).forEach(target => {
+          if (target === CONCLUDE || (typeof target === 'string' && target.indexOf('ac.adv.cap.') === 0)) {
+            throw new Error('HP node edges into Advanced electrical: ' + id + '/' + op.id);
+          }
+        });
+      });
+    });
+    const hpSeen = hpReachable();
+    ['ac.cool.outdoor.fan_spinning', 'ac.cool.outdoor.debris_clearance', 'ac.cool.indoor.ice_lines_coil', 'ac.noise.clarify_outdoor_hum', 'ac.start.outdoor_silent_vs_hum', CONCLUDE].concat(ADVANCED).forEach(id => {
+      if (hpSeen.has(id)) throw new Error('HP walk reached forbidden node ' + id);
+    });
+    ['@next_step_advanced', '@suspected_capacitor_contactor_advanced_off'].forEach(id => {
+      if (hpSeen.has(id)) throw new Error('HP walk reached forbidden terminal ' + id);
+    });
+    ['hp.intake.system_confirm', 'hp.landing.picker', 'hp.mode.thermostat_check', 'hp.mode.force_match_complaint', 'hp.mode.emergency_aux_off', 'hp.ambient.outdoor_band', 'hp.defrost.sanity', 'hp.heat.capacity_vs_dead', 'hp.observe.leaving_air_vs_mode', 'hp.rv.mode_asymmetric', 'hp.handback.ac_filter_airflow', 'hp.conclude.call_pro_defrost_valve_control', 'ac.noise.hazard_screen', 'ac.tstat.blank.batteries', 'ac.cool.power.breaker_visual', 'ac.cool.power.disconnect_visual', 'ac.cool.filter.check', 'ac.cool.airflow.returns_supplies', '@unusual_noise_hp_wave1', '@hp_outdoor_not_running_wave1', '@hp_basics_clear_after_filter', '@ice_keep_running', '@hp_short_cycle_after_mode_basics', '@hp_defrost_valve_ob_control', '@hp_refrigerant_intent'].forEach(id => {
+      if (!hpSeen.has(id)) throw new Error('HP walk missing ' + id);
+    });
+    ['ac.cool.outdoor.fan_spinning', 'ac.noise.clarify_outdoor_hum', 'ac.cool.airflow.returns_supplies', 'ac.cool.power.disconnect_visual', 'ac.cool.landing.picker'].forEach(id => {
+      if (!off.has(id)) throw new Error('AC path lost ' + id);
+    });
   }
   assertGraph();
 
-  function create(seed = '', mode = 'real') {
+  function create(seed = '', mode = 'real', product = 'ac') {
+    const lane = product === 'hp' ? 'hp' : 'ac';
     const state = {
       node: ENTRY, result: null, seed, mode, stopping: false, safetyCleared: false,
       consent: false, consentAt: null, termsVersion: null, telemetry: false,
       answers: [], startedAt: Date.now(), id: uuid(), landing: null,
-      preselectChoice: null, treeVersion: TREE_VERSION, audit: []
+      preselectChoice: null, treeVersion: lane === 'hp' ? TREE_HP : TREE_VERSION, audit: [],
+      product: lane, hpLanding: null, hpAmbient: null, hpHandback: null,
+      hpWeakAirflow: false, hpOutdoorNotRunning: false, hpConcludeFrom: null, defrostReturns: 0
     };
     pushAudit(state, 'node_entered:' + ENTRY);
+    if (lane === 'hp') pushAudit(state, 'product_lane:hp');
     return state;
   }
   function uuid() {
@@ -820,17 +1216,56 @@
   function pushAudit(state, event) {
     state.audit.push({ event, at: new Date().toISOString(), tree: state.treeVersion });
   }
+  function filterCheckedThisSession(state) {
+    return state.answers.some(a => a.node === 'ac.cool.filter.check' ||
+      (a.node === 'hp.handback.ac_filter_airflow' && a.choice === 'filter_already_done_this_session'));
+  }
   function resolveTarget(option, state) {
     const next = option.next;
     if (next && typeof next === 'object') {
       if (Object.prototype.hasOwnProperty.call(next, 'whenAdvanced')) {
         return advancedEnabled() ? next.whenAdvanced : next.default;
       }
+      if (state.product === 'hp' && state.hpHandback === 'filter_airflow' && (next.hpHandback || next.hpHandbackWeak)) {
+        if (state.hpWeakAirflow && next.hpHandbackWeak) return next.hpHandbackWeak;
+        if (next.hpHandback) return next.hpHandback;
+      }
+      if (state.product === 'hp' && next.hpClear) return next.hpClear;
+      if (state.product === 'hp' && state.hpOutdoorNotRunning && next.hpOutdoor) return next.hpOutdoor;
+      if (next.hpFilterDone && filterCheckedThisSession(state)) return next.hpFilterDone;
+      if (next.hpDefrostAgain) {
+        if ((state.defrostReturns || 0) >= 1) {
+          state.hpConcludeFrom = state.hpConcludeFrom || 'defrost_failure_suspected';
+          return next.hpDefrostAgain;
+        }
+        state.defrostReturns = 1;
+        return next.default;
+      }
+      if (state.product === 'hp' && next.byHpLanding) {
+        const key = state.hpLanding || '';
+        if (next.byHpLanding[key]) return next.byHpLanding[key];
+      }
+      if (state.product === 'hp' && next.byHpAmbient) {
+        const key = state.hpAmbient || 'unknown';
+        if (next.byHpAmbient[key]) return next.byHpAmbient[key];
+      }
       const landing = state.landing || '';
       if (next.byLanding && next.byLanding[landing]) return next.byLanding[landing];
       return next.default;
     }
     return next;
+  }
+  function applySessionOverlay(state, nodeId, choice, target) {
+    if (nodeId === CONSENT && choice === 'agree_18_terms' && state.product === 'hp') target = 'hp.intake.system_confirm';
+    if (state.product !== 'hp' || typeof target !== 'string') return target;
+    if (target === CONCLUDE || target.indexOf('ac.adv.cap.') === 0 || target === '@suspected_capacitor_contactor_advanced_off' || target === '@next_step_advanced') {
+      return '@hp_advanced_electrical_off';
+    }
+    if (target === 'ac.noise.clarify_outdoor_hum') return '@unusual_noise_hp_wave1';
+    if (target === 'ac.cool.outdoor.fan_spinning' || target === 'ac.cool.outdoor.debris_clearance' || target === 'ac.cool.indoor.ice_lines_coil') {
+      return '@hp_basics_clear_after_filter';
+    }
+    return target;
   }
   function breakerVisualPassed(state) {
     return state.answers.some(a => a.node === 'ac.cool.power.breaker_visual' &&
@@ -840,27 +1275,40 @@
     if (!on) return nodes[CONCLUDE].body;
     return 'Based on your answers (outdoor hum or buzz while the fan is not spinning, or the same start evidence while cool is calling), a common professional check is the outdoor contactor and/or capacitor.\n\nYou can call a licensed HVAC technician and stop here. This copy can also offer a gated Advanced path for a like-for-like outdoor run/dual capacitor only. The contactor is not replaced on that path.\n\nAdvanced work stops unless every gate passes: kill power and verify Off, no terminal contact before discharge, discharge only by the manufacturer method or a proper insulated bleed tool (never a screwdriver or bare-metal short), and covers on before power is restored. Unsure means stop.\n\nThis is not a confirmed parts diagnosis.';
   }
-  function viewNode(id) {
+  function viewNode(id, state) {
     const node = nodes[id];
     if (!node) return null;
-    if (id !== CONCLUDE) return node;
-    const on = advancedEnabled();
-    return {
-      section: node.section,
-      title: node.title,
-      body: concludeBody(on),
-      caution: on ? 'Call-pro stays available. The gated path does not include the contactor.' : node.caution,
-      diyTier: node.diyTier,
-      safetyGate: node.safetyGate,
-      options: node.options.map(op => {
-        if (op.id !== 'want_diy_capacitor_anyway') return op;
+    let view = node;
+    if (id === CONCLUDE) {
+      const on = advancedEnabled();
+      view = {
+        section: node.section,
+        title: node.title,
+        body: concludeBody(on),
+        caution: on ? 'Call-pro stays available. The gated path does not include the contactor.' : node.caution,
+        diyTier: node.diyTier,
+        safetyGate: node.safetyGate,
+        options: node.options.map(op => {
+          if (op.id !== 'want_diy_capacitor_anyway') return op;
+          return Object.assign({}, op, {
+            hint: on
+              ? 'Gated capacitor path only. Lockout, discharge, and covers-on rules apply. You can still stop and call a pro.'
+              : op.hint
+          });
+        })
+      };
+    }
+    if (id === 'ac.cool.filter.check') {
+      const hpFilter = !!(state && state.product === 'hp' && state.hpHandback === 'filter_airflow');
+      const options = view.options.filter(op => hpFilter || op.id !== 'filter_clean_weak_airflow').map(op => {
+        if (!hpFilter || op.id !== 'filter_clean_ok') return op;
         return Object.assign({}, op, {
-          hint: on
-            ? 'Gated capacitor path only. Lockout, discharge, and covers-on rules apply. You can still stop and call a pro.'
-            : op.hint
+          hint: 'Clean filter on this heat-pump check. Next is a professional, unless airflow from the vents is weak.'
         });
-      })
-    };
+      });
+      view = Object.assign({}, view, { options: options });
+    }
+    return view;
   }
   function answer(state, choice, meta = {}) {
     if (!state || state.result || !nodes[state.node]) throw new Error('This check has ended or is invalid.');
@@ -870,7 +1318,7 @@
     const nodeId = state.node;
     const node = nodes[nodeId];
     const option = node.options.find(x => x.id === choice);
-    if (!option) throw new Error('Choose an answer shown on the current screen.');
+    if (!option || (choice === 'filter_clean_weak_airflow' && state.product !== 'hp')) throw new Error('Choose an answer shown on the current screen.');
     if (nodeId !== ENTRY && nodeId !== CONSENT && (!state.safetyCleared || !state.consent)) {
       throw new Error('Safety and consent are required before troubleshooting.');
     }
@@ -883,9 +1331,37 @@
     }
     if (nodeId === ENTRY) state.safetyCleared = choice === 'none_of_these';
     if (nodeId === 'ac.cool.landing.picker' && LANDING[choice]) state.landing = LANDING[choice];
+    if (nodeId === 'hp.landing.picker' && HP_LANDING[choice]) state.hpLanding = HP_LANDING[choice];
+    if (nodeId === 'hp.ambient.outdoor_band' && HP_BAND[choice]) state.hpAmbient = HP_BAND[choice];
+    if (nodeId === 'ac.cool.intake.system_confirm' && choice === 'heat_pump') {
+      state.product = 'hp';
+      state.treeVersion = TREE_HP;
+    }
+    if (nodeId === 'hp.handback.ac_filter_airflow' && choice === 'proceed_ac_filter') state.hpHandback = 'filter_airflow';
+    if ((nodeId === 'hp.observe.leaving_air_vs_mode' && choice === 'outdoor_not_running_when_should') ||
+        (nodeId === 'hp.rv.mode_asymmetric' && choice === 'pattern_outdoor_not_running')) {
+      state.hpOutdoorNotRunning = true;
+    }
+    if (nodeId === 'ac.cool.filter.check' && choice === 'filter_clean_weak_airflow') {
+      state.hpWeakAirflow = true;
+      if (!state.hpHandback) state.hpHandback = 'filter_airflow';
+    }
+    if (nodeId === 'hp.defrost.sanity' && choice === 'iced_solid_no_recover') state.hpConcludeFrom = 'defrost_failure_suspected';
+    if (nodeId === 'hp.rv.mode_asymmetric' && choice === 'asymmetric_pattern_confirmed') state.hpConcludeFrom = 'mode_asymmetric_rv_ob_control';
+    if (nodeId === 'hp.rv.mode_asymmetric' && choice === 'recent_tstat_swap_ob_unsure') state.hpConcludeFrom = 'thermostat_ob_uncertain_after_swap';
     state.answers.push({ node: nodeId, choice, label: option.label, fact: option.fact, at: new Date().toISOString() });
     pushAudit(state, 'answer_selected:' + choice);
+    if (nodeId === 'hp.landing.picker' && state.hpLanding) pushAudit(state, 'flag:hp_landing=' + state.hpLanding);
+    if (nodeId === 'hp.ambient.outdoor_band' && state.hpAmbient) pushAudit(state, 'flag:hp_ambient_band=' + state.hpAmbient);
+    if (nodeId === 'hp.intake.system_confirm' && choice === 'air_source_ducted_hp') pushAudit(state, 'flag:hp_equipment=air_source_ducted');
+    if (nodeId === 'hp.handback.ac_filter_airflow' && choice === 'proceed_ac_filter') {
+      pushAudit(state, 'handback:ac.cool.filter.check');
+      pushAudit(state, 'flag:hp_handback=filter_airflow');
+    }
+    if (nodeId === 'hp.landing.picker' && choice === 'landing_unusual_noise') pushAudit(state, 'handback:ac.noise.hazard_screen');
+    if (nodeId === 'ac.cool.intake.system_confirm' && choice === 'heat_pump') pushAudit(state, 'product_lane:hp');
     let target = resolveTarget(option, state);
+    target = applySessionOverlay(state, nodeId, choice, target);
     if (nodeId === ENTRY && choice === 'none_of_these' && state.stopping) target = '@professional';
     if (option.gate) {
       pushAudit(state, 'gate_fired:' + option.gate);
@@ -923,6 +1399,10 @@
         pushAudit(state, 'diy_tier_shown:basic');
       } else if (res.outcome === 'call_pro') {
         pushAudit(state, 'conclusion_reached:call_pro');
+        if (id === 'suspected_capacitor_contactor_advanced_off' || id === 'hp_advanced_electrical_off' || id === 'hp_defrost_valve_ob_control') {
+          pushAudit(state, 'notes.hp_advanced_electrical:off');
+        }
+        if (id === 'hp_defrost_valve_ob_control' || id === 'hp_refrigerant_intent') pushAudit(state, 'notes.rv_force_out:forbidden');
         if (id === 'suspected_capacitor_contactor_advanced_off') pushAudit(state, 'advanced_diy:off');
       } else if (res.outcome === 'insufficient_info') {
         pushAudit(state, 'conclusion_reached:insufficient_info');
@@ -933,6 +1413,10 @@
       if (!nodes[target]) throw new Error('Unknown step.');
       state.node = target;
       if (target === CONSENT) pushAudit(state, 'session_started');
+      if (target === 'hp.conclude.call_pro_defrost_valve_control') {
+        pushAudit(state, 'notes.hp_advanced_electrical:off');
+        pushAudit(state, 'notes.rv_force_out:forbidden');
+      }
       if (target === CONCLUDE) {
         const on = advancedEnabled();
         pushAudit(state, 'advanced_flag_checked:' + (on ? 'true' : 'false'));
@@ -956,6 +1440,9 @@
     const target = res && res.continueTo;
     if (!target || !nodes[target]) throw new Error('This result does not continue.');
     if (target.indexOf('ac.adv.cap.') === 0 && !advancedEnabled()) throw new Error('Advanced DIY is not available in this beta.');
+    if (state.product === 'hp' && (target.indexOf('ac.adv.cap.') === 0 || target === CONCLUDE || target === 'ac.cool.outdoor.fan_spinning' || target === 'ac.cool.outdoor.debris_clearance' || target === 'ac.cool.indoor.ice_lines_coil' || target === 'ac.noise.clarify_outdoor_hum')) {
+      throw new Error('That step is not part of the heat pump check.');
+    }
     state.result = null;
     state.node = target;
     pushAudit(state, 'session_resumed:' + target);
@@ -979,10 +1466,11 @@
   function summary(state, extra = {}) {
     const clean = x => String(x || '').replace(/[\r\n\t]+/g, ' ').trim().slice(0, 140);
     const facts = state.answers.map(x => x.fact).filter(Boolean);
-    const complaint = clean(extra.complaint) || clean(state.seed) || facts.find(x => x.startsWith('Complaint:')) || 'AC concern; see reported observations.';
+    const complaint = clean(extra.complaint) || clean(state.seed) || facts.find(x => x.startsWith('Complaint:')) || (state.product === 'hp' ? 'Heat pump concern; see reported observations.' : 'AC concern; see reported observations.');
     const observations = [...new Set(facts.filter(x => !x.startsWith('Complaint:') && !x.startsWith('User ') && !x.startsWith('Residential ')))].slice(-5);
     const actions = [...new Set(facts.filter(x => x.startsWith('User ')))].slice(-2);
-    return ['HOMEOWNER SERVICE NOTE — observations, not a diagnosis',
+    return [(state.product === 'hp' ? 'HOMEOWNER SERVICE NOTE — heat pump observations, not a diagnosis' : 'HOMEOWNER SERVICE NOTE — observations, not a diagnosis'),
+      state.product === 'hp' ? 'Equipment: air-source ducted heat pump.' : '',
       'Complaint: ' + clean(complaint).replace(/^Complaint:\s*/i, ''),
       extra.began ? 'Began: ' + clean(extra.began) : '',
       extra.model ? 'Model (homeowner supplied): ' + clean(extra.model) : '',
@@ -998,8 +1486,30 @@
       terms_version: state.termsVersion || '', consent_at: state.consentAt || '',
       tree_version: state.treeVersion || TREE_VERSION };
   }
+  function presentResult(state) {
+    const res = state && results[state.result];
+    if (!res) return null;
+    if (!state || state.product !== 'hp') return res;
+    const swap = s => String(s)
+      .replace('Set the system to Cool and retest after 15–30 minutes.', 'Set Heat or Cool to match the complaint and retest after 15–30 minutes.')
+      .replace('Retest cooling and airflow after the filter is in place.', 'Retest heating or cooling, and airflow, after the filter is in place.')
+      .replace('Confirm mode is Cool and the setpoint is below the room temperature.', 'Confirm Heat or Cool matches the complaint, with the setpoint calling, then retest.')
+      .replace('If the system still will not cool or start, start a new check and choose Not cooling or Will not start.', 'If the system still will not heat or cool, start a new heat pump check.')
+      .replace('Set Cool with the setpoint below the room temperature and see whether the outdoor unit starts.', 'Set Heat or Cool so the thermostat is calling, and see whether the outdoor unit starts.');
+    const copy = Object.assign({}, res, { actions: (res.actions || []).map(swap) });
+    if (state.result === 'hp_defrost_valve_ob_control' && state.hpConcludeFrom) {
+      const note = {
+        defrost_failure_suspected: 'Outdoor coil stayed iced and did not recover.',
+        mode_asymmetric_rv_ob_control: 'One mode felt wrong while the outdoor unit ran.',
+        thermostat_ob_uncertain_after_swap: 'The thermostat was replaced and O/B is uncertain.'
+      }[state.hpConcludeFrom];
+      if (note) copy.explanation = res.explanation + ' ' + note;
+    }
+    return copy;
+  }
   return {
-    nodes, results, create, answer, stop, resume, summary, activity, viewNode, advancedEnabled,
-    treeVersion: TREE_VERSION, wave1: WAVE1, wave2: WAVE2, advanced: ADVANCED
+    nodes, results, create, answer, stop, resume, summary, activity, viewNode, presentResult, advancedEnabled,
+    treeVersion: TREE_VERSION, treeVersionHp: TREE_HP, wave1: WAVE1, wave2: WAVE2, advanced: ADVANCED,
+    hpWave1: HP_WAVE1
   };
 });

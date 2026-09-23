@@ -55,3 +55,4 @@ Support: lonnie@secondwrench.co · For immediate danger: get safe and call 911.
 - No vibration FFT / mic diagnostics.
 - Node type: gate / screen.
 - Brand: scarlet wrench + dark charcoal/grey/walnut — never green.
+- **HP Wave-1 overlay:** on a heat-pump session, `noise_no_hazard_symptoms` → `call_pro` `unusual_noise_hp_wave1` (not `ac.noise.clarify_outdoor_hum`). Hazard answers stay emergency or call-pro.
