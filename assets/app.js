@@ -35,9 +35,9 @@
   function go(path) {
     if (location.hash === '#' + path) render(); else location.hash = path;
   }
-  function start(seed = '', mode = 'real', product = 'ac') {
+  function start(seed = '', mode = 'real') {
     if (state && state.telemetry) sendActivity('end_by_user');
-    state = F.create(seed, mode, product === 'hp' ? 'hp' : 'ac'); note = {}; lastActivity = ''; feedbackSent = false;
+    state = F.create(seed, mode); note = {}; lastActivity = ''; feedbackSent = false;
     feedbackId = ''; feedbackDraft = {}; go('/check');
   }
   function hostReady(formId) {
@@ -75,20 +75,20 @@
     main.focus({ preventScroll: true }); window.scrollTo({ top:0, behavior:'instant' });
   }
   function home() {
-    const acSymptoms = [ ['snow','Not cooling','AC runs but the home is not cooling.'], ['power','Will not start','AC will not start.'], ['screen','Blank thermostat','Thermostat display is blank.'], ['air','Weak airflow','Weak airflow from room vents.'], ['drop','Water or ice','Water or ice noticed near the AC.'], ['noise','Unusual noise','Unusual AC noise reported.'] ];
-    const hpSymptoms = [ ['power','No heat','Heat pump is not heating.'], ['snow','No cool','Heat pump is not cooling.'], ['air','Both modes','Heat and cool both fail.'], ['drop','Ice outdoors','Ice or heavy frost on the outdoor unit.'], ['screen','Short cycling','Heat pump starts, then stops quickly.'], ['noise','Unusual noise','Unusual heat pump noise.'] ];
-    const grid = (items, product) => items.map(([i,l,s])=>'<button class="symptom-button" data-action="start" data-product="'+product+'" data-seed="'+esc(s)+'">'+icon(i,'symptom-icon')+'<span>'+l+'</span></button>').join('');
-    return '<div class="wrap"><section class="hero"><div><div class="eyebrow">Second Wrench <span class="pill"><span class="dot"></span>Beta</span></div><h1>Why isn’t my<br>system<br><em>working?</em></h1><p class="intro">A few straightforward questions for a cooling-only central air conditioner or an air-source ducted heat pump. Basic homeowner checks. A useful summary when it is time for a professional.</p><p class="brand-promise">Know what’s wrong. Know what’s safe.<br>Know when to call.</p><div class="hero-cta"><div class="button-row"><button class="button" data-action="start" data-product="ac">Check central AC '+icon('arrow')+'</button><button class="button secondary" data-action="start" data-product="hp">Check a heat pump</button></div><p class="cta-note">No account needed · One question at a time · Heat-pump electrical DIY stays off</p><button class="text-button test-cta" data-action="test">Just testing the AC check?</button><button class="text-button test-cta" data-action="test-hp">Just testing the heat pump check?</button></div></div><div class="hero-card"><p class="card-kicker">Choose the equipment</p><h2>What is going on?</h2><p class="lane-label">Cooling-only central AC</p><div class="symptom-grid">'+grid(acSymptoms,'ac')+'</div><p class="lane-label">Air-source ducted heat pump</p><div class="symptom-grid">'+grid(hpSymptoms,'hp')+'</div><p class="fine">'+icon('shield')+'<span>Every path starts with safety. You can always choose “not sure.”</span></p></div></section><div class="trust-strip"><span>'+icon('shield')+'Clear stopping points</span><span>'+icon('check')+'No guesswork on parts</span><span>'+icon('note')+'A brief service-call note</span></div><section class="section"><div class="section-heading"><div class="eyebrow">A little clarity goes a long way</div><h2>You do not need to<br>sound like a technician.</h2><p>Tell us what you notice. We will help separate a limited homeowner check from a job that needs a professional.</p></div><div class="three-grid"><article class="step-card"><span class="number">01 / NOTICE</span><h3>Start with the symptom.</h3><p>A blank thermostat. Weak airflow. A system that will not cool. We ask about things you can observe without opening equipment.</p></article><article class="step-card"><span class="number">02 / CHECK</span><h3>Stay within clear limits.</h3><p>Check normal settings or eligible owner maintenance. Uncertain access, alarms, electrical problems, and refrigerant work take a different path.</p></article><article class="step-card"><span class="number">03 / KNOW WHAT IS NEXT</span><h3>Leave with a useful next step.</h3><p>Understand the boundary, record any improvement, or copy a short note for your service company. Observations, not a guessed diagnosis.</p></article></div></section><section class="safety-feature"><div><div class="eyebrow">A symptom is not a diagnosis</div><h2>No risky shortcuts.<br>No parts roulette.</h2></div><div><p>This beta covers cooling-only split-system central AC, and a Basic check for air-source ducted heat pumps. It does not guide electrical repairs, safety bypasses, refrigerant work, or forcing a reversing valve. Heat-pump capacitor and contactor steps stay off.</p><a href="#/safety">Read the safety boundaries →</a></div></section><p class="quiet-note">Built for a small circle of testers. Found a confusing question or a missing option? <a href="#/feedback">Tell us about it.</a> Please share the link only with your invitation group.</p></div>';
+    return '<div class="wrap"><section class="hero"><div><div class="eyebrow">Second Wrench <span class="pill"><span class="dot"></span>Beta</span></div><h1>Why isn’t my<br>system<br><em>working?</em></h1><p class="intro">A few straightforward questions for a cooling-only central air conditioner or an air-source ducted heat pump. Basic homeowner checks. A useful summary when it is time for a professional.</p><p class="brand-promise">Know what’s wrong. Know what’s safe.<br>Know when to call.</p><div class="hero-cta"><div class="button-row"><button class="button" data-action="start">Start '+icon('arrow')+'</button></div><p class="cta-note">No account needed · Safety first · Then what kind of system</p><button class="text-button test-cta" data-action="test">Just testing? Answer hypothetically.</button></div></div><div class="hero-card"><p class="card-kicker">One check</p><h2>Safety, then the system.</h2><ol class="start-steps"><li><strong>Safety first.</strong> Hazards stop the check before any troubleshooting.</li><li><strong>What kind of system.</strong> Cooling-only AC, a heat pump, or not sure.</li><li><strong>One question at a time.</strong> Basic checks only. Heat-pump electrical DIY stays off.</li></ol><p class="fine">'+icon('shield')+'<span>Not sure stays on the heat-pump path. You can always choose “not sure.”</span></p></div></section><div class="trust-strip"><span>'+icon('shield')+'Clear stopping points</span><span>'+icon('check')+'No guesswork on parts</span><span>'+icon('note')+'A brief service-call note</span></div><section class="section"><div class="section-heading"><div class="eyebrow">A little clarity goes a long way</div><h2>You do not need to<br>sound like a technician.</h2><p>Tell us what you notice. We will help separate a limited homeowner check from a job that needs a professional.</p></div><div class="three-grid"><article class="step-card"><span class="number">01 / NOTICE</span><h3>Name the system, then the symptom.</h3><p>Cooling-only AC, a heat pump, or not sure. Then a blank thermostat, weak airflow, or a system that will not heat or cool. We ask about things you can observe without opening equipment.</p></article><article class="step-card"><span class="number">02 / CHECK</span><h3>Stay within clear limits.</h3><p>Check normal settings or eligible owner maintenance. Uncertain access, alarms, electrical problems, and refrigerant work take a different path.</p></article><article class="step-card"><span class="number">03 / KNOW WHAT IS NEXT</span><h3>Leave with a useful next step.</h3><p>Understand the boundary, record any improvement, or copy a short note for your service company. Observations, not a guessed diagnosis.</p></article></div></section><section class="safety-feature"><div><div class="eyebrow">A symptom is not a diagnosis</div><h2>No risky shortcuts.<br>No parts roulette.</h2></div><div><p>This beta covers cooling-only split-system central AC, and a Basic check for air-source ducted heat pumps. It does not guide electrical repairs, safety bypasses, refrigerant work, or forcing a reversing valve. Heat-pump capacitor and contactor steps stay off.</p><a href="#/safety">Read the safety boundaries →</a></div></section><p class="quiet-note">Built for a small circle of testers. Found a confusing question or a missing option? <a href="#/feedback">Tell us about it.</a> Please share the link only with your invitation group.</p></div>';
   }
   function sidebar() {
     const count = state.answers.filter(a=>!['ac.gate.cluster_entry','ac.session.consent'].includes(a.node)).length;
     const onAdvanced = !!(state.node && String(state.node).indexOf('ac.adv.cap.') === 0);
     const onHp = state.product === 'hp';
+    const onAc = state.product === 'ac';
     const limit = onAdvanced
       ? 'Covers stay on until lockout is verified. Do not touch capacitor terminals before discharge. Never short a capacitor with a screwdriver or bare metal. Covers must be on before power is restored. The contactor is not part of this path.'
       : onHp
         ? 'No covers off. No gauges or refrigerant. Do not force the reversing valve. Outdoor power checks are visual only. This heat-pump path does not include capacitor or contactor work.'
-        : 'No covers off. No fingers or objects through a grille. The outdoor disconnect step is visual only — it does not tell you to flip the lever. No wiring or refrigerant tests.';
+        : onAc
+          ? 'No covers off. No fingers or objects through a grille. The outdoor disconnect step is visual only — it does not tell you to flip the lever. No wiring or refrigerant tests.'
+          : 'No covers off. Safety comes first, then what kind of system this is. Do not open equipment to find out.';
     return '<aside class="sidebar"><div class="progress" aria-hidden="true"><span class="done"></span><span class="'+(state.consent?'done':'')+'"></span><span class="'+(count>4?'done':'')+'"></span></div><h2>Your pace. Your choice.</h2><p>Answer only what you know. Do not approach equipment to prove an answer.</p><div class="side-box"><h2>'+(onAdvanced?'Advanced limits':'No tools needed to begin.')+'</h2><p>'+limit+'</p><button class="text-button" data-action="stop">Stop / get help</button></div><div class="side-box"><p>Something unclear?</p><a href="#/feedback">Flag this question</a><p class="fine">Feedback is not monitored for emergencies.</p></div></aside>';
   }
   function flow() {
@@ -143,7 +143,7 @@
     else if (route === '/result') html = resultPage();
     else if (route === '/feedback') html = feedbackPage();
     else html = pages[route]();
-    if (html) setContent(html, route==='/'?'AC and heat pump checks':route==='/check'?(state&&state.product==='hp'?'Guided heat pump check':'Guided AC check'):route==='/result'?'Your next step':route==='/feedback'?'Beta feedback':'Beta information');
+    if (html) setContent(html, route==='/'?'AC and heat pump checks':route==='/check'?(state&&state.product==='hp'?'Guided heat pump check':state&&state.product==='ac'?'Guided AC check':'Guided check'):route==='/result'?'Your next step':route==='/feedback'?'Beta feedback':'Beta information');
   }
   function download(text, filename) {
     const blob = new Blob([text], {type:'text/plain;charset=utf-8'}), url = URL.createObjectURL(blob);
@@ -169,9 +169,8 @@
     const flag=event.target.closest('[data-flag]'); if(flag){feedbackDraft.safety=true;}
     const action=event.target.closest('[data-action]'); if(!action)return;
     const name=action.dataset.action;
-    if(name==='start')start(action.dataset.seed||'', 'real', action.dataset.product==='hp'?'hp':'ac');
-    if(name==='test')start('Hypothetical AC concern.','test','ac');
-    if(name==='test-hp')start('Hypothetical heat pump concern.','test','hp');
+    if(name==='start')start(action.dataset.seed||'', 'real');
+    if(name==='test')start('Hypothetical concern. Do not perform work to test the website.','test');
     if(name==='stop'){
       if(!state)state=F.create();
       if(state.telemetry)sendActivity('stop');
@@ -179,9 +178,8 @@
     }
     if(name==='new'){
       if(window.confirm('Start a new check? Save any service note first. A new check always begins with safety.')){
-        const product = state && state.product === 'hp' ? 'hp' : 'ac';
         const mode = state && state.mode === 'test' ? 'test' : 'real';
-        start('', mode, product);
+        start('', mode);
       }
     }
     if(name==='resume-check'&&state){

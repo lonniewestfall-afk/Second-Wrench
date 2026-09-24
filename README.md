@@ -16,17 +16,18 @@ Quiet beta: pages send `noindex` (`robots` meta and `_headers`). Do not remove t
 
 ## Wave-1 and Wave-2
 
-**Implemented** for founder review. Cooling-only tree `ac.cool.v0`. Air-source ducted heat pump tree `hp.air_source.v0` (Wave-1 Basic). Content version `2026-09-23.3`.
+**Implemented** for founder review. Cooling-only tree `ac.cool.v0`. Air-source ducted heat pump tree `hp.air_source.v0` (Wave-1 Basic). Content version `2026-09-24.1`.
 
 Wave-1 is the original 12 nodes. Wave-2 Basic adds seven nodes: breaker-door visual, outdoor-disconnect visual (position only), the silent-path hub, returns and supplies, outdoor debris, the noise hazard screen, and outdoor-hum clarification. The capacitor Advanced chain (eight nodes) is in the tree and runs only when `advancedRepairsEnabled` is true.
 
-Session entry for both lanes:
+Session entry is one Start:
 
 1. `ac.gate.cluster_entry` (safety)
-2. `ac.session.consent` (same text; do not fork)
-3. Product route: cooling-only AC → `ac.cool.intake.system_confirm` → `ac.cool.landing.picker`. Heat pump → `hp.intake.system_confirm` → `hp.landing.picker`.
+2. `ac.session.consent` (same text; stored agree edge stays on the AC intake; do not fork the consent node)
+3. `sw.intake.system_type` — cooling-only AC, heat pump, or not sure
+4. Cooling-only AC → `ac.cool.intake.system_confirm` → `ac.cool.landing.picker`. Heat pump → `hp.intake.system_confirm` → `hp.landing.picker`. Not sure → `sw.identify.winter_outdoor`, then Emergency/Aux, then heat source (three questions at most).
 
-The home page asks for central AC or an air-source heat pump before the safety gate. Choosing “A heat pump” on the AC intake also enters the heat pump tree.
+A winter outdoor run, Emergency/Aux/EM HT, or a heat-pump label enters the heat-pump tree. Cooling-only from “not sure” requires all three: the outdoor unit stays off in winter, a separate furnace or boiler provides heat, and there is no Emergency or Aux heat. Anything still unclear uses the heat-pump tree. Unsure and heat-pump sessions do not enter the AC capacitor path. Choosing “A heat pump” on the AC intake still enters the heat pump tree.
 
 Driving specs (approved 2026-09-22): [`docs/ac-second-opinion/`](docs/ac-second-opinion/). Product roadmap: [`docs/PRODUCT-ROADMAP.md`](docs/PRODUCT-ROADMAP.md).
 
