@@ -4,10 +4,17 @@
  * Trees:
  * - ac.cool.v0 for cooling-only central AC sessions.
  * - hp.air_source.v0 for air-source ducted heat-pump sessions (Wave-1 Basic).
- * Session entry for both: ac.gate.cluster_entry → ac.session.consent.
- * Consent text is shared. Product routing (not a second consent node):
- *   AC agree → ac.cool.intake.system_confirm → ac.cool.landing.picker.
- *   HP agree → hp.intake.system_confirm → hp.landing.picker.
+ * Session entry: ac.gate.cluster_entry → ac.session.consent →
+ *   sw.intake.system_type. Consent text is shared and its stored agree
+ *   edge stays ac.cool.intake.system_confirm (not a second consent node).
+ *   The session overlay sends every agree to system type first:
+ *   Cooling-only AC → ac.cool.intake.system_confirm → ac.cool.landing.picker.
+ *   Heat pump → hp.intake.system_confirm → hp.landing.picker.
+ *   Not sure → sw.identify.* (at most three questions). A heat-pump signal
+ *   or a still-unclear answer enters the heat-pump tree. Cooling-only is
+ *   only outdoor-off in winter AND a separate furnace or boiler AND no
+ *   Emergency / Aux heat. Unsure and heat-pump sessions never enter the
+ *   AC capacitor path.
  * Terminals (only): next_step (DIY Basic, or DIY Advanced only when
  *   SW_CONFIG.advancedRepairsEnabled === true) | call_pro (reason) |
  *   emergency_exit | insufficient_info.
@@ -137,6 +144,37 @@
       'This beta offers limited homeowner checks and a next step based on your answers. It does not confirm a diagnosis or authorize electrical or refrigerant work.\n\nRequired: confirm you are 18 or older and agree to the beta terms (DIY risks and limits; manufacturer instructions and professional evaluation take priority).', [
         o('agree_18_terms', 'Agree and continue', 'ac.cool.intake.system_confirm', 'I am 18 or older. I have read and agree to the beta terms, including the DIY risks and limits. I understand that manufacturer instructions and professional evaluation take priority.'),
         o('decline_terms', 'Decline / do not agree', '@consent_declined', 'End session. No diagnosis path without required consent.')
+      ]),
+
+    'sw.intake.system_type': n('Your system', 'Cooling-only AC, or a heat pump?',
+      'Answer from what you already know. Do not remove a cover or climb to identify the equipment.\n\nA cooling-only air conditioner cools the house. Heat usually comes from a separate furnace or boiler, and the outdoor unit stays off in winter.\n\nA heat pump heats and cools with the outdoor unit.', [
+        o('cooling_only_ac', 'Cooling-only AC', 'ac.cool.intake.system_confirm', 'The outdoor unit is for cooling. A furnace, boiler, or other heater provides heat.', 'Cooling-only central AC reported.'),
+        o('heat_pump', 'Heat pump (heats and cools with the outdoor unit)', 'hp.intake.system_confirm', 'The outdoor unit runs for heat and for cooling.', 'Heat pump reported at system type.'),
+        o('not_sure', 'Not sure', 'sw.identify.winter_outdoor', 'Up to three plain questions. If it is still unclear, the check uses the heat-pump path.')
+      ]),
+
+    'sw.identify.winter_outdoor': n('Your system', 'Does the outdoor unit run in winter to heat the house?',
+      'Think about a cold day when the heat is on. You do not need to go outside to check. If you are not sure, say so.\n\nDo not remove a cover or climb to the unit.', [
+        o('winter_outdoor_runs', 'Yes — it runs in winter to heat the house', 'hp.intake.system_confirm', 'That is a heat pump. Continue on the heat-pump check.', 'Outdoor unit runs in winter to heat the house.'),
+        o('winter_outdoor_never', 'No — it stays off all winter', 'sw.identify.em_aux', 'The outdoor unit is not the heater.', 'Outdoor unit stays off in winter.'),
+        o('winter_outdoor_unsure', 'Not sure', 'sw.identify.em_aux', 'We will use the other questions. Unclear answers stay on the heat-pump path.')
+      ]),
+
+    'sw.identify.em_aux': n('Your system', 'Does the thermostat have Emergency Heat, Aux Heat, or EM HT?',
+      'Look at the thermostat mode you already use. Names vary: Emergency Heat, Aux Heat, Auxiliary, or EM HT.\n\nDo not pull the thermostat off the wall.', [
+        o('has_em_aux', 'Yes — Emergency, Aux, or EM HT is there', 'hp.intake.system_confirm', 'That control is a heat-pump signal. Continue on the heat-pump check.', 'Thermostat shows Emergency Heat, Aux Heat, or EM HT.'),
+        o('no_em_aux', 'No', 'sw.identify.heat_source', 'No Emergency or Aux heat on the thermostat.', 'No Emergency Heat, Aux Heat, or EM HT on the thermostat.'),
+        o('em_aux_unsure', 'Not sure', 'sw.identify.heat_source', 'If the rest is also unclear, this check uses the heat-pump path.')
+      ]),
+
+    'sw.identify.heat_source': n('Your system', 'What heats the house?',
+      'Use what you already know. A label you can already read from the ground counts. Do not open a cover to find one.\n\nCooling-only is only when the outdoor unit stays off in winter, a separate furnace or boiler provides the heat, and there is no Emergency or Aux heat. Anything still unclear uses the heat-pump check.', [
+        o('separate_furnace_boiler', 'A separate furnace or boiler', {
+          whenCoolingOnly: 'ac.cool.intake.system_confirm',
+          default: 'hp.intake.system_confirm'
+        }, 'Cooling-only when the outdoor unit stays off in winter and there is no Emergency or Aux heat. Otherwise the heat-pump check.', 'Separate furnace or boiler reported as the heat source.'),
+        o('label_says_heat_pump', 'The outdoor unit label says heat pump', 'hp.intake.system_confirm', 'Continue on the heat-pump check. Do not open a cover to re-read it.', 'Outdoor unit label says heat pump.'),
+        o('heat_source_unsure', 'Not sure', 'hp.intake.system_confirm', 'Still unclear, so this check uses the heat-pump path. No capacitor steps on that path.', 'Heat source still unclear. Using the heat-pump check.')
       ]),
 
     'ac.cool.intake.system_confirm': n('Your system', 'What kind of cooling system is this?',
@@ -1170,6 +1208,46 @@
     const agree = nodes[CONSENT].options.find(op => op.id === 'agree_18_terms');
     if (!agree || agree.next !== 'ac.cool.intake.system_confirm') throw new Error('Consent agree edge forked');
     if (!/18 or older/.test(agree.hint) || !/beta terms/.test(nodes[CONSENT].body)) throw new Error('Consent text forked');
+    const SYSTEM_TYPE = 'sw.intake.system_type';
+    const IDENTIFY = ['sw.identify.winter_outdoor', 'sw.identify.em_aux', 'sw.identify.heat_source'];
+    [SYSTEM_TYPE].concat(IDENTIFY).forEach(id => {
+      if (!nodes[id]) throw new Error('Missing unified-start node ' + id);
+      if (nodes[id].diyTier === 'advanced') throw new Error('System-type node must not be Advanced ' + id);
+    });
+    const systemChoice = id => {
+      const op = nodes[SYSTEM_TYPE].options.find(item => item.id === id);
+      if (!op) throw new Error('Missing system-type choice ' + id);
+      return op;
+    };
+    if (systemChoice('cooling_only_ac').next !== 'ac.cool.intake.system_confirm') throw new Error('Cooling-only must enter the AC tree');
+    if (systemChoice('heat_pump').next !== 'hp.intake.system_confirm') throw new Error('Heat pump must enter hp.intake.system_confirm');
+    if (systemChoice('not_sure').next !== 'sw.identify.winter_outdoor') throw new Error('Not sure must enter identify');
+    const identifyChoice = (nodeId, id) => {
+      const op = nodes[nodeId].options.find(item => item.id === id);
+      if (!op) throw new Error('Missing identify choice ' + nodeId + '/' + id);
+      return op;
+    };
+    if (identifyChoice('sw.identify.winter_outdoor', 'winter_outdoor_runs').next !== 'hp.intake.system_confirm') throw new Error('Winter outdoor run must enter HP');
+    if (identifyChoice('sw.identify.winter_outdoor', 'winter_outdoor_never').next !== 'sw.identify.em_aux') throw new Error('Winter-off must ask Emergency heat');
+    if (identifyChoice('sw.identify.winter_outdoor', 'winter_outdoor_unsure').next !== 'sw.identify.em_aux') throw new Error('Winter unsure must keep identifying');
+    if (identifyChoice('sw.identify.em_aux', 'has_em_aux').next !== 'hp.intake.system_confirm') throw new Error('Emergency heat must enter HP');
+    if (identifyChoice('sw.identify.em_aux', 'no_em_aux').next !== 'sw.identify.heat_source') throw new Error('No Emergency heat must ask the heat source');
+    if (identifyChoice('sw.identify.em_aux', 'em_aux_unsure').next !== 'sw.identify.heat_source') throw new Error('Emergency unsure must keep identifying');
+    if (identifyChoice('sw.identify.heat_source', 'label_says_heat_pump').next !== 'hp.intake.system_confirm') throw new Error('Heat-pump label must enter HP');
+    if (identifyChoice('sw.identify.heat_source', 'heat_source_unsure').next !== 'hp.intake.system_confirm') throw new Error('Unsure heat source must enter HP');
+    const furnace = identifyChoice('sw.identify.heat_source', 'separate_furnace_boiler').next;
+    if (!furnace || furnace.whenCoolingOnly !== 'ac.cool.intake.system_confirm' || furnace.default !== 'hp.intake.system_confirm') {
+      throw new Error('Separate furnace is cooling-only only on the strict triad; otherwise HP');
+    }
+    [SYSTEM_TYPE].concat(IDENTIFY).forEach(id => {
+      nodes[id].options.forEach(op => {
+        targetsOf(op.next).forEach(target => {
+          if (target === CONCLUDE || (typeof target === 'string' && target.indexOf('ac.adv.cap.') === 0) || target === '@suspected_capacitor_contactor_advanced_off' || target === '@next_step_advanced') {
+            throw new Error('System-type node edges into an AC capacitor path: ' + id + '/' + op.id);
+          }
+        });
+      });
+    });
     HP_WAVE1.forEach(id => {
       nodes[id].options.forEach(op => {
         targetsOf(op.next).forEach(target => {
@@ -1195,19 +1273,24 @@
   }
   assertGraph();
 
-  function create(seed = '', mode = 'real', product = 'ac') {
-    const lane = product === 'hp' ? 'hp' : 'ac';
+  function create(seed = '', mode = 'real') {
     const state = {
       node: ENTRY, result: null, seed, mode, stopping: false, safetyCleared: false,
       consent: false, consentAt: null, termsVersion: null, telemetry: false,
       answers: [], startedAt: Date.now(), id: uuid(), landing: null,
-      preselectChoice: null, treeVersion: lane === 'hp' ? TREE_HP : TREE_VERSION, audit: [],
-      product: lane, hpLanding: null, hpAmbient: null, hpHandback: null,
-      hpWeakAirflow: false, hpOutdoorNotRunning: false, hpConcludeFrom: null, defrostReturns: 0
+      preselectChoice: null, treeVersion: '', audit: [],
+      product: 'ask', hpLanding: null, hpAmbient: null, hpHandback: null,
+      hpWeakAirflow: false, hpOutdoorNotRunning: false, hpConcludeFrom: null, defrostReturns: 0,
+      idWinter: null, idEm: null
     };
     pushAudit(state, 'node_entered:' + ENTRY);
-    if (lane === 'hp') pushAudit(state, 'product_lane:hp');
+    pushAudit(state, 'product_lane:ask');
     return state;
+  }
+  function enterLane(state, lane) {
+    state.product = lane;
+    state.treeVersion = lane === 'hp' ? TREE_HP : TREE_VERSION;
+    pushAudit(state, 'product_lane:' + lane);
   }
   function uuid() {
     if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
@@ -1225,6 +1308,9 @@
     if (next && typeof next === 'object') {
       if (Object.prototype.hasOwnProperty.call(next, 'whenAdvanced')) {
         return advancedEnabled() ? next.whenAdvanced : next.default;
+      }
+      if (Object.prototype.hasOwnProperty.call(next, 'whenCoolingOnly')) {
+        return (state.idWinter === 'never' && state.idEm === 'no') ? next.whenCoolingOnly : next.default;
       }
       if (state.product === 'hp' && state.hpHandback === 'filter_airflow' && (next.hpHandback || next.hpHandbackWeak)) {
         if (state.hpWeakAirflow && next.hpHandbackWeak) return next.hpHandbackWeak;
@@ -1256,11 +1342,12 @@
     return next;
   }
   function applySessionOverlay(state, nodeId, choice, target) {
-    if (nodeId === CONSENT && choice === 'agree_18_terms' && state.product === 'hp') target = 'hp.intake.system_confirm';
-    if (state.product !== 'hp' || typeof target !== 'string') return target;
-    if (target === CONCLUDE || target.indexOf('ac.adv.cap.') === 0 || target === '@suspected_capacitor_contactor_advanced_off' || target === '@next_step_advanced') {
+    if (nodeId === CONSENT && choice === 'agree_18_terms') target = 'sw.intake.system_type';
+    if (typeof target !== 'string') return target;
+    if (state.product !== 'ac' && (target === CONCLUDE || target.indexOf('ac.adv.cap.') === 0 || target === '@suspected_capacitor_contactor_advanced_off' || target === '@next_step_advanced')) {
       return '@hp_advanced_electrical_off';
     }
+    if (state.product !== 'hp') return target;
     if (target === 'ac.noise.clarify_outdoor_hum') return '@unusual_noise_hp_wave1';
     if (target === 'ac.cool.outdoor.fan_spinning' || target === 'ac.cool.outdoor.debris_clearance' || target === 'ac.cool.indoor.ice_lines_coil') {
       return '@hp_basics_clear_after_filter';
@@ -1333,6 +1420,24 @@
     if (nodeId === 'ac.cool.landing.picker' && LANDING[choice]) state.landing = LANDING[choice];
     if (nodeId === 'hp.landing.picker' && HP_LANDING[choice]) state.hpLanding = HP_LANDING[choice];
     if (nodeId === 'hp.ambient.outdoor_band' && HP_BAND[choice]) state.hpAmbient = HP_BAND[choice];
+    if (nodeId === 'sw.intake.system_type' && choice === 'not_sure') {
+      state.idWinter = null;
+      state.idEm = null;
+    }
+    if (nodeId === 'sw.intake.system_type' && choice === 'cooling_only_ac') enterLane(state, 'ac');
+    if (nodeId === 'sw.intake.system_type' && choice === 'heat_pump') enterLane(state, 'hp');
+    if (nodeId === 'sw.identify.winter_outdoor') {
+      if (choice === 'winter_outdoor_runs') enterLane(state, 'hp');
+      else state.idWinter = choice === 'winter_outdoor_never' ? 'never' : 'unsure';
+    }
+    if (nodeId === 'sw.identify.em_aux') {
+      if (choice === 'has_em_aux') enterLane(state, 'hp');
+      else state.idEm = choice === 'no_em_aux' ? 'no' : 'unsure';
+    }
+    if (nodeId === 'sw.identify.heat_source') {
+      const coolingOnly = choice === 'separate_furnace_boiler' && state.idWinter === 'never' && state.idEm === 'no';
+      enterLane(state, coolingOnly ? 'ac' : 'hp');
+    }
     if (nodeId === 'ac.cool.intake.system_confirm' && choice === 'heat_pump') {
       state.product = 'hp';
       state.treeVersion = TREE_HP;
@@ -1440,8 +1545,8 @@
     const target = res && res.continueTo;
     if (!target || !nodes[target]) throw new Error('This result does not continue.');
     if (target.indexOf('ac.adv.cap.') === 0 && !advancedEnabled()) throw new Error('Advanced DIY is not available in this beta.');
-    if (state.product === 'hp' && (target.indexOf('ac.adv.cap.') === 0 || target === CONCLUDE || target === 'ac.cool.outdoor.fan_spinning' || target === 'ac.cool.outdoor.debris_clearance' || target === 'ac.cool.indoor.ice_lines_coil' || target === 'ac.noise.clarify_outdoor_hum')) {
-      throw new Error('That step is not part of the heat pump check.');
+    if (state.product !== 'ac' && (target.indexOf('ac.adv.cap.') === 0 || target === CONCLUDE || (state.product === 'hp' && (target === 'ac.cool.outdoor.fan_spinning' || target === 'ac.cool.outdoor.debris_clearance' || target === 'ac.cool.indoor.ice_lines_coil' || target === 'ac.noise.clarify_outdoor_hum')))) {
+      throw new Error('That step is not part of this check.');
     }
     state.result = null;
     state.node = target;
@@ -1484,7 +1589,7 @@
       result: state.result || '', path: state.answers.map(a => a.node + ':' + a.choice).join('|'),
       elapsed_seconds: Math.max(0, Math.round((Date.now() - state.startedAt) / 1000)),
       terms_version: state.termsVersion || '', consent_at: state.consentAt || '',
-      tree_version: state.treeVersion || TREE_VERSION };
+      tree_version: state.treeVersion || '' };
   }
   function presentResult(state) {
     const res = state && results[state.result];

@@ -103,3 +103,6 @@ input::placeholder,textarea::placeholder{color:#aaaab4;opacity:1}
 
 .flow-card .lead{white-space:pre-line}
 .option.preselected{border-color:var(--scarlet);box-shadow:inset 3px 0 0 var(--scarlet)}
+.start-steps{list-style:none;margin:0 0 4px;padding:0;display:grid;gap:14px}
+.start-steps li{margin:0;padding:0 0 0 14px;border-left:3px solid var(--scarlet);color:#d5d5db;font-size:.9rem;line-height:1.45}
+.start-steps strong{display:block;color:#fff;font-weight:680;letter-spacing:-.02em;margin-bottom:2px}

@@ -59,4 +59,4 @@ Commander review: [`../../hp-wave1-commander-safety-2026-09-23.md`](../../hp-wav
 **Paper deep-write:** DONE 2026-09-23 (all 12)  
 **Commander must-fixes 1–6 + supplemental A–E:** applied 2026-09-23  
 **Commander re-check:** PASS — Basic code authorized; Advanced electrical remains OFF  
-**Code:** `assets/flow.js` tree `hp.air_source.v0` (content `2026-09-23.3`)
+**Code:** `assets/flow.js` tree `hp.air_source.v0` (content `2026-09-24.1`)

@@ -2,8 +2,11 @@
 'use strict';
 globalThis.SW_CONFIG = { advancedRepairsEnabled: false };
 const fs = require('fs');
+const path = require('path');
 const F = require('../assets/flow.js');
-const configText = fs.readFileSync(require('path').join(__dirname, '../assets/config.js'), 'utf8');
+const configText = fs.readFileSync(path.join(__dirname, '../assets/config.js'), 'utf8');
+const indexText = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
+const appText = fs.readFileSync(path.join(__dirname, '../assets/app.js'), 'utf8');
 let failed = 0;
 function assert(cond, msg) {
   if (!cond) {
@@ -11,25 +14,57 @@ function assert(cond, msg) {
     console.error('FAIL', msg);
   }
 }
-function walk(product, choices, mode) {
-  const state = F.create('', mode || 'test', product);
-  choices.forEach(choice => {
+function walk(lane, choices, mode) {
+  const state = F.create('', mode || 'test');
+  const steps = choices.slice();
+  if (lane === 'ac' || lane === 'hp') {
+    const at = steps.indexOf('agree_18_terms');
+    if (at < 0) throw new Error('walk missing consent before system type');
+    steps.splice(at + 1, 0, lane === 'hp' ? 'heat_pump' : 'cooling_only_ac');
+  }
+  steps.forEach(choice => {
     if (state.result) throw new Error('Ended early at ' + state.result + ' before ' + choice + ' path=' + state.answers.map(a => a.node + ':' + a.choice).join('|'));
     F.answer(state, choice, { agreed: true, termsVersion: 'beta-2026-09-13' });
   });
   return state;
 }
+const CAP_NODES = [
+  'ac.cool.conclude.call_pro_capacitor_contactor',
+  'ac.adv.cap.prereq_gate_cluster',
+  'ac.adv.cap.confirm_pattern',
+  'ac.adv.cap.lockout_verify',
+  'ac.adv.cap.access_compartment',
+  'ac.adv.cap.identify_label',
+  'ac.adv.cap.discharge',
+  'ac.adv.cap.replace_like_for_like',
+  'ac.adv.cap.reassemble_restore_test'
+];
+function visited(state) {
+  return state.answers.map(a => a.node).concat(state.node ? [state.node] : []);
+}
+function assertNoCap(state, msg) {
+  CAP_NODES.forEach(id => assert(visited(state).indexOf(id) === -1, msg + ' reached ' + id));
+  assert(state.result !== 'suspected_capacitor_contactor_advanced_off' && state.result !== 'next_step_advanced', msg + ' capacitor result ' + state.result);
+}
 const gate = ['none_of_these', 'agree_18_terms'];
 
 assert(/advancedRepairsEnabled:\s*false/.test(configText), 'public advanced flag must stay false');
-assert(!/contentVersion:\s*'2026-09-23\.2'/.test(configText), 'content version should move past 2026-09-23.2');
+assert(/contentVersion:\s*'2026-09-24\.1'/.test(configText), 'content version must be 2026-09-24.1');
+assert(indexText.includes('config.js?v=2026-09-24.1') && indexText.includes('flow.js?v=2026-09-24.1') && indexText.includes('app.js?v=2026-09-24.1'), 'script cache-bust must match content version');
 assert(F.treeVersion === 'ac.cool.v0', 'AC tree version');
 assert(F.treeVersionHp === 'hp.air_source.v0', 'HP tree version');
 
-const ac = F.create('seed', 'real', 'ac');
-assert(ac.treeVersion === 'ac.cool.v0' && ac.product === 'ac', 'AC session defaults');
-const hp0 = F.create('seed', 'real', 'hp');
-assert(hp0.treeVersion === 'hp.air_source.v0' && hp0.product === 'hp', 'HP session tree');
+const ac = F.create('seed', 'real');
+assert(ac.node === 'ac.gate.cluster_entry' && ac.product === 'ask' && !ac.treeVersion, 'every session starts at the safety gate before system type');
+let blocked = false;
+try { F.answer(F.create(), 'cooling_only_ac', { agreed: true, termsVersion: 'beta-2026-09-13' }); }
+catch (err) { blocked = /Choose an answer/.test(err.message); }
+assert(blocked, 'system type is not reachable before the safety gate');
+
+const homeStart = appText.slice(appText.indexOf('function home'), appText.indexOf('function sidebar'));
+assert((homeStart.match(/data-action="start"/g) || []).length === 1, 'home has one Start');
+assert(!homeStart.includes('data-product'), 'home Start does not fork product');
+assert(!/Check central AC|Check a heat pump|test-hp/.test(homeStart), 'home has no dual primary CTAs');
 
 const consent = F.nodes['ac.session.consent'];
 const agree = consent.options.find(o => o.id === 'agree_18_terms');
@@ -58,9 +93,15 @@ assert(acIce.result === 'ice_keep_running' && F.results.ice_keep_running.outcome
 const acView = F.viewNode('ac.cool.filter.check', F.create('', 'test', 'ac'));
 assert(!acView.options.some(o => o.id === 'filter_clean_weak_airflow'), 'AC filter UI hides HP weak-airflow choice');
 
+const afterConsent = walk('ask', gate);
+assert(afterConsent.node === 'sw.intake.system_type', 'every start reaches system type only after gate and consent, got ' + afterConsent.node);
+assert(afterConsent.answers.map(a => a.node).join('|') === 'ac.gate.cluster_entry|ac.session.consent', 'gate and consent are the only answers before system type');
+assert(afterConsent.product === 'ask', 'product stays open on the system-type screen');
+
 const hpIntake = walk('hp', gate);
-assert(hpIntake.node === 'hp.intake.system_confirm', 'HP agree routes to HP intake, got ' + hpIntake.node);
-assert(hpIntake.treeVersion === 'hp.air_source.v0', 'HP tree after consent');
+assert(hpIntake.node === 'hp.intake.system_confirm', 'Heat pump choice reaches hp.intake.system_confirm, got ' + hpIntake.node);
+assert(hpIntake.treeVersion === 'hp.air_source.v0' && hpIntake.product === 'hp', 'HP tree after system type');
+assert(hpIntake.answers[0].node === 'ac.gate.cluster_entry' && hpIntake.answers[1].node === 'ac.session.consent' && hpIntake.answers[2].node === 'sw.intake.system_type', 'HP start order is gate, consent, system type');
 
 const noHeat = walk('hp', gate.concat([
   'air_source_ducted_hp', 'landing_no_heat', 'mode_matches_complaint', 'emergency_already_off',
@@ -142,13 +183,13 @@ const gauges = walk('hp', gate.concat([
 ]));
 assert(gauges.result === 'hp_refrigerant_intent' && F.results[gauges.result].outcome === 'call_pro', 'refrigerant intent is call_pro');
 
-const loop2 = F.create('', 'test', 'hp');
-['none_of_these', 'agree_18_terms', 'air_source_ducted_hp', 'landing_no_heat', 'mode_matches_complaint', 'emergency_already_off', 'band_near_freezing', 'not_cold_or_not_applicable', 'no_heat_at_all', 'still_in_defrost_or_weird'].forEach(c => F.answer(loop2, c, { agreed: true, termsVersion: 'beta-2026-09-13' }));
+const loop2 = F.create('', 'test');
+['none_of_these', 'agree_18_terms', 'heat_pump', 'air_source_ducted_hp', 'landing_no_heat', 'mode_matches_complaint', 'emergency_already_off', 'band_near_freezing', 'not_cold_or_not_applicable', 'no_heat_at_all', 'still_in_defrost_or_weird'].forEach(c => F.answer(loop2, c, { agreed: true, termsVersion: 'beta-2026-09-13' }));
 assert(loop2.node === 'hp.defrost.sanity', 'first defrost loop returns to defrost, got ' + loop2.node);
 F.answer(loop2, 'not_sure', { agreed: true, termsVersion: 'beta-2026-09-13' });
 /* not_sure on defrost is insufficient. Use a path that returns to observe. */
-const loop3 = F.create('', 'test', 'hp');
-['none_of_these', 'agree_18_terms', 'air_source_ducted_hp', 'landing_no_heat', 'mode_matches_complaint', 'emergency_already_off', 'band_mild_warm', 'no_heat_at_all', 'still_in_defrost_or_weird', 'not_cold_or_not_applicable', 'no_heat_at_all', 'still_in_defrost_or_weird'].forEach(c => F.answer(loop3, c, { agreed: true, termsVersion: 'beta-2026-09-13' }));
+const loop3 = F.create('', 'test');
+['none_of_these', 'agree_18_terms', 'heat_pump', 'air_source_ducted_hp', 'landing_no_heat', 'mode_matches_complaint', 'emergency_already_off', 'band_mild_warm', 'no_heat_at_all', 'still_in_defrost_or_weird', 'not_cold_or_not_applicable', 'no_heat_at_all', 'still_in_defrost_or_weird'].forEach(c => F.answer(loop3, c, { agreed: true, termsVersion: 'beta-2026-09-13' }));
 assert(loop3.node === 'hp.conclude.call_pro_defrost_valve_control', 'second defrost loop goes to conclude, got ' + loop3.node + ' ' + loop3.result);
 
 const fromAc = walk('ac', gate.concat(['heat_pump']));
@@ -166,6 +207,64 @@ const hpFilterView = walk('hp', gate.concat([
 ]));
 const shown = F.viewNode(hpFilterView.node, hpFilterView);
 assert(shown.options.some(o => o.id === 'filter_clean_weak_airflow'), 'HP handback filter shows weak-airflow choice');
+
+const coolingOnly = walk('ask', gate.concat(['cooling_only_ac', 'split_central_cool_only', 'landing_unusual_noise', 'noise_no_hazard_symptoms']));
+assert(coolingOnly.product === 'ac' && coolingOnly.treeVersion === 'ac.cool.v0', 'cooling-only stamps the AC tree');
+assert(coolingOnly.node === 'ac.noise.clarify_outdoor_hum', 'cooling-only still reaches outdoor-hum clarify, got ' + coolingOnly.node);
+assert(coolingOnly.answers[2].choice === 'cooling_only_ac' && coolingOnly.answers[2].node === 'sw.intake.system_type', 'cooling-only is chosen on the system-type screen');
+
+const hpSilent = walk('ask', gate.concat([
+  'heat_pump', 'air_source_ducted_hp', 'landing_no_heat', 'mode_matches_complaint', 'emergency_already_off',
+  'band_mild_warm', 'no_heat_at_all', 'outdoor_not_running_when_should',
+  'breaker_on_confirmed', 'disconnect_appears_on'
+]));
+assert(hpSilent.result === 'hp_outdoor_not_running_wave1', 'heat pump outdoor-silent still ends call_pro, got ' + hpSilent.result);
+assertNoCap(hpSilent, 'HP path');
+
+function identify(winter, em, heat) {
+  const choices = gate.concat(['not_sure', winter]);
+  if (winter !== 'winter_outdoor_runs') {
+    choices.push(em);
+    if (em !== 'has_em_aux') choices.push(heat);
+  }
+  return walk('ask', choices);
+}
+const clearlyAc = identify('winter_outdoor_never', 'no_em_aux', 'separate_furnace_boiler');
+assert(clearlyAc.product === 'ac' && clearlyAc.node === 'ac.cool.intake.system_confirm', 'strict cooling-only triad enters the AC tree, got ' + clearlyAc.product + ' ' + clearlyAc.node);
+assert(clearlyAc.answers.filter(a => a.node.indexOf('sw.identify.') === 0).length === 3, 'identify stays within three questions');
+const acFromIdentify = walk('ask', gate.concat([
+  'not_sure', 'winter_outdoor_never', 'no_em_aux', 'separate_furnace_boiler',
+  'split_central_cool_only', 'landing_unusual_noise', 'noise_no_hazard_symptoms'
+]));
+assert(acFromIdentify.node === 'ac.noise.clarify_outdoor_hum', 'identified cooling-only still clarifies outdoor hum');
+
+['winter_outdoor_runs', 'winter_outdoor_never', 'winter_outdoor_unsure'].forEach(winter => {
+  ['has_em_aux', 'no_em_aux', 'em_aux_unsure'].forEach(em => {
+    ['separate_furnace_boiler', 'label_says_heat_pump', 'heat_source_unsure'].forEach(heat => {
+      if (winter === 'winter_outdoor_runs' && (em !== 'has_em_aux' || heat !== 'separate_furnace_boiler')) return;
+      if (winter !== 'winter_outdoor_runs' && em === 'has_em_aux' && heat !== 'separate_furnace_boiler') return;
+      const state = identify(winter, em, heat);
+      const strictAc = winter === 'winter_outdoor_never' && em === 'no_em_aux' && heat === 'separate_furnace_boiler';
+      if (strictAc) {
+        assert(state.product === 'ac' && state.node === 'ac.cool.intake.system_confirm', 'strict triad ' + winter);
+        return;
+      }
+      assert(state.product === 'hp' && state.node === 'hp.intake.system_confirm' && state.treeVersion === 'hp.air_source.v0', 'identify ' + [winter, em, heat].join('/') + ' got ' + state.product + ' ' + state.node);
+      assertNoCap(state, 'not-sure ' + [winter, em, heat].join('/'));
+      assert(state.answers.filter(a => a.node.indexOf('sw.identify.') === 0).length <= 3, 'identify asked more than three questions');
+    });
+  });
+});
+
+const unsureSilent = walk('ask', gate.concat([
+  'not_sure', 'winter_outdoor_unsure', 'em_aux_unsure', 'heat_source_unsure',
+  'air_source_ducted_hp', 'landing_no_heat', 'mode_matches_complaint', 'emergency_already_off',
+  'band_mild_warm', 'no_heat_at_all', 'outdoor_not_running_when_should',
+  'breaker_on_confirmed', 'disconnect_appears_on'
+]));
+assert(unsureSilent.product === 'hp' && unsureSilent.result === 'hp_outdoor_not_running_wave1', 'still-unsure outdoor silent is the HP call_pro, got ' + unsureSilent.result);
+assertNoCap(unsureSilent, 'still-unsure path');
+assert(!unsureSilent.answers.some(a => a.node === 'ac.noise.clarify_outdoor_hum' || a.node === 'ac.cool.outdoor.fan_spinning'), 'still-unsure does not enter AC outdoor checks');
 
 assert(!JSON.stringify(F.nodes).includes('2W'), 'no 2W brand');
 const joined = JSON.stringify(F.hpWave1.map(id => F.nodes[id]));
