@@ -49,10 +49,10 @@ function assertNoCap(state, msg) {
 const gate = ['none_of_these', 'agree_18_terms'];
 
 assert(/advancedRepairsEnabled:\s*false/.test(configText), 'public advanced flag must stay false');
-assert(/contentVersion:\s*'2026-09-24\.1'/.test(configText), 'content version must be 2026-09-24.1');
-assert(indexText.includes('config.js?v=2026-09-24.1') && indexText.includes('flow.js?v=2026-09-24.1') && indexText.includes('app.js?v=2026-09-24.1'), 'script cache-bust must match content version');
+assert(/contentVersion:\s*'2026-10-03\.1'/.test(configText), 'content version must be 2026-10-03.1');
+assert(indexText.includes('config.js?v=2026-10-03.1') && indexText.includes('flow.js?v=2026-10-03.1') && indexText.includes('app.js?v=2026-10-03.1'), 'script cache-bust must match content version');
 assert(F.treeVersion === 'ac.cool.v0', 'AC tree version');
-assert(F.treeVersionHp === 'hp.air_source.v0', 'HP tree version');
+assert(F.treeVersionHp === 'hp.air_source.v1', 'HP tree version');
 
 const ac = F.create('seed', 'real');
 assert(ac.node === 'ac.gate.cluster_entry' && ac.product === 'ask' && !ac.treeVersion, 'every session starts at the safety gate before system type');
@@ -100,7 +100,7 @@ assert(afterConsent.product === 'ask', 'product stays open on the system-type sc
 
 const hpIntake = walk('hp', gate);
 assert(hpIntake.node === 'hp.intake.system_confirm', 'Heat pump choice reaches hp.intake.system_confirm, got ' + hpIntake.node);
-assert(hpIntake.treeVersion === 'hp.air_source.v0' && hpIntake.product === 'hp', 'HP tree after system type');
+assert(hpIntake.treeVersion === 'hp.air_source.v1' && hpIntake.product === 'hp', 'HP tree after system type');
 assert(hpIntake.answers[0].node === 'ac.gate.cluster_entry' && hpIntake.answers[1].node === 'ac.session.consent' && hpIntake.answers[2].node === 'sw.intake.system_type', 'HP start order is gate, consent, system type');
 
 const noHeat = walk('hp', gate.concat([
@@ -119,11 +119,88 @@ assert(!noise.answers.some(a => a.node === 'ac.noise.clarify_outdoor_hum'), 'HP 
 const noiseHazard = walk('hp', gate.concat(['air_source_ducted_hp', 'landing_unusual_noise', 'noise_burning_sparks_smoke']));
 assert(noiseHazard.result === 'noise_burning_sparks_smoke' && F.results[noiseHazard.result].outcome === 'emergency_exit', 'HP noise hazard stays emergency');
 
-const ice = walk('hp', gate.concat([
-  'air_source_ducted_hp', 'landing_ice_outdoor', 'mode_matches_complaint', 'emergency_already_off',
-  'band_near_freezing', 'want_keep_running_despite_ice'
-]));
-assert(ice.result === 'ice_keep_running' && F.results.ice_keep_running.outcome === 'emergency_exit', 'HP ice keep-running is emergency_exit');
+// ---- Ice keep-running split (hp.air_source.v1) ----
+const ICE_ROUTER = 'hp.ice.mode_location';
+const flat = n => (n && typeof n === 'object') ? Object.keys(n).reduce((a, k) => a.concat(flat(n[k])), []) : [n];
+const iceWalk = (band, routerChoice, landing) => walk('hp', gate.concat([
+  'air_source_ducted_hp', landing || 'landing_ice_outdoor', 'mode_matches_complaint', 'emergency_already_off',
+  band, 'want_keep_running_despite_ice'].concat(routerChoice ? [routerChoice] : [])));
+
+// I1 inbound edge: defrost keep-running now enters the router; gate kept; hint no longer says Off
+const dkr = F.nodes['hp.defrost.sanity'].options.find(o => o.id === 'want_keep_running_despite_ice');
+assert(dkr.next === ICE_ROUTER && dkr.gate === 'ice_keep_running', 'I1 defrost keep-running -> router with ice_keep_running gate');
+assert(!/Turn the system Off/.test(dkr.hint), 'I1 defrost keep-running hint must not say Off');
+// I2 router shape
+const rt = F.nodes[ICE_ROUTER] || { options: [] };
+assert(!!F.nodes[ICE_ROUTER] && F.hpWave1.indexOf(ICE_ROUTER) !== -1, 'I2 router exists and is in hpWave1');
+assert(rt.safetyGate === true && rt.diyTier === 'pro_only', 'I2 router safetyGate true, pro_only');
+assert(rt.options.map(o => o.id).join('|') === 'ice_heat_outdoor|ice_heat_indoor_only|ice_cool_any|ice_mode_unsure_outdoor|ice_unsure', 'I2 router choice ids');
+assert(rt.options.length === 5 && rt.options.every(o => flat(o.next).every(t => typeof t === 'string' && t.charAt(0) === '@')), 'I2 every router edge is a terminal');
+assert(rt.options.every(o => !o.gate), 'I2 router choices do not re-fire a gate');
+// I3 the old HP ice test, rewritten: keep-running stops at the router, not a result
+const atRouter = iceWalk('band_near_freezing');
+assert(atRouter.node === ICE_ROUTER && !atRouter.result, 'I3 HP keep-running reaches the router, got ' + (atRouter.result || atRouter.node));
+const ev = atRouter.audit.map(a => a.event);
+assert(ev.filter(e => e === 'gate_fired:ice_keep_running').length === 1 && ev.indexOf('node_entered:' + ICE_ROUTER) !== -1, 'I3 gate fires once, then router entered');
+// I4 routing table: every router choice (cold band) + unsure-outdoor across all four bands + other landings
+[
+  ['band_near_freezing', 'ice_heat_outdoor', 'hp_ice_heat_outdoor'],
+  ['band_near_freezing', 'ice_heat_indoor_only', 'ice_keep_running'],
+  ['band_near_freezing', 'ice_cool_any', 'ice_keep_running'],
+  ['band_near_freezing', 'ice_mode_unsure_outdoor', 'hp_ice_heat_outdoor'],
+  ['band_near_freezing', 'ice_unsure', 'ice_keep_running'],
+  ['band_well_below', 'ice_mode_unsure_outdoor', 'hp_ice_heat_outdoor'],
+  ['band_mild_warm', 'ice_mode_unsure_outdoor', 'ice_keep_running'],
+  ['not_sure_ambient', 'ice_mode_unsure_outdoor', 'ice_keep_running'],
+  ['band_mild_warm', 'ice_heat_outdoor', 'hp_ice_heat_outdoor']
+].forEach(([band, choice, want]) => {
+  let s; try { s = iceWalk(band, choice); } catch (e) { s = { result: 'THREW: ' + e.message.slice(0, 60) }; }
+  assert(s.result === want, 'I4 ' + band + '/' + choice + ' -> ' + want + ', got ' + s.result);
+  assert(F.results[s.result] && F.results[s.result].outcome === 'emergency_exit', 'I4 ' + choice + ' outcome emergency_exit');
+});
+const safeIce = (b, c, l) => { try { return iceWalk(b, c, l).result; } catch (e) { return 'THREW'; } };
+['landing_no_heat', 'landing_no_cool', 'landing_both_modes_fail'].forEach(l => {
+  assert(safeIce('band_well_below', 'ice_heat_outdoor', l) === 'hp_ice_heat_outdoor', 'I4 ' + l + ' heat/outdoor -> HEAT');
+  assert(safeIce('band_well_below', 'ice_unsure', l) === 'ice_keep_running', 'I4 ' + l + ' unsure -> COOL');
+});
+// I5 both screens: outcome, reason, tier
+assert(F.results.ice_keep_running.outcome === 'emergency_exit' && F.results.ice_keep_running.reason === 'ice_keep_running' && F.results.ice_keep_running.tier === 'Stop / professional', 'I5 COOL emergency_exit / ice_keep_running');
+assert(!!F.results.hp_ice_heat_outdoor && F.results.hp_ice_heat_outdoor.outcome === 'emergency_exit' && F.results.hp_ice_heat_outdoor.reason === 'hp_ice_heat_outdoor' && F.results.hp_ice_heat_outdoor.tier === 'Stop / professional', 'I5 HEAT emergency_exit / hp_ice_heat_outdoor');
+// I6 copy guards
+const H = F.results.hp_ice_heat_outdoor || { actions: [], avoid: '' }, C = F.results.ice_keep_running;
+assert(/Emergency or Aux Heat/.test(H.actions[0] || '') && /Higher bills are OK/.test(H.actions[0]), 'I6 HEAT action 1 Em/Aux + Higher bills are OK');
+assert(H.actions.some(a => /water dripping indoors\? Turn the system Off/i.test(a)), 'I6 HEAT indoor-water cross-check to Off');
+assert(H.actions.some(a => /carbon monoxide/.test(a) && /generator indoors/.test(a)), 'I6 HEAT CO line');
+assert(H.actions.some(a => /Never touch the coil or grille/.test(a)), 'I6 HEAT coil/grille line');
+assert(/chip/.test(H.avoid) && /hot water/.test(H.avoid) && /hose/.test(H.avoid), 'I6 HEAT avoid: chip, hot water, hose');
+assert(C.actions[0] === 'Set the system to Off at the thermostat.' && C.actions.some(a => /Emergency or Aux Heat/.test(a)), 'I6 COOL Off first + cold-weather line');
+const db = F.nodes['hp.defrost.sanity'].body;
+assert(/That can damage the system\./.test(db) && !/water damage/.test(db) && /solid block/.test(db), 'I6 defrost body: mode-neutral damage line + frost/block cue');
+// I7 AC lane unchanged and never enters the HP router
+assert(acIce.result === 'ice_keep_running' && acIce.answers.every(a => a.node !== ICE_ROUTER), 'I7 AC ice stays on ice_keep_running');
+// I8 none of the five 6.5 places tells a cold-band heat user to go Off without the Em/Aux clause first
+const OFF_INSTR = /(set the thermostat|turn the system|turn it|Thermostat) Off/;
+const emBeforeOff = t => { const m = t.match(OFF_INSTR); if (!m) return true; const e = t.indexOf('Emergency or Aux Heat'); return e !== -1 && e < m.index; };
+[
+  ['hp_defrost_valve_ob_control', F.results.hp_defrost_valve_ob_control.actions.join(' ')],
+  ['hp.conclude body', F.nodes['hp.conclude.call_pro_defrost_valve_control'].body],
+  ['hp_defrost_recovered_ok', F.results.hp_defrost_recovered_ok.actions.join(' ')],
+  ['hp_defrost_not_sure', F.results.hp_defrost_not_sure.actions.join(' ')],
+  ['hp_weak_heat_deep_cold', F.results.hp_weak_heat_deep_cold.actions.join(' ')]
+].forEach(([id, text]) => assert(emBeforeOff(text), 'I8 ' + id + ' says Off without the Em/Aux clause first'));
+['hp_defrost_recovered_ok', 'hp_defrost_not_sure'].forEach(id =>
+  assert(/Otherwise, or if there is no warm air in 15 minutes, turn the system Off/.test(F.results[id].actions.join(' ')), 'I8 ' + id + ' still gives warm-weather users Off'));
+// I8b walked: a well-below-freezing heat user reaching each result sees Em/Aux before Off (presentResult = what renders)
+[
+  ['iced_solid_no_recover', 'ack_call_pro', 'hp_defrost_valve_ob_control'],
+  ['not_sure', null, 'hp_defrost_not_sure'],
+  ['looks_like_defrost_then_recover', null, 'hp_defrost_recovered_ok'],
+  ['defrost_recovered_complaint_remains', 'weak_but_some_heat', 'hp_weak_heat_deep_cold']
+].forEach(([dc, next, want]) => {
+  const s = walk('hp', gate.concat(['air_source_ducted_hp', 'landing_no_heat', 'mode_matches_complaint', 'emergency_already_off', 'band_well_below', dc].concat(next ? [next] : [])));
+  assert(s.result === want, 'I8b cold heat walk ' + dc + ' -> ' + want + ', got ' + s.result);
+  assert(emBeforeOff(F.presentResult(s).actions.join(' ')), 'I8b ' + want + ' rendered copy says Off before Em/Aux');
+});
 
 const shortCycle = walk('hp', gate.concat([
   'air_source_ducted_hp', 'landing_short_cycle', 'mode_matches_complaint', 'emergency_already_off'
@@ -193,7 +270,7 @@ const loop3 = F.create('', 'test');
 assert(loop3.node === 'hp.conclude.call_pro_defrost_valve_control', 'second defrost loop goes to conclude, got ' + loop3.node + ' ' + loop3.result);
 
 const fromAc = walk('ac', gate.concat(['heat_pump']));
-assert(fromAc.node === 'hp.intake.system_confirm' && fromAc.product === 'hp' && fromAc.treeVersion === 'hp.air_source.v0', 'AC intake heat pump choice enters HP tree');
+assert(fromAc.node === 'hp.intake.system_confirm' && fromAc.product === 'hp' && fromAc.treeVersion === 'hp.air_source.v1', 'AC intake heat pump choice enters HP tree');
 
 const blank = walk('hp', gate.concat(['air_source_ducted_hp', 'landing_no_heat', 'tstat_blank_or_unreadable']));
 assert(blank.node === 'ac.tstat.blank.batteries', 'blank tstat soft-links batteries');
@@ -249,7 +326,7 @@ assert(acFromIdentify.node === 'ac.noise.clarify_outdoor_hum', 'identified cooli
         assert(state.product === 'ac' && state.node === 'ac.cool.intake.system_confirm', 'strict triad ' + winter);
         return;
       }
-      assert(state.product === 'hp' && state.node === 'hp.intake.system_confirm' && state.treeVersion === 'hp.air_source.v0', 'identify ' + [winter, em, heat].join('/') + ' got ' + state.product + ' ' + state.node);
+      assert(state.product === 'hp' && state.node === 'hp.intake.system_confirm' && state.treeVersion === 'hp.air_source.v1', 'identify ' + [winter, em, heat].join('/') + ' got ' + state.product + ' ' + state.node);
       assertNoCap(state, 'not-sure ' + [winter, em, heat].join('/'));
       assert(state.answers.filter(a => a.node.indexOf('sw.identify.') === 0).length <= 3, 'identify asked more than three questions');
     });

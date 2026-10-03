@@ -23,7 +23,7 @@ Based on your answers, homeowner Basic checks are no longer the right next step.
 
 What to do:
 
-1. Leave the system safe — thermostat **Off** is fine if ice was involved. For outdoor power: **visual / familiar storm shutoff only** — if you already safely use the outdoor disconnect or breaker as a storm shutoff and conditions are dry, you may leave it Off the way you already know; Basic does **not** teach operating the disconnect lever as a diagnostic procedure (aligns with AC `ac.cool.power.disconnect_visual` visual-position-only lock). If unsure, wet, or unfamiliar — leave power alone and call the pro.
+1. Leave the system safe. If ice was involved and it is cold out, switch to Emergency or Aux Heat if you have it. Otherwise, or if there is no warm air in 15 minutes, set the thermostat Off. For backup heat, use electric space heaters only, never an oven, stove, grill, or generator indoors. For outdoor power: **visual / familiar storm shutoff only** — if you already safely use the outdoor disconnect or breaker as a storm shutoff and conditions are dry, you may leave it Off the way you already know; Basic does **not** teach operating the disconnect lever as a diagnostic procedure (aligns with AC `ac.cool.power.disconnect_visual` visual-position-only lock). If unsure, wet, or unfamiliar — leave power alone and call the pro.
 2. Call a licensed HVAC tech (EPA 608 capability if sealed-system work may be needed).
 3. You may tell them: heat-pump mode/Emergency/ambient/defrost Basic checks only; outdoor iced without recover and/or mode-asymmetric leaving-air pattern; **no covers removed**; O vs B not assumed.
 
@@ -57,7 +57,7 @@ Support: lonnie@secondwrench.co
 
 ## notes
 - Node type: conclusion.
-- Tree version: **`hp.air_source.v0`**.
+- Tree version: **`hp.air_source.v1`** for the 2026-10-03 leave-safe sentence (Emergency/Aux before Off when ice was involved). Prior paper was `hp.air_source.v0`.
 - Shared sink for: `hp.defrost.sanity` iced_solid · `hp.rv.mode_asymmetric` confirmed / O-B unsure.
 - Mirror AC conclude pattern (`ac.cool.conclude.call_pro_capacitor_contactor`) but **no** future Advanced flip edge for valve/refrigerant — those stay pro_only even if AC capacitor Advanced later enables.
 - MUST terminate `call_pro` (or emergency if product maps refrigerant release) — NEVER `next_step` DIY Advanced.

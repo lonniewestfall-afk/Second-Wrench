@@ -16,7 +16,7 @@ Quiet beta: pages send `noindex` (`robots` meta and `_headers`). Do not remove t
 
 ## Wave-1 and Wave-2
 
-**Implemented** for founder review. Cooling-only tree `ac.cool.v0`. Air-source ducted heat pump tree `hp.air_source.v0` (Wave-1 Basic). Content version `2026-09-24.1`.
+**Implemented** for founder review. Cooling-only tree `ac.cool.v0`. Air-source ducted heat pump tree `hp.air_source.v1` (Wave-1 Basic; ice-stop split 2026-10-03). Content version `2026-10-03.1`.
 
 Wave-1 is the original 12 nodes. Wave-2 Basic adds seven nodes: breaker-door visual, outdoor-disconnect visual (position only), the silent-path hub, returns and supplies, outdoor debris, the noise hazard screen, and outdoor-hum clarification. The capacitor Advanced chain (eight nodes) is in the tree and runs only when `advancedRepairsEnabled` is true.
 
@@ -37,7 +37,7 @@ The decision tree in `assets/flow.js` owns every conclusion. There is no model c
 
 - **Advanced DIY is off on this public build.** `advancedRepairsEnabled` stays `false` in `assets/config.js`. Suspected capacitor or contactor paths are call-a-professional only. The gated capacitor steps are in the tree for a private sandbox zip; they do not run while the flag is false.
 - Terminals are only DIY Basic `next_step`, DIY Advanced `next_step` when the flag is true, `call_pro` (with a reason), `emergency_exit`, and `insufficient_info`.
-- Scope is cooling-only residential split central AC, plus Wave-1 Basic triage for U.S. air-source ducted heat pumps (`hp.air_source.v0`). Mini-splits, water-source/geothermal, and packaged equipment stay out of scope. Heat-pump Advanced electrical stays off: outdoor-not-running ends at `call_pro` `hp_outdoor_not_running_wave1` after the breaker and disconnect visuals. No gauges, refrigerant DIY, or reversing-valve force-outs.
+- Scope is cooling-only residential split central AC, plus Wave-1 Basic triage for U.S. air-source ducted heat pumps (`hp.air_source.v1`). Mini-splits, water-source/geothermal, and packaged equipment stay out of scope. Heat-pump Advanced electrical stays off: outdoor-not-running ends at `call_pro` `hp_outdoor_not_running_wave1` after the breaker and disconnect visuals. No gauges, refrigerant DIY, or reversing-valve force-outs.
 - `formsEnabled` stays `false`. No secrets and no `.env`.
 - Brand matches the live beta: dark walnut/charcoal theme, scarlet `#b82030`, white wrench in a scarlet rounded square. Theme color `#17181b`.
 

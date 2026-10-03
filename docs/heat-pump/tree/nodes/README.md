@@ -1,6 +1,6 @@
 # `hp.` paper nodes — Wave-1
 
-**Tree version (LOCKED):** **`hp.air_source.v0`**  
+**Tree version (LOCKED):** **`hp.air_source.v1`** — approved 2026-10-03 for the ice-stop split (router `hp.ice.mode_location`); supersedes `v0`.  
 **Product:** Second Wrench / Heat Pump Lead  
 **Scope:** U.S. residential **air-source ducted** heat pumps (mode / defrost / RV awareness)  
 **Schema:** Extend AC conventions in `docs/ac-second-opinion/conventions/`. Runtime: `assets/flow.js`.  
@@ -42,6 +42,8 @@ Commander review: [`../../hp-wave1-commander-safety-2026-09-23.md`](../../hp-wav
 | 11 | `hp.handback.ac_filter_airflow` | [hp.handback.ac_filter_airflow.md](./hp.handback.ac_filter_airflow.md) | → **`ac.cool.filter.check`** (+ returns/supplies only) then call_pro |
 | 12 | `hp.conclude.call_pro_defrost_valve_control` | [hp.conclude.call_pro_defrost_valve_control.md](./hp.conclude.call_pro_defrost_valve_control.md) | Failed defrost / stuck valve / O-B → `call_pro` (no DIY electrical) |
 
+**v1 addition (2026-10-03):** [`hp.ice.mode_location`](./hp.ice.mode_location.md) — exit-ramp fork after ice keep-running. Every choice is `emergency_exit` (`@hp_ice_heat_outdoor` or `@ice_keep_running`).
+
 ---
 
 ## Hard exclusions (Wave-1)
@@ -59,4 +61,4 @@ Commander review: [`../../hp-wave1-commander-safety-2026-09-23.md`](../../hp-wav
 **Paper deep-write:** DONE 2026-09-23 (all 12)  
 **Commander must-fixes 1–6 + supplemental A–E:** applied 2026-09-23  
 **Commander re-check:** PASS — Basic code authorized; Advanced electrical remains OFF  
-**Code:** `assets/flow.js` tree `hp.air_source.v0` (content `2026-09-24.1`)
+**Code:** `assets/flow.js` tree `hp.air_source.v1` (content `2026-10-03.1`)

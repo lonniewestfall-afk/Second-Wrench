@@ -3,7 +3,7 @@
  *
  * Trees:
  * - ac.cool.v0 for cooling-only central AC sessions.
- * - hp.air_source.v0 for air-source ducted heat-pump sessions (Wave-1 Basic).
+ * - hp.air_source.v1 for air-source ducted heat-pump sessions (Wave-1 Basic).
  * Session entry: ac.gate.cluster_entry → ac.session.consent →
  *   sw.intake.system_type. Consent text is shared and its stored agree
  *   edge stays ac.cool.intake.system_confirm (not a second consent node).
@@ -49,7 +49,7 @@
   'use strict';
 
   const TREE_VERSION = 'ac.cool.v0';
-  const TREE_HP = 'hp.air_source.v0';
+  const TREE_HP = 'hp.air_source.v1';
   const ENTRY = 'ac.gate.cluster_entry';
   const CONSENT = 'ac.session.consent';
   const WAVE1 = [
@@ -97,7 +97,8 @@
     'hp.observe.leaving_air_vs_mode',
     'hp.rv.mode_asymmetric',
     'hp.handback.ac_filter_airflow',
-    'hp.conclude.call_pro_defrost_valve_control'
+    'hp.conclude.call_pro_defrost_valve_control',
+    'hp.ice.mode_location'
   ];
   const CONCLUDE = 'ac.cool.conclude.call_pro_capacitor_contactor';
   const LANDING = {
@@ -493,7 +494,7 @@
       ]),
 
     'hp.defrost.sanity': n('Cold weather', 'Could this be a normal defrost?',
-      'In heat mode when outdoor air is cold, frost on the outdoor coil can be normal. During automatic defrost, many heat pumps temporarily stop the outdoor fan, make a whoosh, hiss, or steam sound, blow cooler air indoors for a short time, and turn on auxiliary heat while the outdoor coil clears.\n\nFrom a safe distance only:\n\nDo not reach into the grille.\nDo not chip ice with tools, screwdrivers, hammers, or hot water.\nDo not remove panels or jump defrost sensors.\n\nWatch about 5–15 minutes. Does the outdoor unit recover into normal heat afterward (fan resumes, steam settles, heat returns)?\n\nHeavy ice plus keeping the system running to force heat is not a DIY continue. That risks compressor damage and water damage when the ice melts.\n\nBurning smell, smoke, sparks, or standing water at electrical equipment: Stop / get help.', [
+      'In heat mode when outdoor air is cold, frost on the outdoor coil can be normal. During automatic defrost, many heat pumps temporarily stop the outdoor fan, make a whoosh, hiss, or steam sound, blow cooler air indoors for a short time, and turn on auxiliary heat while the outdoor coil clears.\n\nFrom a safe distance only:\n\nDo not reach into the grille.\nDo not chip ice with tools, screwdrivers, hammers, or hot water.\nDo not remove panels or jump defrost sensors.\n\nNormal frost is light and white, and it clears during a defrost (about 5–15 minutes, often every 30–90 minutes). Not normal: a solid block where you cannot see the coil fins, ice on the top or fan grille, ice building up from the base, or the fan scraping ice.\n\nWatch about 5–15 minutes. Does the outdoor unit recover into normal heat afterward (fan resumes, steam settles, heat returns)?\n\nHeavy ice plus keeping the system running to force heat is not a DIY continue. That can damage the system.\n\nBurning smell, smoke, sparks, or standing water at electrical equipment: Stop / get help.', [
         o('looks_like_defrost_then_recover', 'Looked like defrost, then returned toward normal, and the original problem is gone', '@hp_defrost_recovered_ok', 'Occasional defrost in cold weather can be normal.', 'Defrost-like behavior, then the original problem was gone.'),
         o('defrost_recovered_complaint_remains', 'Looked like defrost and recovered, but the original problem is still there', {
           byHpLanding: { no_cool: 'hp.observe.leaving_air_vs_mode' },
@@ -504,9 +505,18 @@
           byHpLanding: { no_heat: 'hp.heat.capacity_vs_dead' },
           default: 'hp.observe.leaving_air_vs_mode'
         }, 'Skip the defrost wait.', 'Defrost wait does not apply.'),
-        o('want_keep_running_despite_ice', 'There is heavy ice, but I want to keep the system running', '@ice_keep_running', 'Hard stop. Turn the system Off. Do not chip ice.', 'Homeowner wanted to keep the heat pump running despite ice.', { gate: 'ice_keep_running' }),
+        o('want_keep_running_despite_ice', 'There is heavy ice, but I want to keep the system running', 'hp.ice.mode_location', 'Hard stop. Do not chip ice. One question, then the right shutdown steps.', 'Homeowner wanted to keep the heat pump running despite ice.', { gate: 'ice_keep_running' }),
         o('not_sure', 'I am not sure', '@hp_defrost_not_sure', 'Do not force a defrost or open the unit.')
       ], { safetyGate: true, caution: 'Do not chip ice, jump a sensor, or keep the system running through heavy ice.' }),
+
+    'hp.ice.mode_location': n('Ice', "Heating or cooling, and where's the ice?",
+      "One answer picks the right shutdown steps.\n\nPick heating or cooling by what you wanted the system to do. Where the ice is tells us the rest.\n\nOutdoor unit: the box outside. Indoor unit: the furnace or air handler inside, plus the pipes at it.\n\nDon't open panels or go out in unsafe weather to check.", [
+        o('ice_heat_outdoor', 'Heating — ice is on the outdoor unit', '@hp_ice_heat_outdoor', 'Backup-heat steps next.', 'Ice on the outdoor unit while heating.'),
+        o('ice_heat_indoor_only', 'Heating — but the ice is only on the indoor unit or its pipes', '@ice_keep_running', 'Unusual in heat. Shutdown steps, then a pro.', 'Ice only at the indoor unit while heating. It may have been cooling instead.'),
+        o('ice_cool_any', 'Cooling — ice on the indoor unit, its pipes, or the outdoor unit', '@ice_keep_running', 'Shutdown and thaw steps next.', 'Ice while cooling (indoor unit, lines, or outdoor unit).'),
+        o('ice_mode_unsure_outdoor', 'Not sure which — ice is on the outdoor unit', { byHpAmbient: { near_freezing: '@hp_ice_heat_outdoor', well_below: '@hp_ice_heat_outdoor' }, default: '@ice_keep_running' }, "We'll use the outdoor temperature you gave.", 'Mode unknown. Ice on the outdoor unit.'),
+        o('ice_unsure', "I'm not sure", '@ice_keep_running', "We'll show the safest shutdown steps.", 'Mode and ice location unknown.')
+      ], { diyTier: 'pro_only', safetyGate: true, caution: 'No chipping ice, no panels, and no refrigerant or electrical work.' }),
 
     'hp.heat.capacity_vs_dead': n('Heat', 'Weak heat in the cold, or no heat at all?',
       'Heat pumps deliver less heat as outdoor air gets colder. That can feel like the system is dying when it is still running and may call auxiliary heat for help.\n\nFrom what you can tell without meters or panel work:\n\nIs there some warm air, or at least air that is not ice-cold, from the supplies after a proper Heat call for 10–15 minutes or more?\nOr does supply air stay at room temperature or cold, with no useful heat?\nIf you know you have electric strips or a gas furnace for backup: does the house warm only when that backup runs, while the outdoor unit stays idle in normal Heat with Emergency Off?\n\nDo not measure strip amps. Do not open sequencers. Do not add refrigerant. Do not declare a bad compressor from this screen.', [
@@ -558,7 +568,7 @@
       ]),
 
     'hp.conclude.call_pro_defrost_valve_control': n('Call a professional', 'Defrost, reversing valve, or control',
-      'Homeowner Basic checks are no longer the right next step. Common professional buckets for what you described include a failed or stuck defrost, a reversing valve or outdoor control that is not shifting modes, or thermostat O/B configuration after a thermostat swap.\n\nThis is not a confirmed parts diagnosis. It is a reason to stop DIY and get service.\n\nDo not attempt from this guide:\n\nCapacitor or contactor work. Heat-pump Advanced electrical is off.\nInverter board, amp draw, strip sequencers, or the panel interior.\nRefrigerant gauges, charge, or reclaim.\nMagnets, jumping safeties, or forcing the reversing valve.\n\nLeave the system safe. Thermostat Off is fine if ice was involved. For outdoor power: visual / familiar storm shutoff only. If you already safely use the outdoor disconnect or breaker as a storm shutoff and conditions are dry, you may leave it Off the way you already know. This guide does not teach operating the disconnect lever as a diagnostic procedure. If you are unsure, wet, or unfamiliar, leave power alone and call.\n\nCall a licensed HVAC technician. You may tell them: heat-pump mode, Emergency, temperature, and defrost checks only; outdoor iced without recovery and/or one mode wrong; no covers removed; O versus B was not assumed.\n\nSupport: lonnie@secondwrench.co', [
+      'Homeowner Basic checks are no longer the right next step. Common professional buckets for what you described include a failed or stuck defrost, a reversing valve or outdoor control that is not shifting modes, or thermostat O/B configuration after a thermostat swap.\n\nThis is not a confirmed parts diagnosis. It is a reason to stop DIY and get service.\n\nDo not attempt from this guide:\n\nCapacitor or contactor work. Heat-pump Advanced electrical is off.\nInverter board, amp draw, strip sequencers, or the panel interior.\nRefrigerant gauges, charge, or reclaim.\nMagnets, jumping safeties, or forcing the reversing valve.\n\nLeave the system safe. If ice was involved and it is cold out, switch to Emergency or Aux Heat if you have it. Otherwise, or if there is no warm air in 15 minutes, set the thermostat Off. For backup heat, use electric space heaters only, never an oven, stove, grill, or generator indoors. For outdoor power: visual / familiar storm shutoff only. If you already safely use the outdoor disconnect or breaker as a storm shutoff and conditions are dry, you may leave it Off the way you already know. This guide does not teach operating the disconnect lever as a diagnostic procedure. If you are unsure, wet, or unfamiliar, leave power alone and call.\n\nCall a licensed HVAC technician. You may tell them: heat-pump mode, Emergency, temperature, and defrost checks only; outdoor iced without recovery and/or one mode wrong; no covers removed; O versus B was not assumed.\n\nSupport: lonnie@secondwrench.co', [
         o('ack_call_pro', 'Understood — call a professional', '@hp_defrost_valve_ob_control', 'Terminal acknowledgment.'),
         o('want_diy_valve_or_electrical_anyway', 'I want to force the valve or do electrical work myself', '@hp_defrost_valve_ob_control', 'Not offered. Advanced electrical is off, and valve force-outs are professional-only.', 'Asked to force the valve or do electrical DIY.'),
         o('want_diy_refrigerant_anyway', 'I want to add refrigerant or use gauges', '@hp_refrigerant_intent', 'Never a DIY step.', 'Asked to add refrigerant or use gauges.', { gate: 'refrigerant_intent' })
@@ -604,11 +614,16 @@
       ['Stay clear of the equipment and any wet floor.', 'Call a licensed HVAC professional or electrician and describe what you already saw.', 'If there is sparking, smoke, shock, or you cannot get to a dry place, call 911 from safety.'],
       'Do not mop around equipment and keep diagnosing, and do not touch disconnects or panels with wet hands.', 'electrical',
       'emergency_exit', 'unsure_water_electrical', { gate: 'unsure_water_electrical' }),
-    ice_keep_running: r('Stop / professional', 'Stop. Do not keep it running.', 'Ice plus forced running is not a DIY path.',
-      'Keeping a system running with ice on the lines or coil risks compressor damage and water damage.',
-      ['Turn the system Off at the thermostat. Do not chip ice with tools.', 'Let the ice thaw, and schedule a licensed HVAC diagnosis before you rely on heating or cooling again.'],
-      'Do not keep the system running to force heat or cooling, and do not bypass this stop.', 'ice',
+    ice_keep_running: r('Stop / professional', 'Hard stop · call a pro', 'Stop. Turn it off and let the ice melt.',
+      'Running on ice, or restarting too soon, can hurt the compressor. Melt can cause water damage.',
+      ['Set the system to Off at the thermostat.', "No overflow, drips, or ceiling stains? Set the fan to On to thaw faster. Otherwise, use Auto. A fan that won't run may be a safety switch. That's OK.", "Put towels down. Watch the drain pan if visible, and the ceiling below. Don't open panels.", 'Leave cooling off and call a pro.', 'Freezing out, no other heat? Use Emergency or Aux Heat if you have it.'],
+      "Don't chip or pick at the ice, or use a heat gun or hair dryer.", 'ice',
       'emergency_exit', 'ice_keep_running', { gate: 'ice_keep_running' }),
+    hp_ice_heat_outdoor: r('Stop / professional', 'Hard stop · call a pro', 'Stop. Switch to backup heat and call a pro.',
+      "Solid ice isn't normal frost. Running on it can cause damage.",
+      ['Switch to Emergency or Aux Heat if you have it. It stops the outdoor unit. Higher bills are OK.', 'No such setting, no warm air in 15 minutes, or water dripping indoors? Turn the system Off.', 'Use electric space heaters plugged into a wall, clear of anything that burns. Never an oven, stove, grill, or generator indoors (carbon monoxide).', 'You may brush snow off the base. Never touch the coil or grille.', 'Call a pro. Mention any roof drip above it.'],
+      "Don't chip or pick at ice, use hot water, a hose, a heat gun, a hair dryer, or salt, or cover the unit.", 'ice',
+      'emergency_exit', 'hp_ice_heat_outdoor', { gate: 'ice_keep_running' }),
     consent_declined: r('More information needed', 'Session ended', 'The check stops without agreement.',
       'This guide does not continue into a diagnosis path unless you agree to the beta terms and confirm you are 18 or older.',
       ['You can close this page, or start again if you decide to agree.', 'For a current hazard, get to safety and call 911. This website is not an emergency service.'],
@@ -996,17 +1011,17 @@
       'insufficient_info', 'hp_emergency_not_sure'),
     hp_defrost_recovered_ok: r('Basic homeowner check', 'Leave it in normal Heat', 'The outdoor unit behaved like a defrost and then the complaint cleared.',
       'Frost and a short defrost can be normal in cold weather. Ice that returns and stays is a professional visit.',
-      ['Leave the system in normal Heat, with Emergency / Aux Off unless you intentionally want backup heat only.', 'Expect an occasional defrost in cold weather: fan may stop, indoor air may cool briefly, then heat returns.', 'If ice comes back and the unit does not recover, turn the system Off, do not chip the ice, and call a licensed HVAC professional.'],
+      ['Leave the system in normal Heat, with Emergency / Aux Off unless you intentionally want backup heat only.', 'Expect an occasional defrost in cold weather: fan may stop, indoor air may cool briefly, then heat returns.', 'If ice comes back and the unit does not recover: if it is cold out, switch to Emergency or Aux Heat if you have it. Otherwise, or if there is no warm air in 15 minutes, turn the system Off. For backup heat, use electric space heaters only, never an oven, stove, grill, or generator indoors. Do not chip the ice. Call a licensed HVAC professional.'],
       'Do not chip ice, jump a defrost sensor, or open the cabinet.', 'ice',
       'next_step', 'hp_defrost_recovered_ok', { diyTier: 'basic' }),
     hp_defrost_not_sure: r('More information needed', 'Do not force a defrost', 'It was not clear whether this was a normal defrost.',
       'Do not chip ice or open panels to decide.',
-      ['Watch from a safe distance through one possible defrost, about 5–15 minutes, if you can do that without getting closer.', 'If you still cannot tell, or ice is heavy, turn the system Off and call a licensed HVAC professional. Tell them what the outdoor unit did.'],
+      ['Watch from a safe distance through one possible defrost, about 5–15 minutes, if you can do that without getting closer.', 'If you still cannot tell, or ice is heavy: if it is cold out, switch to Emergency or Aux Heat if you have it. Otherwise, or if there is no warm air in 15 minutes, turn the system Off. For backup heat, use electric space heaters only, never an oven, stove, grill, or generator indoors. Call a licensed HVAC professional and tell them what the outdoor unit did.'],
       'Do not chip ice, pour water on the coil, or jump a sensor.', 'ice',
       'insufficient_info', 'hp_defrost_not_sure'),
     hp_weak_heat_deep_cold: r('Basic homeowner check', 'Weak heat in deep cold can be normal capacity', 'There is some heat, and it is cold outside.',
       'Heat pumps move less heat as outdoor air gets colder, and they may use auxiliary heat for help. That is not proof of a failed compressor. Ice that never clears is a different problem.',
-      ['Keep Emergency / Aux Off unless you intentionally want backup heat only.', 'Expect less heat, and possible auxiliary heat, in this outdoor temperature. Give a Heat call 10–15 minutes.', 'If airflow from the vents feels weak, check the filter you can already reach. If the outdoor unit is iced solid and never recovers, turn it Off, do not chip the ice, and call a licensed HVAC professional.'],
+      ['Keep Emergency / Aux Off unless you intentionally want backup heat only.', 'Expect less heat, and possible auxiliary heat, in this outdoor temperature. Give a Heat call 10–15 minutes.', 'If airflow from the vents feels weak, check the filter you can already reach. If the outdoor unit is iced solid and never recovers, switch to Emergency or Aux Heat if you have it. If you do not, or there is no warm air in 15 minutes, turn the system Off. For backup heat, use electric space heaters only, never an oven, stove, grill, or generator indoors. Do not chip the ice. Call a licensed HVAC professional.'],
       'Do not add refrigerant, measure strip amps, or open the air handler.', 'maintenance',
       'next_step', 'hp_weak_heat_deep_cold', { diyTier: 'basic' }),
     hp_cannot_observe: r('More information needed', 'Stop where you can see safely', 'The outdoor check needs a safe view.',
@@ -1036,7 +1051,7 @@
       'call_pro', 'user_requests_pro_after_mode_clear'),
     hp_defrost_valve_ob_control: r('Professional guidance', 'Call a licensed HVAC professional', 'Defrost, reversing valve, or control — not a homeowner repair.',
       'This is a ranked reason to stop, not a confirmed parts diagnosis. Heat-pump Advanced electrical is off. Forcing the reversing valve is not a step in this guide.',
-      ['If ice was involved, set the thermostat Off. Do not chip the ice.', 'For outdoor power, use only a shutoff you already know from storms, and only if it is dry. This guide does not teach operating the disconnect lever. If you are unsure, leave power alone.', 'Call a licensed HVAC technician. You may say: Basic heat-pump checks only, outdoor iced without recovery and/or one mode wrong, no covers removed, O versus B not assumed.'],
+      ['If ice was involved and it is cold out, switch to Emergency or Aux Heat if you have it. Otherwise, or if there is no warm air in 15 minutes, set the thermostat Off. For backup heat, use electric space heaters only, never an oven, stove, grill, or generator indoors. Do not chip the ice.', 'For outdoor power, use only a shutoff you already know from storms, and only if it is dry. This guide does not teach operating the disconnect lever. If you are unsure, leave power alone.', 'Call a licensed HVAC technician. You may say: Basic heat-pump checks only, outdoor iced without recovery and/or one mode wrong, no covers removed, O versus B not assumed.'],
       'Do not replace a capacitor or contactor, open the panel, attach gauges, add refrigerant, or force the reversing valve with a magnet or jumper.', 'safety',
       'call_pro', 'hp_defrost_valve_ob_control', { diyTier: 'pro_only' }),
     hp_refrigerant_intent: r('Professional guidance', 'Do not add refrigerant or use gauges', 'Refrigerant work is not a homeowner step.',
@@ -1264,7 +1279,7 @@
     ['@next_step_advanced', '@suspected_capacitor_contactor_advanced_off'].forEach(id => {
       if (hpSeen.has(id)) throw new Error('HP walk reached forbidden terminal ' + id);
     });
-    ['hp.intake.system_confirm', 'hp.landing.picker', 'hp.mode.thermostat_check', 'hp.mode.force_match_complaint', 'hp.mode.emergency_aux_off', 'hp.ambient.outdoor_band', 'hp.defrost.sanity', 'hp.heat.capacity_vs_dead', 'hp.observe.leaving_air_vs_mode', 'hp.rv.mode_asymmetric', 'hp.handback.ac_filter_airflow', 'hp.conclude.call_pro_defrost_valve_control', 'ac.noise.hazard_screen', 'ac.tstat.blank.batteries', 'ac.cool.power.breaker_visual', 'ac.cool.power.disconnect_visual', 'ac.cool.filter.check', 'ac.cool.airflow.returns_supplies', '@unusual_noise_hp_wave1', '@hp_outdoor_not_running_wave1', '@hp_basics_clear_after_filter', '@ice_keep_running', '@hp_short_cycle_after_mode_basics', '@hp_defrost_valve_ob_control', '@hp_refrigerant_intent'].forEach(id => {
+    ['hp.intake.system_confirm', 'hp.landing.picker', 'hp.mode.thermostat_check', 'hp.mode.force_match_complaint', 'hp.mode.emergency_aux_off', 'hp.ambient.outdoor_band', 'hp.defrost.sanity', 'hp.heat.capacity_vs_dead', 'hp.observe.leaving_air_vs_mode', 'hp.rv.mode_asymmetric', 'hp.handback.ac_filter_airflow', 'hp.conclude.call_pro_defrost_valve_control', 'hp.ice.mode_location', 'ac.noise.hazard_screen', 'ac.tstat.blank.batteries', 'ac.cool.power.breaker_visual', 'ac.cool.power.disconnect_visual', 'ac.cool.filter.check', 'ac.cool.airflow.returns_supplies', '@unusual_noise_hp_wave1', '@hp_outdoor_not_running_wave1', '@hp_basics_clear_after_filter', '@ice_keep_running', '@hp_ice_heat_outdoor', '@hp_short_cycle_after_mode_basics', '@hp_defrost_valve_ob_control', '@hp_refrigerant_intent'].forEach(id => {
       if (!hpSeen.has(id)) throw new Error('HP walk missing ' + id);
     });
     ['ac.cool.outdoor.fan_spinning', 'ac.noise.clarify_outdoor_hum', 'ac.cool.airflow.returns_supplies', 'ac.cool.power.disconnect_visual', 'ac.cool.landing.picker'].forEach(id => {
