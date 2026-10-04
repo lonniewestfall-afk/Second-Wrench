@@ -9,6 +9,8 @@ Pattern used when a path becomes unsafe **mid-tree** (not only at the initial ga
 3. Log partial path (all nodes entered + answers so far) under current `tree_version`.
 4. UI shows stop screen only — **no soft continue**, no "skip and keep diagnosing", no muted "I understand the risk" override for beta.
 
+> **Exception — exit-ramp fork:** after `gate_fired`/`exit_ramp`, at most one routing question may precede the stop screen, only if every choice on it ends in `emergency_exit` or `call_pro`, none resumes diagnosis, and it only selects which stop screen safely applies (first use: `hp.ice.mode_location`).
+
 ## Fields on the exiting node / choice
 
 - `hazard_exit`: short reason code (e.g. `water_near_electrical`, `sparking`, `ice_forced_run`)

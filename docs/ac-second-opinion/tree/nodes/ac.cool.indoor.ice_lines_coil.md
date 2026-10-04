@@ -27,7 +27,7 @@ If you see ice: do **not** keep running the system to “force cool.” Do not c
 |---|---|
 | `ice_observed` | **terminal** `next_step` DIY Basic — Set thermostat to **Off** (not just raise setpoint). Allow ice to thaw naturally. Do not chip ice. Check/replace filter if not already done. After full thaw (often hours), restore Cool and retest. If ice returns or still no cool → `call_pro` (reason: `ice_recurs_or_no_cool_after_thaw` — metering / refrigerant / deeper airflow are pro_only). |
 | `no_ice_observed` | **terminal** `call_pro` (reason: `cooling_not_established_basics_clear`) — air may be moving but cooling not established after mode/filter/fan checks; service note for licensed HVAC |
-| `want_keep_running_despite_ice` | **terminal** `emergency_exit` (reason: `ice_keep_running` / gate `ac.gate.ice_keep_running`) — stop run-it-anyway; turn system Off; ice + forced run risks compressor and water damage; schedule thaw + pro diagnosis |
+| `want_keep_running_despite_ice` | **terminal** `emergency_exit` (reason: `ice_keep_running` / gate `ac.gate.ice_keep_running`) — COOL / indoor-ice stop `@ice_keep_running`: set the system Off, thaw, call a pro. Cold-weather Emergency/Aux line is shared, data-only. Do not chip ice. |
 | `not_sure_cannot_see` | **terminal** `insufficient_info` — or `call_pro` if symptoms (no cool + prior basics) already warrant service |
 
 ## diy_tier

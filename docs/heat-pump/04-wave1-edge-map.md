@@ -1,8 +1,8 @@
 # HP Wave-1 — Edge map (paper)
 
 **Date:** 2026-09-23  
-**Tree version (LOCKED):** **`hp.air_source.v0`**  
-**Scope:** 12 deep-written `hp.` nodes + reused AC gate/consent + hazard screen + blank batteries + power visuals + handback to `ac.cool.filter.check` (+ returns/supplies only)  
+**Tree version (LOCKED):** **`hp.air_source.v1`**  
+**Scope:** 12 deep-written `hp.` nodes + ice-stop router `hp.ice.mode_location` (v1) + reused AC gate/consent + hazard screen + blank batteries + power visuals + handback to `ac.cool.filter.check` (+ returns/supplies only)  
 **Code:** AUTHORIZED 2026-09-23 — Commander paper PASS (`hp.air_source.v0` Basic; HP Advanced electrical OFF)  
 **Authority:** `/workspace/second-wrench/reviews/hp-wave1-commander-safety-2026-09-23.md` (CONDITIONAL PASS must-fixes + supplemental A–E)
 
@@ -14,7 +14,7 @@
 2. **After handback:** filter + returns/supplies only → `call_pro` `hp_basics_clear_after_filter`. **Never** auto outdoor fan / debris / ice.
 3. **outdoor_not_running:** `ac.cool.power.breaker_visual` → `ac.cool.power.disconnect_visual` → `call_pro` `hp_outdoor_not_running_wave1` (no Cap/contactor). Hub `ac.start.breaker_disconnect` OK only if it lands on those same visuals.
 4. **Blank tstat:** soft-link **next** `ac.tstat.blank.batteries`.
-5. **Tree version:** **`hp.air_source.v0`**.
+5. **Tree version:** **`hp.air_source.v1`**.
 6. **Dual-fuel:** later-only — no Wave-1 intake flag.
 
 ---
@@ -87,8 +87,16 @@ hp.defrost.sanity   [safety_gate: true]
   ├─ recover + resolved → next_step DIY Basic
   ├─ iced_solid_no_recover → hp.conclude.call_pro_defrost_valve_control
   ├─ not_applicable → capacity (no_heat) else observe
-  ├─ want_keep_running_despite_ice → emergency_exit (ice_keep_running)
+  ├─ want_keep_running_despite_ice → hp.ice.mode_location   [gate ice_keep_running already fired]
   └─ not_sure → insufficient_info
+
+hp.ice.mode_location   [safety_gate: true; diy_tier: pro_only; exit-ramp fork]
+  ├─ ice_heat_outdoor → emergency_exit hp_ice_heat_outdoor
+  ├─ ice_heat_indoor_only → emergency_exit ice_keep_running
+  ├─ ice_cool_any → emergency_exit ice_keep_running
+  ├─ ice_mode_unsure_outdoor + near_freezing|well_below → emergency_exit hp_ice_heat_outdoor
+  ├─ ice_mode_unsure_outdoor + mild_warm|unknown → emergency_exit ice_keep_running
+  └─ ice_unsure → emergency_exit ice_keep_running
 
 hp.heat.capacity_vs_dead
   ├─ weak_but_some_heat + ambient near_freezing|well_below → next_step DIY Basic (capacity expectation)
@@ -144,7 +152,7 @@ hp.handback.ac_filter_airflow
 | `next_step` DIY Basic | Wrong mode fix; Auto coaching; defrost recover OK; weak-heat deep-cold expectation |
 | `next_step` DIY Advanced | **NOT USED** — HP Advanced electrical OFF → call_pro |
 | `call_pro` | Unusual noise (after hazard clear); short cycle after mode; outdoor not running after power visuals; conclude defrost/valve/O-B; handback skip / basics clear |
-| `emergency_exit` | Ice keep-running; mid-tree hazard; cluster hazards; noise hazard answers |
+| `emergency_exit` | Ice keep-running (cooling or uncertain → Off/thaw `@ice_keep_running`; heat-mode outdoor ice → Emergency/Aux `@hp_ice_heat_outdoor`); mid-tree hazard; cluster hazards; noise hazard answers |
 | `insufficient_info` | Not sure / out-of-scope equipment / RV not_sure when filter already done |
 
 ---
