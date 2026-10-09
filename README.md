@@ -38,7 +38,7 @@ The decision tree in `assets/flow.js` owns every conclusion. There is no model c
 - **Advanced DIY is off on this public build.** `advancedRepairsEnabled` stays `false` in `assets/config.js`. Suspected capacitor or contactor paths are call-a-professional only. The gated capacitor steps are in the tree for a private sandbox zip; they do not run while the flag is false.
 - Terminals are only DIY Basic `next_step`, DIY Advanced `next_step` when the flag is true, `call_pro` (with a reason), `emergency_exit`, and `insufficient_info`.
 - Scope is cooling-only residential split central AC, plus Wave-1 Basic triage for U.S. air-source ducted heat pumps (`hp.air_source.v1`), plus residential water-to-air water-source / geothermal heat pumps of 6 tons or less (`wshp.water_to_air.v0`). That water-source slice gives safety screens and a service note only. It does not give loop, well, water-treatment, refrigerant, or electrical steps. Mini-splits and packaged equipment stay out of scope. Heat-pump Advanced electrical stays off: outdoor-not-running ends at `call_pro` `hp_outdoor_not_running_wave1` after the breaker and disconnect visuals. No gauges, refrigerant DIY, or reversing-valve force-outs.
-- `formsEnabled` stays `false`. No secrets and no `.env`.
+- `formsEnabled` is `true` after Netlify detected `beta-feedback` and `beta-session`. `releaseChecks.liveFormsVerified` stays `false` until a live test submission. No secrets and no `.env`.
 - Brand matches the live beta: dark walnut/charcoal theme, scarlet `#b82030`, white wrench in a scarlet rounded square. Theme color `#17181b`.
 
 ## What changed from the previous beta tree

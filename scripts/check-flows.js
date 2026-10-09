@@ -52,6 +52,8 @@ assert(/advancedRepairsEnabled:\s*false/.test(configText), 'public advanced flag
 assert(/contentVersion:\s*'2026-10-09\.2'/.test(configText), 'content version must be 2026-10-09.2');
 assert(indexText.includes('config.js?v=2026-10-09.2') && indexText.includes('flow.js?v=2026-10-09.2') && indexText.includes('app.js?v=2026-10-09.2'), 'script cache-bust must match content version');
 assert(/hvacContentReviewed:\s*false/.test(configText), 'hvac content review flag stays false');
+assert(/formsEnabled:\s*true/.test(configText), 'forms are on after Netlify detects beta-feedback and beta-session');
+assert(/liveFormsVerified:\s*false/.test(configText), 'live form submission stays unverified');
 assert(F.treeVersion === 'ac.cool.v0', 'AC tree version');
 assert(F.treeVersionHp === 'hp.air_source.v1', 'HP tree version');
 assert(F.treeVersionWshp === 'wshp.water_to_air.v0', 'A-1 WSHP tree version');
