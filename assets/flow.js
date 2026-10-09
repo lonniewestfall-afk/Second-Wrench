@@ -1331,7 +1331,7 @@
       'emergency_exit', 'fn_new_hazard', { gate: 'fn_new_hazard' }),
     fn_tstat_set_heat_basic: r('Basic homeowner check', 'Adjust the thermostat, then wait', 'Set Heat and a higher setpoint.',
       "The thermostat wasn't asking for heat. That's an easy fix.",
-      ['Set the mode to Heat.', 'Raise the setpoint a few degrees above the room temperature. Fan on Auto.', 'Give it 5 to 10 minutes. Still no heat? Start a new check and pick Furnace.', FN_CO_LINE],
+      ['Set the mode to Heat.', 'Raise the setpoint a few degrees above the room temperature. Fan on Auto.', "Still no heat after 10 minutes? Start a new check and answer that heat still won't come on.", FN_CO_LINE],
       "Don't take the thermostat off the wall or change wiring or installer settings.", 'maintenance',
       'next_step', 'fn_tstat_set_heat_basic', { diyTier: 'basic' }),
     fn_fan_auto_basic: r('Basic homeowner check', 'Change one setting, then wait', 'Set the fan to Auto.',

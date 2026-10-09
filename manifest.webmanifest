@@ -1,0 +1,29 @@
+{
+  "name": "Second Wrench",
+  "short_name": "Second Wrench",
+  "start_url": "/#/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#17181b",
+  "theme_color": "#17181b",
+  "icons": [
+    {
+      "src": "assets/icons/icon-192.png?v=2026-10-09.4",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icons/icon-512.png?v=2026-10-09.4",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icons/icon-maskable-512.png?v=2026-10-09.4",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

@@ -49,9 +49,42 @@ function assertNoCap(state, msg) {
 const gate = ['none_of_these', 'agree_18_terms'];
 
 assert(/advancedRepairsEnabled:\s*false/.test(configText), 'public advanced flag must stay false');
-const SHIP = '2026-10-09.3';
+const SHIP = '2026-10-09.4';
 assert(configText.includes("contentVersion: '" + SHIP + "'"), 'content version must be ' + SHIP);
 assert(['config', 'flow', 'app'].every(f => indexText.includes(f + '.js?v=' + SHIP)), 'script cache-bust must match content version');
+assert(indexText.includes('HOME HVAC CHECKS') && !indexText.includes('AC + HEAT PUMP'), 'header lockup is HOME HVAC CHECKS');
+assert(indexText.includes('rel="manifest"') && indexText.includes('manifest.webmanifest?v=' + SHIP), 'index links the web app manifest');
+assert(indexText.includes('rel="apple-touch-icon"') && indexText.includes('apple-mobile-web-app-capable') && indexText.includes('apple-mobile-web-app-title') && indexText.includes('apple-mobile-web-app-status-bar-style'), 'apple web app tags are present');
+let manifest;
+try { manifest = JSON.parse(fs.readFileSync(path.join(__dirname, '../manifest.webmanifest'), 'utf8')); }
+catch (err) { manifest = null; assert(false, 'manifest is valid JSON: ' + (err && err.message)); }
+assert(manifest && manifest.name === 'Second Wrench' && manifest.short_name === 'Second Wrench', 'manifest name and short_name');
+assert(manifest && manifest.start_url === '/#/' && manifest.display === 'standalone', 'manifest start_url and display');
+assert(manifest && manifest.background_color === '#17181b' && manifest.theme_color === '#17181b', 'manifest background and theme colors');
+function pngSize(file) {
+  const buf = fs.readFileSync(file);
+  assert(buf.slice(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10])), 'PNG signature ' + file);
+  return { w: buf.readUInt32BE(16), h: buf.readUInt32BE(20) };
+}
+function manifestIcon(pred) {
+  const icon = (manifest && manifest.icons || []).find(pred);
+  if (!icon) return null;
+  const rel = String(icon.src).replace(/^\//, '').split('?')[0];
+  const file = path.join(__dirname, '..', rel);
+  assert(fs.existsSync(file), 'manifest icon file exists: ' + rel);
+  return { icon, file, size: fs.existsSync(file) ? pngSize(file) : { w: 0, h: 0 } };
+}
+const icon192 = manifestIcon(i => i.sizes === '192x192' && i.purpose === 'any');
+const icon512 = manifestIcon(i => i.sizes === '512x512' && i.purpose === 'any');
+const iconMask = manifestIcon(i => i.sizes === '512x512' && i.purpose === 'maskable');
+assert(icon192 && icon192.size.w === 192 && icon192.size.h === 192, 'manifest 192 icon');
+assert(icon512 && icon512.size.w === 512 && icon512.size.h === 512, 'manifest 512 icon');
+assert(iconMask && iconMask.size.w === 512 && iconMask.size.h === 512, 'manifest maskable 512 icon');
+const appleIcon = path.join(__dirname, '../assets/icons/apple-touch-icon.png');
+assert(fs.existsSync(appleIcon) && indexText.includes('assets/icons/apple-touch-icon.png?v=' + SHIP), 'apple touch icon is linked');
+const appleSize = fs.existsSync(appleIcon) ? pngSize(appleIcon) : { w: 0, h: 0 };
+assert(appleSize.w === 180 && appleSize.h === 180, 'apple touch icon is 180');
+assert(!/navigator\.serviceWorker|serviceWorker\.register/.test(indexText + '\n' + appText), 'no service worker; safety copy must not be served stale');
 assert(/hvacContentReviewed:\s*false/.test(configText), 'hvac content review flag stays false');
 assert(/formsEnabled:\s*true/.test(configText), 'forms are on after Netlify detects beta-feedback and beta-session');
 assert(/liveFormsVerified:\s*false/.test(configText), 'live form submission stays unverified');
@@ -1047,6 +1080,11 @@ const fnBlank = fnStart();
 const fnBatt = F.viewNode('ac.tstat.blank.batteries', fnBlank).options;
 assert(fnBatt.find(op => op.id === 'batteries_replaced_display_back').hint === 'Basic success — retest the heat call.', 'F17 furnace battery hint');
 assert(fnBatt.find(op => op.id === 'hardwired_or_no_batteries').hint === 'Pro path — a blank hardwired thermostat needs a pro. No wiring or panel work.', 'F17 furnace hardwired hint');
+const fnHeatSet = F.results.fn_tstat_set_heat_basic;
+assert(fnHeatSet.title === 'Set Heat and a higher setpoint.', 'furnace thermostat result title');
+assert(fnHeatSet.actions.indexOf("Still no heat after 10 minutes? Start a new check and answer that heat still won't come on.") !== -1, 'furnace still-no-heat line stays in the furnace lane');
+assert(!fnHeatSet.actions.some(a => /pick Furnace/.test(a)), 'furnace thermostat result does not say pick Furnace');
+assert(F.results.hp_mode_wrong_basic.actions[2] === 'Wait 10–15 minutes and retest. If the complaint remains with the mode correct, start a new heat pump check and continue from the mode question.', 'HP thermostat wording unchanged');
 assert(F.nodes['ac.cool.airflow.returns_supplies'].body.indexOf('rooms you want cooled') !== -1, 'F17 stored returns body unchanged');
 const fnReturns = fnStart();
 ['none_of_these', 'gas_furnace', 'landing_not_enough_heat', 'settings_ok_still_problem', 'filter_clean_ok'].forEach(c => F.answer(fnReturns, c, META));
