@@ -197,7 +197,7 @@
         o('split_central_cool_only', 'Central AC with separate indoor and outdoor units', 'ac.cool.landing.picker', 'A cooling-only outdoor AC connected to an indoor furnace or air handler.', 'Residential split-system central AC reported.'),
         o('heat_pump', 'A heat pump', 'hp.intake.system_confirm', 'Continue on the air-source heat pump check. Cooling-only steps stay on this AC path.', 'Heat pump reported. Switching to the heat pump tree.'),
         o('mini_window_portable', 'A mini-split, window, or portable unit', '@out_of_scope_equipment', 'Out of scope for this beta.', 'Ductless, window, or portable equipment reported.'),
-        o('geo_packaged_other', 'Geothermal, packaged, or another system', '@out_of_scope_equipment', 'Out of scope for this beta.', 'Geothermal, packaged, or other out-of-scope equipment reported.'),
+        o('geo_packaged_other', 'Geothermal, packaged, or another system', '@out_of_scope_equipment', 'Geothermal or water-source: start again and choose Water-source / geothermal heat pump. Packaged or other systems are not covered yet.', 'Geothermal, packaged, or another system reported.'),
         o('not_sure', 'I am not sure', '@system_unconfirmed', 'Do not open covers to find out.')
       ]),
 
@@ -693,7 +693,7 @@
       ['Use the manufacturer’s owner support or your HVAC company for heat-pump operation.', 'Do not apply cooling-only steps to a heat pump as if they were the same system.'],
       'Do not open covers to force an identification.', 'scope',
       'insufficient_info', 'heat_pump_out_of_scope'),
-    out_of_scope_equipment: r('More information needed', 'Outside this beta', 'This equipment is outside the cooling-only split central AC check.',
+    out_of_scope_equipment: r('More information needed', 'Not covered in this beta yet', 'This equipment is outside the cooling-only split central AC check.',
       'Mini-splits, window and portable units, packaged systems, and other types are not diagnosed here.',
       ['Hire a technician who works on that type of equipment, or use that manufacturer’s owner guidance.', 'If this is a water-source or geothermal heat pump: Start again and choose Water-source / geothermal heat pump.', 'You can write down an already-known model number yourself. Do not remove a cover or climb to find it.'],
       'Do not apply this central-AC guide to other equipment.', 'scope',

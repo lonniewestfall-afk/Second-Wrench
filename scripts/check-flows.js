@@ -725,8 +725,36 @@ assert(finComb.result === 'coil_service_pro_only' && F.results[finComb.result].o
 assert(F.summary(finComb).indexOf('HOMEOWNER SERVICE NOTE') === 0, 'want_fin_comb_deep_coil service note builds');
 assert(/Three checks in this United States beta\./.test(appText), 'safety page names three checks');
 assert(/Water-source \/ geothermal heat pumps up to 6 tons, residential water-to-air\./.test(appText), 'safety page includes the water-source check');
-assert(/Open-loop well water-care problems always go to a pro, and there is no loop, pump, refrigerant, or electrical work\./.test(appText), 'safety page states the water-source limits');
+assert(/Open-loop well, lake, or pond water-care problems always go to a pro, and there is no loop, pump, refrigerant, or electrical work\./.test(appText), 'safety page states the water-source limits');
+assert(/For water-source systems, this beta gives safety screens and a service note for a pro, not repairs\./.test(appText), 'safety page says water-source is screens and a note');
 assert(!/water-source and geothermal equipment/.test(appText), 'safety page no longer lists water-source equipment as out of scope');
+const geoOption = F.nodes['ac.cool.intake.system_confirm'].options.find(op => op.id === 'geo_packaged_other');
+assert(geoOption && geoOption.next === '@out_of_scope_equipment', 'geothermal packaged option keeps its route');
+assert(geoOption.hint === 'Geothermal or water-source: start again and choose Water-source / geothermal heat pump. Packaged or other systems are not covered yet.', 'geothermal packaged hint points back to the water-source check');
+assert(F.results.out_of_scope_equipment.urgency === 'Not covered in this beta yet', 'out-of-scope equipment urgency is not a hard outside-the-beta title');
+const geoMention = /water[-\s]?source|geothermal/i;
+const oosClaim = /out of scope|outside this beta|outside these checks|not diagnosed|not covered|not part of this beta/i;
+const redirect = /start again and choose water-source \/ geothermal heat pump/i;
+function sentencesOf(text) {
+  return String(text || '').split(/(?<=[.!?])\s+/).map(s => s.trim()).filter(Boolean);
+}
+function oosSentences(text) {
+  return sentencesOf(text).filter(s => geoMention.test(s) && oosClaim.test(s) && !redirect.test(s));
+}
+Object.keys(F.nodes).forEach(id => {
+  F.nodes[id].options.forEach(op => {
+    const hintHit = geoMention.test(op.label) && oosClaim.test(op.hint) && !redirect.test(op.hint);
+    const sentenceHits = oosSentences([op.label, op.hint, op.fact].join(' '));
+    assert(!hintHit && sentenceHits.length === 0, 'option calls geothermal or water-source out of scope: ' + id + '/' + op.id + ' ' + sentenceHits.join(' | '));
+  });
+});
+Object.keys(F.results).forEach(id => {
+  const res = F.results[id];
+  const blob = [res.tier, res.urgency, res.title, res.explanation, res.avoid].concat(res.actions || []).join('\n');
+  const hits = oosSentences(blob);
+  assert(hits.length === 0, 'result calls geothermal or water-source out of scope: ' + id + ' ' + hits.join(' | '));
+});
+assert(oosSentences(appText).length === 0, 'app page text calls geothermal or water-source out of scope: ' + oosSentences(appText).join(' | '));
 
 function finish() {
   if (failed) {
