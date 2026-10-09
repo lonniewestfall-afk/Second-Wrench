@@ -318,7 +318,7 @@
           default: '@weak_airflow_after_returns_supplies'
         }, 'Call a professional.'),
         o('cannot_check_safely', 'I cannot check returns or supplies safely', '@airflow_check_inaccessible', 'Do not force access.'),
-        o('want_duct_work', 'I want to cut ducts, open a chase, or reach the blower', '@duct_work_rejected_not_basic', 'Not a Basic step.', { gate: 'duct_work_rejected_not_basic' })
+        o('want_duct_work', 'I want to cut ducts, open a chase, or reach the blower', '@duct_work_rejected_not_basic', 'Not a Basic step.', 'Asked to cut ducts, open a chase, or reach the blower.', { gate: 'duct_work_rejected_not_basic' })
       ]),
 
     'ac.cool.outdoor.debris_clearance': n('Outdoor unit', 'Exterior debris and clearance',
@@ -327,7 +327,7 @@
         o('need_reach_into_grille', 'Debris requires reaching into or past the grille', '@debris_reach_in_basic', 'Shut off first. Do not reach in while it is running.', 'Debris is packed past the grille.'),
         o('wet_or_electrical_nearby', 'Wet conditions or an electrical concern outdoors', '@debris_wet_electrical', 'Hard stop.', 'Wet conditions or an electrical concern at the outdoor unit.', { gate: 'water_near_electrical' }),
         o('cannot_access_yard_unit', 'I cannot safely access the outdoor unit', '@outdoor_inaccessible', 'Do not force access.'),
-        o('want_fin_comb_deep_coil', 'I want to comb fins deep into the coil with tools', '@coil_service_pro_only', 'Not a Basic step.', { gate: 'coil_service_pro_only' })
+        o('want_fin_comb_deep_coil', 'I want to comb fins deep into the coil with tools', '@coil_service_pro_only', 'Not a Basic step.', 'Asked to comb fins deep into the coil.', { gate: 'coil_service_pro_only' })
       ], { safetyGate: true }),
 
     'ac.start.breaker_disconnect': n('Will not start', 'Basic power visuals',
@@ -626,7 +626,7 @@
         o('wshp_cx_both_weak', 'Heating and cooling are both weak', '@wshp_handback_call_pro', '', 'Complaint: Both heating and cooling weak (water-source / geothermal).'),
         o('wshp_cx_cycle_lockout', 'It starts and stops quickly, or shows a lockout light or code', '@wshp_handback_call_pro', 'Write the light or code down. Do not keep resetting.', 'Complaint: Short cycling or lockout light or code (water-source / geothermal).'),
         o('wshp_cx_noise', 'A new or unusual noise (no burning smell, smoke, or sparks)', '@wshp_handback_call_pro', '', 'Complaint: New or unusual noise, no hazard reported (water-source / geothermal).'),
-        o('wshp_cx_small_leak', 'A small drip or leak, away from anything electrical', '@wshp_handback_call_pro', 'Put a towel or pan down. Stay away from wiring.', 'Complaint: Small drip or leak away from electrical (water-source / geothermal).'),
+        o('wshp_cx_small_leak', 'A small drip or leak, away from anything electrical', '@wshp_handback_call_pro', 'Put a towel or pan down only if the floor is dry and it is away from wiring.', 'Complaint: Small drip or leak away from electrical (water-source / geothermal).'),
         o('wshp_cx_other', 'Something else, or I just want a service note', '@wshp_handback_call_pro', '', 'Complaint: Other water-source / geothermal concern; see observations.'),
         o('want_diy_pro_only', 'I want to fix it myself (loop, pump, antifreeze, wiring, or parts)', '@wshp_handback_call_pro', 'Not offered. You will get the same pro result.'),
         o('want_diy_refrigerant_anyway', 'I want to add refrigerant or use gauges', '@wshp_handback_call_pro', 'Never a DIY step.', '', { gate: 'refrigerant_intent' }),
@@ -694,8 +694,8 @@
       'Do not open covers to force an identification.', 'scope',
       'insufficient_info', 'heat_pump_out_of_scope'),
     out_of_scope_equipment: r('More information needed', 'Outside this beta', 'This equipment is outside the cooling-only split central AC check.',
-      'Mini-splits, window and portable units, geothermal, packaged systems, and other types are not diagnosed here.',
-      ['Hire a technician who works on that type of equipment, or use that manufacturer’s owner guidance.', 'You can write down an already-known model number yourself. Do not remove a cover or climb to find it.'],
+      'Mini-splits, window and portable units, packaged systems, and other types are not diagnosed here.',
+      ['Hire a technician who works on that type of equipment, or use that manufacturer’s owner guidance.', 'If this is a water-source or geothermal heat pump: Start again and choose Water-source / geothermal heat pump.', 'You can write down an already-known model number yourself. Do not remove a cover or climb to find it.'],
       'Do not apply this central-AC guide to other equipment.', 'scope',
       'insufficient_info', 'out_of_scope_equipment'),
     system_unconfirmed: r('More information needed', 'Confirm the system first', 'This check needs a confirmed split central air conditioner.',
@@ -1018,9 +1018,9 @@
       ['Use a technician who works on that equipment, or the manufacturer owner guidance.', 'Do not remove a cover to force an identification.'],
       'Do not apply this ducted heat-pump guide to a mini-split.', 'scope',
       'insufficient_info', 'hp_mini_split_oos'),
-    hp_water_source_oos: r('More information needed', 'Outside this heat-pump check', 'Water-source and geothermal equipment are not covered here.',
-      'That equipment is a later phase. Loop water and related work are not part of this check.',
-      ['Use a technician who works on that system.', 'Do not open covers or service a ground loop from this result.'],
+    hp_water_source_oos: r('More information needed', 'Outside this heat-pump check', 'This air-source check does not cover a water-source heat pump.',
+      'Loop water and related work are not part of this check.',
+      ['Start again and choose Water-source / geothermal heat pump.', 'Use a technician who works on that system.', 'Do not open covers or service a ground loop from this result.'],
       'Do not apply this air-source guide to a water-source heat pump.', 'scope',
       'insufficient_info', 'hp_water_source_oos'),
     hp_packaged_oos: r('More information needed', 'Outside this heat-pump check', 'Packaged or unconfirmed equipment is not covered in this wave.',
@@ -1140,7 +1140,7 @@
       'emergency_exit', 'wshp_new_hazard', { gate: 'wshp_new_hazard' }),
     wshp_mech_room_flood: r('Stop / professional', 'Stay out of the water · get help', 'Do not walk into water near this equipment.',
       'This system has water pipes, a pump, and 240-volt power in the same space. Standing or spraying water near them can cause a shock.',
-      ['Stay out of the water and keep others away.', 'Shut off main power only if you can do it from a dry, safe place you already know. Otherwise leave it.', 'If the water is coming from your home’s water supply and you already know where the main water shutoff is, close it only if you can reach it on a dry floor away from the equipment. Do not touch valves on the heat pump, the loop, the well, or the pressure tank.', 'Call a licensed HVAC professional who works on geothermal systems, or an electrician or plumber. For sparks, smoke, shock, or immediate danger, call 911 from a safe place.'],
+      ['Stay out of the water and keep others away.', 'Shut off main power only if you can do it from a dry, safe place you already know. Otherwise leave it.', 'If the water is coming from your home’s water supply and you already know where the main water shutoff is, close it only if you can reach it on a dry floor away from the equipment and any wiring. Do not touch valves on the heat pump, the loop, the well, or the pressure tank.', 'Call a licensed HVAC professional who works on geothermal systems, or an electrician or plumber. For sparks, smoke, shock, or immediate danger, call 911 from a safe place.'],
       'Do not step into water, mop around live equipment, touch switches with wet hands, or open loop or well valves.', 'electrical',
       'emergency_exit', 'wet_hands_flood', { gate: 'wet_hands_flood' }),
     wshp_breaker_wont_reset: r('Stop / professional', 'Leave it off · call a pro', 'A breaker that keeps tripping is a stop sign.',
@@ -1902,7 +1902,11 @@
       : state.product === 'hp'
         ? 'HOMEOWNER SERVICE NOTE — heat pump observations, not a diagnosis'
         : 'HOMEOWNER SERVICE NOTE — observations, not a diagnosis';
-    const equipment = state.product === 'wshp'
+    const inScopeWshpNote = state.product === 'wshp'
+      && state.result !== 'wshp_out_of_scope_call_pro'
+      && state.result !== 'wshp_divert_mini_split'
+      && state.result !== 'wshp_divert_furnace';
+    const equipment = inScopeWshpNote
       ? 'Equipment: water-to-air water-source / geothermal heat pump (home system; homeowner believes 6 tons or less).'
       : state.product === 'hp' ? 'Equipment: air-source ducted heat pump.' : '';
     return [header,
@@ -1928,6 +1932,11 @@
   function presentResult(state) {
     const res = state && results[state.result];
     if (!res) return null;
+    if (state && state.product === 'wshp' && state.result === 'gas') {
+      return Object.assign({}, res, {
+        avoid: String(res.avoid).replace('switch the AC off', 'switch the system off')
+      });
+    }
     if (!state || state.product !== 'hp') return res;
     const swap = s => String(s)
       .replace('Set the system to Cool and retest after 15–30 minutes.', 'Set Heat or Cool to match the complaint and retest after 15–30 minutes.')

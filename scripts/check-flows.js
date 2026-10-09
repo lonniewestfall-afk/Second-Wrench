@@ -689,6 +689,43 @@ assert(t26.indexOf('Loop type: open loop (well, lake, or pond water).') !== -1 &
 assert(t26.indexOf('What I checked: safety screen — none of the listed hazards. No covers removed. No loop, well, refrigerant, or electrical work done.') !== -1, 'T-26 checked line');
 assert((t26.split('Loop type:').length - 1) === 1, 'T-26 loop line once');
 
+const floodShutoff = F.results.wshp_mech_room_flood.actions.find(action => action.indexOf('main water shutoff') !== -1);
+assert(floodShutoff && floodShutoff.indexOf('only if you can reach it on a dry floor away from the equipment and any wiring') !== -1, 'N5 flood main-shutoff condition');
+const smallLeak = F.nodes['wshp.handback.call_pro'].options.find(op => op.id === 'wshp_cx_small_leak');
+assert(smallLeak && smallLeak.hint === 'Put a towel or pan down only if the floor is dry and it is away from wiring.', 'N7 small-leak hint');
+const scopedEquipment = 'Equipment: water-to-air water-source / geothermal heat pump (home system; homeowner believes 6 tons or less).';
+assert(t8note.indexOf(scopedEquipment) !== -1, 'in-scope note keeps the 6-ton water-to-air line');
+assert(F.summary(t15).indexOf(scopedEquipment) === -1, 'N8 mini-split divert omits the in-scope equipment line');
+assert(F.summary(t16).indexOf(scopedEquipment) === -1, 'N8 furnace divert omits the in-scope equipment line');
+assert(F.summary(t17).indexOf(scopedEquipment) === -1, 'N8 oversize divert omits the in-scope equipment line');
+assert(F.results.gas.avoid === 'Do not search for the leak, reset an alarm, or re-enter to switch the AC off.', 'AC gas avoid stays unchanged');
+assert(F.presentResult(t6).avoid === 'Do not search for the leak, reset an alarm, or re-enter to switch the system off.', 'N9 WSHP gas avoid says the system');
+assert(F.presentResult(t6) !== F.results.gas, 'N9 WSHP gas copy is a swap, not the shared result');
+const pointer = 'Start again and choose Water-source / geothermal heat pump.';
+const hpWater = F.results.hp_water_source_oos;
+assert(!/later phase/i.test([hpWater.title, hpWater.explanation, hpWater.avoid].concat(hpWater.actions).join(' ')), 'hp water-source result drops later phase');
+assert(!/geothermal/i.test(hpWater.title + ' ' + hpWater.explanation + ' ' + hpWater.avoid), 'hp water-source result drops geothermal from the out-of-scope wording');
+assert(hpWater.actions.indexOf(pointer) !== -1, 'hp water-source result points back to the water-source check');
+const acEquip = F.results.out_of_scope_equipment;
+assert(!/geothermal/i.test(acEquip.explanation), 'AC out-of-scope explanation no longer lists geothermal');
+assert(acEquip.actions.some(action => action.indexOf(pointer) !== -1 && /water-source or geothermal heat pump/.test(action.slice(0, action.indexOf(pointer)))), 'AC out-of-scope pointer is only for water-source or geothermal owners');
+assert(acEquip.actions.some(action => /Hire a technician/.test(action)), 'AC out-of-scope still covers other unsupported equipment');
+Object.keys(F.nodes).forEach(id => {
+  F.nodes[id].options.forEach(op => {
+    assert(typeof op.fact === 'string', 'option fact is a string at ' + id + '/' + op.id);
+  });
+});
+const ductWork = walk('ac', gate.concat(['split_central_cool_only', 'landing_weak_airflow', 'filter_clean_ok', 'want_duct_work']));
+assert(ductWork.result === 'duct_work_rejected_not_basic' && F.results[ductWork.result].outcome === 'call_pro', 'want_duct_work reaches call_pro');
+assert(F.summary(ductWork).indexOf('HOMEOWNER SERVICE NOTE') === 0, 'want_duct_work service note builds');
+const finComb = walk('ac', gate.concat(['split_central_cool_only', 'landing_not_cooling', 'mode_cool_setpoint_ok', 'filter_clean_ok', 'fan_spinning', 'want_fin_comb_deep_coil']));
+assert(finComb.result === 'coil_service_pro_only' && F.results[finComb.result].outcome === 'call_pro', 'want_fin_comb_deep_coil reaches call_pro');
+assert(F.summary(finComb).indexOf('HOMEOWNER SERVICE NOTE') === 0, 'want_fin_comb_deep_coil service note builds');
+assert(/Three checks in this United States beta\./.test(appText), 'safety page names three checks');
+assert(/Water-source \/ geothermal heat pumps up to 6 tons, residential water-to-air\./.test(appText), 'safety page includes the water-source check');
+assert(/Open-loop well water-care problems always go to a pro, and there is no loop, pump, refrigerant, or electrical work\./.test(appText), 'safety page states the water-source limits');
+assert(!/water-source and geothermal equipment/.test(appText), 'safety page no longer lists water-source equipment as out of scope');
+
 function finish() {
   if (failed) {
     console.error(failed + ' failed');
@@ -777,7 +814,64 @@ function pageChecks() {
     assert(window.location.hash === '#/check', 'Continue stays on the check route');
     assert(doc.querySelector('h1').textContent === 'A guide, not an equipment inspection.', 'Continue re-checks the checkbox and does not advance');
     assert(doc.getElementById('flow-error').textContent === 'Please read and accept the Terms and Privacy notes to continue.', 'Continue explains that the checkbox is required');
-    assert(doc.querySelector('main h1').textContent !== 'Cooling-only AC, or a heat pump?', 'an unticked Continue does not open system type');
+    assert(doc.querySelector('main h1').textContent !== 'What kind of system is this?', 'an unticked Continue does not open system type');
+    async function acceptAndContinue() {
+      const box = doc.getElementById('agree');
+      box.checked = true;
+      box.dispatchEvent(new window.Event('input', { bubbles: true }));
+      await flush();
+      click(doc.getElementById('continue-consent'));
+      await flush();
+    }
+    function answer(id) {
+      const button = doc.querySelector('[data-answer="' + id + '"]');
+      assert(button, 'choice is on screen: ' + id);
+      click(button);
+    }
+    await home();
+    click(doc.querySelector('[data-answer="none_of_these"]'));
+    await flush();
+    await acceptAndContinue();
+    assert(doc.querySelector('h1').textContent === 'What kind of system is this?', 'consent opens system type');
+    answer('water_source_geo');
+    await flush();
+    answer('wshp_hz_none');
+    await flush();
+    answer('wshp_closed_loop');
+    await flush();
+    answer('wshp_cx_no_heat');
+    await flush();
+    assert(window.location.hash === '#/result', 'WSHP closed loop reaches a result');
+    assert(doc.querySelector('h1').textContent === 'Call a pro who works on geothermal or water-source heat pumps.', 'WSHP lane renders the call_pro result');
+    assert(doc.querySelector('.pill').textContent === 'Professional guidance', 'WSHP call_pro tier renders');
+    assert(doc.getElementById('service-note') && doc.getElementById('service-note').textContent.indexOf('HOMEOWNER SERVICE NOTE') === 0, 'WSHP call_pro note renders');
+    assert(!doc.getElementById('flow-error'), 'WSHP lane result has no error');
+    assert(errors.length === 0, 'WSHP lane page has no script error: ' + errors.join(' | '));
+    async function clickPath(choices) {
+      for (const id of choices) {
+        answer(id);
+        await flush();
+      }
+    }
+    await home();
+    click(doc.querySelector('[data-answer="none_of_these"]'));
+    await flush();
+    await acceptAndContinue();
+    await clickPath(['cooling_only_ac', 'split_central_cool_only', 'landing_weak_airflow', 'filter_clean_ok', 'want_duct_work']);
+    assert(window.location.hash === '#/result', 'want_duct_work reaches a result');
+    assert(doc.querySelector('h1').textContent === 'Cutting ducts, opening a chase, or reaching the blower is not a Basic step.', 'want_duct_work renders call_pro');
+    assert(doc.getElementById('service-note') && doc.getElementById('service-note').textContent.indexOf('HOMEOWNER SERVICE NOTE') === 0, 'want_duct_work note renders');
+    assert(!doc.getElementById('flow-error'), 'want_duct_work result has no error');
+    await home();
+    click(doc.querySelector('[data-answer="none_of_these"]'));
+    await flush();
+    await acceptAndContinue();
+    await clickPath(['cooling_only_ac', 'split_central_cool_only', 'landing_not_cooling', 'mode_cool_setpoint_ok', 'filter_clean_ok', 'fan_spinning', 'want_fin_comb_deep_coil']);
+    assert(window.location.hash === '#/result', 'want_fin_comb_deep_coil reaches a result');
+    assert(doc.querySelector('h1').textContent === 'Combing fins deep into the coil, or a chemical coil clean, is not part of this guide.', 'want_fin_comb_deep_coil renders call_pro');
+    assert(doc.getElementById('service-note') && doc.getElementById('service-note').textContent.indexOf('HOMEOWNER SERVICE NOTE') === 0, 'want_fin_comb_deep_coil note renders');
+    assert(!doc.getElementById('flow-error'), 'want_fin_comb_deep_coil result has no error');
+    assert(errors.length === 0, 'AC call_pro pages have no script error: ' + errors.join(' | '));
     window.location.hash = '#/terms';
     await flush();
     const termsBody = norm(doc.querySelector('.document-panel'));
