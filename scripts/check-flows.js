@@ -49,8 +49,9 @@ function assertNoCap(state, msg) {
 const gate = ['none_of_these', 'agree_18_terms'];
 
 assert(/advancedRepairsEnabled:\s*false/.test(configText), 'public advanced flag must stay false');
-assert(/contentVersion:\s*'2026-10-09\.2'/.test(configText), 'content version must be 2026-10-09.2');
-assert(indexText.includes('config.js?v=2026-10-09.2') && indexText.includes('flow.js?v=2026-10-09.2') && indexText.includes('app.js?v=2026-10-09.2'), 'script cache-bust must match content version');
+const SHIP = '2026-10-09.3';
+assert(configText.includes("contentVersion: '" + SHIP + "'"), 'content version must be ' + SHIP);
+assert(['config', 'flow', 'app'].every(f => indexText.includes(f + '.js?v=' + SHIP)), 'script cache-bust must match content version');
 assert(/hvacContentReviewed:\s*false/.test(configText), 'hvac content review flag stays false');
 assert(/formsEnabled:\s*true/.test(configText), 'forms are on after Netlify detects beta-feedback and beta-session');
 assert(/liveFormsVerified:\s*false/.test(configText), 'live form submission stays unverified');
@@ -723,7 +724,7 @@ assert(F.summary(ductWork).indexOf('HOMEOWNER SERVICE NOTE') === 0, 'want_duct_w
 const finComb = walk('ac', gate.concat(['split_central_cool_only', 'landing_not_cooling', 'mode_cool_setpoint_ok', 'filter_clean_ok', 'fan_spinning', 'want_fin_comb_deep_coil']));
 assert(finComb.result === 'coil_service_pro_only' && F.results[finComb.result].outcome === 'call_pro', 'want_fin_comb_deep_coil reaches call_pro');
 assert(F.summary(finComb).indexOf('HOMEOWNER SERVICE NOTE') === 0, 'want_fin_comb_deep_coil service note builds');
-assert(/Three checks in this United States beta\./.test(appText), 'safety page names three checks');
+assert(/Four checks in this United States beta\./.test(appText), 'safety page names four checks');
 assert(/Water-source \/ geothermal heat pumps up to 6 tons, residential water-to-air\./.test(appText), 'safety page includes the water-source check');
 assert(/Open-loop well, lake, or pond water-care problems always go to a pro, and there is no loop, pump, refrigerant, or electrical work\./.test(appText), 'safety page states the water-source limits');
 assert(/For water-source systems, this beta gives safety screens and a service note for a pro, not repairs\./.test(appText), 'safety page says water-source is screens and a note');
@@ -755,13 +756,268 @@ Object.keys(F.results).forEach(id => {
   assert(hits.length === 0, 'result calls geothermal or water-source out of scope: ' + id + ' ' + hits.join(' | '));
 });
 assert(oosSentences(appText).length === 0, 'app page text calls geothermal or water-source out of scope: ' + oosSentences(appText).join(' | '));
+const furnaceMention = /\bfurnace\b/i;
+const furnaceRedirect = /start again and choose furnace \(gas or electric, with or without central AC\)/i;
+const furnaceAllowed = /wall (?:or |and )?floor furnace|oil, wood, pellet, wall or floor furnace|boilers, radiant floors/i;
+function furnaceOosSentences(text) {
+  return sentencesOf(text).filter(s => furnaceMention.test(s) && oosClaim.test(s) && !furnaceRedirect.test(s) && !furnaceAllowed.test(s));
+}
+Object.keys(F.nodes).forEach(id => {
+  const node = F.nodes[id];
+  const nodeHits = furnaceOosSentences([node.title, node.body, node.caution].join('\n'));
+  assert(nodeHits.length === 0, 'node calls a furnace out of scope: ' + id + ' ' + nodeHits.join(' | '));
+  node.options.forEach(op => {
+    const hits = furnaceOosSentences([op.label, op.hint, op.fact].join(' '));
+    assert(hits.length === 0, 'option calls a furnace out of scope: ' + id + '/' + op.id + ' ' + hits.join(' | '));
+  });
+});
+Object.keys(F.results).forEach(id => {
+  const res = F.results[id];
+  const blob = [res.tier, res.urgency, res.title, res.explanation, res.avoid].concat(res.actions || []).join('\n');
+  const hits = furnaceOosSentences(blob);
+  assert(hits.length === 0, 'result calls a furnace out of scope: ' + id + ' ' + hits.join(' | '));
+});
+assert(furnaceOosSentences(appText).length === 0, 'app page text calls a furnace out of scope: ' + furnaceOosSentences(appText).join(' | '));
+assert(F.results.wshp_divert_furnace.actions.some(action => action.indexOf('start again and choose Furnace (gas or electric, with or without central AC)') !== -1), 'WSHP furnace divert points at the furnace Start choice');
+
+// ---- Furnace fn.furnace.v0 (Wave-1 Slice 1) ----
+const FN_GATE = 'fn.gate.combustion_co';
+const META = { agreed: true, termsVersion: 'beta-2026-09-13' };
+const clone = s => JSON.parse(JSON.stringify(s));
+const fnStart = () => walk('ask', gate.concat(['furnace']));
+const res = s => F.results[s.result] || {};
+const outcomeOf = s => res(s).outcome;
+// Explore every choice the UI can show (viewNode), using the real engine. stopAt ends a branch early.
+function explore(start, stopAt) {
+  const out = [];
+  const stack = [[start, 0]];
+  while (stack.length) {
+    const [s, depth] = stack.pop();
+    if (s.result || (stopAt && stopAt(s))) { out.push(s); continue; }
+    if (depth > 40) throw new Error('explore depth at ' + s.node);
+    F.viewNode(s.node, s).options.forEach(op => {
+      const c = clone(s);
+      try { F.answer(c, op.id, META); } catch (e) { failed += 1; console.error('FAIL shown choice threw', s.node, op.id, e.message); return; }
+      stack.push([c, depth + 1]);
+    });
+  }
+  return out;
+}
+const fnNodesSeen = s => s.answers.map(a => a.node).concat(s.node ? [s.node] : []);
+// The part of a path that ran in the fn lane (from system type until a lane handoff).
+const fnSegment = s => {
+  const seg = [];
+  let on = false;
+  s.answers.forEach(a => {
+    if (a.node === 'sw.intake.system_type' && a.choice === 'furnace') { on = true; return; }
+    if (on) seg.push(a);
+    if (on && ((a.node === 'fn.landing.picker' && a.choice === 'landing_cooling_problem') || (a.node === 'fn.intake.system_confirm' && a.choice === 'furnace_plus_heat_pump'))) on = false;
+  });
+  return seg;
+};
+const handedOff = s => s.answers.some(a => (a.node === 'fn.landing.picker' && a.choice === 'landing_cooling_problem') || (a.node === 'fn.intake.system_confirm' && a.choice === 'furnace_plus_heat_pump'));
+const NEG = /(n['’]t\b|\bnot\b|\bnever\b|\bno\b)/i;
+const FORBIDDEN_COPY = /gas valve|gas cock|pilot|relight|igniter|ignitor|flame sensor|inducer|limit switch|rollout switch|reset button|\breset\b|capacitor|contactor|panel interior|deadfront|burner (door|compartment)|furnace (door|panel)|amp draw|\bamps?\b|multimeter|flue|chimney|heating element|sequencer|ladder|\broof\b|switch on|turn (the )?(furnace )?switch|flip (the )?(switch|breaker)/i;
+const sentences = t => String(t || '').split(/(?<=[.!?])\s+|\n+/).map(x => x.trim()).filter(Boolean);
+const forbiddenHits = t => sentences(t).filter(x => FORBIDDEN_COPY.test(x) && !NEG.test(x));
+const nodeText = id => { const nd = F.nodes[id]; return [nd.title, nd.body, nd.caution].concat(nd.options.map(op => op.label + '. ' + op.hint)).join('\n'); };
+const resultText = r => [r.title, r.urgency, r.explanation].concat(r.actions).concat([r.avoid]).join('\n');
+
+// F1 version pin + lane stamp
+assert(F.treeVersionFn === 'fn.furnace.v0', 'F1 furnace tree version pin');
+const fs0 = fnStart();
+assert(fs0.node === FN_GATE && fs0.product === 'fn' && fs0.treeVersion === 'fn.furnace.v0', 'F1 furnace choice enters fn lane at the gate, got ' + fs0.node + ' ' + fs0.product);
+assert(fs0.audit.some(e => e.event === 'product_lane:fn'), 'F1 audit product_lane:fn');
+
+// F2 Start: water-source stays, furnace is after it and before Not sure.
+// Spec order was cooling_only_ac|heat_pump|furnace|not_sure. Main now has water_source_geo.
+const st = F.nodes['sw.intake.system_type'];
+assert(st.options.map(op => op.id).join('|') === 'cooling_only_ac|heat_pump|water_source_geo|furnace|not_sure', 'F2 system type choice ids/order');
+const stOp = id => st.options.find(op => op.id === id);
+assert(stOp('furnace').label === 'Furnace (gas or electric, with or without central AC)' && stOp('furnace').next === FN_GATE, 'F2 furnace choice label and edge');
+assert(stOp('cooling_only_ac').label === 'Cooling-only AC' && stOp('cooling_only_ac').hint === 'The outdoor unit is for cooling. A furnace, boiler, or other heater provides heat.', 'F2 cooling-only copy unchanged');
+assert(stOp('heat_pump').label === 'Heat pump (heats and cools with the outdoor unit)' && stOp('heat_pump').hint === 'The outdoor unit runs for heat and for cooling.', 'F2 heat-pump copy unchanged');
+assert(stOp('not_sure').label === 'Not sure' && /Up to three plain questions/.test(stOp('not_sure').hint), 'F2 not-sure copy unchanged');
+
+// Exhaustive furnace walk (flag off), then flag on
+const fnPaths = explore(fs0, s => handedOff(s) && s.product !== 'fn');
+assert(fnPaths.length > 40, 'F walk produced paths: ' + fnPaths.length);
+
+// F3 gate ordering: every furnace path is gate → consent → system type → fn gate, before any other fn node
+fnPaths.forEach(s => {
+  const seq = s.answers.map(a => a.node);
+  assert(seq.slice(0, 4).join('|') === 'ac.gate.cluster_entry|ac.session.consent|sw.intake.system_type|' + FN_GATE, 'F3 order ' + seq.slice(0, 5).join('>'));
+  const firstFn = seq.findIndex(id => id.indexOf('fn.') === 0);
+  assert(seq[firstFn] === FN_GATE, 'F3 first fn node is the gate');
+});
+
+// F4 gate shape: no DIY or continue exits
+const gateNode = F.nodes[FN_GATE];
+assert(gateNode.safetyGate === true, 'F4 gate safetyGate');
+assert(gateNode.options.map(op => op.id).join('|') === 'gas_smell_or_unknown_smell|co_alarm_or_symptoms|rollout_soot_scorch|burning_smoke_sparks|cold_exposure_risk|flame_yellow_orange|boom_at_ignition|unsure|none_of_these', 'F4 gate choice ids');
+const GATE_WANT = { gas_smell_or_unknown_smell: 'emergency_exit', co_alarm_or_symptoms: 'emergency_exit', rollout_soot_scorch: 'emergency_exit', burning_smoke_sparks: 'emergency_exit', cold_exposure_risk: 'emergency_exit', unsure: 'emergency_exit', flame_yellow_orange: 'call_pro', boom_at_ignition: 'call_pro' };
+Object.keys(GATE_WANT).forEach(id => {
+  const s = clone(fs0); F.answer(s, id, META);
+  assert(!!s.result && outcomeOf(s) === GATE_WANT[id], 'F4 gate ' + id + ' -> ' + GATE_WANT[id] + ', got ' + outcomeOf(s));
+  assert(!res(s).continueTo && ['Emergency', 'Stop / professional'].indexOf(res(s).tier) !== -1, 'F4 gate ' + id + ' is a stop screen with no continue');
+  let resumed = false; try { F.resume(s); resumed = true; } catch (e) { /* expected */ }
+  assert(!resumed, 'F4 gate ' + id + ' cannot resume');
+  assert(s.audit.some(e => e.event.indexOf('gate_fired:') === 0), 'F4 gate ' + id + ' fires gate audit');
+  const before = s.result; F.stop(s); assert(s.result === before, 'F4 Stop does not clear the ' + id + ' screen');
+});
+const gc = clone(fs0); F.answer(gc, 'none_of_these', META);
+assert(gc.node === 'fn.intake.system_confirm', 'F4 gate clear -> fn.intake.system_confirm in fn lane');
+assert(forbiddenHits(nodeText(FN_GATE)).length === 0 && /don't go look at the flame/i.test(gateNode.body), 'F4 gate never asks the user to look at the flame');
+
+// F5 gas-smell and CO copy locks
+const fnGas = F.results.fn_gas_smell, fnCo = F.results.fn_co_alarm;
+assert(/out now/.test(fnGas.actions[0]) && /switches/.test(fnGas.actions[1]) && /thermostat/.test(fnGas.actions[1]) && /phones/.test(fnGas.actions[1]) && /spark/.test(fnGas.actions[1]), 'F5 gas: leave first, no switches/phones/thermostat/spark');
+assert(fnGas.actions.some(a => /find the leak/.test(a)) && fnGas.actions.some(a => /neighbor/.test(a) && /gas utility/.test(a) && /911/.test(a)), 'F5 gas: no leak hunting; utility or 911 from outside');
+assert(/pets/.test(fnCo.actions[0]) && /fresh air/.test(fnCo.actions[0]) && /911 or the fire department/.test(fnCo.actions[1]) && /go back in/.test(fnCo.actions[2]), 'F5 CO: out, call from outside, stay out');
+
+// F6 no AC cooling outdoor / capacitor / power / Advanced reachability from the fn lane (flag off and flag on)
+function assertFnClean(paths, tag) {
+  paths.forEach(s => {
+    const seg = fnSegment(s).map(a => a.node).concat(!handedOff(s) && s.node ? [s.node] : []);
+    seg.forEach(id => {
+      assert(F.fnForbidden.indexOf(id) === -1 && id.indexOf('ac.adv.cap.') !== 0 && !/^ac\.(cool\.outdoor|start|cool\.power|cool\.indoor)/.test(id), tag + ' fn lane reached ' + id);
+    });
+    if (!handedOff(s) && s.result) {
+      assert(F.fnForbidden.indexOf('@' + s.result) === -1, tag + ' fn lane ended on forbidden result ' + s.result);
+      assert(res(s).diyTier !== 'advanced', tag + ' advanced terminal ' + s.result);
+    }
+  });
+}
+assertFnClean(fnPaths, 'F6 flag off');
+globalThis.SW_CONFIG.advancedRepairsEnabled = true;
+assertFnClean(explore(fnStart(), s => handedOff(s) && s.product !== 'fn'), 'F6 flag on');
+globalThis.SW_CONFIG.advancedRepairsEnabled = false;
+// direct overlay probe: any forbidden target is caught
+const probe = fnStart(); F.answer(probe, 'none_of_these', META); F.answer(probe, 'gas_furnace', META); F.answer(probe, 'landing_no_heat', META); F.answer(probe, 'settings_ok_still_problem', META);
+assert(probe.node === 'ac.cool.filter.check', 'F6 probe at filter');
+const pf = clone(probe); F.answer(pf, 'filter_clean_ok', META);
+assert(pf.node === 'fn.conclude.call_pro' && pf.fnReason === 'no_heat_after_basics', 'F6 clean filter (gas, no heat) -> fn.conclude no_heat_after_basics, got ' + pf.node + ' ' + pf.fnReason);
+
+// F6b the fn_advanced_off catch-all is defense only: no authored furnace path may hit it, and every fn.conclude has a mapped reason
+fnPaths.concat([]).forEach(s => {
+  if (handedOff(s)) return;
+  assert(s.fnReason !== 'fn_advanced_off', 'F6b authored path hit fn_advanced_off catch-all: ' + fnSegment(s).map(a => a.node + '/' + a.choice).join(' > '));
+  if (s.result === 'fn_call_pro') assert(!!s.fnReason && !!F.fnReasonCopy[s.fnReason], 'F6b fn_call_pro without mapped reason');
+});
+
+// F7 hazard exit on every furnace question
+const askedFn = new Set();
+fnPaths.forEach(s => fnSegment(s).forEach(a => askedFn.add(a.node)));
+askedFn.delete(FN_GATE);
+['fn.intake.system_confirm', 'fn.landing.picker', 'fn.tstat.mode_setpoint', 'fn.conclude.call_pro'].concat(F.fnReused).forEach(id => assert(askedFn.has(id), 'F7 walk covers ' + id));
+fnPaths.forEach(s => {
+  const seg = fnSegment(s);
+  seg.forEach((a, i) => {
+    if (a.node === FN_GATE || a.node.indexOf('hp.') === 0) return;
+    // rebuild the state just before this answer and check the shown choices
+    const pre = fnStart();
+    seg.slice(0, i).forEach(b => F.answer(pre, b.choice, META));
+    const shown = F.viewNode(pre.node, pre).options.map(op => op.id);
+    assert(shown.indexOf('hazard_now') !== -1, 'F7 hazard_now missing on ' + pre.node);
+    const hz = clone(pre); F.answer(hz, 'hazard_now', META);
+    assert(hz.result === 'fn_hazard_now' && outcomeOf(hz) === 'emergency_exit', 'F7 hazard_now on ' + pre.node + ' -> emergency_exit, got ' + hz.result);
+  });
+});
+
+// F8 cooling-complaint handoff
+const cool = fnStart(); ['none_of_these', 'gas_furnace', 'landing_cooling_problem'].forEach(c => F.answer(cool, c, META));
+assert(cool.node === 'ac.cool.intake.system_confirm' && cool.product === 'ac' && cool.treeVersion === 'ac.cool.v0', 'F8 cooling problem -> AC intake, lane ac');
+assert(cool.audit.some(e => e.event === 'handoff:fn_to_ac_cooling'), 'F8 handoff audit');
+['split_central_cool_only', 'landing_unusual_noise', 'noise_no_hazard_symptoms'].forEach(c => F.answer(cool, c, META));
+assert(cool.node === 'ac.noise.clarify_outdoor_hum', 'F8 after handoff the AC tree runs unchanged');
+assert(!Object.keys(F.nodes).some(id => id.indexOf('fn.cool') === 0), 'F8 no fn cooling nodes');
+
+// F9 HP + gas furnace: yes and not-sure pass the gate, no skips, return to HP
+const hpIntake2 = walk('hp', gate);
+['air_source_hp_gas_furnace', 'air_source_hp_gas_unsure'].forEach(ch => {
+  const s = clone(hpIntake2); F.answer(s, ch, META);
+  assert(s.node === FN_GATE && s.product === 'hp' && s.treeVersion === 'hp.air_source.v1', 'F9 ' + ch + ' -> fn gate (lane hp), got ' + s.node);
+  const back = clone(s); F.answer(back, 'none_of_these', META);
+  assert(back.node === 'hp.landing.picker' && back.product === 'hp', 'F9 ' + ch + ' gate clear returns to hp.landing.picker, got ' + back.node);
+  assert(back.audit.some(e => e.event === 'notes.fn_gate:return_to_hp') && back.audit.some(e => e.event.indexOf('flag:hp_gas_furnace=') === 0), 'F9 audit flags');
+  Object.keys(GATE_WANT).forEach(id => { const h = clone(s); F.answer(h, id, META); assert(!!h.result && outcomeOf(h) === GATE_WANT[id], 'F9 ' + ch + '/' + id + ' stops'); });
+});
+const plainHp = clone(hpIntake2); F.answer(plainHp, 'air_source_ducted_hp', META);
+assert(plainHp.node === 'hp.landing.picker', 'F9 plain heat pump unchanged');
+// every way into hp.landing.picker: plain HP, or the gate was cleared this session
+const hpEntries = [walk('hp', gate), walk('ac', gate.concat(['heat_pump'])), identify('winter_outdoor_unsure', 'em_aux_unsure', 'heat_source_unsure')];
+hpEntries.forEach(st0 => explore(st0, s => s.node === 'hp.landing.picker').forEach(s => {
+  if (s.node !== 'hp.landing.picker') return;
+  const conf = s.answers.find(a => a.node === 'hp.intake.system_confirm');
+  const passed = s.answers.some(a => a.node === FN_GATE && a.choice === 'none_of_these');
+  assert(conf.choice === 'air_source_ducted_hp' || passed, 'F9 gas/unsure reached HP landing without the gate');
+}));
+// dual-fuel from the furnace side: gate once, then HP intake gas choice goes straight to HP landing
+const df = fnStart(); ['none_of_these', 'furnace_plus_heat_pump'].forEach(c => F.answer(df, c, META));
+assert(df.node === 'hp.intake.system_confirm' && df.product === 'hp' && df.hpGasFurnace === 'yes', 'F9 dual-fuel handoff to HP intake');
+F.answer(df, 'air_source_hp_gas_furnace', META);
+assert(df.node === 'hp.landing.picker' && df.answers.filter(a => a.node === FN_GATE).length === 1, 'F9 gate is not repeated after the furnace side cleared it');
+
+// F10 electric furnace skips flame/ignition questions and wording
+const elec = fnStart(); ['none_of_these', 'electric_furnace'].forEach(c => F.answer(elec, c, META));
+const FLAME = /flame|ignit|pilot|burner|burning cleanly/i;
+explore(elec, s => handedOff(s) && s.product !== 'fn').forEach(s => {
+  s.answers.slice(5).forEach(a => assert(!FLAME.test(nodeText(a.node).replace(/[^.\n]*(n['’]t|not|never|no)\b[^.\n]*/gi, '')), 'F10 electric path shows flame wording at ' + a.node));
+  if (s.result === 'fn_call_pro') {
+    assert(s.fnReason !== 'ignition_or_flame_suspected', 'F10 electric never gets the ignition reason');
+    assert(!FLAME.test(F.presentResult(s).explanation), 'F10 electric conclusion copy has no flame wording');
+  }
+  assert(!fnNodesSeen(s).some(id => /^fn\.(vent|condensate|power)\./.test(id)), 'F10 Slice-2 nodes are not in this slice');
+});
+const ecold = clone(elec); ['landing_cold_air', 'settings_ok_still_problem', 'filter_clean_ok'].forEach(c => F.answer(ecold, c, META));
+assert(ecold.fnReason === 'electric_furnace_components', 'F10 electric cold air -> electric_furnace_components, got ' + ecold.fnReason);
+
+// F11 forbidden-word ban on furnace copy ('don't' lines allowed)
+const fnCopy = F.fnWave1.map(id => ['node ' + id, nodeText(id)])
+  .concat(Object.keys(F.results).filter(id => id.indexOf('fn_') === 0).map(id => ['result ' + id, resultText(F.results[id])]))
+  .concat(Object.keys(F.fnReasonCopy).map(k => ['reason ' + k, F.fnReasonCopy[k]]))
+  .concat([['system type furnace choice', stOp('furnace').label + '. ' + stOp('furnace').hint]]);
+fnCopy.forEach(([where, text]) => forbiddenHits(text).forEach(hit => assert(false, 'F11 forbidden instruction in ' + where + ': ' + hit)));
+assert(!/(turn|switch|flip) (it |the furnace switch )?on\b/i.test(fnCopy.map(x => x[1]).join('\n')), 'F11 no furnace-switch On instruction');
+
+// F12 CO / backup-heat warning on every furnace conclusion (as rendered)
+fnPaths.filter(s => s.result && !handedOff(s)).forEach(s => {
+  assert(F.presentResult(s).actions.indexOf(F.fnCoLine) !== -1, 'F12 CO line missing on ' + s.result);
+});
+['fn_gas_smell', 'fn_co_alarm', 'fn_rollout_soot', 'fn_burning_sparks', 'fn_cold_exposure', 'fn_flame_abnormal', 'fn_ignition_bang', 'fn_gate_unsure'].forEach(id => {
+  assert(F.results[id].actions.indexOf(F.fnCoLine) !== -1, 'F12 gate result ' + id + ' carries the CO line natively (HP lane too)');
+});
+assert(F.fnCoLine === "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns.", 'F12 CO line wording');
+
+// F13 every fn terminal is one of the allowed outcomes; Basic successes stay Basic
+fnPaths.filter(s => s.result).forEach(s => {
+  assert(['next_step', 'call_pro', 'emergency_exit', 'insufficient_info'].indexOf(outcomeOf(s)) !== -1, 'F13 outcome ' + s.result);
+  if (outcomeOf(s) === 'next_step') assert(res(s).diyTier === 'basic', 'F13 next_step must be Basic: ' + s.result);
+});
+// fn audits carry the fn tree until a handoff
+fnPaths.filter(s => !handedOff(s)).forEach(s => {
+  const i = s.audit.findIndex(e => e.event === 'product_lane:fn');
+  assert(s.audit.slice(i).every(e => e.tree === 'fn.furnace.v0'), 'F13 audit tree stamp fn.furnace.v0');
+});
+
+// F14 regression: AC copy unchanged on reused nodes (data, not view)
+assert(F.nodes['ac.cool.filter.check'].options.map(op => op.id).join('|') === 'filter_dirty_clogged|filter_clean_ok|filter_clean_weak_airflow|filter_missing|cannot_check_safely', 'F14 AC filter node unchanged');
+assert(F.results.filter_replace_basic.actions[1] === 'Set the system to Cool and retest after 15–30 minutes.', 'F14 AC filter result copy unchanged');
+assert(!F.viewNode('ac.cool.filter.check', walk('ac', gate.concat(['split_central_cool_only', 'landing_weak_airflow']))).options.some(op => op.id === 'hazard_now'), 'F14 AC lane does not show the furnace hazard choice');
+
+// F15 furnace result length budget (explanation + actions + avoid, as rendered, per reason)
+const words = t => String(t || '').split(/\s+/).filter(Boolean).length;
+const fnRendered = (id, reason) => { const r = F.presentResult({ product: 'fn', fnFuel: 'gas', fnReason: reason || null, audit: [], answers: [], result: id }); return words([r.explanation].concat(r.actions).concat([r.avoid]).join(' ')); };
+Object.keys(F.results).filter(id => id.indexOf('fn_') === 0 && id !== 'fn_call_pro').forEach(id => assert(fnRendered(id) <= 92, 'F15 ' + id + ' over 92 words: ' + fnRendered(id)));
+Object.keys(F.fnReasonCopy).forEach(k => assert(fnRendered('fn_call_pro', k) <= 92, 'F15 fn_call_pro:' + k + ' over 92 words: ' + fnRendered('fn_call_pro', k)));
+
 
 function finish() {
   if (failed) {
     console.error(failed + ' failed');
     process.exit(1);
   }
-  console.log('AC Wave-2, HP Wave-1, and WSHP Wave-1 PR-1 sanity passed');
+  console.log('AC Wave-2, HP Wave-1, WSHP Wave-1 PR-1, and furnace Wave-1 sanity passed');
 }
 
 function bootPage() {
@@ -902,6 +1158,27 @@ function pageChecks() {
     assert(doc.getElementById('service-note') && doc.getElementById('service-note').textContent.indexOf('HOMEOWNER SERVICE NOTE') === 0, 'want_fin_comb_deep_coil note renders');
     assert(!doc.getElementById('flow-error'), 'want_fin_comb_deep_coil result has no error');
     assert(errors.length === 0, 'AC call_pro pages have no script error: ' + errors.join(' | '));
+    await home();
+    click(doc.querySelector('[data-answer="none_of_these"]'));
+    await flush();
+    await acceptAndContinue();
+    await clickPath(['furnace', 'none_of_these', 'gas_furnace', 'landing_no_heat', 'cannot_change_settings', 'ack_call_pro']);
+    assert(window.location.hash === '#/result', 'furnace intake reaches a call_pro result');
+    assert(doc.querySelector('h1').textContent === 'Call a licensed HVAC pro.', 'furnace call_pro title');
+    assert(doc.querySelector('.pill').textContent === 'Professional guidance', 'furnace call_pro tier renders');
+    assert(doc.getElementById('service-note') && doc.getElementById('service-note').textContent.indexOf('HOMEOWNER SERVICE NOTE — furnace observations, not a diagnosis') === 0, 'furnace call_pro note renders');
+    assert(!doc.getElementById('flow-error'), 'furnace call_pro result has no error');
+    await home();
+    click(doc.querySelector('[data-answer="none_of_these"]'));
+    await flush();
+    await acceptAndContinue();
+    await clickPath(['furnace', 'gas_smell_or_unknown_smell']);
+    assert(window.location.hash === '#/result', 'gas smell reaches a result');
+    assert(doc.querySelector('.result-heading.emergency'), 'gas smell renders an emergency result');
+    assert(doc.querySelector('h1').textContent === 'Leave the house now.', 'gas smell emergency title');
+    assert(doc.querySelector('.legal-footer') && doc.querySelector('.legal-footer').textContent === EMERGENCY_LINE, 'gas smell shows the emergency result line');
+    assert(!doc.getElementById('flow-error'), 'gas smell result has no error');
+    assert(errors.length === 0, 'furnace page has no script error: ' + errors.join(' | '));
     window.location.hash = '#/terms';
     await flush();
     const termsBody = norm(doc.querySelector('.document-panel'));

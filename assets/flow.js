@@ -7,6 +7,9 @@
  * - wshp.water_to_air.v0 for residential water-to-air water-source / geothermal
  *   sessions (Wave-1 PR-1). Safety screen, equipment gate, open-loop chemistry
  *   gate, and a call-pro handback. No loop, well, refrigerant, or electrical steps.
+ * - fn.furnace.v0 for gas and electric furnace sessions (Wave-1 Basic, look-only).
+ *   fn.gate.combustion_co runs before any furnace diagnosis, and before further
+ *   heat-pump diagnosis when the heat pump has a gas furnace (or not sure).
  * Session entry: ac.gate.cluster_entry → ac.session.consent →
  *   sw.intake.system_type. Consent text is shared and its stored agree
  *   edge stays ac.cool.intake.system_confirm (not a second consent node).
@@ -14,6 +17,7 @@
  *   Cooling-only AC → ac.cool.intake.system_confirm → ac.cool.landing.picker.
  *   Heat pump → hp.intake.system_confirm → hp.landing.picker.
  *   Water-source / geothermal → wshp.hazard.flood_electrical.
+ *   Furnace → fn.gate.combustion_co, then look-only checks.
  *   Not sure → sw.identify.* (at most three questions). A heat-pump signal
  *   or a still-unclear answer enters the heat-pump tree. Cooling-only is
  *   only outdoor-off in winter AND a separate furnace or boiler AND no
@@ -112,6 +116,43 @@
     'wshp.handback.call_pro'
   ];
   const CONCLUDE = 'ac.cool.conclude.call_pro_capacitor_contactor';
+  const TREE_FN = 'fn.furnace.v0';
+  const FN_GATE = 'fn.gate.combustion_co';
+  const FN_CONCLUDE = 'fn.conclude.call_pro';
+  const FN_WAVE1 = [
+    'fn.gate.combustion_co',
+    'fn.intake.system_confirm',
+    'fn.landing.picker',
+    'fn.tstat.mode_setpoint',
+    'fn.conclude.call_pro'
+  ];
+  const FN_FUEL = { gas_furnace: 'gas', electric_furnace: 'electric' };
+  const FN_LANDING = {
+    landing_no_heat: 'no_heat',
+    landing_cold_air: 'cold_air',
+    landing_not_enough_heat: 'not_enough_heat',
+    landing_short_cycle: 'short_cycle',
+    landing_blank_tstat: 'blank_tstat',
+    landing_water_near_furnace: 'water_near_furnace',
+    landing_unusual_noise: 'unusual_noise',
+    landing_cooling_problem: 'cooling_problem'
+  };
+  // AC nodes the furnace lane reuses verbatim. In the fn lane each also shows a hazard_now choice (viewNode).
+  const FN_REUSED = ['ac.cool.filter.check', 'ac.tstat.blank.batteries', 'ac.cool.airflow.returns_supplies', 'ac.gate.water_near_electrical', 'ac.noise.hazard_screen'];
+  // Never reachable in the fn lane. The overlay sends any of these to fn.conclude.call_pro (fn_advanced_off).
+  const FN_FORBIDDEN = [
+    'ac.cool.outdoor.fan_spinning', 'ac.cool.outdoor.debris_clearance', 'ac.cool.indoor.ice_lines_coil',
+    'ac.noise.clarify_outdoor_hum', 'ac.start.outdoor_silent_vs_hum', 'ac.start.breaker_disconnect',
+    'ac.cool.power.breaker_visual', 'ac.cool.power.disconnect_visual', 'ac.cool.tstat.mode_setpoint',
+    'ac.cool.landing.picker', CONCLUDE,
+    '@next_step_advanced', '@suspected_capacitor_contactor_advanced_off', '@hp_advanced_electrical_off',
+    '@breaker_reset_basic', '@mode_setpoint_basic', '@filter_replace_basic', '@filter_missing_basic',
+    '@batteries_display_back', '@returns_supplies_cleared', '@filter_inaccessible',
+    '@blank_tstat_after_batteries', '@blank_tstat_hardwired_power', '@tstat_inaccessible',
+    '@weak_airflow_after_returns_supplies', '@airflow_check_inaccessible', '@unusual_noise_unresolved',
+    '@noise_burning_sparks_smoke', '@uncertain'
+  ];
+  const FN_CO_LINE = "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns.";
   const LANDING = {
     landing_not_cooling: 'not_cooling',
     landing_will_not_start: 'will_not_start',
@@ -139,6 +180,7 @@
     ({ id, label, next, hint, fact, gate: extra.gate || null });
   const n = (section, title, body, options, extra = {}) =>
     ({ section, title, body, options, caution: extra.caution || '', diyTier: extra.diyTier || 'basic', safetyGate: !!extra.safetyGate });
+  const FN_HAZARD = o('hazard_now', 'New gas smell, CO alarm, smoke, sparks, or burning smell right now', '@fn_hazard_now', 'Stop. Get to safety.', 'New hazard reported during the furnace check.', { gate: 'fn_new_hazard' });
 
   const nodes = {
     'ac.gate.cluster_entry': n('Safety first', 'Is any of this happening right now?',
@@ -159,12 +201,13 @@
       ]),
 
     'sw.intake.system_type': n('Your system', 'What kind of system is this?',
-      'Answer from what you already know. Do not remove a cover or climb to identify the equipment.\n\nA cooling-only air conditioner cools the house. Heat usually comes from a separate furnace or boiler, and the outdoor unit stays off in winter.\n\nA heat pump heats and cools with the outdoor unit.\n\nA water-source or geothermal heat pump sits indoors, often in a basement or closet. There is no outdoor unit with a fan. Water or loop fluid comes in through pipes from the ground, a well, or a pond.', [
+      'Answer from what you already know. Do not remove a cover or climb to identify the equipment.\n\nA cooling-only air conditioner cools the house. Heat usually comes from a separate furnace or boiler, and the outdoor unit stays off in winter.\n\nA heat pump heats and cools with the outdoor unit.\n\nA water-source or geothermal heat pump sits indoors, often in a basement or closet. There is no outdoor unit with a fan. Water or loop fluid comes in through pipes from the ground, a well, or a pond.\n\nA furnace heats the house from inside with gas or electric heat. Many homes have a furnace inside and a cooling-only AC outside.', [
         o('cooling_only_ac', 'Cooling-only AC', 'ac.cool.intake.system_confirm', 'The outdoor unit is for cooling. A furnace, boiler, or other heater provides heat.', 'Cooling-only central AC reported.'),
         o('heat_pump', 'Heat pump (heats and cools with the outdoor unit)', 'hp.intake.system_confirm', 'The outdoor unit runs for heat and for cooling.', 'Heat pump reported at system type.'),
         o('water_source_geo', 'Water-source / geothermal heat pump', 'wshp.hazard.flood_electrical',
           'No outdoor unit with a fan. Water pipes run to a ground loop, a well, or a pond.',
           'Water-source or geothermal heat pump reported at system type.'),
+        o('furnace', 'Furnace (gas or electric, with or without central AC)', 'fn.gate.combustion_co', 'Heat comes from a furnace inside. A furnace safety check comes first.', 'Furnace reported at system type.'),
         o('not_sure', 'Not sure', 'sw.identify.winter_outdoor', 'Up to three plain questions. If it is still unclear, the check uses the heat-pump path.')
       ]),
 
@@ -436,8 +479,10 @@
       ], { diyTier: 'advanced', safetyGate: true, caution: 'Covers must be on before power is restored. Never restore power with covers off.' }),
 
     'hp.intake.system_confirm': n('Your system', 'Is this an air-source ducted heat pump?',
-      'Use what you already know or the equipment manual. Do not remove covers, climb on the outdoor unit, or open the air-handler cabinet to identify it.\n\nThis path covers an air-source heat pump with a separate outdoor unit that can heat and cool, and ducted indoor air through a furnace or air handler.\n\nIt does not cover cooling-only central AC (use the central AC check), ductless mini-splits, water-source or geothermal heat pumps, or packaged rooftop units you cannot confirm as an air-source ducted heat pump.\n\nIf the home has a heat pump plus a gas furnace, you may continue here for heat-pump mode checks. Gas smell, a carbon monoxide alarm, or furnace combustion work is not DIY. Use Stop / get help.', [
-        o('air_source_ducted_hp', 'Air-source ducted heat pump', 'hp.landing.picker', 'Outdoor unit heats and cools. Air moves through ducts. A gas furnace alongside it is OK for this confirm only.', 'Air-source ducted heat pump reported.'),
+      'Use what you already know or the equipment manual. Do not remove covers, climb on the outdoor unit, or open the air-handler cabinet to identify it.\n\nThis path covers an air-source heat pump with a separate outdoor unit that can heat and cool, and ducted indoor air through a furnace or air handler.\n\nIt does not cover cooling-only central AC (use the central AC check), ductless mini-splits, water-source or geothermal heat pumps, or packaged rooftop units you cannot confirm as an air-source ducted heat pump.\n\nDo you also have a gas furnace for backup heat? Pick the choice that says so, or the not-sure choice. A short furnace safety check comes first, then the heat-pump check. Gas smell, a carbon monoxide alarm, or furnace combustion work is not DIY. Use Stop / get help.', [
+        o('air_source_ducted_hp', 'Air-source ducted heat pump, no gas furnace', 'hp.landing.picker', 'Outdoor unit heats and cools. Air moves through ducts. Backup heat, if any, is electric.', 'Air-source ducted heat pump reported.'),
+        o('air_source_hp_gas_furnace', 'Air-source ducted heat pump with a gas furnace for backup heat', { fnGateDone: 'hp.landing.picker', default: 'fn.gate.combustion_co' }, 'Dual-fuel or hybrid. A short furnace safety check comes first, then back to the heat pump.', 'Air-source ducted heat pump with a gas furnace for backup heat reported.'),
+        o('air_source_hp_gas_unsure', "Air-source ducted heat pump, and I'm not sure if there's a gas furnace", { fnGateDone: 'hp.landing.picker', default: 'fn.gate.combustion_co' }, 'To be safe, the furnace safety check comes first, then back to the heat pump.', 'Air-source ducted heat pump; gas furnace backup not confirmed.'),
         o('cool_only_split_ac', 'Cooling-only central AC', '@hp_cool_only_use_ac', 'Use the central AC check, not this path.', 'Cooling-only central AC reported on the heat pump check.'),
         o('mini_split_ductless', 'Ductless mini-split', '@hp_mini_split_oos', 'Not this path.', 'Ductless mini-split reported.'),
         o('water_source_geo', 'Water-source or geothermal', '@hp_water_source_oos', 'Not this path.', 'Water-source or geothermal equipment reported.'),
@@ -606,7 +651,7 @@
         o('wshp_loop_unsure', 'Water-source or geothermal, but I am not sure which loop', 'wshp.handback.call_pro', 'That is OK. A pro can tell.', 'Loop type: homeowner not sure.'),
         o('wshp_air_source', 'Actually, there is an outdoor unit with a big fan', 'hp.intake.system_confirm', 'That is an air-source heat pump. Use the heat pump check.', 'Outdoor unit with a fan reported; switched to the air-source heat pump check.'),
         o('wshp_ductless', 'Actually, it is a ductless mini-split (wall or ceiling units in rooms)', '@wshp_divert_mini_split', 'That is a different check.', 'Ductless mini-split reported at the water-source equipment question.'),
-        o('wshp_furnace_combustion', 'The problem is a gas, oil, or propane furnace or boiler', '@wshp_divert_furnace', 'Fuel-burning equipment is not part of this check.', 'Fuel-burning furnace or boiler problem reported at the water-source equipment question.'),
+        o('wshp_furnace_combustion', 'The problem is a gas, oil, or propane furnace or boiler', '@wshp_divert_furnace', 'Gas or electric furnace: start again and choose Furnace (gas or electric, with or without central AC). Oil and boilers still need a pro.', 'Fuel-burning furnace or boiler problem reported at the water-source equipment question.'),
         o('wshp_out_of_scope_size', 'Something bigger or different: over 6 tons, a business or large building, or it heats water for floors or radiators', '@wshp_out_of_scope_call_pro', 'Outside this beta. A pro is the right next step.', 'Over 6 tons, commercial, or water-to-water system reported.'),
         o('wshp_system_unsure', 'I am not sure what kind of system I have', '@wshp_system_unconfirmed', 'Do not open covers to find out.', 'Homeowner unsure of system type at the water-source equipment question.'),
         o('hazard_now', 'New hazard now (burning, smoke, sparks, flooding, water at electrical equipment, or gas)', '@wshp_hazard_now', 'Stop. Do not keep going.', 'New hazard reported during the water-source check.', { gate: 'wshp_new_hazard' })
@@ -632,6 +677,62 @@
         o('want_diy_refrigerant_anyway', 'I want to add refrigerant or use gauges', '@wshp_handback_call_pro', 'Never a DIY step.', '', { gate: 'refrigerant_intent' }),
         o('hazard_now', 'New hazard now (burning, smoke, sparks, flooding, water at electrical equipment, or gas)', '@wshp_hazard_now', 'Stop. Do not keep going.', 'New hazard reported during the water-source check.', { gate: 'wshp_new_hazard' })
       ], { diyTier: 'pro_only', safetyGate: false, caution: 'No loop, pump, antifreeze, refrigerant, wiring, or panel work from this guide.' }),
+
+    'fn.gate.combustion_co': n('Furnace safety', "Is any of this true right now, or have you already noticed it?",
+      "Answer from what you already know. Don't open any furnace door or panel, and don't go look at the flame, to answer this.\n\nNot sure you have a gas furnace? Answer for the whole home.\n\nFor immediate danger, get outside and call 911.", [
+        o('gas_smell_or_unknown_smell', "Gas or rotten-egg smell, or a strong smell I can't place", '@fn_gas_smell', 'Leave now. Call from outside.', 'Gas, rotten-egg, or unknown strong smell reported.', { gate: 'gas_co' }),
+        o('co_alarm_or_symptoms', 'CO alarm sounding, or headache, dizziness, nausea, or drowsiness, especially in more than one person or pet', '@fn_co_alarm', 'Get to fresh air. Call from outside.', 'CO alarm or possible CO symptoms reported.', { gate: 'co_alarm_or_symptoms' }),
+        o('rollout_soot_scorch', "Soot or scorch marks on the furnace, or flame where it shouldn't be", '@fn_rollout_soot', 'Stop using the furnace.', 'Soot, scorch marks, or flame outside the burner area reported.', { gate: 'flame_rollout_soot' }),
+        o('burning_smoke_sparks', 'Burning-plastic or electrical smell, smoke, or sparks', '@fn_burning_sparks', 'Move away. Call 911.', 'Burning or electrical smell, smoke, or sparks reported.', { gate: 'smoke_fire_sparks_burn' }),
+        o('cold_exposure_risk', "Someone's at risk from the cold (a baby, an older adult, or a medical need) and there's no safe heat", '@fn_cold_exposure', 'Get them warm first.', 'Someone at risk from the cold with no safe heat.', { gate: 'cold_exposure_911' }),
+        o('flame_yellow_orange', "I've already noticed the flame looks yellow or orange", '@fn_flame_abnormal', "Only if you already saw it. Don't go look.", 'Homeowner already noticed a yellow or orange flame.', { gate: 'combustion_flame_abnormal' }),
+        o('boom_at_ignition', 'A bang or boom when the furnace starts', '@fn_ignition_bang', 'Stop using the furnace.', 'Bang or boom when the furnace starts reported.', { gate: 'delayed_ignition_bang' }),
+        o('unsure', "I'm not sure", '@fn_gate_unsure', 'Not sure means stop.', 'Homeowner was not sure whether a furnace hazard was present.', { gate: 'unsure_hazard' }),
+        o('none_of_these', 'None of these', { hpDualFuel: 'hp.landing.picker', default: 'fn.intake.system_confirm' }, 'Continue with look-only checks.')
+      ], { safetyGate: true }),
+
+    'fn.intake.system_confirm': n('Your furnace', 'What kind of furnace is it?',
+      "Use what you already know, a manual, or a label you can read without opening anything. Don't remove a panel to find out.\n\nPropane counts as gas.", [
+        o('gas_furnace', 'Gas furnace (natural gas or propane)', 'fn.landing.picker', '', 'Gas furnace reported.'),
+        o('electric_furnace', 'Electric furnace (no gas line to it)', 'fn.landing.picker', '', 'Electric furnace reported.'),
+        o('furnace_plus_heat_pump', 'Gas furnace plus an outdoor heat pump (dual-fuel)', 'hp.intake.system_confirm', 'The heat-pump check takes it from here.', 'Gas furnace plus heat pump (dual-fuel) reported.'),
+        o('boiler_radiators', 'Boiler, radiators, or radiant floor heat', '@fn_out_of_scope_equipment', 'Not covered yet.', 'Boiler or radiant heat reported.'),
+        o('oil_or_other', 'Oil, wood, pellet, wall or floor furnace, rooftop unit, or something else', '@fn_out_of_scope_equipment', 'Not covered yet.', 'Oil, wood, pellet, wall, floor, rooftop, or other heat reported.'),
+        o('mini_split', 'Ductless mini-split', '@fn_mini_split_oos', 'Not this check.', 'Ductless mini-split reported on the furnace check.'),
+        o('not_sure', "I'm not sure", '@fn_system_unconfirmed', "Don't open panels to find out."),
+        FN_HAZARD
+      ]),
+
+    'fn.landing.picker': n('What you noticed', "What's going on with the heat?",
+      'Pick the closest match. If anything new shows up, like a gas smell, CO alarm, smoke, or a burning smell, pick the last choice.', [
+        o('landing_no_heat', 'No heat: nothing seems to happen', 'fn.tstat.mode_setpoint', '', 'Complaint: No heat from the furnace.'),
+        o('landing_cold_air', "Blower runs, but the air isn't warm", 'fn.tstat.mode_setpoint', '', 'Complaint: Blower runs but the air is not warm.'),
+        o('landing_not_enough_heat', 'Some heat, but not enough', 'fn.tstat.mode_setpoint', '', 'Complaint: Some heat, but not enough.'),
+        o('landing_short_cycle', 'Starts, then shuts off quickly or keeps retrying', 'fn.tstat.mode_setpoint', '', 'Complaint: Furnace starts, then shuts off quickly.'),
+        o('landing_blank_tstat', 'Thermostat screen is blank', 'ac.tstat.blank.batteries', '', 'Complaint: Thermostat screen is blank.'),
+        o('landing_water_near_furnace', 'Water on the floor near the furnace', 'ac.gate.water_near_electrical', 'Safety check first.', 'Complaint: Water near the furnace.'),
+        o('landing_unusual_noise', 'An unusual noise', 'ac.noise.hazard_screen', 'Safety check first.', 'Complaint: Unusual noise from the furnace.'),
+        o('landing_cooling_problem', "It's actually a cooling problem with my central AC", 'ac.cool.intake.system_confirm', 'The central AC check takes it from here.', 'Cooling problem on a furnace home. Switching to the AC check.'),
+        FN_HAZARD
+      ]),
+
+    'fn.tstat.mode_setpoint': n('Thermostat', 'Is the thermostat calling for heat?',
+      "Look at the thermostat you already use. Don't take it off the wall.\n\n1. Mode is Heat.\n2. Setpoint is a few degrees above the room temperature.\n3. Fan is Auto. On blows room-temperature air between heating cycles, which can feel cold.\n\nSome thermostats wait a few minutes before starting heat.", [
+        o('tstat_not_calling', "It wasn't on Heat, or the setpoint was at or below room temperature", '@fn_tstat_set_heat_basic', 'Easy fix first.', 'Thermostat was not calling for heat.'),
+        o('fan_on_not_auto', 'Fan was set to On', '@fn_fan_auto_basic', 'Set it to Auto.', 'Thermostat fan was set to On.'),
+        o('settings_ok_still_problem', "Heat, setpoint above room, fan Auto, and the problem's still there", 'ac.cool.filter.check', 'Next: the filter.', 'Thermostat set to Heat, setpoint above room, fan Auto; problem remains.'),
+        o('tstat_blank', "The screen is blank or I can't read it", 'ac.tstat.blank.batteries', 'Battery check next.', 'Thermostat screen blank or unreadable.'),
+        o('cannot_change_settings', "I can't change the settings", 'fn.conclude.call_pro', "Don't pull it off the wall.", 'Thermostat settings could not be changed.'),
+        o('not_sure', "I'm not sure", '@fn_tstat_unsure', "Don't guess."),
+        FN_HAZARD
+      ]),
+
+    'fn.conclude.call_pro': n('Call a professional', 'Time for a licensed pro',
+      "You've done the homeowner checks this guide offers. What's left is inside the furnace, and that's work for a licensed HVAC pro.\n\nDon't press reset buttons, keep restarting the furnace, or open any furnace door or panel. If it's acting strangely, set the thermostat to Off.\n\nThe next screen has a note to share with the pro.", [
+        o('ack_call_pro', "Got it, I'll call a pro", '@fn_call_pro', ''),
+        o('want_diy_anyway', 'I want to fix it myself', '@fn_call_pro', "This guide doesn't offer furnace repairs."),
+        FN_HAZARD
+      ], { diyTier: 'pro_only' })
   };
 
   const r = (tier, urgency, title, explanation, actions, avoid, source, outcome, reason, extra = {}) =>
@@ -1173,9 +1274,9 @@
       ['Use the mini-split maker’s owner guide, or call a technician who works on mini-splits.', 'If anything is unsafe, use Stop / get help.'],
       'Do not use these water-source steps on a mini-split.', 'scope',
       'insufficient_info', 'wshp_divert_mini_split'),
-    wshp_divert_furnace: r('Professional guidance', 'Fuel-burning equipment · call a pro', 'A furnace or boiler problem needs a different check.',
-      'Gas, oil, and propane equipment burns fuel. This water-source check does not cover it.',
-      ['If you smell gas or a carbon monoxide alarm is sounding, leave the building now and call 911 or your gas company from outside.', 'Otherwise, call a licensed HVAC professional who works on furnaces or boilers.', 'Leave covers on. Do not relight or reset fuel-burning equipment from this guide.'],
+    wshp_divert_furnace: r('Professional guidance', 'Fuel-burning equipment · use the furnace check', 'A gas or electric furnace has its own check.',
+      'This water-source check is not the furnace check. A gas or electric furnace starts on the system-type screen. Oil and boilers still need a pro.',
+      ['If you smell gas or a carbon monoxide alarm is sounding, leave the building now and call 911 or your gas company from outside.', 'For a gas or electric furnace, start again and choose Furnace (gas or electric, with or without central AC).', 'For oil, a boiler, or anything else that burns fuel, call a licensed HVAC professional who works on that equipment.', 'Leave covers on. Do not relight or reset fuel-burning equipment from this guide.'],
       'Do not open the furnace or boiler, relight a burner, or bypass a safety switch.', 'gas',
       'call_pro', 'wshp_divert_furnace', { diyTier: 'pro_only' }),
     wshp_advanced_off: r('Professional guidance', 'Repair steps are off for this system', 'Parts and electrical repairs are not offered for water-source heat pumps.',
@@ -1183,6 +1284,160 @@
       ['Leave covers on.', 'Call a pro who works on geothermal or water-source heat pumps.'],
       'Do not start a parts, electrical, or refrigerant repair from this check.', 'electrical',
       'call_pro', 'wshp_advanced_off', { diyTier: 'pro_only' }),
+    fn_gas_smell: r('Emergency', 'Leave now · call from outside', 'Leave the house now.',
+      'A gas smell comes before anything else.',
+      ['Get everyone, and pets, out now.', "Don't touch light switches, the thermostat, phones, or anything that could spark while you're inside.", "Don't try to find the leak.", "From outside or a neighbor's, call the gas utility's emergency line or 911.", "Don't go back in until they say it's safe.", FN_CO_LINE],
+      "Don't try to shut off the gas yourself.", 'gas',
+      'emergency_exit', 'gas_co', { gate: 'gas_co' }),
+    fn_co_alarm: r('Emergency', 'Get to fresh air · call 911', 'Get everyone out to fresh air now.',
+      "A CO alarm or these symptoms can mean carbon monoxide. You can't see or smell it.",
+      ['Get everyone, and pets, outside to fresh air now.', 'From outside, call 911 or the fire department.', "Don't go back in until responders say it's safe.", FN_CO_LINE],
+      "Don't silence the alarm and stay inside, and don't open windows instead of leaving.", 'gas',
+      'emergency_exit', 'co_alarm_or_symptoms', { gate: 'co_alarm_or_symptoms' }),
+    fn_rollout_soot: r('Emergency', 'Stop · keep away from the furnace', 'Stop using the furnace.',
+      'Soot, scorch marks, or flame outside the burner can mean unsafe burning and carbon monoxide.',
+      ["If you're at the thermostat and smell no gas, set it to Off.", 'If you smell gas, a CO alarm sounds, or anyone feels sick, get everyone out and call 911 from outside.', 'Call a licensed HVAC pro before using the furnace again.', FN_CO_LINE],
+      "Don't open, reset, or restart the furnace.", 'gas',
+      'emergency_exit', 'flame_rollout_soot', { gate: 'flame_rollout_soot' }),
+    fn_burning_sparks: r('Emergency', 'Move away · call 911', 'Stop. Treat this as a fire risk.',
+      "Smoke, sparks, or a burning-plastic or electrical smell can't be checked from here.",
+      ["Get everyone away from the furnace. If there's smoke or fire, leave and call 911 from outside.", "Don't use the furnace until a licensed HVAC pro checks it.", FN_CO_LINE],
+      "Don't stay to troubleshoot, open the furnace, or flip switches or breakers.", 'fire',
+      'emergency_exit', 'smoke_fire_sparks_burn', { gate: 'smoke_fire_sparks_burn' }),
+    fn_cold_exposure: r('Emergency', 'Get warm now · call 911 if needed', 'Get the person warm first.',
+      'Someone at risk from the cold matters more than the furnace.',
+      ['If anyone is confused, very drowsy, or hard to wake, call 911 now.', 'Otherwise, get them somewhere warm: a neighbor, family, or a warming center.', 'Add blankets and dry layers in the meantime.', FN_CO_LINE, "Call a licensed HVAC pro for the furnace once everyone's safe."],
+      "Don't wait on a furnace repair to get someone warm.", 'safety',
+      'emergency_exit', 'cold_exposure_911', { gate: 'cold_exposure_911' }),
+    fn_flame_abnormal: r('Stop / professional', 'Stop · call a pro', 'Stop using the furnace and call a pro.',
+      "A yellow or orange flame can mean the furnace isn't burning cleanly. That can make carbon monoxide.",
+      ['Set the thermostat to Off.', "Don't use the furnace until a licensed HVAC pro checks it.", 'Make sure your CO alarms work. If one sounds or anyone feels sick, get everyone out and call 911 from outside.', FN_CO_LINE],
+      "Don't open the furnace or go look at the flame again.", 'gas',
+      'call_pro', 'combustion_flame_abnormal', { gate: 'combustion_flame_abnormal' }),
+    fn_ignition_bang: r('Stop / professional', 'Stop · call a pro', 'Stop using the furnace and call a pro.',
+      'A bang when it starts can mean gas is building up before it lights.',
+      ['Set the thermostat to Off.', "Don't keep restarting it to see if it happens again.", 'Call a licensed HVAC pro. If you smell gas, leave and call from outside.', FN_CO_LINE],
+      "Don't open the furnace, press reset buttons, or try to relight anything.", 'gas',
+      'call_pro', 'delayed_ignition_bang', { gate: 'delayed_ignition_bang' }),
+    fn_gate_unsure: r('Stop / professional', 'Stop here', 'Not sure is a good reason to stop.',
+      "You don't need to check the furnace to answer. Stopping is the safe choice.",
+      ['If you smell gas or a CO alarm sounds, get everyone out and call 911 from outside.', "If not, set the thermostat to Off if you're already there, and call a licensed HVAC pro.", 'Tell them what you noticed.', FN_CO_LINE],
+      "Don't open the furnace or look at the flame to find out.", 'safety',
+      'emergency_exit', 'unsure_hazard', { gate: 'unsure_hazard' }),
+    fn_hazard_now: r('Emergency', 'Stop · get to safety', 'A new hazard ends this check.',
+      'Safety comes before the furnace.',
+      ["Gas smell: leave now. Don't touch switches, phones, or anything that could spark. From outside, call the gas utility or 911.", 'CO alarm or feeling sick: get everyone and pets out to fresh air. Call 911 from outside.', 'Smoke, sparks, or burning smell: get away and call 911 from outside.', "Don't go back in until responders say it's safe.", FN_CO_LINE],
+      "Don't keep troubleshooting.", 'safety',
+      'emergency_exit', 'fn_new_hazard', { gate: 'fn_new_hazard' }),
+    fn_tstat_set_heat_basic: r('Basic homeowner check', 'Adjust the thermostat, then wait', 'Set Heat and a higher setpoint.',
+      "The thermostat wasn't asking for heat. That's an easy fix.",
+      ['Set the mode to Heat.', 'Raise the setpoint a few degrees above the room temperature. Fan on Auto.', 'Give it 5 to 10 minutes. Still no heat? Start a new check and pick Furnace.', FN_CO_LINE],
+      "Don't take the thermostat off the wall or change wiring or installer settings.", 'maintenance',
+      'next_step', 'fn_tstat_set_heat_basic', { diyTier: 'basic' }),
+    fn_fan_auto_basic: r('Basic homeowner check', 'Change one setting, then wait', 'Set the fan to Auto.',
+      'With the fan on On, the blower runs between heating cycles and moves room-temperature air. That can feel cold.',
+      ['Set the fan to Auto. Leave the mode on Heat.', 'Wait for the next heating cycle. The air should feel warm while the heat runs.', 'Still cool air while the heat runs? Start a new check and pick Furnace.', FN_CO_LINE],
+      "Don't change wiring or installer settings.", 'maintenance',
+      'next_step', 'fn_fan_auto_basic', { diyTier: 'basic' }),
+    fn_tstat_unsure: r('More information needed', 'Check the display first', 'Read the thermostat, then try again.',
+      'The next step depends on the mode and setpoint.',
+      ['Read the mode, setpoint, and fan setting on the screen, or check the thermostat manual.', 'Start a new check when you can.', FN_CO_LINE],
+      "Don't take the thermostat off the wall or open the furnace to find out.", 'maintenance',
+      'insufficient_info', 'fn_tstat_unsure'),
+    fn_filter_replace_basic: r('Basic homeowner check', 'Replace the filter, then retest', 'The filter looks dirty or clogged.',
+      'A clogged filter chokes airflow, and a furnace can shut itself off.',
+      ['Put in the right size and type. Match the airflow arrow.', "Put any filter door or cover back fully. Don't run the furnace with it off.", 'Set Heat and retest in 15 to 30 minutes. No better? Call a licensed HVAC pro.', FN_CO_LINE],
+      "Don't run it without a filter or reach into the blower.", 'maintenance',
+      'next_step', 'fn_filter_dirty_clogged', { diyTier: 'basic' }),
+    fn_filter_missing_basic: r('Basic homeowner check', 'Install a filter, then retest', 'No filter is installed.',
+      'Running without a filter lets dust build up inside the furnace.',
+      ['Install the right size and type. Match the airflow arrow.', 'Put any filter door or cover back fully before running heat.', 'Set Heat and retest in 15 to 30 minutes. No better? Call a licensed HVAC pro.', FN_CO_LINE],
+      "Don't guess the size, stack filters, or force a fit.", 'maintenance',
+      'next_step', 'fn_filter_missing', { diyTier: 'basic' }),
+    fn_batteries_display_back: r('Basic homeowner check', "Display's back · retest heat", 'Fresh batteries brought the screen back.',
+      "That doesn't prove the rest of the system is fine.",
+      ['Set Heat, with the setpoint a few degrees above room temperature and the fan on Auto.', 'Give it 5 to 10 minutes. Still no heat? Start a new check and pick Furnace.', FN_CO_LINE],
+      "Don't pull thermostat wires or open the furnace.", 'maintenance',
+      'next_step', 'fn_batteries_display_back', { diyTier: 'basic' }),
+    fn_returns_supplies_cleared: r('Basic homeowner check', 'Keep vents clear · retest', "A blocked vent was cleared, and airflow's better.",
+      'Blocked returns and closed registers can leave rooms short on heat.',
+      ['Keep returns and registers clear of furniture, rugs, and curtains.', 'Stay on Heat and retest in 15 to 30 minutes.', 'If rooms are still short on heat, call a licensed HVAC pro.', FN_CO_LINE],
+      "Don't cut ducts, open a chase, or remove the blower panel.", 'maintenance',
+      'next_step', 'fn_returns_supplies_cleared', { diyTier: 'basic' }),
+    fn_out_of_scope_equipment: r('More information needed', 'Outside this beta', "This guide doesn't cover that heating system yet.",
+      "Boilers, radiant floors, oil and wood heat, wall and floor furnaces, and rooftop units aren't covered.",
+      ['Call a licensed pro who works on your type of system.', 'Fuel-burning heat needs working CO alarms. If one sounds, get everyone out and call 911 from outside.', FN_CO_LINE],
+      "Don't open the equipment or relight anything to find out what's wrong.", 'scope',
+      'insufficient_info', 'fn_out_of_scope_equipment'),
+    fn_mini_split_oos: r('More information needed', 'Outside this check', "Ductless mini-splits aren't covered here yet.",
+      'This furnace check is for ducted furnaces.',
+      ["Call a licensed HVAC pro who works on mini-splits, or use the maker's owner guide.", FN_CO_LINE],
+      "Don't remove covers to identify the equipment.", 'scope',
+      'insufficient_info', 'fn_mini_split_oos'),
+    fn_system_unconfirmed: r('More information needed', 'Confirm the furnace first', 'We need to know the furnace type.',
+      'Gas and electric furnaces need different checks.',
+      ['Check the manual, a label you can read without opening anything, or ask someone who knows the system.', "Start a new check when you know. If you can't tell, call a licensed HVAC pro.", FN_CO_LINE],
+      "Don't remove panels or climb to read a label.", 'scope',
+      'insufficient_info', 'fn_system_unconfirmed'),
+    fn_call_pro: r('Professional guidance', 'Call a licensed HVAC pro', 'Call a licensed HVAC pro.',
+      'The homeowner checks are done. The next checks are inside the furnace.',
+      ['If the furnace acts strangely, set the thermostat to Off.', 'Tell the pro what you checked. Your note below lists it.', 'If you smell gas or a CO alarm sounds, get everyone out and call 911 from outside.', FN_CO_LINE],
+      "Don't press reset buttons, keep restarting, open panels, or relight anything.", 'safety',
+      'call_pro', 'fn_call_pro', { diyTier: 'pro_only' }),
+  };
+  // Furnace-lane overlay for reused AC nodes. Key: '<nodeId>/<answerId>'. AC data and copy stay unchanged.
+  const FN_EDGE = {
+    'ac.cool.filter.check/filter_dirty_clogged': '@fn_filter_replace_basic',
+    'ac.cool.filter.check/filter_missing': '@fn_filter_missing_basic',
+    'ac.cool.filter.check/filter_clean_ok': s => (s.fnLanding === 'not_enough_heat' ? 'ac.cool.airflow.returns_supplies' : FN_CONCLUDE),
+    'ac.cool.filter.check/filter_clean_weak_airflow': 'ac.cool.airflow.returns_supplies',
+    'ac.cool.filter.check/cannot_check_safely': FN_CONCLUDE,
+    'ac.tstat.blank.batteries/batteries_replaced_display_back': '@fn_batteries_display_back',
+    'ac.tstat.blank.batteries/batteries_replaced_still_blank': FN_CONCLUDE,
+    'ac.tstat.blank.batteries/hardwired_or_no_batteries': FN_CONCLUDE,
+    'ac.tstat.blank.batteries/cannot_access_safely': FN_CONCLUDE,
+    'ac.cool.airflow.returns_supplies/blocked_cleared_airflow_improved': '@fn_returns_supplies_cleared',
+    'ac.cool.airflow.returns_supplies/blocked_cleared_still_weak': FN_CONCLUDE,
+    'ac.cool.airflow.returns_supplies/no_blockers_found_still_weak': FN_CONCLUDE,
+    'ac.cool.airflow.returns_supplies/cannot_check_safely': FN_CONCLUDE,
+    'ac.gate.water_near_electrical/water_clear_no_electrical_risk': FN_CONCLUDE,
+    'ac.gate.water_near_electrical/water_elsewhere_not_electrical': FN_CONCLUDE,
+    'ac.noise.hazard_screen/noise_burning_sparks_smoke': '@fn_burning_sparks',
+    'ac.noise.hazard_screen/noise_no_hazard_symptoms': FN_CONCLUDE,
+    'ac.noise.hazard_screen/noise_unsure_hazard': '@fn_gate_unsure'
+  };
+  const fnWaterReason = s => (s.fnFuel === 'electric' ? 'water_near_electric_furnace' : 'condensate_drain_issue');
+  const FN_REASON = {
+    'fn.tstat.mode_setpoint/cannot_change_settings': 'thermostat_control_issue',
+    'ac.cool.filter.check/filter_clean_ok': s => (s.fnLanding === 'short_cycle' ? 'short_cycle_after_basics'
+      : s.fnFuel === 'electric' ? 'electric_furnace_components'
+        : s.fnLanding === 'cold_air' ? 'ignition_or_flame_suspected' : 'no_heat_after_basics'),
+    'ac.cool.filter.check/cannot_check_safely': 'filter_inaccessible',
+    'ac.tstat.blank.batteries/batteries_replaced_still_blank': 'blank_tstat_after_basics',
+    'ac.tstat.blank.batteries/hardwired_or_no_batteries': 'blank_tstat_after_basics',
+    'ac.tstat.blank.batteries/cannot_access_safely': 'tstat_inaccessible',
+    'ac.cool.airflow.returns_supplies/blocked_cleared_still_weak': 'weak_heat_after_basics',
+    'ac.cool.airflow.returns_supplies/no_blockers_found_still_weak': 'weak_heat_after_basics',
+    'ac.cool.airflow.returns_supplies/cannot_check_safely': 'airflow_check_inaccessible',
+    'ac.gate.water_near_electrical/water_clear_no_electrical_risk': fnWaterReason,
+    'ac.gate.water_near_electrical/water_elsewhere_not_electrical': fnWaterReason,
+    'ac.noise.hazard_screen/noise_no_hazard_symptoms': 'unusual_noise_furnace_wave1'
+  };
+  const FN_REASON_COPY = {
+    no_heat_after_basics: "The thermostat and filter checks didn't bring the heat back. What's left is inside the furnace.",
+    ignition_or_flame_suspected: "The blower runs but the air stays cool with the settings right. A pro should find out why.",
+    short_cycle_after_basics: "It still starts and stops with the settings and filter checked. A pro should find out why.",
+    weak_heat_after_basics: "Rooms are still short on heat with a clean filter and clear vents.",
+    blank_tstat_after_basics: "The screen is still blank after the battery check, usually a power or control problem for a pro.",
+    tstat_inaccessible: "The thermostat batteries couldn't be reached safely.",
+    thermostat_control_issue: "The thermostat won't take Heat or a new setpoint.",
+    filter_inaccessible: "The filter couldn't be reached safely.",
+    airflow_check_inaccessible: "The vents couldn't be checked safely.",
+    electric_furnace_components: "On an electric furnace, the next checks are high-voltage heating parts. That's work for a pro.",
+    condensate_drain_issue: "There's water near the furnace, away from electrical parts. A pro should check the drain.",
+    water_near_electric_furnace: "There's water near an electric furnace, away from electrical parts. A pro should find the source.",
+    unusual_noise_furnace_wave1: "No hazard signs came with the noise. This guide doesn't diagnose furnace sounds.",
+    fn_advanced_off: "That step isn't part of the furnace check. Advanced repairs are off."
   };
 
   function advancedEnabled() {
@@ -1209,13 +1464,14 @@
   }
   function hpEdges(next) {
     if (!next || typeof next !== 'object') return [next];
-    const replacing = ['hpClear', 'hpOutdoor', 'hpHandback', 'hpHandbackWeak'].filter(k => typeof next[k] === 'string');
+    const replacing = ['hpClear', 'hpOutdoor', 'hpHandback', 'hpHandbackWeak', 'hpDualFuel'].filter(k => typeof next[k] === 'string');
     if (replacing.length) return replacing.map(k => next[k]);
     const found = [];
     if (next.byHpLanding) Object.keys(next.byHpLanding).forEach(k => found.push(next.byHpLanding[k]));
     if (next.byHpAmbient) Object.keys(next.byHpAmbient).forEach(k => found.push(next.byHpAmbient[k]));
     if (typeof next.hpFilterDone === 'string') found.push(next.hpFilterDone);
     if (typeof next.hpDefrostAgain === 'string') found.push(next.hpDefrostAgain);
+    if (typeof next.fnGateDone === 'string') found.push(next.fnGateDone);
     if (typeof next.default === 'string') found.push(next.default);
     if (!found.length && next.byLanding) Object.keys(next.byLanding).forEach(k => found.push(next.byLanding[k]));
     if (next.whenAdvanced && typeof next.default === 'string' && found.indexOf(next.default) === -1) found.push(next.default);
@@ -1562,6 +1818,20 @@
     if (applySessionOverlay({ product: 'hp' }, 'hp.landing.picker', 'probe', '@next_step_advanced') !== '@hp_advanced_electrical_off') {
       throw new Error('HP advanced overlay drifted');
     }
+    FN_WAVE1.forEach(id => {
+      if (!nodes[id]) throw new Error('Missing furnace node ' + id);
+      if (nodes[id].diyTier === 'advanced') throw new Error('Furnace node must not be Advanced ' + id);
+    });
+    if (nodes[FN_GATE].safetyGate !== true) throw new Error('Furnace gate must be a safety gate');
+    nodes[FN_GATE].options.forEach(op => {
+      if (op.id === 'none_of_these') return;
+      const res = typeof op.next === 'string' && op.next.charAt(0) === '@' ? results[op.next.slice(1)] : null;
+      if (!res || (res.outcome !== 'emergency_exit' && res.outcome !== 'call_pro') || res.continueTo) throw new Error('Furnace gate choice must stop: ' + op.id);
+    });
+    if (nodes[FN_CONCLUDE].diyTier !== 'pro_only') throw new Error('Furnace conclude must be pro_only');
+    Object.keys(results).filter(id => id.indexOf('fn_') === 0).forEach(id => {
+      if (results[id].actions.indexOf(FN_CO_LINE) === -1) throw new Error('Furnace result missing CO line ' + id);
+    });
   }
   assertGraph();
 
@@ -1573,7 +1843,8 @@
       preselectChoice: null, treeVersion: '', audit: [],
       product: 'ask', hpLanding: null, hpAmbient: null, hpHandback: null,
       hpWeakAirflow: false, hpOutdoorNotRunning: false, hpConcludeFrom: null, defrostReturns: 0,
-      idWinter: null, idEm: null, wshpLoop: null
+      idWinter: null, idEm: null, wshpLoop: null,
+      fnFuel: null, fnLanding: null, fnReason: null, hpGasFurnace: null
     };
     pushAudit(state, 'node_entered:' + ENTRY);
     pushAudit(state, 'product_lane:ask');
@@ -1581,7 +1852,7 @@
   }
   function enterLane(state, lane) {
     state.product = lane;
-    state.treeVersion = lane === 'hp' ? TREE_HP : lane === 'wshp' ? TREE_WSHP : TREE_VERSION;
+    state.treeVersion = lane === 'hp' ? TREE_HP : lane === 'wshp' ? TREE_WSHP : lane === 'fn' ? TREE_FN : TREE_VERSION;
     pushAudit(state, 'product_lane:' + lane);
   }
   function uuid() {
@@ -1595,6 +1866,23 @@
     return state.answers.some(a => a.node === 'ac.cool.filter.check' ||
       (a.node === 'hp.handback.ac_filter_airflow' && a.choice === 'filter_already_done_this_session'));
   }
+  function fnGateCleared(state) {
+    return state.answers.some(a => a.node === FN_GATE && a.choice === 'none_of_these');
+  }
+  function fnOverlay(state, nodeId, choice, target) {
+    const key = nodeId + '/' + choice;
+    const mapped = FN_EDGE[key];
+    if (mapped) target = typeof mapped === 'function' ? mapped(state) : mapped;
+    if (FN_FORBIDDEN.indexOf(target) !== -1 || String(target).indexOf('ac.adv.cap.') === 0) {
+      state.fnReason = 'fn_advanced_off';
+      return FN_CONCLUDE;
+    }
+    if (target === FN_CONCLUDE) {
+      const why = FN_REASON[key];
+      state.fnReason = (typeof why === 'function' ? why(state) : why) || state.fnReason || 'no_heat_after_basics';
+    }
+    return target;
+  }
   function resolveTarget(option, state) {
     const next = option.next;
     if (next && typeof next === 'object') {
@@ -1603,6 +1891,12 @@
       }
       if (Object.prototype.hasOwnProperty.call(next, 'whenCoolingOnly')) {
         return (state.idWinter === 'never' && state.idEm === 'no') ? next.whenCoolingOnly : next.default;
+      }
+      if (Object.prototype.hasOwnProperty.call(next, 'hpDualFuel')) {
+        return (state.product === 'hp' && state.hpGasFurnace) ? next.hpDualFuel : next.default;
+      }
+      if (Object.prototype.hasOwnProperty.call(next, 'fnGateDone')) {
+        return fnGateCleared(state) ? next.fnGateDone : next.default;
       }
       if (state.product === 'hp' && state.hpHandback === 'filter_airflow' && (next.hpHandback || next.hpHandbackWeak)) {
         if (state.hpWeakAirflow && next.hpHandbackWeak) return next.hpHandbackWeak;
@@ -1636,6 +1930,7 @@
   function applySessionOverlay(state, nodeId, choice, target) {
     if (nodeId === CONSENT && choice === 'agree_18_terms') target = 'sw.intake.system_type';
     if (typeof target !== 'string') return target;
+    if (state.product === 'fn') return fnOverlay(state, nodeId, choice, target);
     if (state.product !== 'ac' && (target === CONCLUDE || target.indexOf('ac.adv.cap.') === 0 || target === '@suspected_capacitor_contactor_advanced_off' || target === '@next_step_advanced')) {
       return state.product === 'wshp' ? '@wshp_advanced_off' : '@hp_advanced_electrical_off';
     }
@@ -1687,6 +1982,9 @@
       });
       view = Object.assign({}, view, { options: options });
     }
+    if (state && state.product === 'fn' && FN_REUSED.indexOf(id) !== -1) {
+      view = Object.assign({}, view, { options: view.options.concat([FN_HAZARD]) });
+    }
     return view;
   }
   function answer(state, choice, meta = {}) {
@@ -1696,7 +1994,8 @@
     }
     const nodeId = state.node;
     const node = nodes[nodeId];
-    const option = node.options.find(x => x.id === choice);
+    const option = node.options.find(x => x.id === choice) ||
+      (state.product === 'fn' && choice === 'hazard_now' && FN_REUSED.indexOf(nodeId) !== -1 ? FN_HAZARD : null);
     if (!option || (choice === 'filter_clean_weak_airflow' && state.product !== 'hp')) throw new Error('Choose an answer shown on the current screen.');
     if (nodeId !== ENTRY && nodeId !== CONSENT && (!state.safetyCleared || !state.consent)) {
       throw new Error('Safety and consent are required before troubleshooting.');
@@ -1718,6 +2017,17 @@
     }
     if (nodeId === 'sw.intake.system_type' && choice === 'cooling_only_ac') enterLane(state, 'ac');
     if (nodeId === 'sw.intake.system_type' && choice === 'heat_pump') enterLane(state, 'hp');
+    if (nodeId === 'sw.intake.system_type' && choice === 'furnace') enterLane(state, 'fn');
+    if (nodeId === 'hp.intake.system_confirm' && (choice === 'air_source_hp_gas_furnace' || choice === 'air_source_hp_gas_unsure')) {
+      state.hpGasFurnace = choice === 'air_source_hp_gas_furnace' ? 'yes' : 'not_sure';
+    }
+    if (nodeId === 'fn.intake.system_confirm' && FN_FUEL[choice]) state.fnFuel = FN_FUEL[choice];
+    if (nodeId === 'fn.intake.system_confirm' && choice === 'furnace_plus_heat_pump') {
+      state.hpGasFurnace = 'yes';
+      enterLane(state, 'hp');
+    }
+    if (nodeId === 'fn.landing.picker' && FN_LANDING[choice]) state.fnLanding = FN_LANDING[choice];
+    if (nodeId === 'fn.landing.picker' && choice === 'landing_cooling_problem') enterLane(state, 'ac');
     if (nodeId === 'sw.identify.winter_outdoor') {
       if (choice === 'winter_outdoor_runs') enterLane(state, 'hp');
       else state.idWinter = choice === 'winter_outdoor_never' ? 'never' : 'unsure';
@@ -1757,6 +2067,18 @@
     }
     if (nodeId === 'hp.landing.picker' && choice === 'landing_unusual_noise') pushAudit(state, 'handback:ac.noise.hazard_screen');
     if (nodeId === 'ac.cool.intake.system_confirm' && choice === 'heat_pump') pushAudit(state, 'product_lane:hp');
+    if (nodeId === 'fn.intake.system_confirm' && state.fnFuel && FN_FUEL[choice]) pushAudit(state, 'flag:fn_fuel=' + state.fnFuel);
+    if (nodeId === 'fn.intake.system_confirm' && choice === 'furnace_plus_heat_pump') pushAudit(state, 'handoff:fn_to_hp_dual_fuel');
+    if (nodeId === 'fn.landing.picker' && FN_LANDING[choice]) pushAudit(state, 'flag:fn_landing=' + state.fnLanding);
+    if (nodeId === 'fn.landing.picker' && choice === 'landing_cooling_problem') pushAudit(state, 'handoff:fn_to_ac_cooling');
+    if (nodeId === 'hp.intake.system_confirm' && state.hpGasFurnace && (choice === 'air_source_hp_gas_furnace' || choice === 'air_source_hp_gas_unsure')) {
+      pushAudit(state, 'flag:hp_equipment=air_source_ducted');
+      pushAudit(state, 'flag:hp_gas_furnace=' + state.hpGasFurnace);
+    }
+    if (nodeId === FN_GATE && choice === 'none_of_these') {
+      pushAudit(state, 'notes.fn_gate:cleared');
+      if (state.product === 'hp') pushAudit(state, 'notes.fn_gate:return_to_hp');
+    }
     if (nodeId === 'sw.intake.system_type' && choice === 'water_source_geo') {
       enterLane(state, 'wshp');
       state.wshpLoop = null;
@@ -1778,6 +2100,9 @@
     }
     let target = resolveTarget(option, state);
     target = applySessionOverlay(state, nodeId, choice, target);
+    if (state.product === 'fn' && (FN_FORBIDDEN.indexOf(target) !== -1 || String(target).indexOf('ac.adv.cap.') === 0)) {
+      throw new Error('That step is not part of this check.');
+    }
     if (nodeId === ENTRY && choice === 'none_of_these' && state.stopping) target = '@professional';
     if (option.gate) {
       pushAudit(state, 'gate_fired:' + option.gate);
@@ -1820,6 +2145,11 @@
         }
         if (id === 'hp_defrost_valve_ob_control' || id === 'hp_refrigerant_intent') pushAudit(state, 'notes.rv_force_out:forbidden');
         if (id === 'suspected_capacitor_contactor_advanced_off') pushAudit(state, 'advanced_diy:off');
+        if (id === 'fn_call_pro') {
+          pushAudit(state, 'notes.fn_reason:' + (state.fnReason || ''));
+          pushAudit(state, 'notes.fn_advanced_diy:off');
+          if (choice === 'want_diy_anyway') pushAudit(state, 'diy_request_declined');
+        }
       } else if (res.outcome === 'insufficient_info') {
         pushAudit(state, 'conclusion_reached:insufficient_info');
       } else {
@@ -1833,6 +2163,7 @@
         pushAudit(state, 'notes.hp_advanced_electrical:off');
         pushAudit(state, 'notes.rv_force_out:forbidden');
       }
+      if (target === FN_CONCLUDE) pushAudit(state, 'notes.fn_reason:' + (state.fnReason || ''));
       if (target === CONCLUDE) {
         const on = advancedEnabled();
         pushAudit(state, 'advanced_flag_checked:' + (on ? 'true' : 'false'));
@@ -1857,6 +2188,7 @@
     const target = res && res.continueTo;
     if (!target || !nodes[target]) throw new Error('This result does not continue.');
     if (target.indexOf('ac.adv.cap.') === 0 && !advancedEnabled()) throw new Error('Advanced DIY is not available in this beta.');
+    if (state.product === 'fn' && FN_FORBIDDEN.indexOf(target) !== -1) throw new Error('That step is not part of this check.');
     if (state.product !== 'ac' && (target.indexOf('ac.adv.cap.') === 0 || target === CONCLUDE || (state.product === 'hp' && (target === 'ac.cool.outdoor.fan_spinning' || target === 'ac.cool.outdoor.debris_clearance' || target === 'ac.cool.indoor.ice_lines_coil' || target === 'ac.noise.clarify_outdoor_hum')))) {
       throw new Error('That step is not part of this check.');
     }
@@ -1883,7 +2215,7 @@
   function summary(state, extra = {}) {
     const clean = x => String(x || '').replace(/[\r\n\t]+/g, ' ').trim().slice(0, 140);
     const facts = state.answers.map(x => x.fact).filter(Boolean);
-    const complaint = clean(extra.complaint) || clean(state.seed) || facts.find(x => x.startsWith('Complaint:')) || (state.product === 'wshp' ? 'Water-source / geothermal heat pump concern; see reported observations.' : state.product === 'hp' ? 'Heat pump concern; see reported observations.' : 'AC concern; see reported observations.');
+    const complaint = clean(extra.complaint) || clean(state.seed) || facts.find(x => x.startsWith('Complaint:')) || (state.product === 'wshp' ? 'Water-source / geothermal heat pump concern; see reported observations.' : state.product === 'hp' ? 'Heat pump concern; see reported observations.' : state.product === 'fn' ? 'Furnace concern; see reported observations.' : 'AC concern; see reported observations.');
     const observations = [...new Set(facts.filter(x => !x.startsWith('Complaint:') && !x.startsWith('User ') && !x.startsWith('Residential ') && !(state.product === 'wshp' && x.startsWith('Loop type:'))))].slice(-5);
     const actions = [...new Set(facts.filter(x => x.startsWith('User ')))].slice(-2);
     const loopLine = state.product !== 'wshp' || !state.wshpLoop ? ''
@@ -1901,14 +2233,17 @@
       ? 'HOMEOWNER SERVICE NOTE — water-source / geothermal heat pump observations, not a diagnosis'
       : state.product === 'hp'
         ? 'HOMEOWNER SERVICE NOTE — heat pump observations, not a diagnosis'
-        : 'HOMEOWNER SERVICE NOTE — observations, not a diagnosis';
+        : state.product === 'fn'
+          ? 'HOMEOWNER SERVICE NOTE — furnace observations, not a diagnosis'
+          : 'HOMEOWNER SERVICE NOTE — observations, not a diagnosis';
     const inScopeWshpNote = state.product === 'wshp'
       && state.result !== 'wshp_out_of_scope_call_pro'
       && state.result !== 'wshp_divert_mini_split'
       && state.result !== 'wshp_divert_furnace';
     const equipment = inScopeWshpNote
       ? 'Equipment: water-to-air water-source / geothermal heat pump (home system; homeowner believes 6 tons or less).'
-      : state.product === 'hp' ? 'Equipment: air-source ducted heat pump.' : '';
+      : state.product === 'hp' ? 'Equipment: air-source ducted heat pump.' + (state.hpGasFurnace === 'yes' ? ' Gas furnace backup.' : '')
+      : state.product === 'fn' && state.fnFuel ? 'Equipment: ' + state.fnFuel + ' furnace.' : '';
     return [header,
       equipment,
       loopLine,
@@ -1937,6 +2272,12 @@
         avoid: String(res.avoid).replace('switch the AC off', 'switch the system off')
       });
     }
+    if (state && state.product === 'fn') {
+      const fnCopy = Object.assign({}, res, { actions: (res.actions || []).slice() });
+      if (state.result === 'fn_call_pro' && FN_REASON_COPY[state.fnReason]) fnCopy.explanation = FN_REASON_COPY[state.fnReason];
+      if (fnCopy.actions.indexOf(FN_CO_LINE) === -1) fnCopy.actions.push(FN_CO_LINE);
+      return fnCopy;
+    }
     if (!state || state.product !== 'hp') return res;
     const swap = s => String(s)
       .replace('Set the system to Cool and retest after 15–30 minutes.', 'Set Heat or Cool to match the complaint and retest after 15–30 minutes.')
@@ -1958,6 +2299,7 @@
   return {
     nodes, results, create, answer, stop, resume, summary, activity, viewNode, presentResult, advancedEnabled,
     treeVersion: TREE_VERSION, treeVersionHp: TREE_HP, treeVersionWshp: TREE_WSHP, wave1: WAVE1, wave2: WAVE2, advanced: ADVANCED,
-    hpWave1: HP_WAVE1, wshpWave1: WSHP_WAVE1
+    hpWave1: HP_WAVE1, wshpWave1: WSHP_WAVE1, treeVersionFn: TREE_FN, fnWave1: FN_WAVE1, fnReused: FN_REUSED, fnForbidden: FN_FORBIDDEN,
+    fnCoLine: FN_CO_LINE, fnReasonCopy: FN_REASON_COPY, fnEdge: FN_EDGE
   };
 });
