@@ -49,10 +49,12 @@ function assertNoCap(state, msg) {
 const gate = ['none_of_these', 'agree_18_terms'];
 
 assert(/advancedRepairsEnabled:\s*false/.test(configText), 'public advanced flag must stay false');
-assert(/contentVersion:\s*'2026-10-09\.1'/.test(configText), 'content version must be 2026-10-09.1');
-assert(indexText.includes('config.js?v=2026-10-09.1') && indexText.includes('flow.js?v=2026-10-09.1') && indexText.includes('app.js?v=2026-10-09.1'), 'script cache-bust must match content version');
+assert(/contentVersion:\s*'2026-10-09\.2'/.test(configText), 'content version must be 2026-10-09.2');
+assert(indexText.includes('config.js?v=2026-10-09.2') && indexText.includes('flow.js?v=2026-10-09.2') && indexText.includes('app.js?v=2026-10-09.2'), 'script cache-bust must match content version');
+assert(/hvacContentReviewed:\s*false/.test(configText), 'hvac content review flag stays false');
 assert(F.treeVersion === 'ac.cool.v0', 'AC tree version');
 assert(F.treeVersionHp === 'hp.air_source.v1', 'HP tree version');
+assert(F.treeVersionWshp === 'wshp.water_to_air.v0', 'A-1 WSHP tree version');
 
 const ac = F.create('seed', 'real');
 assert(ac.node === 'ac.gate.cluster_entry' && ac.product === 'ask' && !ac.treeVersion, 'every session starts at the safety gate before system type');
@@ -464,12 +466,235 @@ const HAZARDS = [
 const TERMS_BODY_SHA256 = '1627d50cf67e830e6dd3d1c19c8c307315c2d1dd550ee20a9a1cde326b780a09';
 const PRIVACY_BODY_SHA256 = 'fd1c58dc308bb57f592bbf5deea72d8c3dc0be7a4b03084c8a8310912a7bb725';
 
+// ---- WSHP Wave-1 PR-1 (A-1..A-28, T-1..T-26) ----
+const WSHP_IDS = ['wshp.hazard.flood_electrical', 'wshp.entry.equipment_gate', 'wshp.openloop.chemistry_gate', 'wshp.handback.call_pro'];
+assert(Array.isArray(F.wshpWave1) && F.wshpWave1.join('|') === WSHP_IDS.join('|'), 'A-2 WSHP_WAVE1 export');
+WSHP_IDS.forEach(id => {
+  assert(!!F.nodes[id], 'A-2 node exists ' + id);
+  assert(F.nodes[id].diyTier !== 'advanced', 'A-2 not advanced ' + id);
+});
+const systemType = F.nodes['sw.intake.system_type'];
+const wshpStart = systemType.options.find(o => o.id === 'water_source_geo');
+assert(!!wshpStart && wshpStart.next === 'wshp.hazard.flood_electrical' && wshpStart.label === 'Water-source / geothermal heat pump', 'A-3 water-source Start choice');
+const typeIds = systemType.options.map(o => o.id);
+assert(typeIds.indexOf('water_source_geo') > typeIds.indexOf('heat_pump') && typeIds[typeIds.length - 1] === 'not_sure', 'A-4 water-source sits after heat pump and not_sure stays last');
+assert(systemType.options.find(o => o.id === 'cooling_only_ac').next === 'ac.cool.intake.system_confirm', 'A-5 cooling-only edge unchanged');
+assert(systemType.options.find(o => o.id === 'heat_pump').next === 'hp.intake.system_confirm', 'A-5 heat-pump edge unchanged');
+assert(systemType.options.find(o => o.id === 'not_sure').next === 'sw.identify.winter_outdoor', 'A-5 not-sure edge unchanged');
+WSHP_IDS.forEach(id => {
+  F.nodes[id].options.forEach(op => {
+    assert(typeof op.next === 'string', 'A-9 string edge ' + id + '/' + op.id);
+    if (op.next.charAt(0) === '@') assert(!!F.results[op.next.slice(1)], 'A-9 result ' + op.next);
+    else assert(!!F.nodes[op.next], 'A-9 node ' + op.next);
+  });
+});
+const hz = F.nodes['wshp.hazard.flood_electrical'];
+assert(hz.safetyGate === true, 'A-10 hazard safety gate');
+hz.options.forEach(op => {
+  if (op.id === 'wshp_hz_none') {
+    assert(op.next === 'wshp.entry.equipment_gate', 'A-10 none continues');
+    return;
+  }
+  assert(!!op.gate, 'A-11 hazard gate ' + op.id);
+  assert(F.results[op.next.slice(1)].outcome === 'emergency_exit', 'A-10 hazard exits ' + op.id);
+});
+const eq = F.nodes['wshp.entry.equipment_gate'];
+const eqNext = id => eq.options.find(o => o.id === id).next;
+assert(eqNext('wshp_open_loop') === 'wshp.openloop.chemistry_gate', 'A-12 open loop');
+assert(eqNext('wshp_closed_loop') === 'wshp.handback.call_pro' && eqNext('wshp_loop_unsure') === 'wshp.handback.call_pro', 'A-12 closed and unsure loops');
+assert(eqNext('wshp_air_source') === 'hp.intake.system_confirm', 'A-12 air-source divert');
+assert(F.results[eqNext('wshp_out_of_scope_size').slice(1)].outcome === 'call_pro', 'A-12 oversize call_pro');
+assert(F.results[eqNext('wshp_system_unsure').slice(1)].outcome === 'insufficient_info', 'A-12 unsure system');
+assert(eqNext('wshp_ductless') === '@wshp_divert_mini_split', 'A-12 mini-split interim');
+assert(eqNext('wshp_furnace_combustion') === '@wshp_divert_furnace', 'A-12 furnace interim');
+const chemGate = F.nodes['wshp.openloop.chemistry_gate'];
+assert(chemGate.diyTier === 'pro_only' && chemGate.safetyGate === true, 'A-13 chemistry gate');
+chemGate.options.forEach(op => {
+  assert(op.next.charAt(0) === '@', 'A-14 no node after chemistry ' + op.id);
+  const outcome = F.results[op.next.slice(1)].outcome;
+  assert(outcome === 'call_pro' || outcome === 'emergency_exit', 'A-14 terminal ' + op.id);
+  if (op.id !== 'hazard_now') assert(op.gate === 'wshp_openloop_chemistry', 'A-15 chemistry gate id ' + op.id);
+});
+const handbackNode = F.nodes['wshp.handback.call_pro'];
+assert(handbackNode.diyTier === 'pro_only', 'A-16 handback pro_only');
+handbackNode.options.forEach(op => {
+  assert(op.next === (op.id === 'hazard_now' ? '@wshp_hazard_now' : '@wshp_handback_call_pro'), 'A-16 handback edge ' + op.id);
+});
+WSHP_IDS.forEach(id => {
+  if (id === 'wshp.hazard.flood_electrical') return;
+  const hazardNow = F.nodes[id].options.find(o => o.id === 'hazard_now');
+  assert(hazardNow && hazardNow.next === '@wshp_hazard_now' && hazardNow.gate === 'wshp_new_hazard', 'A-17 hazard_now on ' + id);
+});
+function wshpReachable() {
+  const seen = new Set();
+  const queue = ['wshp.hazard.flood_electrical'];
+  while (queue.length) {
+    const id = queue.shift();
+    if (seen.has(id)) continue;
+    seen.add(id);
+    if (id === 'hp.intake.system_confirm') continue;
+    const node = F.nodes[id];
+    if (!node) continue;
+    node.options.forEach(op => {
+      if (typeof op.next !== 'string') return;
+      if (op.next.charAt(0) === '@') seen.add(op.next);
+      else queue.push(op.next);
+    });
+  }
+  return seen;
+}
+const wshpSeen = wshpReachable();
+wshpSeen.forEach(id => {
+  assert(!(id.indexOf('ac.cool.') === 0 || id.indexOf('ac.start.') === 0 || id.indexOf('ac.noise.') === 0), 'A-18 no AC cooling node ' + id);
+  assert(F.advanced.indexOf(id) === -1, 'A-18 no Advanced node ' + id);
+  assert(!(id.indexOf('hp.') === 0 && id !== 'hp.intake.system_confirm'), 'A-18 no extra HP node ' + id);
+  assert(id !== '@next_step_advanced' && id !== '@suspected_capacitor_contactor_advanced_off', 'A-18 no forbidden terminal ' + id);
+  if (id.charAt(0) === '@') assert(F.results[id.slice(1)].outcome !== 'next_step', 'A-18 no next_step ' + id);
+});
+Object.keys(F.results).forEach(id => {
+  if (id.indexOf('wshp_') !== 0) return;
+  assert(F.results[id].outcome !== 'next_step' && F.results[id].diyTier !== 'advanced', 'A-19 ' + id);
+});
+['wshp.hazard.flood_electrical', 'wshp.entry.equipment_gate', 'wshp.openloop.chemistry_gate', 'wshp.handback.call_pro', '@fire', '@electrical', '@gas', '@uncertain', '@wshp_hazard_now', '@wshp_mech_room_flood', '@wshp_breaker_wont_reset', '@wshp_openloop_water_quality_pro', '@wshp_handback_call_pro', '@wshp_out_of_scope_call_pro', '@wshp_system_unconfirmed', '@wshp_divert_mini_split', '@wshp_divert_furnace'].forEach(id => {
+  assert(wshpSeen.has(id), 'A-20 reachable ' + id);
+});
+const bannedDiy = /\b(acid|bleach|chlorin\w*|biocide|descal\w*|flush\w*|purg\w*|glycol|antifreeze|refrigerant|gauges?|jump\w*|bypass\w*)\b/ig;
+const allowedPhrase = 'The water loop, pump, refrigerant, and controls';
+const allowedStart = /^(?:Do not|Never|Not offered|This check will not|No )/;
+const allowedExact = 'Capacitor, contactor, pump, wiring, and refrigerant work need a trained technician.';
+function checkBanned(text, where, labelId) {
+  if (!text) return;
+  if (labelId && (labelId.indexOf('want_diy_') === 0 || labelId === 'openloop_want_diy_treatment')) return;
+  const phraseAt = text.indexOf(allowedPhrase);
+  bannedDiy.lastIndex = 0;
+  let match;
+  while ((match = bannedDiy.exec(text))) {
+    const at = match.index;
+    if (phraseAt !== -1 && at >= phraseAt && at < phraseAt + allowedPhrase.length) continue;
+    const prior = text.slice(0, at);
+    const start = Math.max(prior.lastIndexOf('.'), prior.lastIndexOf('!'), prior.lastIndexOf('?'), prior.lastIndexOf('\n'));
+    const sentence = text.slice(start + 1).replace(/^[\s\-•]+/, '');
+    assert(allowedStart.test(sentence) || sentence.indexOf(allowedExact) === 0, 'A-21 ' + match[0] + ' in ' + where);
+  }
+}
+WSHP_IDS.forEach(id => {
+  checkBanned(F.nodes[id].body, id + ' body');
+  F.nodes[id].options.forEach(op => {
+    checkBanned(op.label, id + '/' + op.id + ' label', op.id);
+    checkBanned(op.hint, id + '/' + op.id + ' hint');
+  });
+});
+Object.keys(F.results).forEach(id => {
+  if (id.indexOf('wshp_') !== 0) return;
+  checkBanned(F.results[id].explanation, id + ' explanation');
+  (F.results[id].actions || []).forEach((action, index) => checkBanned(action, id + ' action ' + index));
+});
+const colorCallout = /\b(green|red|amber|yellow|blue)\b/i;
+WSHP_IDS.forEach(id => {
+  const node = F.nodes[id];
+  const blob = [node.section, node.title, node.body, node.caution].concat(node.options.map(op => [op.label, op.hint, op.fact].join(' '))).join('\n');
+  assert(!colorCallout.test(blob), 'A-22 color in ' + id);
+});
+Object.keys(F.results).forEach(id => {
+  if (id.indexOf('wshp_') !== 0) return;
+  const res = F.results[id];
+  assert(!colorCallout.test([res.title, res.urgency, res.explanation, res.avoid].concat(res.actions || []).join('\n')), 'A-22 color in ' + id);
+});
+assert(F.results.wshp_advanced_off && F.results.wshp_advanced_off.outcome === 'call_pro' && F.results.wshp_advanced_off.reason === 'wshp_advanced_off', 'A-26 overlay terminal is call_pro');
+
+function wshpEvents(state) { return state.audit.map(a => a.event); }
+const t1 = walk('ask', gate.concat(['water_source_geo']));
+assert(t1.node === 'wshp.hazard.flood_electrical' && t1.product === 'wshp' && t1.treeVersion === 'wshp.water_to_air.v0', 'T-1 hazard stub');
+const t1Events = wshpEvents(t1);
+assert(t1Events.indexOf('answer_selected:water_source_geo') !== -1 && t1Events.indexOf('answer_selected:water_source_geo') < t1Events.indexOf('product_lane:wshp') && t1Events.indexOf('product_lane:wshp') < t1Events.lastIndexOf('node_entered:wshp.hazard.flood_electrical'), 'T-1 audit order');
+const t2 = walk('ask', gate.concat(['water_source_geo', 'wshp_hz_smoke_burn_spark']));
+assert(t2.result === 'fire' && F.results[t2.result].outcome === 'emergency_exit' && wshpEvents(t2).indexOf('gate_fired:smoke_fire_sparks_burn') !== -1, 'T-2 smoke');
+const t3 = walk('ask', gate.concat(['water_source_geo', 'wshp_hz_water_electrical']));
+assert(t3.result === 'electrical' && F.results[t3.result].outcome === 'emergency_exit', 'T-3 water at electrical');
+const t4 = walk('ask', gate.concat(['water_source_geo', 'wshp_hz_flooding']));
+assert(t4.result === 'wshp_mech_room_flood' && wshpEvents(t4).indexOf('gate_fired:wet_hands_flood') !== -1, 'T-4 flood');
+const t5 = walk('ask', gate.concat(['water_source_geo', 'wshp_hz_breaker_wont_reset']));
+assert(t5.result === 'wshp_breaker_wont_reset' && wshpEvents(t5).indexOf('gate_fired:breaker_wont_reset') !== -1, 'T-5 breaker');
+const t6 = walk('ask', gate.concat(['water_source_geo', 'wshp_hz_gas_co']));
+assert(t6.result === 'gas', 'T-6 gas');
+const t7 = walk('ask', gate.concat(['water_source_geo', 'wshp_hz_unsure']));
+assert(t7.result === 'uncertain', 'T-7 unsure hazard');
+const t8 = walk('ask', gate.concat(['water_source_geo', 'wshp_hz_none', 'wshp_closed_loop', 'wshp_cx_no_heat']));
+assert(t8.result === 'wshp_handback_call_pro' && F.results[t8.result].outcome === 'call_pro', 'T-8 handback');
+const t8note = F.summary(t8);
+assert(t8note.indexOf('Loop type: closed loop.') !== -1 && t8note.indexOf('Complaint: No heat or not enough heat') !== -1, 'T-8 summary');
+assert(t8note.indexOf('HOMEOWNER SERVICE NOTE — water-source / geothermal heat pump observations, not a diagnosis') === 0, 'A-24 header');
+assert((t8note.split('Loop type:').length - 1) === 1, 'A-24 loop line once');
+assert(!/air-source/i.test(t8note), 'A-24 no air-source');
+assert(F.presentResult(t8) === F.results.wshp_handback_call_pro, 'A-23 raw WSHP result');
+assert(F.activity(t8).tree_version === 'wshp.water_to_air.v0', 'A-25 tree version');
+assert(!JSON.stringify(F.activity(t8)).includes('SECRET-NOTE') && F.summary(t8, { codes: 'SECRET-NOTE', model: 'SECRET-MODEL' }).includes('SECRET-NOTE'), 'A-25 activity excludes typed notes');
+const t9 = walk('ask', gate.concat(['water_source_geo', 'wshp_hz_none', 'wshp_open_loop', 'openloop_ack_call_pro']));
+assert(t9.result === 'wshp_openloop_water_quality_pro' && F.results[t9.result].outcome === 'call_pro' && wshpEvents(t9).indexOf('gate_fired:wshp_openloop_chemistry') !== -1, 'T-9 open loop');
+assert(t9.answers.every(a => a.node !== 'wshp.handback.call_pro') && t9.node !== 'wshp.handback.call_pro', 'T-9 never visits handback');
+const t10 = walk('ask', gate.concat(['water_source_geo', 'wshp_hz_none', 'wshp_open_loop', 'openloop_want_diy_treatment']));
+assert(t10.result === 'wshp_openloop_water_quality_pro' && wshpEvents(t10).indexOf('notes.wshp_openloop_diy:refused') !== -1, 'T-10 DIY treatment refused');
+const t11 = walk('ask', gate.concat(['water_source_geo', 'wshp_hz_none', 'wshp_open_loop', 'hazard_now']));
+assert(t11.result === 'wshp_hazard_now' && F.results[t11.result].outcome === 'emergency_exit', 'T-11 chemistry hazard');
+const t12 = walk('ask', gate.concat(['water_source_geo', 'wshp_hz_none', 'wshp_loop_unsure', 'wshp_cx_cycle_lockout']));
+assert(t12.result === 'wshp_handback_call_pro' && F.summary(t12).indexOf('Loop type: not sure.') !== -1, 'T-12 unsure loop');
+const t13 = walk('ask', gate.concat(['water_source_geo', 'wshp_hz_none', 'wshp_air_source']));
+assert(t13.node === 'hp.intake.system_confirm' && t13.product === 'hp' && t13.treeVersion === 'hp.air_source.v1', 'T-13 air-source divert');
+const t14 = walk('ask', gate.concat(['water_source_geo', 'wshp_hz_none', 'wshp_air_source', 'air_source_ducted_hp']));
+assert(t14.node === 'hp.landing.picker', 'T-14 continues into the live heat-pump tree');
+const t15 = walk('ask', gate.concat(['water_source_geo', 'wshp_hz_none', 'wshp_ductless']));
+assert(t15.result === 'wshp_divert_mini_split' && F.results[t15.result].outcome === 'insufficient_info', 'T-15 mini-split interim');
+const t16 = walk('ask', gate.concat(['water_source_geo', 'wshp_hz_none', 'wshp_furnace_combustion']));
+assert(t16.result === 'wshp_divert_furnace' && F.results[t16.result].outcome === 'call_pro', 'T-16 furnace interim');
+const t17 = walk('ask', gate.concat(['water_source_geo', 'wshp_hz_none', 'wshp_out_of_scope_size']));
+assert(t17.result === 'wshp_out_of_scope_call_pro', 'T-17 out of scope');
+const t18 = walk('ask', gate.concat(['water_source_geo', 'wshp_hz_none', 'wshp_system_unsure']));
+assert(t18.result === 'wshp_system_unconfirmed' && F.results[t18.result].outcome === 'insufficient_info', 'T-18 system unsure');
+const t19 = walk('ask', gate.concat(['water_source_geo', 'wshp_hz_none', 'hazard_now']));
+assert(t19.result === 'wshp_hazard_now', 'T-19 equipment hazard');
+const t20 = walk('ask', gate.concat(['water_source_geo', 'wshp_hz_none', 'wshp_closed_loop', 'want_diy_refrigerant_anyway']));
+assert(t20.result === 'wshp_handback_call_pro' && wshpEvents(t20).indexOf('gate_fired:refrigerant_intent') !== -1, 'T-20 refrigerant intent');
+const t21 = walk('ask', gate.concat(['water_source_geo', 'wshp_hz_none', 'wshp_closed_loop', 'want_diy_pro_only']));
+assert(t21.result === 'wshp_handback_call_pro' && wshpEvents(t21).indexOf('notes.advanced_diy:off') !== -1, 'T-21 advanced DIY off');
+const t22 = walk('ask', gate.concat(['water_source_geo', 'wshp_hz_none', 'wshp_closed_loop', 'hazard_now']));
+assert(t22.result === 'wshp_hazard_now', 'T-22 handback hazard');
+let t23 = false;
+try { F.answer(F.create(), 'water_source_geo', { agreed: true, termsVersion: 'public-beta-2026-10-08' }); }
+catch (err) { t23 = true; }
+assert(t23, 'T-23 water_source_geo before the gate throws');
+let a27 = false;
+try {
+  const early = F.create();
+  early.node = 'wshp.entry.equipment_gate';
+  F.answer(early, 'wshp_closed_loop', { agreed: true, termsVersion: 'public-beta-2026-10-08' });
+} catch (err) { a27 = /Safety and consent are required/.test(err.message); }
+assert(a27, 'A-27 wshp answer before safety and consent throws');
+const stopped = walk('ask', gate.concat(['water_source_geo', 'wshp_hz_none']));
+F.stop(stopped);
+assert(stopped.node === 'ac.gate.cluster_entry' && stopped.safetyCleared === false, 'A-28 stop returns to the safety gate');
+// Live stop() sets stopping, so the next "none of these" is the call-pro exit, not a new consent.
+F.answer(stopped, 'none_of_these');
+assert(stopped.result === 'professional' && F.results.professional.reason === 'stop_cleared_no_hazard', 'T-24 stop then none of these stays the live call-pro exit');
+const t24 = walk('hp', gate);
+assert(t24.product === 'hp' && t24.treeVersion === 'hp.air_source.v1', 'T-24 a new session can still choose the heat pump');
+const floodStop = walk('ask', gate.concat(['water_source_geo', 'wshp_hz_flooding']));
+const floodBefore = floodStop.result;
+F.stop(floodStop);
+assert(floodStop.result === floodBefore && floodStop.result === 'wshp_mech_room_flood', 'A-28 stop on a Stop / professional result is a no-op');
+const emergencyStop = walk('ask', gate.concat(['water_source_geo', 'wshp_hz_smoke_burn_spark']));
+F.stop(emergencyStop);
+assert(emergencyStop.result === 'fire', 'A-28 stop on an Emergency result is a no-op');
+const t26 = F.summary(t9, { codes: 'Lockout light; EWT 41' });
+assert(t26.indexOf('Loop type: open loop (well, lake, or pond water).') !== -1 && t26.indexOf('Codes / lights / water temps already showing (homeowner supplied): Lockout light; EWT 41') !== -1, 'T-26 codes note');
+assert(t26.indexOf('What I checked: safety screen — none of the listed hazards. No covers removed. No loop, well, refrigerant, or electrical work done.') !== -1, 'T-26 checked line');
+assert((t26.split('Loop type:').length - 1) === 1, 'T-26 loop line once');
+
 function finish() {
   if (failed) {
     console.error(failed + ' failed');
     process.exit(1);
   }
-  console.log('AC Wave-2 and HP Wave-1 sanity passed');
+  console.log('AC Wave-2, HP Wave-1, and WSHP Wave-1 PR-1 sanity passed');
 }
 
 function bootPage() {

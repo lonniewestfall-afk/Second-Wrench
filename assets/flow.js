@@ -4,12 +4,16 @@
  * Trees:
  * - ac.cool.v0 for cooling-only central AC sessions.
  * - hp.air_source.v1 for air-source ducted heat-pump sessions (Wave-1 Basic).
+ * - wshp.water_to_air.v0 for residential water-to-air water-source / geothermal
+ *   sessions (Wave-1 PR-1). Safety screen, equipment gate, open-loop chemistry
+ *   gate, and a call-pro handback. No loop, well, refrigerant, or electrical steps.
  * Session entry: ac.gate.cluster_entry → ac.session.consent →
  *   sw.intake.system_type. Consent text is shared and its stored agree
  *   edge stays ac.cool.intake.system_confirm (not a second consent node).
  *   The session overlay sends every agree to system type first:
  *   Cooling-only AC → ac.cool.intake.system_confirm → ac.cool.landing.picker.
  *   Heat pump → hp.intake.system_confirm → hp.landing.picker.
+ *   Water-source / geothermal → wshp.hazard.flood_electrical.
  *   Not sure → sw.identify.* (at most three questions). A heat-pump signal
  *   or a still-unclear answer enters the heat-pump tree. Cooling-only is
  *   only outdoor-off in winter AND a separate furnace or boiler AND no
@@ -50,6 +54,7 @@
 
   const TREE_VERSION = 'ac.cool.v0';
   const TREE_HP = 'hp.air_source.v1';
+  const TREE_WSHP = 'wshp.water_to_air.v0';
   const ENTRY = 'ac.gate.cluster_entry';
   const CONSENT = 'ac.session.consent';
   const WAVE1 = [
@@ -100,6 +105,12 @@
     'hp.conclude.call_pro_defrost_valve_control',
     'hp.ice.mode_location'
   ];
+  const WSHP_WAVE1 = [
+    'wshp.hazard.flood_electrical',
+    'wshp.entry.equipment_gate',
+    'wshp.openloop.chemistry_gate',
+    'wshp.handback.call_pro'
+  ];
   const CONCLUDE = 'ac.cool.conclude.call_pro_capacitor_contactor';
   const LANDING = {
     landing_not_cooling: 'not_cooling',
@@ -147,10 +158,13 @@
         o('decline_terms', 'Decline / do not agree', '@consent_declined', 'End session. No diagnosis path without required consent.')
       ]),
 
-    'sw.intake.system_type': n('Your system', 'Cooling-only AC, or a heat pump?',
-      'Answer from what you already know. Do not remove a cover or climb to identify the equipment.\n\nA cooling-only air conditioner cools the house. Heat usually comes from a separate furnace or boiler, and the outdoor unit stays off in winter.\n\nA heat pump heats and cools with the outdoor unit.', [
+    'sw.intake.system_type': n('Your system', 'What kind of system is this?',
+      'Answer from what you already know. Do not remove a cover or climb to identify the equipment.\n\nA cooling-only air conditioner cools the house. Heat usually comes from a separate furnace or boiler, and the outdoor unit stays off in winter.\n\nA heat pump heats and cools with the outdoor unit.\n\nA water-source or geothermal heat pump sits indoors, often in a basement or closet. There is no outdoor unit with a fan. Water or loop fluid comes in through pipes from the ground, a well, or a pond.', [
         o('cooling_only_ac', 'Cooling-only AC', 'ac.cool.intake.system_confirm', 'The outdoor unit is for cooling. A furnace, boiler, or other heater provides heat.', 'Cooling-only central AC reported.'),
         o('heat_pump', 'Heat pump (heats and cools with the outdoor unit)', 'hp.intake.system_confirm', 'The outdoor unit runs for heat and for cooling.', 'Heat pump reported at system type.'),
+        o('water_source_geo', 'Water-source / geothermal heat pump', 'wshp.hazard.flood_electrical',
+          'No outdoor unit with a fan. Water pipes run to a ground loop, a well, or a pond.',
+          'Water-source or geothermal heat pump reported at system type.'),
         o('not_sure', 'Not sure', 'sw.identify.winter_outdoor', 'Up to three plain questions. If it is still unclear, the check uses the heat-pump path.')
       ]),
 
@@ -572,7 +586,52 @@
         o('ack_call_pro', 'Understood — call a professional', '@hp_defrost_valve_ob_control', 'Terminal acknowledgment.'),
         o('want_diy_valve_or_electrical_anyway', 'I want to force the valve or do electrical work myself', '@hp_defrost_valve_ob_control', 'Not offered. Advanced electrical is off, and valve force-outs are professional-only.', 'Asked to force the valve or do electrical DIY.'),
         o('want_diy_refrigerant_anyway', 'I want to add refrigerant or use gauges', '@hp_refrigerant_intent', 'Never a DIY step.', 'Asked to add refrigerant or use gauges.', { gate: 'refrigerant_intent' })
-      ], { diyTier: 'pro_only', caution: 'No capacitor, contactor, gauges, or reversing-valve force-out. The disconnect step is not a lever lesson.' })
+      ], { diyTier: 'pro_only', caution: 'No capacitor, contactor, gauges, or reversing-valve force-out. The disconnect step is not a lever lesson.' }),
+
+    'wshp.hazard.flood_electrical': n('Safety first', 'Is any of this happening right now?',
+      'Look from where you are. Do not walk into water, touch the unit, or open any cover to check.\n\nGeothermal and water-source systems have water pipes, a pump, and 240-volt power close together. Water and electricity together are dangerous.', [
+        o('wshp_hz_smoke_burn_spark', 'Smoke, sparks, fire, or a burning smell', '@fire', 'Stop. Get away from the equipment.', 'Smoke, sparks, fire, or burning smell reported at the water-source hazard screen.', { gate: 'smoke_fire_sparks_burn' }),
+        o('wshp_hz_water_electrical', 'Water on or near the unit’s wiring, a power switch, the breaker panel, or the pump box', '@electrical', 'Stay clear. Do not touch anything wet.', 'Water at or near electrical equipment reported.', { gate: 'water_near_electrical' }),
+        o('wshp_hz_flooding', 'Water is spraying from a pipe or flooding the floor around the equipment', '@wshp_mech_room_flood', 'Stay out of the water.', 'Spraying water or flooding near the equipment reported.', { gate: 'wet_hands_flood' }),
+        o('wshp_hz_breaker_wont_reset', 'A breaker for the heat pump or loop pump keeps tripping or will not stay on', '@wshp_breaker_wont_reset', 'Do not reset it again.', 'Breaker for the unit or pump keeps tripping or will not stay on.', { gate: 'breaker_wont_reset' }),
+        o('wshp_hz_gas_co', 'A gas smell or a carbon monoxide alarm', '@gas', 'Leave the building first.', 'Gas smell or CO alarm reported at the water-source hazard screen.', { gate: 'gas_co' }),
+        o('wshp_hz_unsure', 'I am not sure', '@uncertain', 'It is OK to stop here.', 'Homeowner unsure whether a hazard is present.', { gate: 'unsure_hazard' }),
+        o('wshp_hz_none', 'None of these', 'wshp.entry.equipment_gate', 'Continue to the equipment questions.')
+      ], { diyTier: 'basic', safetyGate: true, caution: 'Do not step into water or touch the unit to check.' }),
+
+    'wshp.entry.equipment_gate': n('Your system', 'What kind of water-source or geothermal system is it?',
+      'Answer from what you already know, your paperwork, or what you can see from the floor. Do not open covers, go into a well pit or crawlspace, or climb to check.\n\nThis check covers a home heat pump that sits indoors and blows warm or cool air through ducts, using water or loop fluid from pipes. Most home systems are 6 tons or less.\n\nHow to tell closed loop from open loop (just look — do not touch valves or pipes):\n\n- Closed loop: Two loop pipes go into the floor or wall and come back. There is often a box with one or two pumps on or near the unit (a “flow center” or pump module). The same fluid goes around and around. No water leaves the house. A shared water loop in a condo or apartment building also counts as closed loop.\n- Open loop: The unit uses well water (or lake or pond water). There is often a well pump and a pressure tank feeding it. The used water leaves through a pipe to a pond, ditch, drain tile, or a second well. Your paperwork may say “open loop” or “well water.”\n- Not sure? That is fine. Pick “not sure which loop.”', [
+        o('wshp_closed_loop', 'Closed loop (ground loop, pond loop, or a building water loop)', 'wshp.handback.call_pro', 'Sealed pipes, often a pump box near the unit. No water leaves the house.', 'Loop type: closed loop (ground, pond, or building water loop).'),
+        o('wshp_open_loop', 'Open loop (well, lake, or pond water)', 'wshp.openloop.chemistry_gate', 'Often a well pump and pressure tank. Used water drains away outside.', 'Loop type: open loop (well, lake, or pond water).'),
+        o('wshp_loop_unsure', 'Water-source or geothermal, but I am not sure which loop', 'wshp.handback.call_pro', 'That is OK. A pro can tell.', 'Loop type: homeowner not sure.'),
+        o('wshp_air_source', 'Actually, there is an outdoor unit with a big fan', 'hp.intake.system_confirm', 'That is an air-source heat pump. Use the heat pump check.', 'Outdoor unit with a fan reported; switched to the air-source heat pump check.'),
+        o('wshp_ductless', 'Actually, it is a ductless mini-split (wall or ceiling units in rooms)', '@wshp_divert_mini_split', 'That is a different check.', 'Ductless mini-split reported at the water-source equipment question.'),
+        o('wshp_furnace_combustion', 'The problem is a gas, oil, or propane furnace or boiler', '@wshp_divert_furnace', 'Fuel-burning equipment is not part of this check.', 'Fuel-burning furnace or boiler problem reported at the water-source equipment question.'),
+        o('wshp_out_of_scope_size', 'Something bigger or different: over 6 tons, a business or large building, or it heats water for floors or radiators', '@wshp_out_of_scope_call_pro', 'Outside this beta. A pro is the right next step.', 'Over 6 tons, commercial, or water-to-water system reported.'),
+        o('wshp_system_unsure', 'I am not sure what kind of system I have', '@wshp_system_unconfirmed', 'Do not open covers to find out.', 'Homeowner unsure of system type at the water-source equipment question.'),
+        o('hazard_now', 'New hazard now (burning, smoke, sparks, flooding, water at electrical equipment, or gas)', '@wshp_hazard_now', 'Stop. Do not keep going.', 'New hazard reported during the water-source check.', { gate: 'wshp_new_hazard' })
+      ], { diyTier: 'basic', safetyGate: true, caution: 'Look only. Do not open covers, touch valves, or go into a well pit or crawlspace.' }),
+
+    'wshp.openloop.chemistry_gate': n('Open loop', 'Water care is a job for a pro',
+      'Open-loop systems run well, lake, or pond water through the unit. Over time, minerals, iron, and slime in that water can build up inside the unit’s water coil and slow it down.\n\nTesting, cleaning, or treating that water — and any work on the well, well pump, or pressure tank — needs a pro who works on open-loop systems. That cleaning job uses special equipment and chemicals.\n\nThis check will not give cleaning, chemical, or well steps. That stays true even if a video, label, or store product suggests one.\n\nThe next screen shows how to keep the system safe and what to tell the pro.', [
+        o('openloop_ack_call_pro', 'Got it — show me what to do and what to tell the pro', '@wshp_openloop_water_quality_pro', 'Same safe next step for every open-loop problem.', 'Open-loop water-quality gate shown; homeowner acknowledged.', { gate: 'wshp_openloop_chemistry' }),
+        o('openloop_want_diy_treatment', 'I want to clean, treat, or work on the water or well myself', '@wshp_openloop_water_quality_pro', 'Not offered. You will get the same pro result.', '', { gate: 'wshp_openloop_chemistry' }),
+        o('hazard_now', 'New hazard now (burning, smoke, sparks, flooding, water at electrical equipment, or gas)', '@wshp_hazard_now', 'Stop. Do not keep going.', 'New hazard reported during the water-source check.', { gate: 'wshp_new_hazard' })
+      ], { diyTier: 'pro_only', safetyGate: true, caution: 'Do not add anything to the well, water lines, or unit. Do not open the well, pressure tank, or loop pipes.' }),
+
+    'wshp.handback.call_pro': n('Call a professional', 'Get a geothermal pro. Here is what to tell them.',
+      'In this beta, the water-source check ends with a visit from a pro who works on geothermal or water-source heat pumps. The water loop, pump, refrigerant, and controls all need a trained technician.\n\nPick the main problem. It goes at the top of your service note. Every choice leads to the same safe next step.\n\nWhile you wait:\n\n- If a light or code is already showing on the unit or thermostat, write it down exactly. Do not reset the system again and again to make it come back.\n- If your thermostat or unit display already shows water temperatures (often called entering and leaving water), write them down. Do not open panels to look.\n- Leave covers on. Leave loop valves, the pump box, and any well equipment alone.', [
+        o('wshp_cx_no_heat', 'No heat, or not enough heat', '@wshp_handback_call_pro', '', 'Complaint: No heat or not enough heat (water-source / geothermal).'),
+        o('wshp_cx_no_cool', 'No cooling, or not enough cooling', '@wshp_handback_call_pro', '', 'Complaint: No cooling or not enough cooling (water-source / geothermal).'),
+        o('wshp_cx_both_weak', 'Heating and cooling are both weak', '@wshp_handback_call_pro', '', 'Complaint: Both heating and cooling weak (water-source / geothermal).'),
+        o('wshp_cx_cycle_lockout', 'It starts and stops quickly, or shows a lockout light or code', '@wshp_handback_call_pro', 'Write the light or code down. Do not keep resetting.', 'Complaint: Short cycling or lockout light or code (water-source / geothermal).'),
+        o('wshp_cx_noise', 'A new or unusual noise (no burning smell, smoke, or sparks)', '@wshp_handback_call_pro', '', 'Complaint: New or unusual noise, no hazard reported (water-source / geothermal).'),
+        o('wshp_cx_small_leak', 'A small drip or leak, away from anything electrical', '@wshp_handback_call_pro', 'Put a towel or pan down. Stay away from wiring.', 'Complaint: Small drip or leak away from electrical (water-source / geothermal).'),
+        o('wshp_cx_other', 'Something else, or I just want a service note', '@wshp_handback_call_pro', '', 'Complaint: Other water-source / geothermal concern; see observations.'),
+        o('want_diy_pro_only', 'I want to fix it myself (loop, pump, antifreeze, wiring, or parts)', '@wshp_handback_call_pro', 'Not offered. You will get the same pro result.'),
+        o('want_diy_refrigerant_anyway', 'I want to add refrigerant or use gauges', '@wshp_handback_call_pro', 'Never a DIY step.', '', { gate: 'refrigerant_intent' }),
+        o('hazard_now', 'New hazard now (burning, smoke, sparks, flooding, water at electrical equipment, or gas)', '@wshp_hazard_now', 'Stop. Do not keep going.', 'New hazard reported during the water-source check.', { gate: 'wshp_new_hazard' })
+      ], { diyTier: 'pro_only', safetyGate: false, caution: 'No loop, pump, antifreeze, refrigerant, wiring, or panel work from this guide.' }),
   };
 
   const r = (tier, urgency, title, explanation, actions, avoid, source, outcome, reason, extra = {}) =>
@@ -1074,6 +1133,56 @@
       ['If it is safe, set the thermostat Off.', 'Call a licensed HVAC professional. Describe what you heard and whether the outdoor fan was moving.', 'If you later smell burning or see smoke or sparks, get to safety and call 911. Do not return to this check.'],
       'Do not open covers or buy a part from the noise alone.', 'safety',
       'call_pro', 'unusual_noise_hp_wave1'),
+    wshp_hazard_now: r('Emergency', 'Stop. Get to safety.', 'A new hazard ends this check.',
+      'Gas, smoke, sparks, a burning smell, flooding, water at electrical equipment, or a breaker that will not stay on is not a do-it-yourself path.',
+      ['If you smell gas or a carbon monoxide alarm is sounding, leave the building and call for help from outside. Do not use switches inside.', 'If there is smoke, fire, or sparks, get people away and call 911 from a safe place.', 'If water is at electrical equipment or the floor is flooded, stay out of the water. Shut off power only from a dry place you already know.', 'If a breaker keeps tripping, leave it off. Do not reset it again.', 'Do not come back to this check until the hazard has been handled.'],
+      'Do not keep troubleshooting, open covers, touch wet equipment, or reset a breaker again.', 'safety',
+      'emergency_exit', 'wshp_new_hazard', { gate: 'wshp_new_hazard' }),
+    wshp_mech_room_flood: r('Stop / professional', 'Stay out of the water · get help', 'Do not walk into water near this equipment.',
+      'This system has water pipes, a pump, and 240-volt power in the same space. Standing or spraying water near them can cause a shock.',
+      ['Stay out of the water and keep others away.', 'Shut off main power only if you can do it from a dry, safe place you already know. Otherwise leave it.', 'If the water is coming from your home’s water supply and you already know where the main water shutoff is, close it only if you can reach it on a dry floor away from the equipment. Do not touch valves on the heat pump, the loop, the well, or the pressure tank.', 'Call a licensed HVAC professional who works on geothermal systems, or an electrician or plumber. For sparks, smoke, shock, or immediate danger, call 911 from a safe place.'],
+      'Do not step into water, mop around live equipment, touch switches with wet hands, or open loop or well valves.', 'electrical',
+      'emergency_exit', 'wet_hands_flood', { gate: 'wet_hands_flood' }),
+    wshp_breaker_wont_reset: r('Stop / professional', 'Leave it off · call a pro', 'A breaker that keeps tripping is a stop sign.',
+      'A breaker that will not stay on is protecting the wiring. The cause is in the electrical system, the pump, or the unit. That is not a homeowner repair.',
+      ['Leave the breaker off. Do not reset it again.', 'Set the thermostat to Off.', 'For backup heat, use electric space heaters plugged into a wall outlet. Never use an oven, stove, grill, or generator indoors.', 'Call a licensed HVAC professional who works on geothermal systems. If you smell burning or see smoke or sparks, get away and call 911.'],
+      'Do not reset it again and again, open the breaker panel or a disconnect, or swap a breaker.', 'electrical',
+      'emergency_exit', 'breaker_wont_reset', { gate: 'breaker_wont_reset' }),
+    wshp_openloop_water_quality_pro: r('Professional guidance', 'Call a pro who works on open-loop systems', 'Open-loop water care needs a professional.',
+      'Well, lake, or pond water can leave minerals or iron inside the unit’s water coil over time. Checking and cleaning it takes special equipment and chemicals. This is a reason to call, not a confirmed diagnosis.',
+      ['Leave covers on. Leave water valves, the well, the well pump, and the pressure tank alone.', 'If the system is not heating and it is cold out, you may switch the thermostat to Emergency or Aux Heat if you have it. Otherwise set it to Off. For backup heat, use electric space heaters only, never an oven, stove, grill, or generator indoors.', 'If the well water is also out for the house, tell the pro. Keep the heat pump off or on Emergency Heat until the well is working again.', 'Call a geothermal or water-source heat pump pro who services open-loop systems. Copy the note below for them.', 'If water starts flooding or reaches wiring, use Stop / get help.'],
+      'Do not add acid, bleach, chlorine, descaler, or any chemical to the well, the water lines, or the unit. Do not try to clean the unit’s coil, and do not work on the well, pump, or pressure tank.', 'maintenance',
+      'call_pro', 'wshp_openloop_water_quality_pro', { diyTier: 'pro_only' }),
+    wshp_handback_call_pro: r('Professional guidance', 'Arrange service · geothermal / water-source pro', 'Call a pro who works on geothermal or water-source heat pumps.',
+      'This beta does not yet guide homeowner checks for this system. The water loop, pump, refrigerant, and controls need a trained technician. This is a next step, not a diagnosis.',
+      ['Leave covers on. Leave loop valves, the pump box, and any well equipment alone.', 'If the home is getting too cold and your thermostat has Emergency or Aux Heat, you may use it until the pro comes. If there is no warm air in 15 minutes, set the system to Off. For backup heat, use electric space heaters only, never an oven, stove, grill, or generator indoors.', 'If the system keeps stopping or shows a lockout, set it to Off. Do not reset it again and again.', 'Write down any light, code, or water temperature that is already showing.', 'Call a technician who services geothermal or water-source heat pumps. Copy the note below for them.'],
+      'Do not open panels, add refrigerant or antifreeze, drain or refill the loop, open loop pipes, jump or bypass a safety switch, or work inside the electrical panel.', 'safety',
+      'call_pro', 'wshp_handback_call_pro', { diyTier: 'pro_only' }),
+    wshp_out_of_scope_call_pro: r('Professional guidance', 'Outside this beta · call a pro', 'This system is outside this check.',
+      'This beta covers home water-to-air heat pumps of 6 tons or less. Larger systems, business buildings, and systems that heat water for floors or radiators need a pro who works on that equipment.',
+      ['Leave covers, valves, and loop pipes alone.', 'Call a technician who works on water-source or geothermal systems of this type. In a business or apartment building, contact the building manager first.', 'If anything becomes unsafe, use Stop / get help.'],
+      'Do not use this home guide on commercial or larger equipment.', 'scope',
+      'call_pro', 'wshp_out_of_scope', { diyTier: 'pro_only' }),
+    wshp_system_unconfirmed: r('More information needed', 'Confirm the equipment first', 'We need to know what system you have.',
+      'Guessing the system type could send you to the wrong steps. Do not open covers to find out.',
+      ['Check paperwork, the owner’s manual, or a label you can already see without opening anything.', 'Ask the company that installed or services it.', 'Start again when you know. If you cannot find out, call your HVAC company instead of guessing.'],
+      'Do not remove panels, go into a well pit or crawlspace, or climb to read a model number.', 'scope',
+      'insufficient_info', 'wshp_system_unconfirmed'),
+    wshp_divert_mini_split: r('More information needed', 'Use the right check', 'A ductless mini-split needs a different check.',
+      'This check is for water-source and geothermal heat pumps. Mini-split guidance is not part of this check yet.',
+      ['Use the mini-split maker’s owner guide, or call a technician who works on mini-splits.', 'If anything is unsafe, use Stop / get help.'],
+      'Do not use these water-source steps on a mini-split.', 'scope',
+      'insufficient_info', 'wshp_divert_mini_split'),
+    wshp_divert_furnace: r('Professional guidance', 'Fuel-burning equipment · call a pro', 'A furnace or boiler problem needs a different check.',
+      'Gas, oil, and propane equipment burns fuel. This water-source check does not cover it.',
+      ['If you smell gas or a carbon monoxide alarm is sounding, leave the building now and call 911 or your gas company from outside.', 'Otherwise, call a licensed HVAC professional who works on furnaces or boilers.', 'Leave covers on. Do not relight or reset fuel-burning equipment from this guide.'],
+      'Do not open the furnace or boiler, relight a burner, or bypass a safety switch.', 'gas',
+      'call_pro', 'wshp_divert_furnace', { diyTier: 'pro_only' }),
+    wshp_advanced_off: r('Professional guidance', 'Repair steps are off for this system', 'Parts and electrical repairs are not offered for water-source heat pumps.',
+      'Capacitor, contactor, pump, wiring, and refrigerant work need a trained technician.',
+      ['Leave covers on.', 'Call a pro who works on geothermal or water-source heat pumps.'],
+      'Do not start a parts, electrical, or refrigerant repair from this check.', 'electrical',
+      'call_pro', 'wshp_advanced_off', { diyTier: 'pro_only' }),
   };
 
   function advancedEnabled() {
@@ -1123,6 +1232,26 @@
       if (!node) continue;
       node.options.forEach(op => {
         hpEdges(op.next).forEach(target => {
+          if (!target || typeof target !== 'string') return;
+          if (target.charAt(0) === '@') seen.add(target);
+          else queue.push(target);
+        });
+      });
+    }
+    return seen;
+  }
+  function wshpReachable() {
+    const seen = new Set();
+    const queue = ['wshp.hazard.flood_electrical'];
+    while (queue.length) {
+      const id = queue.shift();
+      if (seen.has(id)) continue;
+      seen.add(id);
+      if (id === 'hp.intake.system_confirm') continue;
+      const node = nodes[id];
+      if (!node) continue;
+      node.options.forEach(op => {
+        targetsOf(op.next).forEach(target => {
           if (!target || typeof target !== 'string') return;
           if (target.charAt(0) === '@') seen.add(target);
           else queue.push(target);
@@ -1285,6 +1414,154 @@
     ['ac.cool.outdoor.fan_spinning', 'ac.noise.clarify_outdoor_hum', 'ac.cool.airflow.returns_supplies', 'ac.cool.power.disconnect_visual', 'ac.cool.landing.picker'].forEach(id => {
       if (!off.has(id)) throw new Error('AC path lost ' + id);
     });
+    WSHP_WAVE1.forEach(id => {
+      if (!nodes[id]) throw new Error('Missing WSHP node ' + id);
+      if (nodes[id].diyTier === 'advanced') throw new Error('WSHP node must not be Advanced ' + id);
+    });
+    const wshpChoice = id => {
+      const op = nodes['sw.intake.system_type'].options.find(item => item.id === id);
+      if (!op) throw new Error('Missing system-type choice ' + id);
+      return op;
+    };
+    if (wshpChoice('water_source_geo').next !== 'wshp.hazard.flood_electrical' || wshpChoice('water_source_geo').label !== 'Water-source / geothermal heat pump') {
+      throw new Error('Water-source Start choice drifted');
+    }
+    const typeIds = nodes['sw.intake.system_type'].options.map(item => item.id);
+    if (typeIds.indexOf('water_source_geo') < typeIds.indexOf('heat_pump') || typeIds[typeIds.length - 1] !== 'not_sure') {
+      throw new Error('Water-source Start choice is out of order');
+    }
+    WSHP_WAVE1.forEach(id => {
+      nodes[id].options.forEach(op => {
+        if (typeof op.next !== 'string') throw new Error('WSHP edge must be a string: ' + id + '/' + op.id);
+        targetsOf(op.next).forEach(target => {
+          if (target.charAt(0) === '@') {
+            if (!results[target.slice(1)]) throw new Error('Missing WSHP result ' + target);
+          } else if (!nodes[target]) throw new Error('Missing WSHP node ' + target);
+        });
+      });
+    });
+    const hazard = nodes['wshp.hazard.flood_electrical'];
+    if (hazard.safetyGate !== true) throw new Error('WSHP hazard stub must be a safety gate');
+    hazard.options.forEach(op => {
+      if (op.id === 'wshp_hz_none') {
+        if (op.next !== 'wshp.entry.equipment_gate') throw new Error('WSHP none must continue to the equipment gate');
+        return;
+      }
+      if (!op.gate) throw new Error('WSHP hazard choice missing a gate: ' + op.id);
+      const res = results[op.next.slice(1)];
+      if (!res || res.outcome !== 'emergency_exit') throw new Error('WSHP hazard choice must emergency-exit: ' + op.id);
+    });
+    const equip = nodes['wshp.entry.equipment_gate'];
+    const equipNext = id => equip.options.find(op => op.id === id).next;
+    if (equipNext('wshp_open_loop') !== 'wshp.openloop.chemistry_gate') throw new Error('Open loop must reach the chemistry gate');
+    if (equipNext('wshp_closed_loop') !== 'wshp.handback.call_pro' || equipNext('wshp_loop_unsure') !== 'wshp.handback.call_pro') {
+      throw new Error('Closed and unsure loops must reach the handback');
+    }
+    if (equipNext('wshp_air_source') !== 'hp.intake.system_confirm') throw new Error('Air-source divert must enter the heat pump tree');
+    if (results[equipNext('wshp_out_of_scope_size').slice(1)].outcome !== 'call_pro') throw new Error('Oversize must call a pro');
+    if (results[equipNext('wshp_system_unsure').slice(1)].outcome !== 'insufficient_info') throw new Error('Unsure system must be insufficient_info');
+    if (equipNext('wshp_ductless') !== '@wshp_divert_mini_split' && equipNext('wshp_ductless') !== 'ms.intake.system_confirm') {
+      throw new Error('Ductless divert drifted');
+    }
+    if (equipNext('wshp_furnace_combustion') !== '@wshp_divert_furnace' && equipNext('wshp_furnace_combustion') !== 'fn.gate.combustion_co') {
+      throw new Error('Furnace divert drifted');
+    }
+    const chem = nodes['wshp.openloop.chemistry_gate'];
+    if (chem.diyTier !== 'pro_only' || chem.safetyGate !== true) throw new Error('Chemistry gate must be pro_only and a safety gate');
+    chem.options.forEach(op => {
+      if (op.next.charAt(0) !== '@') throw new Error('Chemistry gate must not continue to a node');
+      const res = results[op.next.slice(1)];
+      if (!res || (res.outcome !== 'call_pro' && res.outcome !== 'emergency_exit')) throw new Error('Chemistry gate outcome drifted: ' + op.id);
+      if (op.id !== 'hazard_now' && op.gate !== 'wshp_openloop_chemistry') throw new Error('Chemistry choice missing the chemistry gate: ' + op.id);
+    });
+    const handback = nodes['wshp.handback.call_pro'];
+    if (handback.diyTier !== 'pro_only') throw new Error('Handback must be pro_only');
+    handback.options.forEach(op => {
+      const expected = op.id === 'hazard_now' ? '@wshp_hazard_now' : '@wshp_handback_call_pro';
+      if (op.next !== expected) throw new Error('Handback edge drifted: ' + op.id);
+    });
+    WSHP_WAVE1.forEach(id => {
+      if (id === 'wshp.hazard.flood_electrical') return;
+      const hazardNow = nodes[id].options.find(op => op.id === 'hazard_now');
+      if (!hazardNow || hazardNow.next !== '@wshp_hazard_now' || hazardNow.gate !== 'wshp_new_hazard') {
+        throw new Error('WSHP node missing hazard_now: ' + id);
+      }
+    });
+    const wshpSeen = wshpReachable();
+    wshpSeen.forEach(id => {
+      if (id.indexOf('ac.cool.') === 0 || id.indexOf('ac.start.') === 0 || id.indexOf('ac.noise.') === 0 || id === CONCLUDE) {
+        throw new Error('WSHP walk reached a cooling node: ' + id);
+      }
+      if (ADVANCED.indexOf(id) !== -1) throw new Error('WSHP walk reached Advanced: ' + id);
+      if (id.indexOf('hp.') === 0 && id !== 'hp.intake.system_confirm') throw new Error('WSHP walk reached an HP node: ' + id);
+      if (id === '@next_step_advanced' || id === '@suspected_capacitor_contactor_advanced_off') throw new Error('WSHP walk reached a forbidden terminal: ' + id);
+      if (id.charAt(0) === '@') {
+        const res = results[id.slice(1)];
+        if (res && res.outcome === 'next_step') throw new Error('WSHP walk reached a next_step result: ' + id);
+      }
+    });
+    Object.keys(results).forEach(id => {
+      if (id.indexOf('wshp_') !== 0) return;
+      if (results[id].outcome === 'next_step' || results[id].diyTier === 'advanced') throw new Error('WSHP result tier drifted: ' + id);
+    });
+    ['wshp.hazard.flood_electrical', 'wshp.entry.equipment_gate', 'wshp.openloop.chemistry_gate', 'wshp.handback.call_pro', '@fire', '@electrical', '@gas', '@uncertain', '@wshp_hazard_now', '@wshp_mech_room_flood', '@wshp_breaker_wont_reset', '@wshp_openloop_water_quality_pro', '@wshp_handback_call_pro', '@wshp_out_of_scope_call_pro', '@wshp_system_unconfirmed', '@wshp_divert_mini_split', '@wshp_divert_furnace'].forEach(id => {
+      if (!wshpSeen.has(id)) throw new Error('WSHP walk missing ' + id);
+    });
+    const bannedDiy = /\b(acid|bleach|chlorin\w*|biocide|descal\w*|flush\w*|purg\w*|glycol|antifreeze|refrigerant|gauges?|jump\w*|bypass\w*)\b/ig;
+    const allowedPhrase = 'The water loop, pump, refrigerant, and controls';
+    const allowedStart = /^(?:Do not|Never|Not offered|This check will not|No )/;
+    // Spec copy for @wshp_advanced_off names refrigerant in a technician-only sentence
+    // that does not match the A-21 sentence-start list. Keep that sentence verbatim.
+    const allowedExact = 'Capacitor, contactor, pump, wiring, and refrigerant work need a trained technician.';
+    const checkBanned = (text, where, labelId) => {
+      if (!text) return;
+      if (labelId && (labelId.indexOf('want_diy_') === 0 || labelId === 'openloop_want_diy_treatment')) return;
+      const phraseAt = text.indexOf(allowedPhrase);
+      bannedDiy.lastIndex = 0;
+      let match;
+      while ((match = bannedDiy.exec(text))) {
+        const at = match.index;
+        if (phraseAt !== -1 && at >= phraseAt && at < phraseAt + allowedPhrase.length) continue;
+        const prior = text.slice(0, at);
+        const start = Math.max(prior.lastIndexOf('.'), prior.lastIndexOf('!'), prior.lastIndexOf('?'), prior.lastIndexOf('\n'));
+        const sentence = text.slice(start + 1).replace(/^[\s\-•]+/, '');
+        if (allowedStart.test(sentence) || sentence.indexOf(allowedExact) === 0) continue;
+        throw new Error('WSHP forbidden DIY word outside a prohibition: ' + match[0] + ' in ' + where);
+      }
+    };
+    WSHP_WAVE1.forEach(id => {
+      checkBanned(nodes[id].body, id + ' body');
+      nodes[id].options.forEach(op => {
+        checkBanned(op.label, id + '/' + op.id + ' label', op.id);
+        checkBanned(op.hint, id + '/' + op.id + ' hint');
+      });
+    });
+    Object.keys(results).forEach(id => {
+      if (id.indexOf('wshp_') !== 0) return;
+      checkBanned(results[id].explanation, id + ' explanation');
+      (results[id].actions || []).forEach((action, index) => checkBanned(action, id + ' action ' + index));
+    });
+    const colorCallout = /\b(green|red|amber|yellow|blue)\b/i;
+    WSHP_WAVE1.forEach(id => {
+      const node = nodes[id];
+      const blob = [node.section, node.title, node.body, node.caution].concat(node.options.map(op => [op.label, op.hint, op.fact].join(' '))).join('\n');
+      if (colorCallout.test(blob)) throw new Error('WSHP color callout in ' + id);
+    });
+    Object.keys(results).forEach(id => {
+      if (id.indexOf('wshp_') !== 0) return;
+      const res = results[id];
+      const blob = [res.title, res.urgency, res.explanation, res.avoid].concat(res.actions || []).join('\n');
+      if (colorCallout.test(blob)) throw new Error('WSHP color callout in result ' + id);
+    });
+    const overlayProbe = { product: 'wshp' };
+    ['ac.adv.cap.discharge', '@next_step_advanced', '@suspected_capacitor_contactor_advanced_off', CONCLUDE].forEach(target => {
+      if (applySessionOverlay(overlayProbe, 'wshp.handback.call_pro', 'probe', target) !== '@wshp_advanced_off') {
+        throw new Error('WSHP overlay must map advanced targets to @wshp_advanced_off');
+      }
+    });
+    if (applySessionOverlay({ product: 'hp' }, 'hp.landing.picker', 'probe', '@next_step_advanced') !== '@hp_advanced_electrical_off') {
+      throw new Error('HP advanced overlay drifted');
+    }
   }
   assertGraph();
 
@@ -1296,7 +1573,7 @@
       preselectChoice: null, treeVersion: '', audit: [],
       product: 'ask', hpLanding: null, hpAmbient: null, hpHandback: null,
       hpWeakAirflow: false, hpOutdoorNotRunning: false, hpConcludeFrom: null, defrostReturns: 0,
-      idWinter: null, idEm: null
+      idWinter: null, idEm: null, wshpLoop: null
     };
     pushAudit(state, 'node_entered:' + ENTRY);
     pushAudit(state, 'product_lane:ask');
@@ -1304,7 +1581,7 @@
   }
   function enterLane(state, lane) {
     state.product = lane;
-    state.treeVersion = lane === 'hp' ? TREE_HP : TREE_VERSION;
+    state.treeVersion = lane === 'hp' ? TREE_HP : lane === 'wshp' ? TREE_WSHP : TREE_VERSION;
     pushAudit(state, 'product_lane:' + lane);
   }
   function uuid() {
@@ -1360,7 +1637,7 @@
     if (nodeId === CONSENT && choice === 'agree_18_terms') target = 'sw.intake.system_type';
     if (typeof target !== 'string') return target;
     if (state.product !== 'ac' && (target === CONCLUDE || target.indexOf('ac.adv.cap.') === 0 || target === '@suspected_capacitor_contactor_advanced_off' || target === '@next_step_advanced')) {
-      return '@hp_advanced_electrical_off';
+      return state.product === 'wshp' ? '@wshp_advanced_off' : '@hp_advanced_electrical_off';
     }
     if (state.product !== 'hp') return target;
     if (target === 'ac.noise.clarify_outdoor_hum') return '@unusual_noise_hp_wave1';
@@ -1480,6 +1757,25 @@
     }
     if (nodeId === 'hp.landing.picker' && choice === 'landing_unusual_noise') pushAudit(state, 'handback:ac.noise.hazard_screen');
     if (nodeId === 'ac.cool.intake.system_confirm' && choice === 'heat_pump') pushAudit(state, 'product_lane:hp');
+    if (nodeId === 'sw.intake.system_type' && choice === 'water_source_geo') {
+      enterLane(state, 'wshp');
+      state.wshpLoop = null;
+    }
+    if (nodeId === 'wshp.entry.equipment_gate') {
+      if (choice === 'wshp_closed_loop') state.wshpLoop = 'closed';
+      else if (choice === 'wshp_open_loop') state.wshpLoop = 'open';
+      else if (choice === 'wshp_loop_unsure') state.wshpLoop = 'unsure';
+      if (choice === 'wshp_closed_loop' || choice === 'wshp_open_loop' || choice === 'wshp_loop_unsure') {
+        pushAudit(state, 'flag:wshp_loop=' + state.wshpLoop);
+      }
+      if (choice === 'wshp_air_source') enterLane(state, 'hp');
+    }
+    if (nodeId === 'wshp.openloop.chemistry_gate' && choice === 'openloop_want_diy_treatment') {
+      pushAudit(state, 'notes.wshp_openloop_diy:refused');
+    }
+    if (nodeId === 'wshp.handback.call_pro' && choice === 'want_diy_pro_only') {
+      pushAudit(state, 'notes.advanced_diy:off');
+    }
     let target = resolveTarget(option, state);
     target = applySessionOverlay(state, nodeId, choice, target);
     if (nodeId === ENTRY && choice === 'none_of_these' && state.stopping) target = '@professional';
@@ -1551,6 +1847,7 @@
         pushAudit(state, 'capacitor_label_recorded');
       }
       pushAudit(state, 'node_entered:' + target);
+      if (target === 'wshp.handback.call_pro') pushAudit(state, 'handback:wshp.handback.call_pro');
     }
     return state;
   }
@@ -1586,16 +1883,38 @@
   function summary(state, extra = {}) {
     const clean = x => String(x || '').replace(/[\r\n\t]+/g, ' ').trim().slice(0, 140);
     const facts = state.answers.map(x => x.fact).filter(Boolean);
-    const complaint = clean(extra.complaint) || clean(state.seed) || facts.find(x => x.startsWith('Complaint:')) || (state.product === 'hp' ? 'Heat pump concern; see reported observations.' : 'AC concern; see reported observations.');
-    const observations = [...new Set(facts.filter(x => !x.startsWith('Complaint:') && !x.startsWith('User ') && !x.startsWith('Residential ')))].slice(-5);
+    const complaint = clean(extra.complaint) || clean(state.seed) || facts.find(x => x.startsWith('Complaint:')) || (state.product === 'wshp' ? 'Water-source / geothermal heat pump concern; see reported observations.' : state.product === 'hp' ? 'Heat pump concern; see reported observations.' : 'AC concern; see reported observations.');
+    const observations = [...new Set(facts.filter(x => !x.startsWith('Complaint:') && !x.startsWith('User ') && !x.startsWith('Residential ') && !(state.product === 'wshp' && x.startsWith('Loop type:'))))].slice(-5);
     const actions = [...new Set(facts.filter(x => x.startsWith('User ')))].slice(-2);
-    return [(state.product === 'hp' ? 'HOMEOWNER SERVICE NOTE — heat pump observations, not a diagnosis' : 'HOMEOWNER SERVICE NOTE — observations, not a diagnosis'),
-      state.product === 'hp' ? 'Equipment: air-source ducted heat pump.' : '',
+    const loopLine = state.product !== 'wshp' || !state.wshpLoop ? ''
+      : state.wshpLoop === 'closed' ? 'Loop type: closed loop.'
+      : state.wshpLoop === 'open' ? 'Loop type: open loop (well, lake, or pond water).'
+      : state.wshpLoop === 'unsure' ? 'Loop type: not sure.'
+      : '';
+    const codes = state.product === 'wshp' ? clean(extra.codes) : '';
+    const checked = state.product === 'wshp'
+      && state.answers.some(a => a.node === 'wshp.hazard.flood_electrical' && a.choice === 'wshp_hz_none')
+      && (state.result === 'wshp_handback_call_pro' || state.result === 'wshp_openloop_water_quality_pro')
+      ? 'What I checked: safety screen — none of the listed hazards. No covers removed. No loop, well, refrigerant, or electrical work done.'
+      : '';
+    const header = state.product === 'wshp'
+      ? 'HOMEOWNER SERVICE NOTE — water-source / geothermal heat pump observations, not a diagnosis'
+      : state.product === 'hp'
+        ? 'HOMEOWNER SERVICE NOTE — heat pump observations, not a diagnosis'
+        : 'HOMEOWNER SERVICE NOTE — observations, not a diagnosis';
+    const equipment = state.product === 'wshp'
+      ? 'Equipment: water-to-air water-source / geothermal heat pump (home system; homeowner believes 6 tons or less).'
+      : state.product === 'hp' ? 'Equipment: air-source ducted heat pump.' : '';
+    return [header,
+      equipment,
+      loopLine,
       'Complaint: ' + clean(complaint).replace(/^Complaint:\s*/i, ''),
       extra.began ? 'Began: ' + clean(extra.began) : '',
       extra.model ? 'Model (homeowner supplied): ' + clean(extra.model) : '',
+      codes ? 'Codes / lights / water temps already showing (homeowner supplied): ' + codes : '',
       observations.length ? 'Observed: ' + observations.join(' ') : '',
       actions.length ? 'Tried: ' + actions.join(' ') : '',
+      checked,
       state.mode === 'test' ? 'TEST SCENARIO — not an actual equipment report.' : ''
     ].filter(Boolean).join('\n');
   }
@@ -1629,7 +1948,7 @@
   }
   return {
     nodes, results, create, answer, stop, resume, summary, activity, viewNode, presentResult, advancedEnabled,
-    treeVersion: TREE_VERSION, treeVersionHp: TREE_HP, wave1: WAVE1, wave2: WAVE2, advanced: ADVANCED,
-    hpWave1: HP_WAVE1
+    treeVersion: TREE_VERSION, treeVersionHp: TREE_HP, treeVersionWshp: TREE_WSHP, wave1: WAVE1, wave2: WAVE2, advanced: ADVANCED,
+    hpWave1: HP_WAVE1, wshpWave1: WSHP_WAVE1
   };
 });
