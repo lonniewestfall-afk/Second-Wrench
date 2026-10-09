@@ -15,6 +15,10 @@ Living tracker. Update whenever Commander or Tree Lead ships a safety-sensitive 
 | D-004c | 2026-10-03 | Ice keep-running stop split (`hp.air_source.v1`, content `2026-10-03.1`). Heat-pump keep-running asks mode and ice location (`hp.ice.mode_location`), then a heating outdoor-ice stop (`hp_ice_heat_outdoor`) or the cooling/uncertain Off-and-thaw stop (`ice_keep_running`). Both stay `emergency_exit`. Adjacent cold-weather Off lines name Emergency/Aux Heat first. No new DIY steps. `advancedRepairsEnabled` stays false. | Same consent body and beta terms. No new electrical procedure. Users are told not to chip ice. Heat-mode outdoor ice uses Emergency/Aux Heat, or Off plus safe backup heat. | No. Advanced stays off. Neither stop opens an Advanced path. | **Live Basic** — Terms still not attorney-reviewed |
 | D-005 | TBD | Affiliates / compensated referrals / kits | Disclosures + commercial Terms; Leon Phase 2 | Yes | **Deferred** (Leon closer-to-launch) |
 | D-006 | TBD | Full launch Terms rewrite (limitation of liability, indemnity, venue, arbitration, server-side consent) | Replaces/extends `beta-2026-09-13` | Yes for commercial launch | **Deferred** per Leon 5 PM guidance — drafts welcome when Donnie wants them |
+| D-007 | 2026-10-08 | **Free public beta ship** (Donnie cannot afford attorney; Leon on hold). Operator-authored Terms/Privacy/disclaimer pack in `publish-2026-10-08/` | New `public-beta-2026-10-08` Terms + Privacy + disclaimer supplement for Basic DIY + optional feedback; limitation of liability; feedback license (anonymized/de-identified); not medical/emergency | **No** for Basic public beta — Donnie may ship these drafts himself. Still **not** attorney-approved. | **READY TO SHIP** — `publish-2026-10-08/` |
+| D-008 | 2026-10-08 | Wave-2 Basic (power visuals: breaker/disconnect **visual-only**, returns/supplies, debris, noise hazard→clarify) — Commander second safety pass | Covered by Basic DIY risk + “visual only / no panel operate” language in Terms §5 and safety copy. Does **not** authorize operating panel/disconnect internals. | **No** if copy stays visual-only and hard gates intact. **Yes** if a node softens a gate or implies panel work. | **Watch at Wave-2 public ship** — re-check result copy |
+| D-009 | 2026-10-08 | Advanced capacitor **8-node gated package** in tree; Commander safety pass nearly complete; **public flag stays FALSE**; private zip may enable for internal test only | Terms Advanced supplement (`terms-advanced-diy-supplement-DRAFT.md`) still required **before public Advanced ON**. Must cover residual charge, lockout, never screwdriver short, covers before restore, flag-gated enablement. Public ship pack **does not** enable Advanced. | **YES** for public `advancedRepairsEnabled=true`. Private≠public. | **BLOCKED for public Advanced** — D-002 supplement still the gate |
+| D-010 | 2026-10-08 | Leon after-the-fact FYI pack only | `06-leon-fyi-after-the-fact-2026-10-08.md` — informational; **not** a publish blocker | No | **FYI only** |
 
 ## Enablement gate (Advanced)
 
@@ -28,6 +32,20 @@ Public advancedRepairsEnabled = true
 ```
 
 Private sandbox testing with flag on does **not** authorize public ON.
+
+### Advanced public enablement gate (updated 2026-10-08)
+
+```
+Public advancedRepairsEnabled = true
+  ONLY IF ALL:
+    [ ] Commander safety pass on capacitor Advanced specs
+    [ ] Donnie accepts residual product risk of shipping Advanced without Leon
+      (record decision in changelog — do not invent Leon approval)
+    [ ] termsVersion bumped; Advanced clickwrap / re-accept live
+    [ ] Commander explicit product flip on PUBLIC config
+Private sandbox ON does not authorize public ON.
+```
+
 
 ## How to add a row
 
