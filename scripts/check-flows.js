@@ -1011,6 +1011,59 @@ const fnRendered = (id, reason) => { const r = F.presentResult({ product: 'fn', 
 Object.keys(F.results).filter(id => id.indexOf('fn_') === 0 && id !== 'fn_call_pro').forEach(id => assert(fnRendered(id) <= 92, 'F15 ' + id + ' over 92 words: ' + fnRendered(id)));
 Object.keys(F.fnReasonCopy).forEach(k => assert(fnRendered('fn_call_pro', k) <= 92, 'F15 fn_call_pro:' + k + ' over 92 words: ' + fnRendered('fn_call_pro', k)));
 
+// F16 furnace water-at-electrical is its own stop. AC electrical copy stays.
+const wetYes = F.nodes['ac.gate.water_near_electrical'].options.find(op => op.id === 'water_at_electrical_yes');
+assert(wetYes.next === '@electrical', 'F16 AC water-yes edge unchanged');
+assert(F.results.electrical.actions.some(a => a.indexOf('Shut off main power only if you can do it from a dry, safe location.') !== -1), 'F16 AC electrical result still has the dry main-power line');
+assert(F.fnEdge['ac.gate.water_near_electrical/water_at_electrical_yes'] === '@fn_water_electrical', 'F16 furnace overlay routes water-yes to fn_water_electrical');
+const wet = fnStart();
+['none_of_these', 'gas_furnace', 'landing_water_near_furnace', 'water_at_electrical_yes'].forEach(c => F.answer(wet, c, META));
+assert(wet.product === 'fn' && wet.result === 'fn_water_electrical' && outcomeOf(wet) === 'emergency_exit', 'F16 path ends at fn_water_electrical, got ' + wet.result);
+const wetRes = F.results.fn_water_electrical;
+assert(wetRes.tier === F.results.electrical.tier && wetRes.outcome === 'emergency_exit' && wetRes.gate === 'water_near_electrical' && !wetRes.continueTo, 'F16 same severity as electrical, no continue');
+const wetShown = F.presentResult(wet);
+const wetText = [wetShown.title, wetShown.explanation, wetShown.avoid].concat(wetShown.actions).join('\n');
+assert(wetShown.explanation === "Water is at or near the furnace's electrical parts.", 'F16 explanation');
+assert(wetShown.actions[0] === "Don't touch the furnace, any switch, or the breaker panel, and don't stand in the water.", 'F16 do-not-touch line');
+assert(/call a licensed HVAC pro or an electrician/.test(wetText) && /call 911 from outside/.test(wetText), 'F16 calls a pro or 911 from outside');
+fnPaths.filter(s => s.result && !handedOff(s)).forEach(s => {
+  const shown = F.presentResult(s);
+  const text = [shown.title, shown.urgency, shown.explanation, shown.avoid].concat(shown.actions).join('\n');
+  assert(!/shut off main power/i.test(text), 'F16 furnace-lane result says shut off main power: ' + s.result);
+});
+assert(!/shut off main power/i.test(wetText), 'F16 fn_water_electrical says shut off main power');
+
+// F17 furnace-lane display overrides. Stored AC copy stays.
+const acFilterHint = F.nodes['ac.cool.filter.check'].options.find(op => op.id === 'filter_clean_ok').hint;
+assert(acFilterHint === 'Weak airflow continues to returns and supplies. Not cooling continues to the outdoor fan.', 'F17 stored filter hint unchanged');
+const fnAtFilter = fnStart();
+['none_of_these', 'gas_furnace', 'landing_no_heat', 'settings_ok_still_problem'].forEach(c => F.answer(fnAtFilter, c, META));
+assert(F.viewNode('ac.cool.filter.check', fnAtFilter).options.find(op => op.id === 'filter_clean_ok').hint === 'Not enough heat continues to returns and supplies. Other heat problems stop for a pro.', 'F17 furnace filter hint');
+const batt = F.nodes['ac.tstat.blank.batteries'].options;
+assert(batt.find(op => op.id === 'batteries_replaced_display_back').hint === 'Basic success — retest cool call.', 'F17 stored battery hint unchanged');
+assert(batt.find(op => op.id === 'hardwired_or_no_batteries').hint === 'Pro path — C-wire / transformer / control power.', 'F17 stored hardwired hint unchanged');
+const fnBlank = fnStart();
+['none_of_these', 'gas_furnace', 'landing_blank_tstat'].forEach(c => F.answer(fnBlank, c, META));
+const fnBatt = F.viewNode('ac.tstat.blank.batteries', fnBlank).options;
+assert(fnBatt.find(op => op.id === 'batteries_replaced_display_back').hint === 'Basic success — retest the heat call.', 'F17 furnace battery hint');
+assert(fnBatt.find(op => op.id === 'hardwired_or_no_batteries').hint === 'Pro path — a blank hardwired thermostat needs a pro. No wiring or panel work.', 'F17 furnace hardwired hint');
+assert(F.nodes['ac.cool.airflow.returns_supplies'].body.indexOf('rooms you want cooled') !== -1, 'F17 stored returns body unchanged');
+const fnReturns = fnStart();
+['none_of_these', 'gas_furnace', 'landing_not_enough_heat', 'settings_ok_still_problem', 'filter_clean_ok'].forEach(c => F.answer(fnReturns, c, META));
+assert(fnReturns.node === 'ac.cool.airflow.returns_supplies', 'F17 not-enough-heat reaches returns, got ' + fnReturns.node);
+const fnReturnsBody = F.viewNode(fnReturns.node, fnReturns).body;
+assert(fnReturnsBody.indexOf('rooms you want heated') !== -1 && fnReturnsBody.indexOf('rooms you want cooled') === -1, 'F17 furnace returns body says heated');
+
+// F18 public copy nits
+assert(appText.includes('Cooling-only AC, a heat pump, a water-source heat pump, a furnace, or not sure.'), 'F18 notice card names a furnace');
+assert(/equipment-cabinet removal, gas valves, pilots, relighting, or reset buttons\./.test(appText), 'F18 safety list names gas valves, pilots, relighting, and reset buttons');
+assert(appText.includes('Furnace checks are look-only: every session starts at the combustion and CO check, with no gas valve, pilot, relight, reset, or panel work.'), 'F18 sources furnace sentence');
+assert(/const dualFuel = onHp && \(state\.hpGasFurnace === 'yes' \|\| state\.hpGasFurnace === 'not_sure'\)/.test(appText), 'F18 dual-fuel sidebar condition');
+assert(appText.includes("hpLimit + ' ' + fnLimit"), 'F18 dual-fuel sidebar combines heat-pump and furnace limits');
+const d012 = fs.readFileSync(path.join(__dirname, '../docs/ac-second-opinion/legal/disclaimer-change-log.md'), 'utf8').split('\n').find(line => line.indexOf('| D-012 |') === 0);
+assert(d012 && d012.indexOf('**Added**') !== -1 && d012.indexOf('**Published**') === -1, 'F18 D-012 status is Added');
+assert(/yellow or orange flame already seen/.test(d012) && /bang at ignition/.test(d012) && /call-a-pro/.test(d012), 'F18 D-012 notes yellow flame and bang end at call-a-pro');
+
 
 function finish() {
   if (failed) {
@@ -1178,6 +1231,26 @@ function pageChecks() {
     assert(doc.querySelector('h1').textContent === 'Leave the house now.', 'gas smell emergency title');
     assert(doc.querySelector('.legal-footer') && doc.querySelector('.legal-footer').textContent === EMERGENCY_LINE, 'gas smell shows the emergency result line');
     assert(!doc.getElementById('flow-error'), 'gas smell result has no error');
+    await home();
+    click(doc.querySelector('[data-answer="none_of_these"]'));
+    await flush();
+    await acceptAndContinue();
+    await clickPath(['furnace', 'none_of_these', 'gas_furnace', 'landing_water_near_furnace', 'water_at_electrical_yes']);
+    assert(window.location.hash === '#/result', 'furnace water-at-electrical reaches a result');
+    assert(doc.querySelector('h1').textContent === "Don't touch the furnace or stand in the water.", 'furnace water-at-electrical title');
+    assert(doc.querySelector('.result-heading.emergency'), 'furnace water-at-electrical renders an emergency result');
+    assert(norm(doc.querySelector('.explanation')) === "Water is at or near the furnace's electrical parts.", 'furnace water-at-electrical explanation');
+    assert(norm(doc.body).indexOf('shut off main power') === -1, 'furnace water-at-electrical page does not say shut off main power');
+    assert(doc.querySelector('.legal-footer') && doc.querySelector('.legal-footer').textContent === EMERGENCY_LINE, 'furnace water-at-electrical shows the emergency result line');
+    assert(!doc.getElementById('flow-error'), 'furnace water-at-electrical has no error');
+    await home();
+    click(doc.querySelector('[data-answer="none_of_these"]'));
+    await flush();
+    await acceptAndContinue();
+    await clickPath(['heat_pump', 'air_source_hp_gas_furnace', 'none_of_these']);
+    assert(doc.querySelector('h1').textContent === 'What is going on with the heat pump?', 'dual-fuel gate clear returns to the heat-pump check');
+    const side = norm(doc.querySelector('.sidebar'));
+    assert(side.indexOf('No gauges or refrigerant.') !== -1 && side.indexOf('Never relight a pilot') !== -1, 'dual-fuel sidebar shows heat-pump and furnace limits');
     assert(errors.length === 0, 'furnace page has no script error: ' + errors.join(' | '));
     window.location.hash = '#/terms';
     await flush();

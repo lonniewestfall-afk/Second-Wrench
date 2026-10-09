@@ -150,7 +150,7 @@
     '@batteries_display_back', '@returns_supplies_cleared', '@filter_inaccessible',
     '@blank_tstat_after_batteries', '@blank_tstat_hardwired_power', '@tstat_inaccessible',
     '@weak_airflow_after_returns_supplies', '@airflow_check_inaccessible', '@unusual_noise_unresolved',
-    '@noise_burning_sparks_smoke', '@uncertain'
+    '@noise_burning_sparks_smoke', '@uncertain', '@electrical'
   ];
   const FN_CO_LINE = "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns.";
   const LANDING = {
@@ -1384,6 +1384,11 @@
       ['If the furnace acts strangely, set the thermostat to Off.', 'Tell the pro what you checked. Your note below lists it.', 'If you smell gas or a CO alarm sounds, get everyone out and call 911 from outside.', FN_CO_LINE],
       "Don't press reset buttons, keep restarting, open panels, or relight anything.", 'safety',
       'call_pro', 'fn_call_pro', { diyTier: 'pro_only' }),
+    fn_water_electrical: r('Stop / professional', 'Keep away · urgent help', "Don't touch the furnace or stand in the water.",
+      "Water is at or near the furnace's electrical parts.",
+      ["Don't touch the furnace, any switch, or the breaker panel, and don't stand in the water.", 'Leave the area, keep others and pets away, and call a licensed HVAC pro or an electrician.', 'If you see sparks, smoke, or smell burning, get out and call 911 from outside.', FN_CO_LINE],
+      "Don't touch the furnace, any switch, or the breaker panel.", 'electrical',
+      'emergency_exit', 'water_near_electrical', { gate: 'water_near_electrical' }),
   };
   // Furnace-lane overlay for reused AC nodes. Key: '<nodeId>/<answerId>'. AC data and copy stay unchanged.
   const FN_EDGE = {
@@ -1400,6 +1405,7 @@
     'ac.cool.airflow.returns_supplies/blocked_cleared_still_weak': FN_CONCLUDE,
     'ac.cool.airflow.returns_supplies/no_blockers_found_still_weak': FN_CONCLUDE,
     'ac.cool.airflow.returns_supplies/cannot_check_safely': FN_CONCLUDE,
+    'ac.gate.water_near_electrical/water_at_electrical_yes': '@fn_water_electrical',
     'ac.gate.water_near_electrical/water_clear_no_electrical_risk': FN_CONCLUDE,
     'ac.gate.water_near_electrical/water_elsewhere_not_electrical': FN_CONCLUDE,
     'ac.noise.hazard_screen/noise_burning_sparks_smoke': '@fn_burning_sparks',
@@ -1981,6 +1987,25 @@
         });
       });
       view = Object.assign({}, view, { options: options });
+    }
+    if (state && state.product === 'fn' && id === 'ac.cool.filter.check') {
+      view = Object.assign({}, view, {
+        options: view.options.map(op => op.id !== 'filter_clean_ok' ? op : Object.assign({}, op, {
+          hint: 'Not enough heat continues to returns and supplies. Other heat problems stop for a pro.'
+        }))
+      });
+    }
+    if (state && state.product === 'fn' && id === 'ac.tstat.blank.batteries') {
+      view = Object.assign({}, view, {
+        options: view.options.map(op => {
+          if (op.id === 'batteries_replaced_display_back') return Object.assign({}, op, { hint: 'Basic success — retest the heat call.' });
+          if (op.id === 'hardwired_or_no_batteries') return Object.assign({}, op, { hint: 'Pro path — a blank hardwired thermostat needs a pro. No wiring or panel work.' });
+          return op;
+        })
+      });
+    }
+    if (state && state.product === 'fn' && id === 'ac.cool.airflow.returns_supplies') {
+      view = Object.assign({}, view, { body: node.body.replace('rooms you want cooled', 'rooms you want heated') });
     }
     if (state && state.product === 'fn' && FN_REUSED.indexOf(id) !== -1) {
       view = Object.assign({}, view, { options: view.options.concat([FN_HAZARD]) });
