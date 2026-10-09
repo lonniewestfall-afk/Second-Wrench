@@ -10,13 +10,13 @@ Contact: [lonnie@secondwrench.co](mailto:lonnie@secondwrench.co)
 
 The repository root is the site root. Connect the repo in Netlify and publish `.` with no build step (`netlify.toml` sets `publish = "."`).
 
-Shipped site files: `index.html`, `assets/`, `manifest.webmanifest`, `_redirects`, `_headers`, `404.html`, `robots.txt`, `thanks.html`.
+Shipped site files: `index.html`, `assets/`, `manifest.webmanifest`, `_redirects`, `_headers`, `404.html`, `robots.txt`, `sitemap.xml`, `thanks.html`.
 
-Quiet beta: pages send `noindex` (`robots` meta and `_headers`). Do not remove that for this release.
+Public beta is indexable. The home page sends `index, follow`, a canonical URL, and Open Graph / Twitter card tags. `robots.txt` allows crawling and points at `sitemap.xml` (the home page only). `thanks.html` and `404.html` stay `noindex`.
 
 ## Wave-1 and Wave-2
 
-**Implemented** for founder review. Cooling-only tree `ac.cool.v0`. Air-source ducted heat pump tree `hp.air_source.v1` (Wave-1 Basic; ice-stop split 2026-10-03). Water-source / geothermal tree `wshp.water_to_air.v0` (Wave-1 PR-1: safety screens, an equipment gate, an open-loop call-pro gate, and a service note). Gas and electric furnace tree `fn.furnace.v0` (Wave-1 Slice 1: combustion safety gate first, then look-only thermostat, filter, and vent checks). Content version `2026-10-09.4`.
+**Implemented** for founder review. Cooling-only tree `ac.cool.v0`. Air-source ducted heat pump tree `hp.air_source.v1` (Wave-1 Basic; ice-stop split 2026-10-03). Water-source / geothermal tree `wshp.water_to_air.v0` (Wave-1 PR-1: safety screens, an equipment gate, an open-loop call-pro gate, and a service note). Gas and electric furnace tree `fn.furnace.v0` (Wave-1 Slice 1: combustion safety gate first, then look-only thermostat, filter, and vent checks). Content version `2026-10-09.5`.
 
 Wave-1 is the original 12 nodes. Wave-2 Basic adds seven nodes: breaker-door visual, outdoor-disconnect visual (position only), the silent-path hub, returns and supplies, outdoor debris, the noise hazard screen, and outdoor-hum clarification. The capacitor Advanced chain (eight nodes) is in the tree and runs only when `advancedRepairsEnabled` is true.
 
