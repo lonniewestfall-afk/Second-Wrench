@@ -423,8 +423,152 @@ F.answer(accepted, 'none_of_these');
 F.answer(accepted, 'agree_18_terms', { agreed: true, termsVersion: 'public-beta-2026-10-08' });
 assert(accepted.consent === true && accepted.termsVersion === 'public-beta-2026-10-08' && /^\d{4}-\d{2}-\d{2}T/.test(accepted.consentAt), 'the session stores the terms version and acceptance time');
 
-if (failed) {
-  console.error(failed + ' failed');
-  process.exit(1);
+assert(indexText.includes('Second Wrench free public beta:'), 'meta description says free public beta');
+assert(indexText.includes('Free public beta. A better next step. · Not an emergency service'), 'beta bar says free public beta and not an emergency service');
+assert(!/<div class="beta-bar">[^<]*<span>/.test(indexText), 'the emergency clause is not hidden inside a beta-bar span');
+assert(appText.includes('Free public beta. Try it on your own system and tell us what was clear or confusing.'), 'home note invites anyone to try the beta');
+assert(appText.includes('Second Wrench · Free public beta'), 'content pages say free public beta');
+assert(!appText.includes('Second Wrench · Private beta'), 'content pages do not say private beta');
+assert(appText.includes('Emergency / hazard help never requires this checkbox.'), 'terms section 3 says hazard help does not require the checkbox');
+const runtimeBan = [
+  [/private beta/i, 'private beta'],
+  [/\binvited\b/i, 'invited'],
+  [/\binvite\b/i, 'invite'],
+  [/\binvitation\b/i, 'invitation'],
+  [/small circle/i, 'small circle'],
+  [/\btesters?\b/i, 'tester'],
+  [/small beta/i, 'small beta']
+];
+['index.html', '404.html', 'thanks.html'].concat(fs.readdirSync(path.join(__dirname, '../assets')).filter(name => name.endsWith('.js')).map(name => 'assets/' + name)).forEach(rel => {
+  const text = rel === 'index.html' ? indexText : rel === 'assets/app.js' ? appText : fs.readFileSync(path.join(__dirname, '..', rel), 'utf8');
+  runtimeBan.forEach(([pattern, label]) => assert(!pattern.test(text), rel + ' still says ' + label));
+  if (rel === '404.html' || rel === 'thanks.html') assert(text.includes('Second Wrench · Free public beta'), rel + ' eyebrow says free public beta');
+});
+const changeLog = fs.readFileSync(path.join(__dirname, '../docs/ac-second-opinion/legal/disclaimer-change-log.md'), 'utf8');
+function changeRow(id) { return changeLog.split('\n').find(line => line.startsWith('| ' + id + ' |')); }
+const d007 = changeRow('D-007');
+const d010 = changeRow('D-010');
+assert(d007 && d007.includes('Operator-authored beta Terms published; no attorney review yet.'), 'D-007 uses the neutral published wording');
+assert(d007 && !/afford|Donnie|Leon/i.test(d007), 'D-007 has no internal business detail');
+assert(d010 && d010.includes('Follow-up note only') && !/afford|Donnie|Leon/i.test(d010), 'D-010 has no internal business detail');
+
+const EMERGENCY_LINE = 'Get to safety. Call 911 if there is fire, smoke, or immediate danger. This site is not an emergency service.';
+const HAZARDS = [
+  ['hazard_gas_co', 'Get everyone to fresh air.'],
+  ['hazard_smoke_fire_sparks_burn', 'Stop. Treat smoke, sparks, or burning as a hazard.'],
+  ['hazard_water_electrical', 'Do not touch wet or damaged electrical equipment.'],
+  ['hazard_heat_illness', 'Help the person before the AC.'],
+  ['hazard_refrigerant_alarm', 'Do not reset a refrigerant-leak alarm.'],
+  ['hazard_unsure', 'Uncertainty is a good reason to stop.']
+];
+const TERMS_BODY_SHA256 = '1627d50cf67e830e6dd3d1c19c8c307315c2d1dd550ee20a9a1cde326b780a09';
+const PRIVACY_BODY_SHA256 = 'fd1c58dc308bb57f592bbf5deea72d8c3dc0be7a4b03084c8a8310912a7bb725';
+
+function finish() {
+  if (failed) {
+    console.error(failed + ' failed');
+    process.exit(1);
+  }
+  console.log('AC Wave-2 and HP Wave-1 sanity passed');
 }
-console.log('AC Wave-2 and HP Wave-1 sanity passed');
+
+function bootPage() {
+  const { JSDOM, VirtualConsole } = require('jsdom');
+  const errors = [];
+  const virtualConsole = new VirtualConsole();
+  virtualConsole.on('jsdomError', error => errors.push(String(error && error.stack || error)));
+  const html = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8')
+    .replace(/\s*<script src="assets\/(?:config|flow|app)\.js\?v=[^"]+" defer><\/script>/g, '')
+    .replace('</body>', '<script>' + fs.readFileSync(path.join(__dirname, '../assets/config.js'), 'utf8') + '</script><script>' + fs.readFileSync(path.join(__dirname, '../assets/flow.js'), 'utf8') + '</script><script>' + fs.readFileSync(path.join(__dirname, '../assets/app.js'), 'utf8') + '</script></body>');
+  const dom = new JSDOM(html, {
+    url: 'http://127.0.0.1:8765/#/',
+    runScripts: 'dangerously',
+    pretendToBeVisual: true,
+    virtualConsole,
+    beforeParse(window) { window.scrollTo = () => {}; }
+  });
+  return { dom, errors };
+}
+
+function pageChecks() {
+  const crypto = require('crypto');
+  const { dom, errors } = bootPage();
+  const window = dom.window;
+  const doc = window.document;
+  const flush = () => new Promise(resolve => setTimeout(resolve, 0));
+  const click = el => el.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }));
+  const norm = el => (el ? el.textContent : '').replace(/\s+/g, ' ').trim();
+  async function home() {
+    if (window.location.hash !== '#/') window.location.hash = '#/';
+    await flush();
+    click(doc.querySelector('[data-action="start"]'));
+    await flush();
+  }
+  function emergencyOk(label) {
+    const footer = doc.querySelector('.legal-footer');
+    assert(window.location.hash === '#/result', label + ' reaches a result');
+    assert(footer && footer.textContent === EMERGENCY_LINE, label + ' shows the emergency result line');
+    assert(doc.querySelector('.result-heading.emergency'), label + ' renders an emergency result');
+    assert(!doc.getElementById('agree'), label + ' does not ask for the checkbox');
+  }
+  return (async () => {
+    assert(errors.length === 0, 'page scripts load without error: ' + errors.join(' | '));
+    assert(norm(doc.querySelector('.beta-bar')) === 'Free public beta. A better next step. · Not an emergency service', 'rendered beta bar');
+    assert(norm(doc.querySelector('.quiet-note')).startsWith('Free public beta. Try it on your own system and tell us what was clear or confusing.'), 'rendered home note');
+    for (const [id, title] of HAZARDS) {
+      await home();
+      assert(!doc.getElementById('agree'), id + ' starts on the safety gate without a checkbox');
+      click(doc.querySelector('[data-answer="' + id + '"]'));
+      await flush();
+      emergencyOk(id);
+      assert(doc.querySelector('h1') && doc.querySelector('h1').textContent === title, id + ' result title');
+    }
+    for (const [id, title] of HAZARDS) {
+      await home();
+      click(doc.querySelector('[data-answer="none_of_these"]'));
+      await flush();
+      const box = doc.getElementById('agree');
+      const cont = doc.getElementById('continue-consent');
+      assert(box && box.checked === false && cont && cont.disabled, id + ' stop path leaves the checkbox unticked');
+      click(doc.querySelector('header [data-action="stop"]'));
+      await flush();
+      assert(!doc.getElementById('agree') && doc.querySelector('h1').textContent === 'Is any of this happening right now?', 'Stop / get help returns to the hazard gate without the checkbox');
+      click(doc.querySelector('[data-answer="' + id + '"]'));
+      await flush();
+      emergencyOk('Stop / get help then ' + id);
+      assert(doc.querySelector('h1').textContent === title, 'Stop / get help then ' + id + ' result title');
+    }
+    await home();
+    click(doc.querySelector('[data-answer="none_of_these"]'));
+    await flush();
+    const cont = doc.getElementById('continue-consent');
+    assert(cont.disabled && doc.getElementById('agree').checked === false, 'Continue starts disabled while the checkbox is unticked');
+    click(cont);
+    await flush();
+    assert(doc.querySelector('h1').textContent === 'A guide, not an equipment inspection.', 'a disabled Continue does not leave consent');
+    cont.disabled = false;
+    click(cont);
+    await flush();
+    assert(window.location.hash === '#/check', 'Continue stays on the check route');
+    assert(doc.querySelector('h1').textContent === 'A guide, not an equipment inspection.', 'Continue re-checks the checkbox and does not advance');
+    assert(doc.getElementById('flow-error').textContent === 'Please read and accept the Terms and Privacy notes to continue.', 'Continue explains that the checkbox is required');
+    assert(doc.querySelector('main h1').textContent !== 'Cooling-only AC, or a heat pump?', 'an unticked Continue does not open system type');
+    window.location.hash = '#/terms';
+    await flush();
+    const termsBody = norm(doc.querySelector('.document-panel'));
+    assert(termsBody.includes('Emergency / hazard help never requires this checkbox.'), 'rendered terms include the hazard checkbox sentence');
+    assert(crypto.createHash('sha256').update(termsBody).digest('hex') === TERMS_BODY_SHA256, 'terms body matches the approved text');
+    window.location.hash = '#/privacy';
+    await flush();
+    const privacyBody = norm(doc.querySelector('.document-panel'));
+    assert(crypto.createHash('sha256').update(privacyBody).digest('hex') === PRIVACY_BODY_SHA256, 'privacy body matches the approved text');
+    window.close();
+    finish();
+  })().catch(error => {
+    failed += 1;
+    console.error('FAIL', error && error.stack || error);
+    finish();
+  });
+}
+
+pageChecks();
