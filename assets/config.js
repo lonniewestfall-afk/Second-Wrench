@@ -1,13 +1,13 @@
 /* Public configuration. Never place passwords, tokens, or API keys in this file. */
 window.SW_CONFIG = Object.freeze({
   version: '0.1.0-beta',
-  contentVersion: '2026-10-09.1',
+  contentVersion: '2026-10-09.2',
   domain: 'secondwrench.co',
   contactEmail: 'lonnie@secondwrench.co',
   operatorName: 'Second Wrench',
   termsVersion: 'public-beta-2026-10-08',
-  // Turn on only after Netlify detects both forms and you verify a test submission.
-  formsEnabled: false,
+  // Netlify detects beta-feedback and beta-session. liveFormsVerified stays false until a live test submission.
+  formsEnabled: true,
   // Public runtime. Capacitor steps exist in the tree and run only when this is true.
   // Do not set true on main. The private sandbox zip is the only flag-on copy.
   advancedRepairsEnabled: false,

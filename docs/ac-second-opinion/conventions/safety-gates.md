@@ -20,6 +20,9 @@ Hard gates. Affirmative / failed check → tree **halts**. No soft continue. Pre
 | `ac.gate.high_voltage_intent` | User intent to work 240V / disconnect internals / panel | Hard stop into Professional-only. | `call_pro` — never DIY. | `gate_fired:high_voltage_intent` |
 | `ac.gate.refrigerant_intent` | User intent to add/remove refrigerant or open sealed system | Hard stop. | `call_pro` — EPA-certified tech only. | `gate_fired:refrigerant_intent` |
 | `ac.gate.mold_asbestos_suspect` | Visible mold at scale / suspect asbestos materials to disturb | Stop DIY disturbance. | `call_pro` / qualified remediation. | `gate_fired:mold_asbestos_suspect` |
+| `ac.gate.breaker_wont_reset` | Breaker for the unit or loop pump keeps tripping or will not stay on | Leave the breaker off. Do not reset it again. | `emergency_exit` | `gate_fired:breaker_wont_reset` |
+| `wshp.gate.openloop_chemistry` | Open-loop session reaches the water-quality gate, or the user asks for water treatment, cleaning, or well work | Open-loop water care needs a professional. Do not add chemicals or work on the well, pump, or pressure tank. | `call_pro`. No node follows this gate. | `gate_fired:wshp_openloop_chemistry` |
+| `wshp.gate.new_hazard` | `hazard_now` on any `wshp.` node | A new hazard ends this check. | `emergency_exit` | `gate_fired:wshp_new_hazard` |
 
 ## Ordering
 

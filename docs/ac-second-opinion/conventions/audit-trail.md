@@ -37,3 +37,20 @@
 - AI explanations logged separately from tree decisions so review can see what the model said vs what the tree decided.
 - Partial paths on hazard exit are retained (see hazard-exit-ramps.md).
 - Do not claim audit log equals legal compliance; it is a product safety/accountability control pending Terms.
+
+## Water-source / geothermal lane
+
+Lane value `wshp`. Tree version `wshp.water_to_air.v0`.
+
+| Audit string | When |
+|---|---|
+| `product_lane:wshp` | Start choice `water_source_geo` enters the lane |
+| `flag:wshp_loop=closed` | Equipment gate: closed loop |
+| `flag:wshp_loop=open` | Equipment gate: open loop |
+| `flag:wshp_loop=unsure` | Equipment gate: loop type not sure |
+| `notes.wshp_openloop_diy:refused` | Open-loop chemistry gate: user asks to clean, treat, or work on the water or well |
+| `handback:wshp.handback.call_pro` | Session enters the service-note handback |
+| `notes.advanced_diy:off` | Handback: user asks to fix the loop, pump, antifreeze, wiring, or parts |
+| `gate_fired:wshp_openloop_chemistry` | Open-loop water-quality gate |
+| `gate_fired:wshp_new_hazard` | `hazard_now` on a water-source screen |
+| `gate_fired:breaker_wont_reset` | Breaker for the unit or pump will not stay on |
