@@ -49,8 +49,8 @@ function assertNoCap(state, msg) {
 const gate = ['none_of_these', 'agree_18_terms'];
 
 assert(/advancedRepairsEnabled:\s*false/.test(configText), 'public advanced flag must stay false');
-assert(/contentVersion:\s*'2026-10-03\.1'/.test(configText), 'content version must be 2026-10-03.1');
-assert(indexText.includes('config.js?v=2026-10-03.1') && indexText.includes('flow.js?v=2026-10-03.1') && indexText.includes('app.js?v=2026-10-03.1'), 'script cache-bust must match content version');
+assert(/contentVersion:\s*'2026-10-09\.1'/.test(configText), 'content version must be 2026-10-09.1');
+assert(indexText.includes('config.js?v=2026-10-09.1') && indexText.includes('flow.js?v=2026-10-09.1') && indexText.includes('app.js?v=2026-10-09.1'), 'script cache-bust must match content version');
 assert(F.treeVersion === 'ac.cool.v0', 'AC tree version');
 assert(F.treeVersionHp === 'hp.air_source.v1', 'HP tree version');
 
@@ -347,8 +347,228 @@ assert(!JSON.stringify(F.nodes).includes('2W'), 'no 2W brand');
 const joined = JSON.stringify(F.hpWave1.map(id => F.nodes[id]));
 assert(!/replace the capacitor/i.test(joined), 'HP nodes do not instruct capacitor replacement');
 
-if (failed) {
-  console.error(failed + ' failed');
-  process.exit(1);
+assert(/termsVersion:\s*'public-beta-2026-10-08'/.test(configText), 'termsVersion is public-beta-2026-10-08');
+assert(/advancedRepairsEnabled:\s*false/.test(configText) && !/advancedRepairsEnabled:\s*true/.test(configText), 'public advanced flag must stay false');
+assert(appText.includes("'/terms'") && appText.includes("'/privacy'"), 'terms and privacy routes exist');
+const termsRoute = appText.slice(appText.indexOf("'/terms':"), appText.indexOf("'/privacy':"));
+const privacyRoute = appText.slice(appText.indexOf("'/privacy':"), appText.indexOf("'/disclosures':"));
+const termsHtml = appText.slice(appText.indexOf('const TERMS_HTML'), appText.indexOf('const PUBLIC_BETA_NOTICE'));
+const noticeHtml = appText.slice(appText.indexOf('const PUBLIC_BETA_NOTICE'), appText.indexOf('const PRIVACY_HTML'));
+const privacyHtml = appText.slice(appText.indexOf('const PRIVACY_HTML'), appText.indexOf('function publicBetaNotice'));
+const visible = html => html.replace(/<[^>]+>/g, '');
+assert(termsRoute.includes('TERMS_HTML') && termsRoute.includes('publicBetaNotice'), 'terms route renders the terms body and beta notice');
+assert(privacyRoute.includes('PRIVACY_HTML'), 'privacy route renders the privacy body');
+assert(/not a licensed HVAC/i.test(visible(noticeHtml)), 'terms page says not a licensed HVAC');
+assert(termsHtml.includes('Advanced DIY repair procedures are OFF'), 'terms page says Advanced DIY repair procedures are OFF');
+assert(visible(privacyHtml).includes('We do not sell your feedback'), 'privacy page says we do not sell your feedback');
+assert(termsHtml.includes('been reviewed or approved by an attorney') && termsRoute.includes('Not attorney-reviewed'), 'terms status says not attorney-reviewed');
+assert(privacyHtml.includes('attorney-reviewed or approved') && privacyRoute.includes('Not attorney-reviewed'), 'privacy status says not attorney-reviewed');
+assert(!/DRAFT FOR COUNSEL|attorney-approved|lawyer-reviewed/i.test(appText), 'pages do not claim attorney approval');
+assert(/let termsChecked = false/.test(appText), 'start checkbox state begins unchecked');
+assert(/id="agree" type="checkbox"'\+\(termsChecked\?' checked':''\)/.test(appText), 'checkbox checked attribute is off until the user checks it');
+assert(/id="continue-consent"'\+\(termsChecked\?'':' disabled'\)/.test(appText), 'continue stays disabled until the checkbox is checked');
+assert(/if\(selected\.disabled\)return;/.test(appText), 'a disabled continue control cannot submit');
+assert(/agreeing&&!accepted/.test(appText), 'agree cannot continue while the checkbox is unchecked');
+assert(/agreed:\s*agreeing&&accepted/.test(appText), 'the acceptance flag follows the checkbox');
+assert(/termsVersion:\s*C\.termsVersion/.test(appText), 'the session records the configured terms version');
+assert((appText.match(/F\.answer\(/g) || []).length === 1, 'the UI has one answer path');
+assert(!/agreed:\s*true/.test(appText), 'the UI never hard-codes acceptance');
+assert(!/localStorage|sessionStorage/.test(appText), 'acceptance is not written to browser storage');
+const feedbackFn = appText.slice(appText.indexOf('function feedbackData'), appText.indexOf('function feedbackText'));
+assert(!/feedbackConsent|feedback-consent/.test(feedbackFn), 'optional feedback consent is not added to the payload');
+assert(/id="feedback-consent" type="checkbox"'\+\(feedbackConsent\?' checked':''\)/.test(appText), 'feedback consent starts unchecked');
+assert(appText.includes('Free beta · Informational only · Not a licensed HVAC tech · Not a diagnosis'), 'home/start line');
+assert(appText.includes('General guidance only. Not a diagnosis. Call a licensed HVAC pro for repair.'), 'result footer line');
+assert(appText.includes('Get to safety. Call 911 if there is fire, smoke, or immediate danger. This site is not an emergency service.'), 'emergency result line');
+assert(appText.includes('Advanced repair steps are not enabled. Call a licensed HVAC professional.'), 'advanced-off line');
+assert(appText.includes('Optional. Do not include passwords, serial photos you shouldn’t share, or medical details.'), 'feedback warning');
+assert(appText.includes('Optional: I agree Second Wrench may use my feedback to improve the product, including in anonymized form.'), 'feedback consent line');
+assert(indexText.includes('href="#/terms"') && indexText.includes('href="#/privacy"'), 'every app page footer links to Terms and Privacy');
+
+const gas = F.create();
+F.answer(gas, 'hazard_gas_co');
+assert(gas.result === 'gas' && gas.consent === false && gas.termsVersion == null && gas.consentAt == null, 'gas hazard exits without acceptance');
+assert(F.results.gas.outcome === 'emergency_exit', 'gas hazard is an emergency exit');
+const viaStop = F.create();
+F.answer(viaStop, 'none_of_these');
+assert(viaStop.node === 'ac.session.consent' && viaStop.consent === false, 'the safety gate does not imply acceptance');
+F.stop(viaStop);
+assert(viaStop.node === 'ac.gate.cluster_entry' && viaStop.consent === false, 'stop returns to the hazard gate without acceptance');
+F.answer(viaStop, 'hazard_smoke_fire_sparks_burn');
+assert(viaStop.result === 'fire' && viaStop.consent === false && viaStop.termsVersion == null, 'stop/get help reaches a hazard result without acceptance');
+let blockedAgree = false;
+try {
+  const s = F.create();
+  F.answer(s, 'none_of_these');
+  F.answer(s, 'agree_18_terms', { agreed: false, termsVersion: 'public-beta-2026-10-08' });
+} catch (err) { blockedAgree = /accept the beta terms/.test(err.message); }
+assert(blockedAgree, 'the engine rejects continue without the checkbox');
+let blockedVersion = false;
+try {
+  const s = F.create();
+  F.answer(s, 'none_of_these');
+  F.answer(s, 'agree_18_terms', { agreed: true, termsVersion: '' });
+} catch (err) { blockedVersion = /accept the beta terms/.test(err.message); }
+assert(blockedVersion, 'the engine rejects continue without a terms version');
+let skippedConsent = false;
+try {
+  const s = F.create();
+  F.answer(s, 'none_of_these');
+  s.node = 'sw.intake.system_type';
+  F.answer(s, 'cooling_only_ac', { agreed: true, termsVersion: 'public-beta-2026-10-08' });
+} catch (err) { skippedConsent = /Safety and consent are required/.test(err.message); }
+assert(skippedConsent, 'troubleshooting cannot skip the consent gate');
+const accepted = F.create();
+F.answer(accepted, 'none_of_these');
+F.answer(accepted, 'agree_18_terms', { agreed: true, termsVersion: 'public-beta-2026-10-08' });
+assert(accepted.consent === true && accepted.termsVersion === 'public-beta-2026-10-08' && /^\d{4}-\d{2}-\d{2}T/.test(accepted.consentAt), 'the session stores the terms version and acceptance time');
+
+assert(indexText.includes('Second Wrench free public beta:'), 'meta description says free public beta');
+assert(indexText.includes('Free public beta. A better next step. · Not an emergency service'), 'beta bar says free public beta and not an emergency service');
+assert(!/<div class="beta-bar">[^<]*<span>/.test(indexText), 'the emergency clause is not hidden inside a beta-bar span');
+assert(appText.includes('Free public beta. Try it on your own system and tell us what was clear or confusing.'), 'home note invites anyone to try the beta');
+assert(appText.includes('Second Wrench · Free public beta'), 'content pages say free public beta');
+assert(!appText.includes('Second Wrench · Private beta'), 'content pages do not say private beta');
+assert(appText.includes('Emergency / hazard help never requires this checkbox.'), 'terms section 3 says hazard help does not require the checkbox');
+const runtimeBan = [
+  [/private beta/i, 'private beta'],
+  [/\binvited\b/i, 'invited'],
+  [/\binvite\b/i, 'invite'],
+  [/\binvitation\b/i, 'invitation'],
+  [/small circle/i, 'small circle'],
+  [/\btesters?\b/i, 'tester'],
+  [/small beta/i, 'small beta']
+];
+['index.html', '404.html', 'thanks.html'].concat(fs.readdirSync(path.join(__dirname, '../assets')).filter(name => name.endsWith('.js')).map(name => 'assets/' + name)).forEach(rel => {
+  const text = rel === 'index.html' ? indexText : rel === 'assets/app.js' ? appText : fs.readFileSync(path.join(__dirname, '..', rel), 'utf8');
+  runtimeBan.forEach(([pattern, label]) => assert(!pattern.test(text), rel + ' still says ' + label));
+  if (rel === '404.html' || rel === 'thanks.html') assert(text.includes('Second Wrench · Free public beta'), rel + ' eyebrow says free public beta');
+});
+const changeLog = fs.readFileSync(path.join(__dirname, '../docs/ac-second-opinion/legal/disclaimer-change-log.md'), 'utf8');
+function changeRow(id) { return changeLog.split('\n').find(line => line.startsWith('| ' + id + ' |')); }
+const d007 = changeRow('D-007');
+const d010 = changeRow('D-010');
+assert(d007 && d007.includes('Operator-authored beta Terms published; no attorney review yet.'), 'D-007 uses the neutral published wording');
+assert(d007 && !/afford|Donnie|Leon/i.test(d007), 'D-007 has no internal business detail');
+assert(d010 && d010.includes('Follow-up note only') && !/afford|Donnie|Leon/i.test(d010), 'D-010 has no internal business detail');
+
+const EMERGENCY_LINE = 'Get to safety. Call 911 if there is fire, smoke, or immediate danger. This site is not an emergency service.';
+const HAZARDS = [
+  ['hazard_gas_co', 'Get everyone to fresh air.'],
+  ['hazard_smoke_fire_sparks_burn', 'Stop. Treat smoke, sparks, or burning as a hazard.'],
+  ['hazard_water_electrical', 'Do not touch wet or damaged electrical equipment.'],
+  ['hazard_heat_illness', 'Help the person before the AC.'],
+  ['hazard_refrigerant_alarm', 'Do not reset a refrigerant-leak alarm.'],
+  ['hazard_unsure', 'Uncertainty is a good reason to stop.']
+];
+const TERMS_BODY_SHA256 = '1627d50cf67e830e6dd3d1c19c8c307315c2d1dd550ee20a9a1cde326b780a09';
+const PRIVACY_BODY_SHA256 = 'fd1c58dc308bb57f592bbf5deea72d8c3dc0be7a4b03084c8a8310912a7bb725';
+
+function finish() {
+  if (failed) {
+    console.error(failed + ' failed');
+    process.exit(1);
+  }
+  console.log('AC Wave-2 and HP Wave-1 sanity passed');
 }
-console.log('AC Wave-2 and HP Wave-1 sanity passed');
+
+function bootPage() {
+  const { JSDOM, VirtualConsole } = require('jsdom');
+  const errors = [];
+  const virtualConsole = new VirtualConsole();
+  virtualConsole.on('jsdomError', error => errors.push(String(error && error.stack || error)));
+  const html = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8')
+    .replace(/\s*<script src="assets\/(?:config|flow|app)\.js\?v=[^"]+" defer><\/script>/g, '')
+    .replace('</body>', '<script>' + fs.readFileSync(path.join(__dirname, '../assets/config.js'), 'utf8') + '</script><script>' + fs.readFileSync(path.join(__dirname, '../assets/flow.js'), 'utf8') + '</script><script>' + fs.readFileSync(path.join(__dirname, '../assets/app.js'), 'utf8') + '</script></body>');
+  const dom = new JSDOM(html, {
+    url: 'http://127.0.0.1:8765/#/',
+    runScripts: 'dangerously',
+    pretendToBeVisual: true,
+    virtualConsole,
+    beforeParse(window) { window.scrollTo = () => {}; }
+  });
+  return { dom, errors };
+}
+
+function pageChecks() {
+  const crypto = require('crypto');
+  const { dom, errors } = bootPage();
+  const window = dom.window;
+  const doc = window.document;
+  const flush = () => new Promise(resolve => setTimeout(resolve, 0));
+  const click = el => el.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }));
+  const norm = el => (el ? el.textContent : '').replace(/\s+/g, ' ').trim();
+  async function home() {
+    if (window.location.hash !== '#/') window.location.hash = '#/';
+    await flush();
+    click(doc.querySelector('[data-action="start"]'));
+    await flush();
+  }
+  function emergencyOk(label) {
+    const footer = doc.querySelector('.legal-footer');
+    assert(window.location.hash === '#/result', label + ' reaches a result');
+    assert(footer && footer.textContent === EMERGENCY_LINE, label + ' shows the emergency result line');
+    assert(doc.querySelector('.result-heading.emergency'), label + ' renders an emergency result');
+    assert(!doc.getElementById('agree'), label + ' does not ask for the checkbox');
+  }
+  return (async () => {
+    assert(errors.length === 0, 'page scripts load without error: ' + errors.join(' | '));
+    assert(norm(doc.querySelector('.beta-bar')) === 'Free public beta. A better next step. · Not an emergency service', 'rendered beta bar');
+    assert(norm(doc.querySelector('.quiet-note')).startsWith('Free public beta. Try it on your own system and tell us what was clear or confusing.'), 'rendered home note');
+    for (const [id, title] of HAZARDS) {
+      await home();
+      assert(!doc.getElementById('agree'), id + ' starts on the safety gate without a checkbox');
+      click(doc.querySelector('[data-answer="' + id + '"]'));
+      await flush();
+      emergencyOk(id);
+      assert(doc.querySelector('h1') && doc.querySelector('h1').textContent === title, id + ' result title');
+    }
+    for (const [id, title] of HAZARDS) {
+      await home();
+      click(doc.querySelector('[data-answer="none_of_these"]'));
+      await flush();
+      const box = doc.getElementById('agree');
+      const cont = doc.getElementById('continue-consent');
+      assert(box && box.checked === false && cont && cont.disabled, id + ' stop path leaves the checkbox unticked');
+      click(doc.querySelector('header [data-action="stop"]'));
+      await flush();
+      assert(!doc.getElementById('agree') && doc.querySelector('h1').textContent === 'Is any of this happening right now?', 'Stop / get help returns to the hazard gate without the checkbox');
+      click(doc.querySelector('[data-answer="' + id + '"]'));
+      await flush();
+      emergencyOk('Stop / get help then ' + id);
+      assert(doc.querySelector('h1').textContent === title, 'Stop / get help then ' + id + ' result title');
+    }
+    await home();
+    click(doc.querySelector('[data-answer="none_of_these"]'));
+    await flush();
+    const cont = doc.getElementById('continue-consent');
+    assert(cont.disabled && doc.getElementById('agree').checked === false, 'Continue starts disabled while the checkbox is unticked');
+    click(cont);
+    await flush();
+    assert(doc.querySelector('h1').textContent === 'A guide, not an equipment inspection.', 'a disabled Continue does not leave consent');
+    cont.disabled = false;
+    click(cont);
+    await flush();
+    assert(window.location.hash === '#/check', 'Continue stays on the check route');
+    assert(doc.querySelector('h1').textContent === 'A guide, not an equipment inspection.', 'Continue re-checks the checkbox and does not advance');
+    assert(doc.getElementById('flow-error').textContent === 'Please read and accept the Terms and Privacy notes to continue.', 'Continue explains that the checkbox is required');
+    assert(doc.querySelector('main h1').textContent !== 'Cooling-only AC, or a heat pump?', 'an unticked Continue does not open system type');
+    window.location.hash = '#/terms';
+    await flush();
+    const termsBody = norm(doc.querySelector('.document-panel'));
+    assert(termsBody.includes('Emergency / hazard help never requires this checkbox.'), 'rendered terms include the hazard checkbox sentence');
+    assert(crypto.createHash('sha256').update(termsBody).digest('hex') === TERMS_BODY_SHA256, 'terms body matches the approved text');
+    window.location.hash = '#/privacy';
+    await flush();
+    const privacyBody = norm(doc.querySelector('.document-panel'));
+    assert(crypto.createHash('sha256').update(privacyBody).digest('hex') === PRIVACY_BODY_SHA256, 'privacy body matches the approved text');
+    window.close();
+    finish();
+  })().catch(error => {
+    failed += 1;
+    console.error('FAIL', error && error.stack || error);
+    finish();
+  });
+}
+
+pageChecks();

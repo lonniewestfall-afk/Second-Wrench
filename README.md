@@ -16,7 +16,7 @@ Quiet beta: pages send `noindex` (`robots` meta and `_headers`). Do not remove t
 
 ## Wave-1 and Wave-2
 
-**Implemented** for founder review. Cooling-only tree `ac.cool.v0`. Air-source ducted heat pump tree `hp.air_source.v1` (Wave-1 Basic; ice-stop split 2026-10-03). Content version `2026-10-03.1`.
+**Implemented** for founder review. Cooling-only tree `ac.cool.v0`. Air-source ducted heat pump tree `hp.air_source.v1` (Wave-1 Basic; ice-stop split 2026-10-03). Content version `2026-10-09.1`.
 
 Wave-1 is the original 12 nodes. Wave-2 Basic adds seven nodes: breaker-door visual, outdoor-disconnect visual (position only), the silent-path hub, returns and supplies, outdoor debris, the noise hazard screen, and outdoor-hum clarification. The capacitor Advanced chain (eight nodes) is in the tree and runs only when `advancedRepairsEnabled` is true.
 
