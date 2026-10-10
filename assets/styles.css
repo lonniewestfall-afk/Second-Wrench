@@ -106,3 +106,10 @@ input::placeholder,textarea::placeholder{color:#aaaab4;opacity:1}
 .start-steps{list-style:none;margin:0 0 4px;padding:0;display:grid;gap:14px}
 .start-steps li{margin:0;padding:0 0 0 14px;border-left:3px solid var(--scarlet);color:#d5d5db;font-size:.9rem;line-height:1.45}
 .start-steps strong{display:block;color:#fff;font-weight:680;letter-spacing:-.02em;margin-bottom:2px}
+.social-follow{display:flex;flex-wrap:wrap;align-items:center;gap:2px 14px;margin:14px 0 0;padding-top:12px;border-top:1px solid #4b3e36;font-size:.75rem;color:#b6b6bf}
+.social-follow-label{letter-spacing:.08em;text-transform:uppercase;font-weight:650;font-size:.68rem;color:#e4aab3}
+.social-follow a{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 2px;text-decoration:none;color:#cacad2}
+.social-follow a:hover{color:#fff}
+.social-follow svg{width:15px;height:15px;display:block;flex-shrink:0}
+.site-footer .social-follow{grid-column:1/-1;margin:0;padding-top:2px;border-top:0}
+@media print{.social-follow{display:none!important}}
