@@ -1,6 +1,6 @@
 # ms.ice.stop_observe
 
-Tree: `ms.ductless.v0`. DIY tier: `basic`. Safety gate: `true`.
+Tree: `ms.ductless.v1`. DIY tier: `basic`. Safety gate: `true`.
 
 ## Prompt
 
@@ -22,4 +22,6 @@ Caution: No chipping ice, no covers, and no refrigerant or electrical work.
 | `ice_want_keep_running` | There’s ice, but I want to keep it running | `@ms_ice_keep_running` | ice_keep_running |
 | `ice_seen_cooling` | There’s ice or frost on the indoor unit, its pipes, or the pipes at the outdoor unit | `@ms_ice_cooling_wave1` |  |
 | `ice_outdoor_heating_or_unsure` | It’s frost on the outdoor unit while heating, or I’m not sure it’s ice | `@ms_ice_unclear_or_heat` |  |
+
+The edge stays on the result. It does not return to `ms.heat.defrost_sanity`. The result explains a normal defrost (steam, a pause, and a whoosh) and says ice that keeps building means turn it off and call a pro.
 | `hazard_now` | New hazard now (burning smell, smoke, sparks, gas smell, or water at electrical parts) | `@ms_hazard_now` | ms_new_hazard |

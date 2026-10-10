@@ -24,6 +24,8 @@ Hard gates. Affirmative / failed check → tree **halts**. No soft continue. Pre
 | `wshp.gate.openloop_chemistry` | Open-loop session reaches the water-quality gate, or the user asks for water treatment, cleaning, or well work | Open-loop water care needs a professional. Do not add chemicals or work on the well, pump, or pressure tank. | `call_pro`. No node follows this gate. | `gate_fired:wshp_openloop_chemistry` |
 | `wshp.gate.new_hazard` | `hazard_now` on any `wshp.` node | A new hazard ends this check. | `emergency_exit` | `gate_fired:wshp_new_hazard` |
 | `ms.gate.new_hazard` | `hazard_now` on any `ms.` node | A new hazard ends this check. | `emergency_exit` | `gate_fired:ms_new_hazard` |
+| `cold_exposure_911` | Someone at risk from the cold (a baby, an older adult, or a medical need) and no safe heat | Get the person warm first. Call 911 if they are confused or drowsy. | `emergency_exit` | `gate_fired:cold_exposure_911` |
+| `ms.heat.ice_keep_running` | Ice on a mini-split outdoor unit in heat, and the user wants to keep it running | Stop. Turn the mini-split Off. Use safe backup heat per its manufacturer. Never run a space heater near water or the indoor unit. | `emergency_exit` (`ms_ice_heat_keep_running`). Same gate id as `ice_keep_running`. No Emergency/Aux line. | `gate_fired:ice_keep_running` |
 
 ## Ordering
 

@@ -15,7 +15,7 @@ This beta covers confirmed conventional, cooling-only split-system central AC (o
 |---|---|---|
 | `split_central_cool_only` | Central AC with separate indoor and outdoor units | A cooling-only outdoor AC connected to an indoor furnace or air handler. |
 | `heat_pump` | A heat pump | Continue on the air-source heat pump check (`hp.air_source.v1`). Cooling-only steps stay on this AC path. |
-| `ductless_mini_split` | A ductless mini-split | Continue on the mini-split check (`ms.ductless.v0`). |
+| `ductless_mini_split` | A ductless mini-split | Continue on the mini-split check (`ms.ductless.v1`). |
 | `window_portable` | A window or portable unit | Out of scope for this beta. |
 | `geo_packaged_other` | Geothermal, packaged, or another system | Water-source / geothermal: start again, choose Something else, then Water-source / geothermal heat pump. Packaged systems are not covered yet. |
 | `not_sure` | I am not sure | Do not open covers to find out. |
@@ -25,7 +25,7 @@ This beta covers confirmed conventional, cooling-only split-system central AC (o
 |---|---|
 | `split_central_cool_only` | **next** `ac.cool.landing.picker` |
 | `heat_pump` | **next** `hp.intake.system_confirm` — product lane switches to `hp.air_source.v1`. Does not invent a heat-pump diagnosis inside AC nodes. |
-| `ductless_mini_split` | **next** `ms.intake.system_confirm` — product lane switches to `ms.ductless.v0`. |
+| `ductless_mini_split` | **next** `ms.intake.system_confirm` — product lane switches to `ms.ductless.v1`. |
 | `window_portable` | **terminal** `insufficient_info` (`out_of_scope_equipment`) — window and portable units stay out of this beta |
 | `geo_packaged_other` | **terminal** `insufficient_info` (`out_of_scope_equipment`) — points a water-source owner back to Something else |
 | `not_sure` | **terminal** `insufficient_info` — guidance: do not open covers; use the manual or ask someone familiar with the equipment; return when you can confirm split central cooling-only |

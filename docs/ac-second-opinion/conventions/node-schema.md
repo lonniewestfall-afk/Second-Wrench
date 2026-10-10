@@ -61,7 +61,7 @@ ac.<domain>.<topic>.<step>
 ms.<domain>.<topic>.<step>
 ```
 
-Live cooling-only sessions use `ac.cool.v1`. Live single-zone ductless sessions use `ms.ductless.v0`.
+Live cooling-only sessions use `ac.cool.v1`. Live single-zone ductless sessions use `ms.ductless.v1`.
 
 Examples:
 

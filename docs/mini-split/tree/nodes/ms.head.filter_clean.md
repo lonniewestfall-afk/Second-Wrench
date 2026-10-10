@@ -1,6 +1,6 @@
 # ms.head.filter_clean
 
-Tree: `ms.ductless.v0`. DIY tier: `basic`. Safety gate: `false`.
+Tree: `ms.ductless.v1`. DIY tier: `basic`. Safety gate: `false`.
 
 ## Prompt
 

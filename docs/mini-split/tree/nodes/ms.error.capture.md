@@ -1,6 +1,6 @@
 # ms.error.capture
 
-Tree: `ms.ductless.v0`. DIY tier: `basic`. Safety gate: `true`.
+Tree: `ms.ductless.v1`. DIY tier: `basic`. Safety gate: `true`.
 
 ## Prompt
 

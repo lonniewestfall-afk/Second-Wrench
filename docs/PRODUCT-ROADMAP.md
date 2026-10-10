@@ -45,7 +45,7 @@ Success: a trade pro can walk a real “not cooling” call and trust the exits.
 ### Phase 3 — Mini-splits / multi-zone ductless
 **Owner:** Mini Split Lead  
 **Prefix:** `ms.`  
-**First slice (shipped, `ms.ductless.v0`):** cooling checks for one indoor unit. Multi-zone, heating, and outdoor-unit checks come later.  
+**Shipped (`ms.ductless.v1`):** cooling and heating checks for one indoor unit, including a safe look at the outdoor unit. Multi-zone stays out.  
 **Folder:** `docs/mini-split/`
 
 ### Phase 4 — Water-to-air water-source HP ≤ 6 tons
