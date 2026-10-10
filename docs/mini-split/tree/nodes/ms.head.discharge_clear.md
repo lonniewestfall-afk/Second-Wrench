@@ -1,6 +1,6 @@
 # ms.head.discharge_clear
 
-Tree: `ms.ductless.v0`. DIY tier: `basic`. Safety gate: `false`.
+Tree: `ms.ductless.v1`. DIY tier: `basic`. Safety gate: `false`.
 
 ## Prompt
 

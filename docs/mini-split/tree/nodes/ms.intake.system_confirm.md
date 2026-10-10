@@ -1,6 +1,6 @@
 # ms.intake.system_confirm
 
-Tree: `ms.ductless.v0`. DIY tier: `basic`. Safety gate: `false`.
+Tree: `ms.ductless.v1`. DIY tier: `basic`. Safety gate: `false`.
 
 ## Prompt
 
@@ -10,7 +10,7 @@ Answer from what you already know or the owner’s manual. Don’t remove a cove
 
 A ductless mini-split has an indoor unit on a wall, floor, or ceiling that blows air straight into the room. There are no vents or ducts. Pipes and a cable run through the wall to a small outdoor unit.
 
-This first mini-split check covers cooling problems on a system with one indoor unit and one outdoor unit.
+This check covers cooling and heating problems on a system with one indoor unit and one outdoor unit.
 
 ## Choices
 

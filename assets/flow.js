@@ -10,13 +10,15 @@
  * - fn.furnace.v0 for gas and electric furnace sessions (Wave-1 Basic, look-only).
  *   fn.gate.combustion_co runs before any furnace diagnosis, and before further
  *   heat-pump diagnosis when the heat pump has a gas furnace (or not sure).
- * - ms.ductless.v0 for a residential single-zone ductless mini-split (cooling,
- *   one indoor unit, Basic only). Start stays five choices. Something else
+ * - ms.ductless.v1 for a residential single-zone ductless mini-split (cooling
+ *   and heating, one indoor unit, Basic only). Heat settings, a normal-defrost
+ *   look, and a window-or-dry-ground look at the outdoor unit are included.
+ *   Multi-zone stays out. Start stays five choices. Something else
  *   opens the ductless check or the water-source check. A ductless answer on
  *   the cooling-system question, or on the water-source equipment question,
  *   also enters this lane. The furnace question points back to that Start
- *   path. No capacitor, refrigerant, or panel-removal steps. Water on
- *   electrical parts is a look-only stop. Advanced stays off.
+ *   path. No capacitor, refrigerant, breaker, disconnect, or panel-removal
+ *   steps. Water on electrical parts is a look-only stop. Advanced stays off.
  * Session entry: ac.gate.cluster_entry → ac.session.consent →
  *   sw.intake.system_type. Consent text is shared and its stored agree
  *   edge stays ac.cool.intake.system_confirm (not a second consent node).
@@ -126,7 +128,7 @@
   ];
   const CONCLUDE = 'ac.cool.conclude.call_pro_capacitor_contactor';
   const TREE_FN = 'fn.furnace.v0';
-  const TREE_MS = 'ms.ductless.v0';
+  const TREE_MS = 'ms.ductless.v1';
   const MS_PR1 = [
     'ms.intake.system_confirm',
     'ms.landing.picker',
@@ -139,12 +141,20 @@
     'ms.error.capture',
     'ms.ice.stop_observe'
   ];
+  const MS_V1 = [
+    'ms.heat.mode_setpoint',
+    'ms.heat.force_heat',
+    'ms.heat.defrost_sanity',
+    'ms.outdoor.safe_observe'
+  ];
   const MS_LANDING = {
     landing_no_cool: 'no_cool',
+    landing_no_heat: 'no_heat',
     landing_weak_airflow: 'weak_airflow',
     landing_water_at_head: 'water_at_head',
     landing_error_code: 'error_code',
     landing_ice_seen: 'ice_seen',
+    landing_outdoor_unit: 'outdoor_unit',
     landing_something_else: 'something_else'
   };
   const FN_GATE = 'fn.gate.combustion_co';
@@ -212,6 +222,7 @@
     ({ section, title, body, options, caution: extra.caution || '', diyTier: extra.diyTier || 'basic', safetyGate: !!extra.safetyGate });
   const FN_HAZARD = o('hazard_now', 'New gas smell, CO alarm, smoke, sparks, or burning smell right now', '@fn_hazard_now', 'Stop. Get to safety.', 'New hazard reported during the furnace check.', { gate: 'fn_new_hazard' });
   const MS_HAZARD = o('hazard_now', 'New hazard now (burning smell, smoke, sparks, gas smell, or water at electrical parts)', '@ms_hazard_now', 'Stop. Don’t keep checking.', 'New hazard reported during the mini-split check.', { gate: 'ms_new_hazard' });
+  const MS_BACKUP_HEAT = 'If the home is getting dangerously cold, use safe backup heat per its manufacturer. Never run a space heater near water or the indoor unit. Never use an oven, stove, grill, or generator indoors (carbon monoxide).';
 
   const nodes = {
     'ac.gate.cluster_entry': n('Safety first', 'Is any of this happening right now?',
@@ -774,7 +785,7 @@
       ], { diyTier: 'pro_only' }),
 
 'ms.intake.system_confirm': n('Your system', 'Is this a ductless mini-split with one indoor unit?',
-      'Answer from what you already know or the owner’s manual. Don’t remove a cover or climb up to check.\n\nA ductless mini-split has an indoor unit on a wall, floor, or ceiling that blows air straight into the room. There are no vents or ducts. Pipes and a cable run through the wall to a small outdoor unit.\n\nThis first mini-split check covers cooling problems on a system with one indoor unit and one outdoor unit.', [
+      'Answer from what you already know or the owner’s manual. Don’t remove a cover or climb up to check.\n\nA ductless mini-split has an indoor unit on a wall, floor, or ceiling that blows air straight into the room. There are no vents or ducts. Pipes and a cable run through the wall to a small outdoor unit.\n\nThis check covers cooling and heating problems on a system with one indoor unit and one outdoor unit.', [
         o('ductless_single_zone', 'Ductless mini-split, one indoor unit', 'ms.landing.picker', 'One indoor unit connected to its own outdoor unit.', 'Ductless mini-split with one indoor unit reported.'),
         o('ductless_multi_zone', 'Ductless, but two or more indoor units share one outdoor unit', '@ms_multi_zone_pr2', 'Systems with more than one indoor unit come in a later version.', 'Multi-zone ductless mini-split reported.'),
         o('ducted_central', 'Central AC or a heat pump with vents and ducts', '@ms_use_central_check', 'Use the central AC or heat pump check instead.', 'Ducted central system reported on the mini-split check.'),
@@ -786,11 +797,13 @@
     'ms.landing.picker': n('What you noticed', 'What’s going on with the mini-split?',
       'Pick the closest match. Answer only what you know.\n\nIf anything new comes up, like a burning smell, smoke, sparks, or water reaching an outlet or cord, choose the last option.', [
         o('landing_no_cool', 'Not cooling, or not cooling enough', 'ms.controls.mode_setpoint', 'Remote or app settings first, then the filters.', 'Complaint: Mini-split not cooling or not cooling enough.'),
-        o('landing_weak_airflow', 'Weak air from the indoor unit', 'ms.controls.mode_setpoint', 'Settings first, then the filters and anything blocking the air.', 'Complaint: Weak airflow from the indoor unit.'),
+        o('landing_no_heat', 'Not heating, or not heating enough', 'ms.heat.mode_setpoint', 'Remote or app settings first.', 'Complaint: Mini-split not heating or not heating enough.'),
+        o('landing_weak_airflow', 'Weak air from the indoor unit while cooling', 'ms.controls.mode_setpoint', 'Settings first, then the filters and anything blocking the air.', 'Complaint: Weak airflow from the indoor unit while cooling.'),
         o('landing_water_at_head', 'Water dripping from or under the indoor unit', 'ms.head.water_observe', 'Electrical safety question first.', 'Complaint: Water dripping from or under the indoor unit.'),
         o('landing_error_code', 'A code or blinking lights on the indoor unit, remote, or app', 'ms.error.capture', 'Write it down. A pro reads it.', 'Complaint: Error code or blinking lights shown.'),
         o('landing_ice_seen', 'Ice or frost on the indoor unit or its pipes', 'ms.ice.stop_observe', 'Stop-and-thaw steps. Don’t chip ice.', 'Complaint: Ice or frost seen on the mini-split.'),
-        o('landing_something_else', 'Something else (heating, noise, a musty smell, or the outdoor unit)', '@ms_landing_not_in_pr1', 'Not covered in this first version.', 'Complaint: Something outside the first mini-split check.'),
+        o('landing_outdoor_unit', 'The outdoor unit: quiet, iced, or still not comfortable', 'ms.outdoor.safe_observe', 'Look from a window or dry ground only.', 'Complaint: Outdoor unit on a ductless mini-split.'),
+        o('landing_something_else', 'Something else (a noise or a smell)', '@ms_landing_not_in_pr1', 'Not covered in this check.', 'Complaint: A noise or a smell from the mini-split.'),
         MS_HAZARD
       ]),
 
@@ -803,6 +816,39 @@
         o('not_sure', 'I’m not sure', '@ms_controls_unsure', 'Don’t guess. Don’t open the unit to find out.', ''),
         MS_HAZARD
       ]),
+
+    'ms.heat.mode_setpoint': n('Heat', 'Set Heat and give it time to warm up',
+      'Use the remote, wall control, or app you already use. Don’t open the indoor unit.\n\nIf someone is at risk from the cold (a baby, an older adult, or a medical need) and there is no safe heat, choose that first.\n\n1. Mode is Heat. A sun marks Heat on many remotes. If it says Auto, Cool, Dry, or Fan, this question asks about that next.\n2. The temperature is set at least 3°F above the room. In Heat, many units won’t start heating if the setting is at or below room temperature.\n3. Fan is Auto or High, not Quiet, Silent, or Night.\n4. Timers, Sleep, and schedules are off for now.\n5. After a change, wait about 10 to 15 minutes. In Heat, the indoor fan may stay off at first so it doesn’t blow cold air.\n\nIf the remote has no Heat setting, say so. Don’t guess that a cooling-only unit can heat.', [
+        o('cold_exposure_risk', 'Someone’s at risk from the cold (a baby, an older adult, or a medical need) and there’s no safe heat', '@ms_cold_exposure', 'Get them warm first.', 'Someone at risk from the cold with no safe heat.', { gate: 'cold_exposure_911' }),
+        o('heat_fixed_after_setting', 'I changed a setting, and now it’s heating', '@ms_heat_settings_fixed_basic', 'Simple fix. We’ll show what to watch for.', 'User set Heat, a setting above the room, a normal fan, and no timer. Heating returned.'),
+        o('mode_was_auto', 'It was on Auto', 'ms.heat.force_heat', 'Set Heat and wait.', 'Mode was Auto while heat was needed.'),
+        o('heat_settings_right_still_problem', 'Heat, a setting above the room, a normal fan, no timer, and the problem is still there', 'ms.heat.defrost_sanity', 'Next: a look at defrost.', 'User set Heat, a setting above the room, a normal fan, and no timer. The problem remained.'),
+        o('no_heat_setting_on_remote', 'The remote or app has no Heat setting', '@ms_heat_not_supported', 'It may be cooling-only.', 'Remote or app has no Heat setting.'),
+        o('remote_or_unit_not_responding', 'The remote or app won’t change anything, or the indoor unit shows no lights', '@ms_no_response_wave1', 'A pro checks power and controls.', 'Remote or app would not control the unit, or the indoor unit showed no lights.'),
+        o('not_sure', 'I’m not sure', '@ms_controls_unsure', 'Don’t guess. Don’t open the unit to find out.', ''),
+        MS_HAZARD
+      ], { caution: 'If someone is at risk from the cold and there is no safe heat, that comes first.', safetyGate: true }),
+
+    'ms.heat.force_heat': n('Heat', 'Set Heat, not Auto, and wait',
+      'Auto can switch away from Heat. Set the mode to Heat on the remote, wall control, or app.\n\nSet the temperature at least 3°F above the room. Fan on Auto or High. Timers and Sleep off.\n\nWait 10 to 15 minutes. In Heat, the indoor fan may stay off for the first few minutes so it doesn’t blow cold air. That can be normal. Don’t switch modes while you wait.\n\nIf you can’t change the mode, stop. Don’t open the indoor unit.', [
+        o('forced_heat_works', 'It’s heating after the wait', '@ms_heat_auto_fixed_basic', 'Leave it in Heat.', 'User set Heat instead of Auto and waited. Heating returned.'),
+        o('forced_heat_still_problem', 'I waited, and it still isn’t heating', 'ms.heat.defrost_sanity', 'Next: a look at defrost.', 'User set Heat instead of Auto and waited 10 to 15 minutes. The problem remained.'),
+        o('could_not_change_mode', 'I can’t change the mode to Heat', '@ms_no_response_wave1', 'A pro checks the controls.', 'User could not change the mode to Heat.'),
+        o('not_sure_waited', 'I’m not sure I waited long enough', '@ms_heat_wait_unsure', 'Wait the full 10 to 15 minutes.', ''),
+        MS_HAZARD
+      ]),
+
+    'ms.heat.defrost_sanity': n('Heat', 'Is this a normal defrost, or ice that stays?',
+      'In Heat, a mini-split sometimes pauses to clear light frost on the outdoor unit. A normal defrost often lasts about 5 to 15 minutes. You may see steam, heating may pause, and you may hear a whoosh. Then heat should return. The remote may not change the mode until that pause ends. Leave it in Heat. Don’t switch modes during the pause.\n\nSteam from the outdoor unit in cold weather is usually that pause. If you aren’t sure it’s steam, or it smells like burning, or it comes from the indoor unit, choose that option.\n\nIce that keeps building, or a unit coated thickly that doesn’t recover after about an hour, is not a normal defrost.\n\nLook from a window or from dry, cleared ground. Don’t reach into the grille. Don’t go out in ice, deep snow, or the dark to get a closer look.\n\nIf the outdoor air is well above freezing and dry, a defrost is unlikely.', [
+        o('defrost_then_heat_fine', 'It paused, then heat came back', '@ms_defrost_normal_basic', 'That can be normal.', 'User saw a short pause, then heat returned.'),
+        o('defrost_seen_heat_still_weak', 'I saw a short pause or some steam, and heat is still weak', 'ms.head.filter_path_ok', 'Next: the filters.', 'A short defrost was seen, and heat stayed weak.'),
+        o('no_frost_or_mild_weather', 'No frost, or it’s mild and dry outside', 'ms.head.filter_path_ok', 'Next: the filters.', 'No outdoor frost seen, or the weather was mild and dry.'),
+        o('outdoor_iced_solid_no_recover', 'The outdoor unit is thick with ice, and heat doesn’t come back', '@ms_outdoor_freeze_heat_wave1', 'That’s a pro visit.', 'Outdoor unit stayed thick with ice in heat and did not recover.'),
+        o('ice_want_keep_running', 'There’s ice, but I want to keep it running to force heat', '@ms_ice_heat_keep_running', 'Hard stop. Turn it off.', 'Homeowner wanted to keep the iced outdoor unit running for heat.', { gate: 'ice_keep_running' }),
+        o('steam_or_smoke_unsure', 'I’m not sure the cloud is steam, or it smells like burning', '@ms_hazard_now', 'Stop. Don’t keep checking.', 'Steam or smoke at the outdoor unit was not confirmed as steam.', { gate: 'ms_new_hazard' }),
+        o('not_sure', 'I’m not sure what I saw', '@ms_ice_unclear_or_heat', 'Safe steps next.', ''),
+        MS_HAZARD
+      ], { caution: 'No defrost buttons. Don’t chip ice, pour hot water, or use a heat gun. Don’t keep an iced unit running to force heat.', safetyGate: true }),
 
     'ms.head.filter_path_ok': n('Indoor unit filters', 'Can you reach the filters safely?',
       'Most mini-splits have washable filters behind the front cover of the indoor unit. Clean them only if all four of these are true:\n\n1. Your owner’s manual shows the filter steps without tools.\n2. The front cover lifts by hand. Nothing needs to be pried, unscrewed, or forced.\n3. You can reach it standing on the floor. If you’d need a ladder, chair, or step stool, stop here.\n4. The manual says to turn the unit off with the remote first. If it says to switch off power at a breaker or switch, stop here. This check doesn’t guide that step.\n\nTurning the unit off with the remote stops it running. It doesn’t cut the power. That’s why you’ll touch only the filters.', [
@@ -837,14 +883,28 @@
       ]),
 
     'ms.head.airflow_result': n('Indoor unit airflow', 'Run it for 15 minutes, then check',
-      'Set Cool, at least 3°F below the room, with the fan on High. Let it run about 15 minutes.\n\nThen stand in front of the indoor unit and feel the air.\n\nIf you see ice or dripping water now, choose that option. Don’t keep it running.', [
-        o('improved_ok', 'Better. Airflow is back to normal', '@ms_airflow_improved_basic', 'Basic fix. We’ll show how to keep it that way.', 'Airflow is back to normal after the basic checks.'),
+      'Set the mode you need (Cool or Heat), at least 3°F past the room temperature, fan on High. Run it about 15 minutes.\n\nThen stand in front of the indoor unit and feel the air.\n\nIf you see ice or dripping water now, choose that option. Don’t keep it running.', [
+        o('improved_ok', 'Better. Strong air at the right temperature now.', '@ms_airflow_improved_basic', 'Basic fix. We’ll show how to keep it that way.', 'Airflow is strong at the right temperature after the basic checks.'),
         o('still_weak_air', 'The air is still weak', '@ms_weak_air_after_basics', 'A pro checks the inside of the unit.', 'Airflow still weak after settings, filters, and clearance checks.'),
         o('air_ok_not_cooling', 'The air is strong, but it isn’t cold, or the room won’t cool', '@ms_no_cool_after_basics', 'A pro checks the system.', 'Airflow strong but not cooling after the basic checks.'),
+        o('air_ok_not_heating', 'The air is strong, but the room isn’t warming', 'ms.outdoor.safe_observe', 'Next: a safe look at the outdoor unit.', 'Airflow strong but not heating after the basic checks.'),
         o('now_ice_or_water', 'Now I see ice or dripping water', 'ms.head.water_observe', 'Next: where the water or melting ice is. Electrical safety comes first.', 'Ice or dripping water appeared during the airflow check.'),
         o('not_sure_result', 'I’m not sure', '@ms_airflow_unsure', 'Don’t open the unit to check.', ''),
         MS_HAZARD
       ]),
+
+    'ms.outdoor.safe_observe': n('Outdoor unit', 'What is the outdoor unit doing?',
+      'Look from a window, or from dry, cleared ground. Don’t climb onto the unit, a roof, or a snowbank. Don’t reach into the grille. If the ground is icy, dark, or flooded, choose that you can’t look safely.\n\nA unit that is calling for heat or cool should have the outdoor unit running, except during a short defrost pause.\n\nIf you see water, melt, or ice on or near the outdoor unit’s power box, cord, or outlet, choose that first. Don’t touch it.\n\nSteam in cold weather can be a normal defrost. If you aren’t sure it’s steam, or it smells like burning, choose that option.', [
+        o('water_near_outdoor_electrical', 'Water, melt, or ice is on or near the power box, cord, or outlet', '@ms_outdoor_water_electrical', 'Stop. Don’t touch it.', 'Water, melt, or ice on or near the outdoor unit power box, cord, or outlet.', { gate: 'water_near_electrical' }),
+        o('outdoor_running_still_problem', 'The outdoor unit is running, and the room still isn’t comfortable', '@ms_outdoor_running_call_pro', 'A pro tests the system.', 'Outdoor unit was running and the room was still not comfortable.'),
+        o('outdoor_quiet_while_calling', 'The indoor unit is calling, and the outdoor unit is quiet', '@ms_outdoor_not_running_wave1', 'A pro checks why it’s quiet.', 'Indoor unit was calling and the outdoor unit was quiet.'),
+        o('outdoor_thick_ice_heating', 'The outdoor unit is thick with ice while heating', '@ms_outdoor_freeze_heat_wave1', 'That’s a pro visit.', 'Outdoor unit was thick with ice while heating.'),
+        o('ice_want_keep_running', 'There’s ice, but I want to keep it running', '@ms_ice_heat_keep_running', 'Hard stop. Turn it off.', 'Homeowner wanted to keep the iced outdoor unit running for heat.', { gate: 'ice_keep_running' }),
+        o('outdoor_ice_cooling', 'I see ice while it’s set to Cool', 'ms.ice.stop_observe', 'Stop-and-thaw steps next.', 'Ice seen at the outdoor unit while cooling.'),
+        o('steam_or_smoke_unsure', 'I’m not sure the cloud is steam, or it smells like burning', '@ms_hazard_now', 'Stop. Don’t keep checking.', 'Steam or smoke at the outdoor unit was not confirmed as steam.', { gate: 'ms_new_hazard' }),
+        o('cannot_observe_safely', 'I can’t see it safely from here', '@ms_outdoor_unsure', 'Don’t go closer.', ''),
+        MS_HAZARD
+      ], { caution: 'Look only from a window or dry ground. Don’t reach into the grille.', safetyGate: true }),
 
     'ms.head.water_observe': n('Water', 'Where is the water or melting ice?',
       'Answer from where you’re standing. Don’t step into water, touch the unit, or climb up to look. Don’t go into an attic or crawlspace. Ice that is melting counts as water for this question.\n\nFirst: is any water, or ice that is melting, on or near an outlet, a power cord, a light, a switch, or the unit’s wiring? Or dripping onto anything that plugs in?', [
@@ -871,7 +931,7 @@
         o('ice_dripping_near_electrical', 'Melting ice is dripping on or near an outlet, cord, or anything electrical', '@ms_water_electrical', 'Stop. Don’t touch it.', 'Melting ice dripping near electrical parts.', { gate: 'water_near_electrical' }),
         o('ice_want_keep_running', 'There’s ice, but I want to keep it running', '@ms_ice_keep_running', 'Hard stop. Turn it off.', 'Homeowner wanted to keep the mini-split running despite ice.', { gate: 'ice_keep_running' }),
         o('ice_seen_cooling', 'There’s ice or frost on the indoor unit, its pipes, or the pipes at the outdoor unit', '@ms_ice_cooling_wave1', 'Turn it off, let it thaw, call a pro.', 'Ice or frost seen while cooling.'),
-        o('ice_outdoor_heating_or_unsure', 'It’s frost on the outdoor unit while heating, or I’m not sure it’s ice', '@ms_ice_unclear_or_heat', 'Not covered yet. Safe steps next.', 'Outdoor frost while heating, or ice not confirmed.'),
+        o('ice_outdoor_heating_or_unsure', 'It’s frost on the outdoor unit while heating, or I’m not sure it’s ice', '@ms_ice_unclear_or_heat', 'Safe steps next, including what a normal defrost looks like.', 'Outdoor frost while heating, or ice not confirmed.'),
         MS_HAZARD
       ], { caution: 'No chipping ice, no covers, and no refrigerant or electrical work.', safetyGate: true })
   };
@@ -1256,8 +1316,8 @@
       'Do not apply heat-pump mode steps to a cooling-only condenser.', 'scope',
       'insufficient_info', 'hp_cool_only_use_ac'),
     hp_mini_split_oos: r('More information needed', 'Outside this heat-pump check', 'Use the mini-split check instead.',
-      'This ducted heat-pump check will not guess a mini-split diagnosis. Second Wrench has a separate mini-split check for cooling.',
-      ['Go back home, press Start, and choose “Something else: mini-split, geothermal, other”, then “Ductless mini-split”. It covers cooling problems on a single indoor unit.', 'For heating problems, or a system with more than one indoor unit, use a technician who works on mini-splits or the manufacturer owner guidance.', 'Do not remove a cover to force an identification.'],
+      'This ducted heat-pump check will not guess a mini-split diagnosis. Second Wrench has a separate mini-split check for cooling and heating on one indoor unit.',
+      ['Go back home, press Start, and choose “Something else: mini-split, geothermal, other”, then “Ductless mini-split”. It covers cooling and heating problems on a single indoor unit.', 'For a system with more than one indoor unit, use a technician who works on mini-splits or the manufacturer owner guidance.', 'Do not remove a cover to force an identification.'],
       'Do not apply this ducted heat-pump guide to a mini-split.', 'scope',
       'insufficient_info', 'hp_mini_split_oos'),
     hp_water_source_oos: r('More information needed', 'Outside this heat-pump check', 'This air-source check does not cover a water-source heat pump.',
@@ -1550,8 +1610,8 @@
       ['Check the owner’s manual, or ask someone who knows the equipment.', 'Start again when you can confirm it. If you can’t, call an HVAC company rather than guessing.'],
       'Don’t remove covers or climb to read labels.', 'scope',
       'insufficient_info', 'ms_system_unconfirmed'),
-    ms_landing_not_in_pr1: r('More information needed', 'Not covered yet', 'This first mini-split check covers cooling problems only.',
-      'Heating, noises, smells, and outdoor-unit problems come in a later version. This check won’t guess at them.',
+    ms_landing_not_in_pr1: r('More information needed', 'Not covered in this check', 'Noise and smell aren’t sorted out here.',
+      'This check covers cooling, heating, and a look at the outdoor unit. It won’t guess at a noise or a smell.',
       ['If something smells like burning, or you see smoke or sparks, get people away and call 911 from safety.', 'Otherwise, call a licensed HVAC pro who works on mini-splits. Tell them what you noticed and when it started.'],
       'Don’t open covers, reset breakers, or open the outdoor unit to look for the cause.', 'safety',
       'insufficient_info', 'ms_landing_not_in_pr1'),
@@ -1582,7 +1642,7 @@
       'insufficient_info', 'ms_filter_path_unconfirmed'),
     ms_filter_drying_basic: r('Basic homeowner check', 'Finish when the filters are dry', 'Washed filters need to dry fully first.',
       'Let them dry in the shade, not in the sun or with a heater or hair dryer.',
-      ['Leave the unit Off until the filters are back in. Run it only with the filters in place.', 'When they’re dry, slide them back in and close the cover all the way.', 'Run Cool for about 15 minutes. If the air is still weak or not cool, start a new check.'],
+      ['Leave the unit Off until the filters are back in. Run it only with the filters in place.', 'When they’re dry, slide them back in and close the cover all the way.', 'Run it in the mode you need for about 15 minutes. If the air is still weak, or the room still isn’t comfortable, start a new check.'],
       'Don’t use heat to dry them, and don’t run the unit without filters.', 'maintenance',
       'next_step', 'ms_filter_drying_basic', { diyTier: 'basic' }),
     ms_filter_replace_basic: r('Basic homeowner check', 'Get the right replacement filter', 'A filter is torn, damaged, or missing.',
@@ -1607,7 +1667,7 @@
       'next_step', 'ms_airflow_improved_basic', { diyTier: 'basic' }),
     ms_weak_air_after_basics: r('Professional guidance', 'Arrange HVAC service', 'Air is still weak after the basic checks.',
       'Settings, filters, and a clear path are done. What’s left is inside the unit, and that needs a pro. This isn’t a confirmed diagnosis.',
-      ['If you see ice or water, or it isn’t cooling, turn it Off with the remote.', 'Call a licensed HVAC pro. Tell them what you checked: settings, filters, and anything blocking the unit.', 'Your service note below lists what you told this check.'],
+      ['If you see ice or water, or it isn’t cooling or heating, turn it Off with the remote.', 'Call a licensed HVAC pro. Tell them what you checked: settings, filters, and anything blocking the unit.', 'Your service note below lists what you told this check.'],
       'Don’t open the unit, spray cleaners inside, or add refrigerant.', 'maintenance',
       'call_pro', 'ms_weak_air_after_basics'),
     ms_no_cool_after_basics: r('Professional guidance', 'Arrange HVAC service', 'Air is moving, but it isn’t cooling.',
@@ -1640,9 +1700,9 @@
       ['Turn the unit Off with the remote or app.', 'Put towels or a bucket under the indoor unit. Keep water away from outlets and cords.', 'Don’t open the front cover or any panel to check the ice.', 'Leave it off and call a licensed HVAC pro.', 'If water reaches an outlet or cord, stay clear and call a pro or electrician.'],
       'Don’t chip or pick at the ice, use a hair dryer, heat gun, or hot water, or keep restarting it.', 'ice',
       'emergency_exit', 'ice_keep_running', { gate: 'ice_keep_running' }),
-    ms_ice_unclear_or_heat: r('More information needed', 'Not covered yet · safe steps only', 'This check can’t sort out this ice yet.',
-      'This first version covers cooling. Light frost on the outdoor unit while heating can be normal for a short time. Thick ice that keeps building isn’t.',
-      ['If the ice is thick, keeps building, or doesn’t clear within about an hour, turn the system Off with the remote and call a licensed HVAC pro.', 'If you’re not sure it’s ice, watch from a safe spot and describe it to a pro.', 'If the home is getting dangerously cold, use electric space heaters plugged into a wall. Never use an oven, stove, grill, or generator indoors (carbon monoxide).'],
+    ms_ice_unclear_or_heat: r('More information needed', 'Safe steps only', 'This check can’t sort out this ice yet.',
+      'Light frost on the outdoor unit while heating can be normal for a short time. A normal defrost can show steam, a pause in heating, and a whoosh, then heat returns. Thick ice that keeps building isn’t normal.',
+      ['If the ice is thick, keeps building, or doesn’t clear within about an hour, turn the system Off with the remote and call a licensed HVAC pro.', 'If you’re not sure it’s ice, watch from a safe spot and describe it to a pro.', MS_BACKUP_HEAT],
       'Don’t chip ice, pour hot water on it, or open the outdoor unit.', 'ice',
       'insufficient_info', 'ms_ice_unclear_or_heat'),
     ms_hazard_now: r('Emergency', 'Stop. Get to safety.', 'A new hazard ends this check.',
@@ -1659,6 +1719,66 @@
       'Water is on or near the mini-split’s electrical parts.',
       ['Don’t touch the indoor unit, any switch, a cord, or the breaker panel, and don’t stand in the water.', 'Leave the area, keep others and pets away, and call a licensed HVAC pro or an electrician.', 'If you see sparks, smoke, or smell burning, get out and call 911 from outside.'],
       'Don’t touch the indoor unit, any switch, or the breaker panel.', 'electrical',
+      'emergency_exit', 'water_near_electrical', { gate: 'water_near_electrical' }),
+    ms_heat_settings_fixed_basic: r('Basic homeowner check', 'Leave it set this way', 'Leave it in Heat.',
+      'Heat mode, a setting above the room, and a normal fan let the mini-split heat the way it should. A short warm-up is normal. So is an occasional defrost pause.',
+      ['Leave it in Heat, not Auto, while you need heat.', 'Expect a short warm-up. The indoor fan may wait a few minutes so it doesn’t blow cold air.', 'An occasional pause with steam and a whoosh can be a normal defrost. If ice stays or keeps building, turn it Off with the remote and call a licensed HVAC pro.'],
+      'Don’t change installer settings, open the unit, or switch modes during a defrost pause.', 'maintenance',
+      'next_step', 'ms_heat_settings_fixed_basic', { diyTier: 'basic' }),
+    ms_heat_auto_fixed_basic: r('Basic homeowner check', 'Leave it in Heat', 'Heat, not Auto, was the fix.',
+      'Auto had the unit off Heat. Setting Heat and waiting brought the heat back.',
+      ['Leave it in Heat, not Auto, during heating season.', 'If it stops heating again with Heat set, start a new check and choose Not heating.', MS_BACKUP_HEAT],
+      'Don’t leave it on Auto when you need steady heat.', 'maintenance',
+      'next_step', 'ms_heat_auto_fixed_basic', { diyTier: 'basic' }),
+    ms_defrost_normal_basic: r('Basic homeowner check', 'Leave it in Heat', 'That pause was a normal defrost.',
+      'Steam, a pause, and a whoosh, then heat returns, can be a normal defrost. It often lasts about 5 to 15 minutes.',
+      ['Leave it in Heat. Don’t switch modes during a defrost pause.', 'If ice stays, keeps building, or heat doesn’t return after about an hour, turn it Off with the remote and call a licensed HVAC pro.', MS_BACKUP_HEAT],
+      'Don’t chip ice, pour hot water, or use a heat gun. Don’t cover the outdoor unit.', 'ice',
+      'next_step', 'ms_defrost_normal_basic', { diyTier: 'basic' }),
+    ms_outdoor_running_call_pro: r('Professional guidance', 'Arrange HVAC service', 'The outdoor unit is running, and the room still isn’t comfortable.',
+      'The basic checks are done. A pro needs to test the system. This isn’t a diagnosis.',
+      ['You can leave it in Heat if some heat is coming. If no useful heat is coming, turn it Off with the remote.', 'Call a licensed HVAC pro. Tell them the outdoor unit was running and the room was still not comfortable.', MS_BACKUP_HEAT],
+      'Don’t open either unit.', 'safety',
+      'call_pro', 'ms_outdoor_running_call_pro'),
+    ms_outdoor_not_running_wave1: r('Professional guidance', 'Arrange HVAC service', 'The outdoor unit is quiet while a unit is calling.',
+      'When an indoor unit is asking for heat or cool and the outdoor unit stays quiet, the cause needs a pro. This isn’t a diagnosis.',
+      ['Leave the indoor unit as it is, or turn it Off with the remote.', 'Call a licensed HVAC pro. Tell them the indoor unit was calling and the outdoor unit was quiet.', MS_BACKUP_HEAT],
+      'Don’t reset a breaker, open a disconnect, or cover the outdoor unit.', 'safety',
+      'call_pro', 'ms_outdoor_not_running_wave1'),
+    ms_outdoor_freeze_heat_wave1: r('Professional guidance', 'Arrange HVAC service', 'Thick ice on the outdoor unit in heat needs a pro.',
+      'Ice that keeps building, or a unit that stays thickly coated after about an hour, is not a normal defrost. A normal defrost is a short pause with steam and a whoosh, then heat returns.',
+      ['If no useful heat is coming, turn the unit Off with the remote.', 'Call a licensed HVAC pro. Tell them the outdoor unit stayed thick with ice in heat and did not recover.', MS_BACKUP_HEAT],
+      'Don’t chip the ice, pour hot water, use a heat gun or salt, or cover the outdoor unit.', 'ice',
+      'call_pro', 'ms_outdoor_freeze_heat_wave1'),
+    ms_ice_heat_keep_running: r('Stop / professional', 'Hard stop · call a pro', 'Stop. Turn it off. Don’t run it iced to force heat.',
+      'Running an iced outdoor unit to force heat can damage it. Most mini-splits have no separate emergency heat.',
+      ['Turn the unit Off with the remote or app.', MS_BACKUP_HEAT, 'Call a licensed HVAC pro once everyone is safe.'],
+      'Don’t chip ice, pour hot water, use a heat gun or salt, or keep the iced unit running.', 'ice',
+      'emergency_exit', 'ice_keep_running', { gate: 'ice_keep_running' }),
+    ms_cold_exposure: r('Emergency', 'Get warm now · call 911 if needed', 'Get the person warm first.',
+      'Someone at risk from the cold matters more than the mini-split.',
+      ['If anyone is confused, very drowsy, or hard to wake, call 911 now.', 'Otherwise, get them somewhere warm: a neighbor, family, or a warming center.', 'Add blankets and dry layers in the meantime.', MS_BACKUP_HEAT, 'Call a licensed HVAC pro for the mini-split once everyone’s safe.'],
+      'Don’t wait on a mini-split repair to get someone warm.', 'safety',
+      'emergency_exit', 'cold_exposure_911', { gate: 'cold_exposure_911' }),
+    ms_heat_not_supported: r('More information needed', 'Confirm the equipment', 'This remote may have no heat.',
+      'If the remote or app has no Heat setting, the unit may be cooling-only. This check won’t guess that it can heat.',
+      ['Check the owner’s manual for the model you already know. Don’t open a cover or climb to find a model number.', 'If the manual has no Heat mode, call a licensed HVAC pro rather than guessing.', MS_BACKUP_HEAT],
+      'Don’t force a mode the remote doesn’t offer, and don’t open the unit.', 'scope',
+      'insufficient_info', 'ms_heat_not_supported'),
+    ms_heat_wait_unsure: r('More information needed', 'Wait, then check again', 'Wait the full 10 to 15 minutes, then check again.',
+      'Heat can take 10 to 15 minutes, and the indoor fan may stay off at first. Stopping early can look like no heat.',
+      ['Leave it in Heat, at least 3°F above the room, and wait the full 10 to 15 minutes.', 'Start a new check after that if it still isn’t heating.', MS_BACKUP_HEAT],
+      'Don’t switch modes during the wait, and don’t open the unit.', 'maintenance',
+      'insufficient_info', 'ms_heat_wait_unsure'),
+    ms_outdoor_unsure: r('More information needed', 'Stop where you can see safely', 'Don’t go closer to see the outdoor unit.',
+      'If you can’t see it from a window or from dry, cleared ground, stop there. Icy ground, deep snow, and darkness are reasons not to go out.',
+      ['Stay inside. Describe what you already know to a licensed HVAC pro.', MS_BACKUP_HEAT],
+      'Don’t climb, reach into the grille, or go out in unsafe conditions to look.', 'safety',
+      'insufficient_info', 'ms_outdoor_unsure'),
+    ms_outdoor_water_electrical: r('Stop / professional', 'Keep away · urgent help', 'Don’t touch the outdoor unit or stand in the water.',
+      'Water, melt, or ice is on or near the outdoor unit’s power box, cord, or outlet.',
+      ['Don’t touch the outdoor unit, any switch, a cord, or the breaker panel, and don’t stand in the water.', 'Leave the area, keep others and pets away, and call a licensed HVAC pro or an electrician.', 'If you see sparks, smoke, or smell burning, get out and call 911 from outside.'],
+      'Don’t touch the outdoor unit, any switch, or the breaker panel.', 'electrical',
       'emergency_exit', 'water_near_electrical', { gate: 'water_near_electrical' }),
     ms_advanced_off: r('Professional guidance', 'Mini-split electrical DIY is off', 'Capacitor, contactor, inverter, and board work are not offered on a mini-split in this beta.',
       'Advanced electrical stays off for mini-splits.',
@@ -2154,8 +2274,16 @@
     if (MS_PR1.join('|') !== 'ms.intake.system_confirm|ms.landing.picker|ms.controls.mode_setpoint|ms.head.filter_path_ok|ms.head.filter_clean|ms.head.discharge_clear|ms.head.airflow_result|ms.head.water_observe|ms.error.capture|ms.ice.stop_observe') {
       throw new Error('MS_PR1 drifted');
     }
-    const msGates = ['ms.head.filter_path_ok', 'ms.head.water_observe', 'ms.error.capture', 'ms.ice.stop_observe'];
-    MS_PR1.forEach(id => {
+    if (MS_V1.join('|') !== 'ms.heat.mode_setpoint|ms.heat.force_heat|ms.heat.defrost_sanity|ms.outdoor.safe_observe') {
+      throw new Error('MS_V1 drifted');
+    }
+    const MS_ALL = MS_PR1.concat(MS_V1);
+    MS_V1.forEach(id => {
+      if (!nodes[id]) throw new Error('Missing mini-split heat node ' + id);
+      if (nodes[id].diyTier !== 'basic') throw new Error('Mini-split heat node tier drifted ' + id);
+    });
+    const msGates = ['ms.head.filter_path_ok', 'ms.head.water_observe', 'ms.error.capture', 'ms.ice.stop_observe', 'ms.heat.mode_setpoint', 'ms.heat.defrost_sanity', 'ms.outdoor.safe_observe'];
+    MS_ALL.forEach(id => {
       if (nodes[id].safetyGate !== (msGates.indexOf(id) !== -1)) throw new Error('Mini-split safety gate drifted ' + id);
       const last = nodes[id].options[nodes[id].options.length - 1];
       if (!last || last.id !== 'hazard_now' || last.next !== '@ms_hazard_now' || last.gate !== 'ms_new_hazard') {
@@ -2178,11 +2306,11 @@
     if (!hpMini || hpMini.next !== '@hp_mini_split_oos') throw new Error('HP mini-split edge drifted');
     if ([...hpReachable()].some(id => id.indexOf('ms.') === 0)) throw new Error('HP walk reached a mini-split node');
     const msSeen = msReachable();
-    MS_PR1.forEach(id => { if (!msSeen.has(id)) throw new Error('Mini-split walk missing ' + id); });
+    MS_ALL.forEach(id => { if (!msSeen.has(id)) throw new Error('Mini-split walk missing ' + id); });
     msSeen.forEach(id => {
       if (/^(ac\.|hp\.|sw\.|fn\.|wshp\.)/.test(id)) throw new Error('Mini-split walk left the lane: ' + id);
       if (ADVANCED.indexOf(id) !== -1 || id === CONCLUDE) throw new Error('Mini-split walk reached a forbidden node: ' + id);
-      if (['@next_step_advanced', '@suspected_capacitor_contactor_advanced_off', '@hp_advanced_electrical_off', '@ice_keep_running', '@hp_ice_heat_outdoor', '@ms_advanced_off', '@electrical'].indexOf(id) !== -1) {
+      if (['@next_step_advanced', '@suspected_capacitor_contactor_advanced_off', '@hp_advanced_electrical_off', '@ice_keep_running', '@hp_ice_heat_outdoor', '@fn_cold_exposure', '@ms_advanced_off', '@electrical'].indexOf(id) !== -1) {
         throw new Error('Mini-split walk reached a forbidden terminal: ' + id);
       }
       if (id.charAt(0) === '@') {
@@ -2196,7 +2324,7 @@
     if (!msSeen.has('@ms_water_electrical') || results.ms_water_electrical.outcome !== 'emergency_exit' || results.ms_water_electrical.continueTo || results.ms_water_electrical.gate !== 'water_near_electrical') {
       throw new Error('Mini-split water/electrical stop drifted');
     }
-    MS_PR1.forEach(id => {
+    MS_ALL.forEach(id => {
       nodes[id].options.forEach(op => {
         const target = op.next;
         const res = target.charAt(0) === '@' ? results[target.slice(1)] : null;
@@ -2204,6 +2332,34 @@
         if (res && res.outcome === 'emergency_exit' && !op.gate) throw new Error('Emergency mini-split choice missing a gate: ' + id + '/' + op.id);
       });
     });
+    const msChoice = (nodeId, optionId) => {
+      const op = nodes[nodeId].options.find(item => item.id === optionId);
+      if (!op) throw new Error('Missing mini-split choice ' + nodeId + '/' + optionId);
+      return op;
+    };
+    const heatStop = (nodeId, optionId, resultId, gate) => {
+      const op = msChoice(nodeId, optionId);
+      const res = op.next.charAt(0) === '@' ? results[op.next.slice(1)] : null;
+      if (op.next !== '@' + resultId || op.gate !== gate || !res || res.outcome !== 'emergency_exit' || res.gate !== gate) {
+        throw new Error('Mini-split hard stop drifted ' + nodeId + '/' + optionId);
+      }
+    };
+    heatStop('ms.heat.mode_setpoint', 'cold_exposure_risk', 'ms_cold_exposure', 'cold_exposure_911');
+    heatStop('ms.heat.defrost_sanity', 'ice_want_keep_running', 'ms_ice_heat_keep_running', 'ice_keep_running');
+    heatStop('ms.heat.defrost_sanity', 'steam_or_smoke_unsure', 'ms_hazard_now', 'ms_new_hazard');
+    heatStop('ms.outdoor.safe_observe', 'ice_want_keep_running', 'ms_ice_heat_keep_running', 'ice_keep_running');
+    heatStop('ms.outdoor.safe_observe', 'steam_or_smoke_unsure', 'ms_hazard_now', 'ms_new_hazard');
+    heatStop('ms.outdoor.safe_observe', 'water_near_outdoor_electrical', 'ms_outdoor_water_electrical', 'water_near_electrical');
+    const icedSolid = msChoice('ms.heat.defrost_sanity', 'outdoor_iced_solid_no_recover');
+    if (icedSolid.next !== '@ms_outdoor_freeze_heat_wave1' || icedSolid.gate || results.ms_outdoor_freeze_heat_wave1.outcome !== 'call_pro') {
+      throw new Error('Ice that keeps building must call a pro');
+    }
+    if (msChoice('ms.outdoor.safe_observe', 'outdoor_thick_ice_heating').next !== '@ms_outdoor_freeze_heat_wave1') {
+      throw new Error('Outdoor thick ice must call a pro');
+    }
+    if (msChoice('ms.ice.stop_observe', 'ice_outdoor_heating_or_unsure').next !== '@ms_ice_unclear_or_heat') {
+      throw new Error('Ice screen must not loop back into defrost');
+    }
     ['filter_needs_ladder', 'filter_needs_tools_or_force', 'manual_says_cut_power'].forEach(id => {
       const op = nodes['ms.head.filter_path_ok'].options.find(item => item.id === id);
       if (!op || op.next !== '@ms_filter_inaccessible' || results.ms_filter_inaccessible.outcome !== 'call_pro') {
@@ -2229,9 +2385,15 @@
       walkMs('ms.intake.system_confirm');
     })();
     Object.keys(nodes).concat(Object.keys(results)).forEach(id => {
-      if (/^ms\.(zone|outdoor|heat|defrost|breaker)/.test(id)) throw new Error('Deferred mini-split id ' + id);
+      if (/^ms\.(zone|defrost|breaker|power|rv|inverter|refrigerant|adv)/.test(id) || /^ms_zone/.test(id)) throw new Error('Deferred mini-split id ' + id);
     });
-    if (results.ms_outdoor_not_running_wave1 || results.ms_outdoor_freeze_heat_wave1) throw new Error('Deferred mini-split result present');
+    const multiZone = nodes['ms.intake.system_confirm'].options.find(op => op.id === 'ductless_multi_zone');
+    if (!multiZone || multiZone.next !== '@ms_multi_zone_pr2' || results.ms_multi_zone_pr2.outcome !== 'insufficient_info') {
+      throw new Error('Multi-zone must stay on the later-version result');
+    }
+    ['ms_outdoor_not_running_wave1', 'ms_outdoor_freeze_heat_wave1'].forEach(id => {
+      if (!results[id] || results[id].outcome !== 'call_pro' || results[id].continueTo) throw new Error('Outdoor wave-1 result drifted ' + id);
+    });
     Object.keys(nodes).forEach(id => {
       nodes[id].options.forEach(op => {
         if (op.id !== 'hazard_now') return;
@@ -2239,7 +2401,7 @@
         if (!res || res.outcome !== 'emergency_exit') throw new Error('hazard_now must emergency-exit: ' + id);
       });
     });
-    MS_PR1.forEach(id => {
+    MS_ALL.forEach(id => {
       nodes[id].options.forEach(op => {
         if (targetsForFlag(op.next, false).join('|') !== targetsForFlag(op.next, true).join('|')) {
           throw new Error('Mini-split edge changes with the advanced flag: ' + id + '/' + op.id);
@@ -2276,7 +2438,7 @@
       const res = results[id];
       [res.title, res.urgency, res.explanation, res.avoid].concat(res.actions || []).forEach((text, index) => assertNoShutOff(text, id + ' field ' + index));
     });
-    MS_PR1.forEach(id => {
+    MS_ALL.forEach(id => {
       const node = nodes[id];
       [node.title, node.body, node.caution].forEach((text, index) => assertNoShutOff(text, id + ' field ' + index));
       node.options.forEach(op => {
@@ -2714,7 +2876,7 @@
   function summary(state, extra = {}) {
     const clean = x => String(x || '').replace(/[\r\n\t]+/g, ' ').trim().slice(0, 140);
     const facts = state.answers.map(x => x.fact).filter(Boolean);
-    const complaint = clean(extra.complaint) || clean(state.seed) || facts.find(x => x.startsWith('Complaint:')) || (state.result === 'sw_other_not_listed' ? 'Equipment this beta does not check yet; see reported observations.' : state.product === 'wshp' ? 'Water-source / geothermal heat pump concern; see reported observations.' : state.product === 'hp' ? 'Heat pump concern; see reported observations.' : state.product === 'fn' ? 'Furnace concern; see reported observations.' : state.product === 'ms' ? 'Mini-split concern; see reported observations.' : 'AC concern; see reported observations.');
+    const complaint = clean(extra.complaint) || clean(state.seed) || facts.find(x => x.startsWith('Complaint:')) || (state.result === 'sw_other_not_listed' ? 'Equipment this beta does not check yet; see reported observations.' : state.product === 'wshp' ? 'Water-source / geothermal heat pump concern; see reported observations.' : state.product === 'hp' ? 'Heat pump concern; see reported observations.' : state.product === 'fn' ? 'Furnace concern; see reported observations.' : state.product === 'ms' ? (state.msLanding === 'no_heat' ? 'Mini-split heating concern; see reported observations.' : 'Mini-split concern; see reported observations.') : 'AC concern; see reported observations.');
     const somethingElse = 'Something else reported at system type.';
     let observations = [...new Set(facts.filter(x => !x.startsWith('Complaint:') && !x.startsWith('User ') && !x.startsWith('Residential ') && !(state.product === 'wshp' && x.startsWith('Loop type:'))))].slice(-5);
     if (facts.indexOf(somethingElse) !== -1 && observations.indexOf(somethingElse) === -1) observations = [somethingElse].concat(observations);
@@ -2787,7 +2949,7 @@
     if (state && state.product === 'ms' && state.msLanding === 'weak_airflow' && state.result === 'ms_settings_fixed_basic') {
       return Object.assign({}, res, {
         explanation: 'Cool mode, a setting below the room, and a normal fan speed let the indoor unit move air the way it should. Airflow is back to normal.',
-        actions: ['Leave it in Cool, not Auto, while you need cooling.', 'If you use Quiet, Sleep, or a schedule, check that it isn’t turning the fan down when you need air.', 'If the air gets weak again with the right settings, start a new check and choose Weak air from the indoor unit.']
+        actions: ['Leave it in Cool, not Auto, while you need cooling.', 'If you use Quiet, Sleep, or a schedule, check that it isn’t turning the fan down when you need air.', 'If the air gets weak again with the right settings, start a new check and choose Weak air from the indoor unit while cooling.']
       });
     }
     if (!state || state.product !== 'hp') return res;
@@ -2810,7 +2972,7 @@
   }
   return {
     nodes, results, create, answer, stop, resume, summary, activity, viewNode, presentResult, advancedEnabled,
-    treeVersion: TREE_VERSION, treeVersionHp: TREE_HP, treeVersionWshp: TREE_WSHP, treeVersionMs: TREE_MS, msPr1: MS_PR1, wave1: WAVE1, wave2: WAVE2, advanced: ADVANCED,
+    treeVersion: TREE_VERSION, treeVersionHp: TREE_HP, treeVersionWshp: TREE_WSHP, treeVersionMs: TREE_MS, msPr1: MS_PR1, msV1: MS_V1, wave1: WAVE1, wave2: WAVE2, advanced: ADVANCED,
     hpWave1: HP_WAVE1, wshpWave1: WSHP_WAVE1, treeVersionFn: TREE_FN, fnWave1: FN_WAVE1, fnReused: FN_REUSED, fnForbidden: FN_FORBIDDEN,
     fnCoLine: FN_CO_LINE, fnReasonCopy: FN_REASON_COPY, fnEdge: FN_EDGE
   };

@@ -72,7 +72,7 @@ function assertNoCap(state, msg) {
 const gate = ['none_of_these', 'agree_18_terms'];
 
 assert(/advancedRepairsEnabled:\s*false/.test(configText), 'public advanced flag must stay false');
-const SHIP = '2026-10-10.1';
+const SHIP = '2026-10-10.2';
 assert(configText.includes("contentVersion: '" + SHIP + "'"), 'content version must be ' + SHIP);
 assert(['config', 'flow', 'app'].every(f => indexText.includes(f + '.js?v=' + SHIP)), 'script cache-bust must match content version');
 assert(indexText.includes('HOME HVAC CHECKS') && !indexText.includes('AC + HEAT PUMP'), 'header lockup is HOME HVAC CHECKS');
@@ -1161,19 +1161,20 @@ assert(d012 && d012.indexOf('**Added**') !== -1 && d012.indexOf('**Published**')
 assert(/yellow or orange flame already seen/.test(d012) && /bang at ignition/.test(d012) && /call-a-pro/.test(d012), 'F18 D-012 notes yellow flame and bang end at call-a-pro');
 
 
-// ---- Mini-split ms.ductless.v0 ----
-assert(F.treeVersionMs === 'ms.ductless.v0', 'MS-A1 mini-split tree version');
-assert(Array.isArray(F.msPr1) && F.msPr1.length === 10, 'MS-G1 ten mini-split nodes exported');
-assert(Object.keys(F.nodes).length === 64, 'node count is 64');
-assert(Object.keys(F.results).length === 158, 'result count is 158');
+// ---- Mini-split ms.ductless.v1 ----
+assert(F.treeVersionMs === 'ms.ductless.v1', 'MS-A1 mini-split tree version');
+assert(Array.isArray(F.msPr1) && F.msPr1.length === 10, 'MS-G1 ten original mini-split nodes exported');
+assert(Array.isArray(F.msV1) && F.msV1.join('|') === 'ms.heat.mode_setpoint|ms.heat.force_heat|ms.heat.defrost_sanity|ms.outdoor.safe_observe', 'MS-G1 heat and outdoor nodes');
+assert(Object.keys(F.nodes).length === 68, 'node count is 68');
+assert(Object.keys(F.results).length === 170, 'result count is 170');
 const ms1 = ['none_of_these', 'agree_18_terms', 'other_heat_or_ductless', 'ductless_mini_split', 'ductless_single_zone'];
 const msGate = ms1.slice(0, 4);
 const msAt = walk('ask', msGate);
-assert(msAt.node === 'ms.intake.system_confirm' && msAt.product === 'ms' && msAt.treeVersion === 'ms.ductless.v0', 'MS-A2 start reaches mini-split intake');
+assert(msAt.node === 'ms.intake.system_confirm' && msAt.product === 'ms' && msAt.treeVersion === 'ms.ductless.v1', 'MS-A2 start reaches mini-split intake');
 assert(msAt.answers.map(a => a.node).join('|') === 'ac.gate.cluster_entry|ac.session.consent|sw.intake.system_type|sw.intake.other_system', 'MS-A2 answered nodes');
 const msLaneAt = msAt.audit.findIndex(e => e.event === 'product_lane:ms');
 assert(msLaneAt > msAt.audit.findIndex(e => e.event === 'answer_selected:other_heat_or_ductless') && msLaneAt < msAt.audit.findIndex(e => e.event === 'answer_selected:ductless_mini_split'), 'MS lane is entered before the ductless answer is recorded');
-assert(msAt.audit.slice(msLaneAt).every(e => e.tree === 'ms.ductless.v0'), 'MS-A1 audit tree from product_lane:ms');
+assert(msAt.audit.slice(msLaneAt).every(e => e.tree === 'ms.ductless.v1'), 'MS-A1 audit tree from product_lane:ms');
 const eventsOf = s => s.audit.map(e => e.event);
 const w1 = walk('ask', ms1.concat(['landing_weak_airflow', 'settings_right_still_problem', 'filter_ok_tool_free_floor', 'cleaned_were_dirty', 'nothing_blocking', 'improved_ok']));
 assert(w1.result === 'ms_airflow_improved_basic' && F.results[w1.result].outcome === 'next_step' && F.results[w1.result].diyTier === 'basic', 'W1 basic success');
@@ -1214,10 +1215,53 @@ assert(w7.result === 'ms_filter_inaccessible' && F.results[w7.result].outcome ==
   assert(stepped.result === 'ms_filter_inaccessible' && F.results[stepped.result].outcome === 'call_pro', 'unsafe filter access ' + id);
 });
 const w8 = walk('ac', gate.concat(['ductless_mini_split', 'ductless_single_zone', 'landing_ice_seen', 'ice_want_keep_running']));
-assert(w8.result === 'ms_ice_keep_running' && w8.treeVersion === 'ms.ductless.v0' && eventsOf(w8).filter(e => e === 'product_lane:ms').length === 1, 'W8 AC intake switches to the mini-split lane');
+assert(w8.result === 'ms_ice_keep_running' && w8.treeVersion === 'ms.ductless.v1' && eventsOf(w8).filter(e => e === 'product_lane:ms').length === 1, 'W8 AC intake switches to the mini-split lane');
+const wh1 = walk('ask', ms1.concat(['landing_no_heat', 'heat_fixed_after_setting']));
+assert(wh1.result === 'ms_heat_settings_fixed_basic' && F.results[wh1.result].outcome === 'next_step' && F.results[wh1.result].diyTier === 'basic', 'WH1 heat settings basic success');
+assert(eventsOf(wh1).indexOf('diy_tier_shown:basic') !== -1 && eventsOf(wh1).indexOf('gate_fired:ms_new_hazard') === -1 && eventsOf(wh1).indexOf('flag:ms_landing=no_heat') !== -1, 'WH1 basic audit');
+const wh1note = F.summary(wh1);
+assert(wh1note.indexOf('Tried:') !== -1 && wh1note.indexOf('User set Heat, a setting above the room, a normal fan, and no timer. Heating returned.') !== -1, 'WH1 tried line');
+const wh1bare = JSON.parse(JSON.stringify(wh1));
+wh1bare.answers.forEach(a => { if (String(a.fact || '').indexOf('Complaint:') === 0) a.fact = ''; });
+assert(F.summary(wh1bare).indexOf('Mini-split heating concern; see reported observations.') !== -1, 'heat complaint fallback');
+const wh2 = walk('ask', ms1.concat(['landing_no_heat', 'mode_was_auto', 'forced_heat_still_problem', 'defrost_then_heat_fine']));
+assert(wh2.result === 'ms_defrost_normal_basic' && F.results[wh2.result].outcome === 'next_step' && F.results[wh2.result].diyTier === 'basic', 'WH2 normal defrost');
+assert(/steam/i.test(F.results.ms_defrost_normal_basic.explanation) && /pause/i.test(F.results.ms_defrost_normal_basic.explanation) && /whoosh/i.test(F.results.ms_defrost_normal_basic.explanation), 'WH2 names steam, a pause, and a whoosh');
+assert(eventsOf(wh2).indexOf('diy_tier_shown:basic') !== -1 && eventsOf(wh2).filter(e => e.indexOf('gate_fired:') === 0).length === 0, 'WH2 shows basic tier and no gate');
+const wh3 = walk('ask', ms1.concat(['landing_no_heat', 'heat_settings_right_still_problem', 'ice_want_keep_running']));
+assert(wh3.result === 'ms_ice_heat_keep_running' && F.results[wh3.result].outcome === 'emergency_exit' && F.results[wh3.result].gate === 'ice_keep_running', 'WH3 ice keep-running hard stop');
+const wh3events = eventsOf(wh3);
+assert(wh3events.indexOf('gate_fired:ice_keep_running') < wh3events.indexOf('exit_ramp:ice_keep_running') && wh3events.indexOf('exit_ramp:ice_keep_running') < wh3events.indexOf('conclusion_reached:emergency_exit') && wh3events.indexOf('diy_tier_shown:basic') === -1, 'WH3 audit order has no DIY tier');
+const wh3before = wh3.result; F.stop(wh3); assert(wh3.result === wh3before, 'WH3 stop leaves the hard stop');
+const whIce = walk('ask', ms1.concat(['landing_no_heat', 'heat_settings_right_still_problem', 'outdoor_iced_solid_no_recover']));
+assert(whIce.result === 'ms_outdoor_freeze_heat_wave1' && F.results[whIce.result].outcome === 'call_pro' && eventsOf(whIce).indexOf('diy_tier_shown:basic') === -1, 'ice that keeps building calls a pro');
+const wh4 = walk('ask', ms1.concat(['landing_no_heat', 'heat_settings_right_still_problem', 'no_frost_or_mild_weather', 'filter_cleaned_recently', 'nothing_blocking', 'air_ok_not_heating', 'outdoor_quiet_while_calling']));
+assert(wh4.result === 'ms_outdoor_not_running_wave1' && F.results[wh4.result].outcome === 'call_pro', 'WH4 quiet outdoor unit calls a pro');
+const wh5 = walk('ask', ms1.concat(['landing_no_heat', 'cold_exposure_risk']));
+assert(wh5.result === 'ms_cold_exposure' && F.results[wh5.result].outcome === 'emergency_exit' && F.results[wh5.result].gate === 'cold_exposure_911' && wh5.result !== 'fn_cold_exposure', 'WH5 cold exposure reuses the 911 gate on an ms result');
+assert(eventsOf(wh5).indexOf('gate_fired:cold_exposure_911') !== -1 && eventsOf(wh5).indexOf('diy_tier_shown:basic') === -1, 'WH5 gate audit and no DIY tier');
+const wh5before = wh5.result; F.stop(wh5); assert(wh5.result === wh5before, 'WH5 stop leaves the cold-exposure result');
+const wh5b = walk('ask', ms1.concat(['landing_outdoor_unit', 'steam_or_smoke_unsure']));
+assert(wh5b.result === 'ms_hazard_now' && F.results[wh5b.result].outcome === 'emergency_exit' && F.results[wh5b.result].gate === 'ms_new_hazard', 'WH5b unsure steam is an emergency');
+assert(eventsOf(wh5b).indexOf('diy_tier_shown:basic') === -1, 'WH5b shows no DIY tier');
+const whWater = walk('ask', ms1.concat(['landing_outdoor_unit', 'water_near_outdoor_electrical']));
+assert(whWater.result === 'ms_outdoor_water_electrical' && whWater.result !== 'electrical' && F.results[whWater.result].outcome === 'emergency_exit' && F.results[whWater.result].gate === 'water_near_electrical', 'outdoor water uses the look-only stop');
+assertNoShutOff([F.results.ms_outdoor_water_electrical.title, F.results.ms_outdoor_water_electrical.explanation, F.results.ms_outdoor_water_electrical.avoid].concat(F.results.ms_outdoor_water_electrical.actions).join('\n'), 'outdoor water shut-off instruction');
+const MS_BACKUP = 'If the home is getting dangerously cold, use safe backup heat per its manufacturer. Never run a space heater near water or the indoor unit. Never use an oven, stove, grill, or generator indoors (carbon monoxide).';
+['ms_heat_auto_fixed_basic', 'ms_defrost_normal_basic', 'ms_outdoor_running_call_pro', 'ms_outdoor_not_running_wave1', 'ms_outdoor_freeze_heat_wave1', 'ms_ice_heat_keep_running', 'ms_cold_exposure', 'ms_heat_not_supported', 'ms_heat_wait_unsure', 'ms_outdoor_unsure', 'ms_ice_unclear_or_heat'].forEach(id => {
+  assert(F.results[id].actions.indexOf(MS_BACKUP) !== -1, 'backup heat line on ' + id);
+  assert(!/plugged into a wall|electric space heaters/i.test(JSON.stringify(F.results[id])), 'no space-heater how-to on ' + id);
+});
+assert(F.nodes['ms.intake.system_confirm'].options.find(op => op.id === 'ductless_multi_zone').next === '@ms_multi_zone_pr2', 'multi-zone stays deferred');
+assert(!F.nodes['ms.zone.which_head'] && !F.nodes['ms.zone.others_ok'] && !F.nodes['ms.zone.isolate_head'], 'zone nodes stay absent');
+assert(F.nodes['ms.ice.stop_observe'].options.find(op => op.id === 'ice_outdoor_heating_or_unsure').next === '@ms_ice_unclear_or_heat', 'ice screen does not loop back to defrost');
+assert(/steam/i.test(F.nodes['ms.heat.defrost_sanity'].body) && /pause/i.test(F.nodes['ms.heat.defrost_sanity'].body) && /whoosh/i.test(F.nodes['ms.heat.defrost_sanity'].body), 'defrost node explains steam, a pause, and a whoosh');
 const covered = new Set();
 [w1, w2, w3, w4, w4b, w5a, w5b, w6, w7, w8].forEach(s => s.answers.forEach(a => { if (a.node.indexOf('ms.') === 0) covered.add(a.node); }));
 F.msPr1.forEach(id => assert(covered.has(id), 'MS-A2 covered ' + id));
+const heatCovered = new Set();
+[wh1, wh2, wh3, whIce, wh4, wh5, wh5b, whWater].forEach(s => s.answers.forEach(a => { if (a.node.indexOf('ms.') === 0) heatCovered.add(a.node); }));
+F.msV1.forEach(id => assert(heatCovered.has(id), 'MS-A2 covered ' + id));
 const openMs = walk('ask', ms1);
 const openAc = walk('ac', gate.concat(['split_central_cool_only']));
 F.stop(openMs); F.stop(openAc);
@@ -1225,7 +1269,8 @@ assert(openMs.node === openAc.node && openMs.node === 'ac.gate.cluster_entry' &&
 const agreeEdges = [];
 Object.keys(F.nodes).forEach(id => F.nodes[id].options.forEach(op => { if (op.id === 'agree_18_terms') agreeEdges.push(id + ':' + op.next); }));
 assert(agreeEdges.length === 1 && agreeEdges[0] === 'ac.session.consent:ac.cool.intake.system_confirm', 'consent is not forked');
-assert(F.results.hp_mini_split_oos.actions[0] === 'Go back home, press Start, and choose “Something else: mini-split, geothermal, other”, then “Ductless mini-split”. It covers cooling problems on a single indoor unit.', 'MS-C14');
+assert(F.results.hp_mini_split_oos.actions[0] === 'Go back home, press Start, and choose “Something else: mini-split, geothermal, other”, then “Ductless mini-split”. It covers cooling and heating problems on a single indoor unit.', 'MS-C14');
+assert(F.results.hp_mini_split_oos.actions[1] === 'For a system with more than one indoor unit, use a technician who works on mini-splits or the manufacturer owner guidance.', 'HP mini-split pointer leaves multi-zone to a pro');
 assert(F.results.out_of_scope_equipment.explanation === 'Window and portable units, packaged systems, and other types are not diagnosed here.', 'MS-C15');
 assert(F.nodes['ms.intake.system_confirm'].body.indexOf('Don’t remove a cover or climb up to check.') !== -1, 'MS-C16');
 assert(F.nodes['ms.head.filter_path_ok'].body.indexOf('If you’d need a ladder, chair, or step stool, stop here.') !== -1, 'MS-C1');
@@ -1243,7 +1288,11 @@ assert(F.results.ms_condensate_leak_wave1.actions[0] === 'Turn the unit Off with
 assert(F.results.ms_condensate_leak_wave1.actions.some(action => action === 'If you see sparks or smoke, or smell burning, get out and call 911 from outside.'), 'condensate call_pro says to call 911 for sparks or smoke');
 assert(F.results.ms_ice_cooling_wave1.actions.some(action => action === 'If you see sparks or smoke, or smell burning, get out and call 911 from outside.'), 'ice call_pro says to call 911 for sparks or smoke');
 assert(F.results.ms_error_code_wave1.avoid === 'Don’t follow repair steps from a code list.', 'error-code avoid line');
-assert(F.nodes['ms.head.airflow_result'].options.find(op => op.id === 'improved_ok').label === 'Better. Airflow is back to normal', 'weak-air success says airflow is back to normal');
+assert(F.nodes['ms.head.airflow_result'].options.find(op => op.id === 'improved_ok').label === 'Better. Strong air at the right temperature now.', 'airflow success is mode-neutral');
+assert(F.nodes['ms.landing.picker'].options.find(op => op.id === 'landing_weak_airflow').label === 'Weak air from the indoor unit while cooling', 'weak-air landing stays a cooling path');
+assert(appText.includes('cooling and heating checks for remote or app settings'), 'safety page names mini-split heating');
+assert(appText.includes('Look at the outdoor unit only from a window or dry ground.'), 'sidebar names the outdoor look');
+assert(fs.readFileSync(path.join(__dirname, '../docs/ac-second-opinion/legal/disclaimer-change-log.md'), 'utf8').indexOf('| D-014 |') !== -1, 'disclaimer log has D-014');
 assert(F.nodes['ms.head.water_observe'].options.find(op => op.id === 'water_unsure_electrical').next === '@ms_unsure_water_electrical', 'mini-split unsure water uses the look-only twin');
 assert(!/wet hands/i.test(JSON.stringify(F.results.ms_unsure_water_electrical)) && /wet hands/i.test(F.results.unsure_water_electrical.avoid), 'unsure-water twin drops wet-hands wording; the shared result keeps it');
 assert(F.nodes['ac.cool.intake.system_confirm'].options.find(op => op.id === 'heat_pump').hint === 'A heat pump heats and cools. Leave this cooling-only check and continue on the air-source heat pump check.', 'AC heat-pump choice leaves the cooling-only check');
@@ -1291,7 +1340,7 @@ function scanMsCopy(text, where) {
     }
   });
 }
-F.msPr1.forEach(id => {
+F.msPr1.concat(F.msV1).forEach(id => {
   const node = F.nodes[id];
   scanMsCopy(node.title, id + ' title');
   scanMsCopy(node.body, id + ' body');
@@ -1313,9 +1362,36 @@ Object.keys(F.results).filter(id => id.indexOf('ms_') === 0 || id === 'unsure_wa
   const res = F.results[id];
   assertNoShutOff([res.title, res.urgency, res.explanation, res.avoid].concat(res.actions || []).join('\n'), 'shut-off instruction in ' + id);
 });
-F.msPr1.forEach(id => {
+F.msPr1.concat(F.msV1).forEach(id => {
   const node = F.nodes[id];
   assertNoShutOff([node.title, node.body, node.caution].concat(node.options.map(op => [op.label, op.hint, op.fact].join('\n'))).join('\n'), 'shut-off instruction in ' + id);
+});
+const heatBan = /ladder|chemical|unplug|\btools?\b|shut power|@electrical/i;
+F.msV1.forEach(id => {
+  const node = F.nodes[id];
+  const blob = [node.title, node.body, node.caution].concat(node.options.map(op => [op.label, op.hint, op.fact].join('\n'))).join('\n');
+  assert(!heatBan.test(blob), 'heat node avoids banned wording ' + id + ' ' + (blob.match(heatBan) || [''])[0]);
+});
+['ms_heat_settings_fixed_basic', 'ms_heat_auto_fixed_basic', 'ms_defrost_normal_basic', 'ms_outdoor_running_call_pro', 'ms_outdoor_not_running_wave1', 'ms_outdoor_freeze_heat_wave1', 'ms_ice_heat_keep_running', 'ms_cold_exposure', 'ms_heat_not_supported', 'ms_heat_wait_unsure', 'ms_outdoor_unsure', 'ms_outdoor_water_electrical'].forEach(id => {
+  const res = F.results[id];
+  const blob = [res.title, res.urgency, res.explanation, res.avoid].concat(res.actions || []).join('\n');
+  assert(!heatBan.test(blob), 'heat result avoids banned wording ' + id + ' ' + (blob.match(heatBan) || [''])[0]);
+});
+const instruct = /\b(press|button|punch-?out|hot water|salt|cover the (outdoor )?unit)\b/i;
+const instructOk = /^(Don’t|Do not|No |Never)/i;
+function assertNoInstruct(text, where) {
+  msSentences(text).forEach(sentence => {
+    if (instruct.test(sentence) && !instructOk.test(sentence)) assert(false, 'instruction word in ' + where + ': ' + sentence);
+  });
+}
+F.msV1.forEach(id => {
+  const node = F.nodes[id];
+  [node.title, node.body, node.caution].forEach(text => assertNoInstruct(text, id));
+  node.options.forEach(op => ['label', 'hint', 'fact'].forEach(key => assertNoInstruct(op[key], id + '/' + op.id)));
+});
+['ms_heat_settings_fixed_basic', 'ms_heat_auto_fixed_basic', 'ms_defrost_normal_basic', 'ms_outdoor_running_call_pro', 'ms_outdoor_not_running_wave1', 'ms_outdoor_freeze_heat_wave1', 'ms_ice_heat_keep_running', 'ms_cold_exposure', 'ms_heat_not_supported', 'ms_heat_wait_unsure', 'ms_outdoor_unsure', 'ms_outdoor_water_electrical', 'ms_ice_unclear_or_heat'].forEach(id => {
+  const res = F.results[id];
+  [res.title, res.urgency, res.explanation, res.avoid].concat(res.actions || []).forEach((text, index) => assertNoInstruct(text, id + ' field ' + index));
 });
 assert(!/mini-splits? (are|is) (excluded|later)|later phase|aren't covered here yet|not part of this check yet/i.test(appText + '\n' + fs.readFileSync(path.join(__dirname, '../README.md'), 'utf8')), 'public copy still treats mini-splits as later');
 function msLeaves(flag) {
@@ -1336,7 +1412,7 @@ function msLeaves(flag) {
       assert(!resumed, 'MS-A5 resume ' + s.result);
       continue;
     }
-    if (depth > 9) throw new Error('MS depth at ' + s.node);
+    if (depth > 10) throw new Error('MS depth at ' + s.node);
     F.viewNode(s.node, s).options.forEach(op => {
       const c = JSON.parse(JSON.stringify(s));
       F.answer(c, op.id, { agreed: true, termsVersion: 'beta-2026-09-13' });
@@ -1348,8 +1424,8 @@ function msLeaves(flag) {
 const msOff = msLeaves(false);
 const msOn = msLeaves(true);
 globalThis.SW_CONFIG.advancedRepairsEnabled = false;
-assert(msOff.out.length === 350 && msOff.out.join('|') === msOn.out.join('|'), 'MS-A4 leaf set is 350 and identical with Advanced on');
-assert(msOff.maxDepth <= 9, 'MS-A5 depth ' + msOff.maxDepth);
+assert(msOff.out.length === 1711 && msOff.out.join('|') === msOn.out.join('|'), 'MS-A4 leaf set is 1711 and identical with Advanced on');
+assert(msOff.maxDepth === 11, 'MS-A5 depth ' + msOff.maxDepth);
 const hpDigestLines = [];
 Object.keys(F.nodes).filter(id => id.indexOf('hp.') === 0).sort().forEach(id => {
   F.nodes[id].options.forEach(op => {
@@ -1365,7 +1441,7 @@ function finish() {
     console.error(failed + ' failed');
     process.exit(1);
   }
-  console.log('AC Wave-2, HP Wave-1, WSHP Wave-1 PR-1, furnace Wave-1, and mini-split PR1 sanity passed');
+  console.log('AC Wave-2, HP Wave-1, WSHP Wave-1 PR-1, furnace Wave-1, and mini-split heat v1 sanity passed');
 }
 
 function bootPage() {
@@ -1591,6 +1667,55 @@ function pageChecks() {
     assert(doc.querySelector('.result-heading.emergency'), 'mini-split water/electrical renders an emergency result');
     assertNoShutOff(rendered(), 'mini-split water/electrical page shut-off instruction');
     assert(!doc.getElementById('flow-error'), 'mini-split water/electrical has no error');
+    await home();
+    click(doc.querySelector('[data-answer="none_of_these"]'));
+    await flush();
+    await acceptAndContinue();
+    await clickPath(['other_heat_or_ductless', 'ductless_mini_split', 'ductless_single_zone', 'landing_no_heat']);
+    assert(doc.querySelector('h1').textContent === 'Set Heat and give it time to warm up', 'heat-mode question is on screen');
+    assert(norm(doc.querySelector('.sidebar')).indexOf('Look at the outdoor unit only from a window or dry ground.') !== -1, 'heat path sidebar keeps the outdoor look limit');
+    answer('heat_fixed_after_setting');
+    await flush();
+    assert(window.location.hash === '#/result', 'heat-mode basic path reaches a result');
+    assert(doc.querySelector('h1').textContent === 'Leave it in Heat.', 'heat-mode basic success title');
+    assert(doc.querySelector('.pill').textContent === 'Basic homeowner check', 'heat-mode basic tier renders');
+    assert(doc.getElementById('service-note') && doc.getElementById('service-note').textContent.indexOf('User set Heat, a setting above the room, a normal fan, and no timer. Heating returned.') !== -1, 'heat-mode note records the setting change');
+    assert(!doc.getElementById('flow-error'), 'heat-mode basic result has no error');
+    await home();
+    click(doc.querySelector('[data-answer="none_of_these"]'));
+    await flush();
+    await acceptAndContinue();
+    await clickPath(['other_heat_or_ductless', 'ductless_mini_split', 'ductless_single_zone', 'landing_no_heat', 'mode_was_auto', 'forced_heat_still_problem', 'defrost_then_heat_fine']);
+    assert(window.location.hash === '#/result', 'normal defrost reaches a result');
+    assert(doc.querySelector('h1').textContent === 'That pause was a normal defrost.', 'normal defrost title');
+    assert(doc.querySelector('.pill').textContent === 'Basic homeowner check', 'normal defrost tier renders');
+    const defrostText = rendered().toLowerCase();
+    assert(defrostText.indexOf('steam') !== -1 && defrostText.indexOf('pause') !== -1 && defrostText.indexOf('whoosh') !== -1, 'normal defrost page names steam, a pause, and a whoosh');
+    assert(!doc.getElementById('flow-error'), 'normal defrost result has no error');
+    await home();
+    click(doc.querySelector('[data-answer="none_of_these"]'));
+    await flush();
+    await acceptAndContinue();
+    await clickPath(['other_heat_or_ductless', 'ductless_mini_split', 'ductless_single_zone', 'landing_no_heat', 'heat_settings_right_still_problem', 'outdoor_iced_solid_no_recover']);
+    assert(window.location.hash === '#/result', 'ice that keeps building reaches a result');
+    assert(doc.querySelector('h1').textContent === 'Thick ice on the outdoor unit in heat needs a pro.', 'ice that keeps building title');
+    assert(doc.querySelector('.pill').textContent === 'Professional guidance', 'ice that keeps building is call_pro');
+    assert(!doc.querySelector('.result-heading.emergency'), 'ice that keeps building is not an emergency result');
+    assert(doc.getElementById('service-note') && doc.getElementById('service-note').textContent.indexOf('HOMEOWNER SERVICE NOTE — mini-split observations, not a diagnosis') === 0, 'ice that keeps building note renders');
+    assertNoShutOff(rendered(), 'ice that keeps building page shut-off instruction');
+    assert(!doc.getElementById('flow-error'), 'ice that keeps building has no error');
+    await home();
+    click(doc.querySelector('[data-answer="none_of_these"]'));
+    await flush();
+    await acceptAndContinue();
+    await clickPath(['other_heat_or_ductless', 'ductless_mini_split', 'ductless_single_zone', 'landing_no_heat', 'cold_exposure_risk']);
+    assert(window.location.hash === '#/result', 'cold exposure reaches a result');
+    assert(doc.querySelector('h1').textContent === 'Get the person warm first.', 'cold exposure title');
+    assert(doc.querySelector('.result-heading.emergency'), 'cold exposure renders an emergency result');
+    assert(rendered().indexOf('call 911 now') !== -1, 'cold exposure says to call 911');
+    assert(doc.querySelector('.legal-footer') && doc.querySelector('.legal-footer').textContent === EMERGENCY_LINE, 'cold exposure shows the emergency result line');
+    assertNoShutOff(rendered(), 'cold exposure page shut-off instruction');
+    assert(!doc.getElementById('flow-error'), 'cold exposure has no error');
     await home();
     click(doc.querySelector('[data-answer="none_of_these"]'));
     await flush();
