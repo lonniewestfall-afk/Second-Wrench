@@ -1,0 +1,2129 @@
+[
+  {
+    "id": "HW-T6.HOLD.01/1",
+    "brand": "Honeywell Home (Resideo)",
+    "model": "T6 Pro Smart Thermostat",
+    "gen": "unspecified",
+    "firmware_range": {
+      "min": null,
+      "max": null,
+      "fw_sensitive": true,
+      "basis": "Not stated in source. Wi-Fi model."
+    },
+    "step_id": "HW-T6.HOLD.01",
+    "screen": 1,
+    "menu_path": [
+      "Home screen",
+      "Hold Until"
+    ],
+    "lines": [
+      {
+        "label": "Permanent Hold",
+        "type": "option",
+        "selected": false,
+        "verified": "figure",
+        "condition": null,
+        "note": "top left (p.6 figure)"
+      },
+      {
+        "label": "Hold Until",
+        "type": "status",
+        "selected": false,
+        "verified": "figure",
+        "condition": null,
+        "note": "top right, with the end time"
+      },
+      {
+        "label": "Run Schedule",
+        "type": "option",
+        "selected": false,
+        "verified": "figure",
+        "condition": null,
+        "note": "centre"
+      }
+    ],
+    "buttons": [
+      {
+        "label": "Back",
+        "on_screen_text": "Back",
+        "kind": "text",
+        "verified": "figure",
+        "note": "bottom left (p.6 figure)"
+      }
+    ],
+    "source_url": "https://customer.resideo.com/resources/Techlit/TechLitDocuments/33-00000s/33-00410EFS.pdf",
+    "source_pages": "p.6 (hold screen figures in both hold procedures), p.7 (vacation hold text)",
+    "source_version": "T6 Pro Smart Thermostat guide, doc. 33-00410EFS-03 (PDF date not recorded; retrieved 2026-10-10)",
+    "source_host": "official",
+    "verified_status": "verified",
+    "verified_basis": "source_text",
+    "verified_by": "Second Wrench research worker (AI-assisted, single pass)",
+    "verified_on": "2026-10-10",
+    "second_check_by": "Tree Lead",
+    "second_check_on": "2026-10-10",
+    "recheck_cadence": "90d",
+    "recheck_due": "2027-01-08",
+    "verification_notes": [
+      "Labels match settings-matrix.md HW-T6.HOLD.01. Order of the two choices is from the guide text, not a figure.",
+      "2026-10-10 Tree Lead blind second check: FAIL (mirror-second-check.md #1). Fixed against the primary source, not the matrix: Hold screen reordered to the p.6 figure (Permanent Hold, Hold Until, Run Schedule) and the Back key added. Held until Tree Lead re-checks it.",
+      "2026-10-10 Tree Lead re-check: PASS. verified_on reset to the check date (shown in the LC-4 caption). Un-held in v3.1."
+    ],
+    "our_instruction_text": [
+      "After you change the temperature, the home screen shows Hold Until with an end time.",
+      "To go back to your schedule, touch Hold Until, then Run Schedule.",
+      "To keep this temperature until you change it, touch Hold Until, then Permanent Hold. To end it later, touch Permanent Hold, then Run Schedule.",
+      "A vacation hold set in the app also ends when you choose Run Schedule here."
+    ]
+  },
+  {
+    "id": "HW-T9.HOLD.01/1",
+    "brand": "Honeywell Home (Resideo)",
+    "model": "T9 Smart Thermostat (RCHT9510WF / RCHT9610WF families)",
+    "gen": "unspecified",
+    "firmware_range": {
+      "min": null,
+      "max": null,
+      "fw_sensitive": true,
+      "basis": "Not stated in source. Wi-Fi model."
+    },
+    "step_id": "HW-T9.HOLD.01",
+    "screen": 1,
+    "menu_path": [
+      "Home screen",
+      "Hold until"
+    ],
+    "lines": [
+      {
+        "label": "Hold until",
+        "type": "status",
+        "selected": false,
+        "verified": "text",
+        "condition": "Shows only when a schedule is running",
+        "note": "shown with a time"
+      },
+      {
+        "label": "Next Period",
+        "type": "option",
+        "selected": false,
+        "verified": "text",
+        "condition": null,
+        "note": null
+      },
+      {
+        "label": "A Specific Time",
+        "type": "option",
+        "selected": false,
+        "verified": "text",
+        "condition": null,
+        "note": null
+      },
+      {
+        "label": "Permanently",
+        "type": "option",
+        "selected": false,
+        "verified": "text",
+        "condition": null,
+        "note": null
+      },
+      {
+        "label": "Remove hold",
+        "type": "option",
+        "selected": false,
+        "verified": "text",
+        "condition": null,
+        "note": "cancels the hold"
+      }
+    ],
+    "buttons": [
+      {
+        "label": "Done",
+        "on_screen_text": "Done",
+        "kind": "text",
+        "verified": "text"
+      }
+    ],
+    "source_url": "https://digitalassets.resideo.com/damroot/Original/10015/33-00478.pdf",
+    "source_pages": "p.17",
+    "source_version": "Honeywell Home T9 Smart Thermostat User Guide, doc. 33-00478-04 (PDF dated 2022-06-23)",
+    "source_host": "official",
+    "verified_status": "verified",
+    "verified_basis": "source_text",
+    "verified_by": "Second Wrench research worker (AI-assisted, single pass)",
+    "verified_on": "2026-10-10",
+    "second_check_by": "Tree Lead",
+    "second_check_on": "2026-10-10",
+    "recheck_cadence": "90d",
+    "recheck_due": "2027-01-08",
+    "verification_notes": [
+      "Option order follows the guide's bullet list on p.17. In Auto, the guide has you pick the heat or cool side first.",
+      "2026-10-10 Tree Lead blind second check: PASS (mirror-second-check.md #2). verified_on is reset to that check date (unchanged, 2026-10-10)."
+    ],
+    "our_instruction_text": [
+      "After you change the temperature, Hold until and a time appear on the home screen.",
+      "Touch it. Pick Remove hold to go back to your schedule.",
+      "Or pick how long to keep the change: until the next scheduled time, until a time you choose, or permanently.",
+      "Tap Done to return to the home screen."
+    ]
+  },
+  {
+    "id": "HW-T9.WIFI.01/1",
+    "brand": "Honeywell Home (Resideo)",
+    "model": "T9 Smart Thermostat (RCHT9510WF / RCHT9610WF families)",
+    "gen": "unspecified",
+    "firmware_range": {
+      "min": null,
+      "max": null,
+      "fw_sensitive": true,
+      "basis": "Not stated in source. Wi-Fi model."
+    },
+    "step_id": "HW-T9.WIFI.01",
+    "screen": 1,
+    "menu_path": [
+      "Home screen",
+      "Menu"
+    ],
+    "lines": [
+      {
+        "label": "[other menu items above: not shown]",
+        "type": "placeholder",
+        "selected": false,
+        "verified": "figure",
+        "condition": null,
+        "note": "only the CONFIGURATION group is mirrored"
+      },
+      {
+        "label": "CONFIGURATION",
+        "type": "section_header",
+        "selected": false,
+        "verified": "figure",
+        "condition": null,
+        "note": null
+      },
+      {
+        "label": "Wi-Fi",
+        "type": "option",
+        "selected": false,
+        "verified": "figure",
+        "condition": null,
+        "note": null
+      },
+      {
+        "label": "Connect App",
+        "type": "option",
+        "selected": false,
+        "verified": "figure",
+        "condition": null,
+        "note": null
+      },
+      {
+        "label": "Connect HomeKit",
+        "type": "option",
+        "selected": false,
+        "verified": "figure",
+        "condition": null,
+        "note": null
+      },
+      {
+        "label": "Security",
+        "type": "option",
+        "selected": false,
+        "verified": "figure",
+        "condition": null,
+        "note": null
+      },
+      {
+        "label": "Preferences",
+        "type": "option",
+        "selected": false,
+        "verified": "figure",
+        "condition": null,
+        "note": null
+      },
+      {
+        "label": "Advanced Setup",
+        "type": "option",
+        "selected": false,
+        "verified": "figure",
+        "condition": null,
+        "note": "not used by this guide"
+      }
+    ],
+    "buttons": [],
+    "source_url": "https://digitalassets.resideo.com/damroot/Original/10015/33-00478.pdf",
+    "source_pages": "p.13 (CONFIGURATION menu figure)",
+    "source_version": "Honeywell Home T9 Smart Thermostat User Guide, doc. 33-00478-04 (PDF dated 2022-06-23)",
+    "source_host": "official",
+    "verified_status": "verified",
+    "verified_basis": "source_figure",
+    "verified_by": "Second Wrench research worker (AI-assisted, single pass)",
+    "verified_on": "2026-10-10",
+    "second_check_by": "Tree Lead",
+    "second_check_on": "2026-10-10",
+    "recheck_cadence": "90d",
+    "recheck_due": "2027-01-08",
+    "verification_notes": [
+      "CONFIGURATION items as listed in settings-matrix.md HW-T9.WIFI.01 (verified, manual figure). Items above CONFIGURATION are not mirrored.",
+      "2026-10-10 Tree Lead blind second check: PASS (mirror-second-check.md #3). verified_on is reset to that check date (unchanged, 2026-10-10)."
+    ],
+    "our_instruction_text": [
+      "Tap the screen to wake it, then tap the menu icon at the bottom.",
+      "Scroll down to the CONFIGURATION group and tap Wi-Fi.",
+      "Don’t open Advanced Setup. It holds setup and reset options this guide doesn’t use."
+    ]
+  },
+  {
+    "id": "HW-T9.WIFI.01/2",
+    "brand": "Honeywell Home (Resideo)",
+    "model": "T9 Smart Thermostat (RCHT9510WF / RCHT9610WF families, per guide cover)",
+    "gen": "unspecified (guide covers one T9 generation)",
+    "firmware_range": {
+      "min": null,
+      "max": null,
+      "fw_sensitive": true,
+      "basis": "Not stated in source. Mirror reflects the screens in guide 33-00478-04."
+    },
+    "step_id": "HW-T9.WIFI.01",
+    "screen": 2,
+    "menu_path": [
+      "Home screen",
+      "Menu",
+      "CONFIGURATION: Wi-Fi",
+      "Wi-Fi"
+    ],
+    "lines": [
+      {
+        "label": "Wi-Fi",
+        "type": "title",
+        "selected": false,
+        "verified": "figure",
+        "condition": null,
+        "note": null
+      },
+      {
+        "label": "Enable Wi-Fi",
+        "type": "toggle",
+        "selected": true,
+        "verified": "figure",
+        "condition": null,
+        "note": "shown switched on"
+      },
+      {
+        "label": "WI-FI NETWORK",
+        "type": "section_header",
+        "selected": false,
+        "verified": "figure",
+        "condition": null,
+        "note": null
+      },
+      {
+        "label": "Not connected",
+        "type": "status",
+        "selected": false,
+        "verified": "figure",
+        "condition": null,
+        "note": "example state; shows your network name or status"
+      }
+    ],
+    "buttons": [
+      {
+        "label": "Back",
+        "on_screen_text": null,
+        "kind": "icon",
+        "verified": "figure",
+        "note": "left-arrow icon, no text"
+      },
+      {
+        "label": "Info",
+        "on_screen_text": null,
+        "kind": "icon",
+        "verified": "figure",
+        "note": "'i' icon, top right"
+      },
+      {
+        "label": "Choose Network...",
+        "on_screen_text": "Choose Network...",
+        "kind": "text",
+        "verified": "figure"
+      }
+    ],
+    "source_url": "https://digitalassets.resideo.com/damroot/Original/10015/33-00478.pdf",
+    "source_pages": "p.12 (Connect to Wi-Fi steps), p.13 (Wi-Fi screen figure; CONFIGURATION menu figure)",
+    "source_version": "Honeywell Home T9 Smart Thermostat User Guide, doc. 33-00478-04 (PDF dated 2022-06-23)",
+    "source_host": "official",
+    "verified_status": "verified",
+    "verified_basis": "source_figure",
+    "verified_by": "Second Wrench research worker (AI-assisted, single pass)",
+    "verified_on": "2026-10-10",
+    "second_check_by": "Tree Lead",
+    "second_check_on": "2026-10-10",
+    "recheck_cadence": "90d",
+    "recheck_due": "2027-01-08",
+    "verification_notes": [
+      "Every line and button matches the p.13 Wi-Fi screen figure. The button reads 'Choose Network...' with trailing dots; the body text writes 'Choose network'. The mirror follows the figure.",
+      "2026-10-10 Tree Lead blind second check: PASS (mirror-second-check.md #4). verified_on is reset to that check date (unchanged, 2026-10-10)."
+    ],
+    "our_instruction_text": [
+      "Make sure Enable Wi-Fi is switched on.",
+      "Tap Choose Network..., pick your home network from the list, and type its password.",
+      "Moving to a new router or password? Come back to this screen and tap Choose Network... again.",
+      "Still won’t connect? Restart your router. Don’t change any setting marked for installers."
+    ]
+  },
+  {
+    "id": "ECB-PRM.FAN.01/2",
+    "brand": "ecobee",
+    "model": "Smart Thermostat Premium",
+    "gen": "Premium (manual v1, 2022)",
+    "firmware_range": {
+      "min": null,
+      "max": null,
+      "fw_sensitive": true,
+      "basis": "Not stated in source."
+    },
+    "step_id": "ECB-PRM.FAN.01",
+    "screen": 2,
+    "menu_path": [
+      "Home screen",
+      "Menu",
+      "Main Menu (System tab)",
+      "Fan icon",
+      "Fan Mode"
+    ],
+    "lines": [
+      {
+        "label": "Main Menu",
+        "type": "title",
+        "selected": false,
+        "verified": "figure",
+        "condition": null,
+        "note": null
+      },
+      {
+        "label": "Fan Mode",
+        "type": "subtitle",
+        "selected": false,
+        "verified": "figure",
+        "condition": null,
+        "note": null
+      },
+      {
+        "label": "Auto",
+        "type": "toggle_option",
+        "selected": true,
+        "verified": "figure",
+        "condition": null,
+        "note": null
+      },
+      {
+        "label": "On",
+        "type": "toggle_option",
+        "selected": false,
+        "verified": "figure",
+        "condition": null,
+        "note": null
+      },
+      {
+        "label": "[fan run-time message: not copied]",
+        "type": "placeholder",
+        "selected": false,
+        "verified": "figure",
+        "condition": null,
+        "note": "two explanatory sentences on the real screen"
+      },
+      {
+        "label": "15 min / hour",
+        "type": "dropdown_value",
+        "selected": false,
+        "verified": "figure",
+        "condition": null,
+        "note": "example value as shown in the figure"
+      }
+    ],
+    "buttons": [
+      {
+        "label": "Close",
+        "on_screen_text": null,
+        "kind": "icon",
+        "verified": "figure",
+        "note": "'x' icon, top left"
+      }
+    ],
+    "source_url": "https://downloads.ctfassets.net/a3qyhfznts9y/55gpc6jhRTJ7KjXDjxDRzu/ad17b04461596be3b00b9c65d6e3a895/ecobee_Premium_install-setup-user_manual_v1.pdf",
+    "source_pages": "p.72 ('Fan Mode' section and figure)",
+    "source_version": "ecobee Smart Thermostat Premium Installation, Setup and User Guide, v1 (PDF dated 2022-07-11)",
+    "source_host": "official",
+    "verified_status": "verified",
+    "verified_basis": "source_figure",
+    "verified_by": "Second Wrench research worker (AI-assisted, single pass)",
+    "verified_on": "2026-10-10",
+    "second_check_by": "Tree Lead",
+    "second_check_on": "2026-10-10",
+    "recheck_cadence": "90d",
+    "recheck_due": "2027-01-08",
+    "verification_notes": [
+      "Matches the p.72 figure. Fan Hold durations (15 minutes, 30 minutes, 45 minutes, 1 hour, 2 hours, Indefinitely) from p.72 text.",
+      "The matrix now lists ECB-PRM.FAN.02 (the '15 min / hour' drop-down) as verified (manual figure); the sample's note saying unverified is superseded.",
+      "2026-10-10 Tree Lead blind second check: FAIL (mirror-second-check.md #5). Fixed against the primary source, not the matrix: Fan Hold line removed from the mirrored Fan Mode screen; the p.72 figure doesn’t show it. Fan Hold stays in the instruction text (p.72 step 2). Held until Tree Lead re-checks it.",
+      "2026-10-10 Tree Lead re-check: PASS. verified_on reset to the check date (shown in the LC-4 caption). Un-held in v3.1."
+    ],
+    "our_instruction_text": [
+      "On the main screen, tap the menu icon (three short lines).",
+      "The menu opens on its System tab. Tap the fan symbol in the row along the bottom.",
+      "Tap On to run the fan now, or Auto to let it run only when heating or cooling needs it.",
+      "For a fan run with an end time, tap Fan Hold and pick how long. Tap the X at the top left to leave."
+    ]
+  },
+  {
+    "id": "ECB-PRM.FAN.02/1",
+    "brand": "ecobee",
+    "model": "Smart Thermostat Premium",
+    "gen": "Premium (manual v1, 2022)",
+    "firmware_range": {
+      "min": null,
+      "max": null,
+      "fw_sensitive": true,
+      "basis": "Not stated in source."
+    },
+    "step_id": "ECB-PRM.FAN.02",
+    "screen": 1,
+    "menu_path": [
+      "Home screen",
+      "Menu",
+      "Main Menu (System tab)",
+      "Fan icon",
+      "Fan Mode"
+    ],
+    "lines": [
+      {
+        "label": "Main Menu",
+        "type": "title",
+        "selected": false,
+        "verified": "figure",
+        "condition": null,
+        "note": null
+      },
+      {
+        "label": "Fan Mode",
+        "type": "subtitle",
+        "selected": false,
+        "verified": "figure",
+        "condition": null,
+        "note": null
+      },
+      {
+        "label": "Auto",
+        "type": "toggle_option",
+        "selected": true,
+        "verified": "figure",
+        "condition": null,
+        "note": null
+      },
+      {
+        "label": "On",
+        "type": "toggle_option",
+        "selected": false,
+        "verified": "figure",
+        "condition": null,
+        "note": null
+      },
+      {
+        "label": "[fan run-time message: not copied]",
+        "type": "placeholder",
+        "selected": false,
+        "verified": "figure",
+        "condition": null,
+        "note": null
+      },
+      {
+        "label": "15 min / hour",
+        "type": "dropdown_value",
+        "selected": false,
+        "verified": "figure",
+        "condition": null,
+        "note": "example value; this is the minimum fan time"
+      }
+    ],
+    "buttons": [
+      {
+        "label": "Close",
+        "on_screen_text": null,
+        "kind": "icon",
+        "verified": "figure",
+        "note": "'x' icon, top left"
+      }
+    ],
+    "source_url": "https://downloads.ctfassets.net/a3qyhfznts9y/55gpc6jhRTJ7KjXDjxDRzu/ad17b04461596be3b00b9c65d6e3a895/ecobee_Premium_install-setup-user_manual_v1.pdf",
+    "source_pages": "p.72 (figure); behaviour p.71",
+    "source_version": "ecobee Smart Thermostat Premium Installation, Setup and User Guide, v1 (PDF dated 2022-07-11)",
+    "source_host": "official",
+    "verified_status": "verified",
+    "verified_basis": "source_figure",
+    "verified_by": "Second Wrench research worker (AI-assisted, single pass)",
+    "verified_on": "2026-10-10",
+    "second_check_by": "Tree Lead",
+    "second_check_on": "2026-10-10",
+    "recheck_cadence": "90d",
+    "recheck_due": "2027-01-08",
+    "verification_notes": [
+      "Matches settings-matrix.md ECB-PRM.FAN.02 (verified, manual figure p.72). Same screen as ECB-PRM.FAN.01/2 without the Fan Hold line.",
+      "2026-10-10 Tree Lead blind second check: PASS (mirror-second-check.md #6). verified_on is reset to that check date (unchanged, 2026-10-10)."
+    ],
+    "our_instruction_text": [
+      "On the main screen, tap the menu icon (three short lines), then the fan symbol along the bottom.",
+      "Set the fan to Auto.",
+      "The min / hour setting makes the fan run that many minutes every hour, even when the system is idle. If the fan seems to run all the time, tap it and turn it down to zero.",
+      "Tap the X at the top left to leave."
+    ]
+  },
+  {
+    "id": "HW-FP6.MODE.01/1",
+    "brand": "Honeywell Home (Resideo)",
+    "model": "FocusPRO TH6110D / TH6220D",
+    "gen": "unspecified",
+    "firmware_range": {
+      "min": null,
+      "max": null,
+      "fw_sensitive": false,
+      "basis": "Non-Wi-Fi model; firmware not stated."
+    },
+    "step_id": "HW-FP6.MODE.01",
+    "screen": 1,
+    "menu_path": [
+      "Front panel",
+      "System button"
+    ],
+    "lines": [
+      {
+        "label": "Heat",
+        "type": "option",
+        "selected": false,
+        "verified": "text",
+        "condition": null,
+        "note": "one mode shows at a time"
+      },
+      {
+        "label": "Cool",
+        "type": "option",
+        "selected": false,
+        "verified": "text",
+        "condition": null,
+        "note": null
+      },
+      {
+        "label": "Off",
+        "type": "option",
+        "selected": false,
+        "verified": "text",
+        "condition": null,
+        "note": null
+      },
+      {
+        "label": "Auto",
+        "type": "option",
+        "selected": false,
+        "verified": "text",
+        "condition": "Only if set up at installation",
+        "note": null
+      },
+      {
+        "label": "Em Heat",
+        "type": "option",
+        "selected": false,
+        "verified": "text",
+        "condition": "Heat pumps with backup heat only",
+        "note": null
+      }
+    ],
+    "buttons": [
+      {
+        "label": "System",
+        "on_screen_text": "System",
+        "kind": "physical",
+        "verified": "text"
+      }
+    ],
+    "source_url": "https://comfort-pro.com/wp-content/uploads/Honeywell-6000-Tstat.pdf",
+    "source_pages": "p.8 (system setting), p.5 (display callout); 2-up scan, each printed page appears twice",
+    "source_version": "Honeywell FocusPRO TH6110D/TH6220D owner's guide, doc. 69-1715 (third-party host; PDF date not recorded; retrieved 2026-10-10)",
+    "source_host": "unofficial",
+    "verified_status": "verified",
+    "verified_basis": "source_text",
+    "verified_by": "Second Wrench research worker (AI-assisted, single pass)",
+    "verified_on": "2026-10-10",
+    "second_check_by": "Tree Lead",
+    "second_check_on": "2026-10-10",
+    "recheck_cadence": "12m",
+    "recheck_due": "2027-10-10",
+    "verification_notes": [
+      "Button System and mode Em Heat confirmed per settings-matrix.md. Mode order as the manual lists it. Compare case against a figure at second check (H4).",
+      "2026-10-10 Tree Lead blind second check: PASS (mirror-second-check.md #7). verified_on is reset to that check date (unchanged, 2026-10-10)."
+    ],
+    "our_instruction_text": [
+      "Press System. Each press moves to the next mode.",
+      "Stop when the display shows Heat or Cool.",
+      "Auto and Em Heat show only on some setups. If the mode you need isn’t there, an installer has to turn it on."
+    ]
+  },
+  {
+    "id": "HW-RTH76.MODE.01/1",
+    "brand": "Honeywell Home (Resideo)",
+    "model": "RTH7600D",
+    "gen": "unspecified",
+    "firmware_range": {
+      "min": null,
+      "max": null,
+      "fw_sensitive": false,
+      "basis": "Non-Wi-Fi model; firmware not stated."
+    },
+    "step_id": "HW-RTH76.MODE.01",
+    "screen": 1,
+    "menu_path": [
+      "Home screen",
+      "System & Fan",
+      "System",
+      "Done"
+    ],
+    "lines": [
+      {
+        "label": "[mode name shows on the display: not mirrored]",
+        "type": "placeholder",
+        "selected": false,
+        "verified": "text",
+        "condition": null,
+        "note": "only the button name is verified"
+      }
+    ],
+    "buttons": [
+      {
+        "label": "System & Fan",
+        "on_screen_text": "System & Fan",
+        "kind": "text",
+        "verified": "figure",
+        "note": "touchscreen key (M27527)"
+      },
+      {
+        "label": "System",
+        "on_screen_text": "System",
+        "kind": "text",
+        "verified": "figure",
+        "note": "touchscreen key (M27529)"
+      },
+      {
+        "label": "Done",
+        "on_screen_text": "Done",
+        "kind": "text",
+        "verified": "figure",
+        "note": "touchscreen key (M27529)"
+      }
+    ],
+    "source_url": "https://customer.resideo.com/resources/Techlit/TechLitDocuments/69-0000s/69-2207ES.pdf",
+    "source_pages": "p.8 (system setting; figures M27527, M27529)",
+    "source_version": "Honeywell RTH7600 operating manual, doc. 69-2207ES-05 (Resideo-hosted; printed page numbers; retrieved 2026-10-10)",
+    "source_host": "official",
+    "verified_status": "verified",
+    "verified_basis": "source_text",
+    "verified_by": "Second Wrench research worker (AI-assisted, single pass)",
+    "verified_on": "2026-10-10",
+    "second_check_by": "Tree Lead",
+    "second_check_on": "2026-10-10",
+    "recheck_cadence": "12m",
+    "recheck_due": "2027-10-10",
+    "verification_notes": [
+      "Matrix status: verified (button name). Mode names are not mirrored.",
+      "2026-10-10 Tree Lead blind second check: FAIL (mirror-second-check.md #8). Fixed against the primary source, not the matrix: Path is now System & Fan > System > Done, with the screen case of the keys (69-2207ES-05 p.8, M27527/M27529). Re-cited to the Resideo -05 copy. Held until Tree Lead re-checks it.",
+      "2026-10-10 Tree Lead re-check: PASS. verified_on reset to the check date (shown in the LC-4 caption). Un-held in v3.1."
+    ],
+    "our_instruction_text": [
+      "Press System & Fan.",
+      "Press System until the display shows Heat or Cool. On a heat pump, pick Heat rather than emergency heat.",
+      "Press Done to save."
+    ]
+  },
+  {
+    "id": "HW-TH4.MODE.01/1",
+    "brand": "Honeywell Home (Resideo)",
+    "model": "PRO TH4000 series",
+    "gen": "unspecified",
+    "firmware_range": {
+      "min": null,
+      "max": null,
+      "fw_sensitive": false,
+      "basis": "Non-Wi-Fi model; firmware not stated."
+    },
+    "step_id": "HW-TH4.MODE.01",
+    "screen": 1,
+    "menu_path": [
+      "Front",
+      "System switch (positions left to right: Cool, Off, Heat, Em.Heat)"
+    ],
+    "lines": [
+      {
+        "label": "Cool",
+        "type": "option",
+        "selected": false,
+        "verified": "figure",
+        "condition": null,
+        "note": "switch position (p.1 device figure)"
+      },
+      {
+        "label": "Off",
+        "type": "option",
+        "selected": false,
+        "verified": "figure",
+        "condition": null,
+        "note": "switch position (p.1 device figure)"
+      },
+      {
+        "label": "Heat",
+        "type": "option",
+        "selected": false,
+        "verified": "figure",
+        "condition": null,
+        "note": "switch position (p.1 device figure)"
+      },
+      {
+        "label": "Em.Heat",
+        "type": "option",
+        "selected": false,
+        "verified": "figure",
+        "condition": "Heat pumps with backup heat only",
+        "note": "switch position, rightmost (p.1 device figure)"
+      }
+    ],
+    "buttons": [
+      {
+        "label": "System",
+        "on_screen_text": "System",
+        "kind": "physical",
+        "verified": "text",
+        "note": "slide switch"
+      }
+    ],
+    "source_url": "https://customer.resideo.com/resources/Techlit/TechLitDocuments/69-0000s/69-1760EFS.pdf",
+    "source_pages": "p.1 (device photo and controls callouts)",
+    "source_version": "Honeywell PRO TH4000 series guide, doc. 69-1760EFS-10 (PDF date not recorded; retrieved 2026-10-10)",
+    "source_host": "official",
+    "verified_status": "verified",
+    "verified_basis": "source_text",
+    "verified_by": "Second Wrench research worker (AI-assisted, single pass)",
+    "verified_on": "2026-10-10",
+    "second_check_by": "Tree Lead",
+    "second_check_on": "2026-10-10",
+    "recheck_cadence": "12m",
+    "recheck_due": "2027-10-10",
+    "verification_notes": [
+      "Matrix status: verified (switch name). Position labels not confirmed, so tagged unverified and hidden.",
+      "2026-10-10 Tree Lead blind second check: FAIL (mirror-second-check.md #9). Fixed against the primary source, not the matrix: Em Heat → Em.Heat, as printed on the switch (p.1 device photo); that line is un-hidden. Cool/Off/Heat are confirmable from the same photo but stay hidden until the re-check. Held until Tree Lead re-checks it.",
+      "2026-10-10 Tree Lead re-check: PASS. verified_on reset to the check date (shown in the LC-4 caption). Un-held in v3.1."
+    ],
+    "our_instruction_text": [
+      "Slide the System switch to Heat for heat or Cool for cooling.",
+      "Use the Em.Heat position only if a pro told you to."
+    ]
+  },
+  {
+    "id": "HW-FP6.HOLD.01/1",
+    "brand": "Honeywell Home (Resideo)",
+    "model": "FocusPRO TH6110D / TH6220D",
+    "gen": "unspecified",
+    "firmware_range": {
+      "min": null,
+      "max": null,
+      "fw_sensitive": false,
+      "basis": "Non-Wi-Fi model; firmware not stated."
+    },
+    "step_id": "HW-FP6.HOLD.01",
+    "screen": 1,
+    "menu_path": [
+      "Front panel"
+    ],
+    "lines": [
+      {
+        "label": "Temporary",
+        "type": "status",
+        "selected": false,
+        "verified": "text",
+        "condition": null,
+        "note": "after using the arrows"
+      },
+      {
+        "label": "Hold",
+        "type": "status",
+        "selected": false,
+        "verified": "text",
+        "condition": null,
+        "note": "after pressing HOLD"
+      }
+    ],
+    "buttons": [
+      {
+        "label": "HOLD",
+        "on_screen_text": "HOLD",
+        "kind": "physical",
+        "verified": "text"
+      },
+      {
+        "label": "Run Schedule",
+        "on_screen_text": "Run Schedule",
+        "kind": "physical",
+        "verified": "text"
+      }
+    ],
+    "source_url": "https://comfort-pro.com/wp-content/uploads/Honeywell-6000-Tstat.pdf",
+    "source_pages": "p.12–13 (schedule override figures), p.4 (controls); 2-up scan",
+    "source_version": "Honeywell FocusPRO TH6110D/TH6220D owner's guide, doc. 69-1715 (third-party host; PDF date not recorded; retrieved 2026-10-10)",
+    "source_host": "unofficial",
+    "verified_status": "verified",
+    "verified_basis": "source_text",
+    "verified_by": "Second Wrench research worker (AI-assisted, single pass)",
+    "verified_on": "2026-10-10",
+    "second_check_by": "Tree Lead",
+    "second_check_on": "2026-10-10",
+    "recheck_cadence": "12m",
+    "recheck_due": "2027-10-10",
+    "verification_notes": [
+      "Labels per settings-matrix.md HW-FP6.HOLD.01. The guide uses both 'Run Schedule' and 'RUN SCHEDULE'; compare against the device or a figure (H4).",
+      "2026-10-10 Tree Lead blind second check: PASS (mirror-second-check.md #10). verified_on is reset to that check date (unchanged, 2026-10-10)."
+    ],
+    "our_instruction_text": [
+      "Temporary on the display means a change made with the arrows. It ends at the next scheduled time.",
+      "Hold means the temperature stays put until you cancel it.",
+      "To go back to your schedule from either one, press Run Schedule."
+    ]
+  },
+  {
+    "id": "HW-RTH76.HOLD.01/1",
+    "brand": "Honeywell Home (Resideo)",
+    "model": "RTH7600D",
+    "gen": "unspecified",
+    "firmware_range": {
+      "min": null,
+      "max": null,
+      "fw_sensitive": false,
+      "basis": "Non-Wi-Fi model; firmware not stated."
+    },
+    "step_id": "HW-RTH76.HOLD.01",
+    "screen": 1,
+    "menu_path": [
+      "Home screen",
+      "▲ or ▼ (adjust temperature)",
+      "Hold"
+    ],
+    "lines": [
+      {
+        "label": "Permanent Hold",
+        "type": "status",
+        "selected": false,
+        "verified": "figure",
+        "condition": null,
+        "note": "shown in the p.13 figure next to the Hold and Cancel keys while you set a hold (M27533); no screen after pressing Hold is shown"
+      }
+    ],
+    "buttons": [
+      {
+        "label": "Hold",
+        "on_screen_text": "Hold",
+        "kind": "text",
+        "verified": "figure",
+        "note": "touchscreen key (p.13)"
+      },
+      {
+        "label": "Cancel",
+        "on_screen_text": "Cancel",
+        "kind": "text",
+        "verified": "figure",
+        "note": "touchscreen key (p.13); its use isn’t described, so it isn’t instructed"
+      },
+      {
+        "label": "Use Schedule",
+        "on_screen_text": "Use Schedule",
+        "kind": "text",
+        "verified": "figure",
+        "condition": "temporary-override screen only (p.12, M27532)",
+        "note": "not on the hold screen"
+      }
+    ],
+    "source_url": "https://customer.resideo.com/resources/Techlit/TechLitDocuments/69-0000s/69-2207ES.pdf",
+    "source_pages": "p.12 (temporary override, Use Schedule), p.13 (permanent hold: Hold / Cancel)",
+    "source_version": "Honeywell RTH7600 operating manual, doc. 69-2207ES-05 (Resideo-hosted; printed page numbers; retrieved 2026-10-10)",
+    "source_host": "official",
+    "verified_status": "verified",
+    "verified_basis": "source_text",
+    "verified_by": "Second Wrench research worker (AI-assisted, single pass)",
+    "verified_on": "2026-10-10",
+    "second_check_by": "Tree Lead",
+    "second_check_on": "2026-10-10",
+    "recheck_cadence": "12m",
+    "recheck_due": "2027-10-10",
+    "verification_notes": [
+      "Per settings-matrix.md HW-RTH76.HOLD.01 (p.12).",
+      "2026-10-10 Tree Lead blind second check: FAIL (mirror-second-check.md #11). Fixed against the primary source, not the matrix: Screen case Hold / Use Schedule; Cancel key added; Use Schedule placed on the temporary-override screen (-05 p.12), Hold / Cancel on the hold screen (p.13). Re-cited to -05. Held until Tree Lead re-checks it.",
+      "2026-10-10 Tree Lead re-check: PASS. verified_on reset to the check date (shown in the LC-4 caption). Un-held in v3.1."
+    ],
+    "our_instruction_text": [
+      "Press the up or down arrow to change the temperature. That change lasts until the next scheduled time. To cancel it, press Use Schedule.",
+      "To keep the new temperature, press Hold right after the arrow. The schedule stays off until you change the temperature or press Use Schedule."
+    ]
+  },
+  {
+    "id": "HW-TH4.HOLD.01/1",
+    "brand": "Honeywell Home (Resideo)",
+    "model": "PRO TH4000 series",
+    "gen": "unspecified",
+    "firmware_range": {
+      "min": null,
+      "max": null,
+      "fw_sensitive": false,
+      "basis": "Non-Wi-Fi model; firmware not stated."
+    },
+    "step_id": "HW-TH4.HOLD.01",
+    "screen": 1,
+    "menu_path": [
+      "Front panel"
+    ],
+    "lines": [
+      {
+        "label": "[display: not mirrored]",
+        "type": "placeholder",
+        "selected": false,
+        "verified": "text",
+        "condition": null,
+        "note": "only button names are verified"
+      }
+    ],
+    "buttons": [
+      {
+        "label": "SET",
+        "on_screen_text": "SET",
+        "kind": "physical",
+        "verified": "figure",
+        "note": "left (p.1 device photo)"
+      },
+      {
+        "label": "HOLD",
+        "on_screen_text": "HOLD",
+        "kind": "physical",
+        "verified": "figure",
+        "note": "centre"
+      },
+      {
+        "label": "RUN",
+        "on_screen_text": "RUN",
+        "kind": "physical",
+        "verified": "figure",
+        "note": "right"
+      }
+    ],
+    "source_url": "https://customer.resideo.com/resources/Techlit/TechLitDocuments/69-0000s/69-1760EFS.pdf",
+    "source_pages": "p.1 (device photo and callouts), p.2–4 (steps)",
+    "source_version": "Honeywell PRO TH4000 series guide, doc. 69-1760EFS-10 (PDF date not recorded; retrieved 2026-10-10)",
+    "source_host": "official",
+    "verified_status": "verified",
+    "verified_basis": "source_text",
+    "verified_by": "Second Wrench research worker (AI-assisted, single pass)",
+    "verified_on": "2026-10-10",
+    "second_check_by": "Tree Lead",
+    "second_check_on": "2026-10-10",
+    "recheck_cadence": "12m",
+    "recheck_due": "2027-10-10",
+    "verification_notes": [
+      "Matrix status: verified (button names).",
+      "2026-10-10 Tree Lead blind second check: FAIL (mirror-second-check.md #12). Fixed against the primary source, not the matrix: Buttons are now SET, HOLD, RUN, in left-to-right order as printed (p.1 device photo). Held until Tree Lead re-checks it.",
+      "2026-10-10 Tree Lead re-check: PASS. verified_on reset to the check date (shown in the LC-4 caption). Un-held in v3.1."
+    ],
+    "our_instruction_text": [
+      "Press RUN to go back to your schedule.",
+      "HOLD keeps the current temperature until you press RUN.",
+      "SET is for the clock and schedule. You don’t need it for this step."
+    ]
+  },
+  {
+    "id": "HW-FP6.EHEAT.01/1",
+    "brand": "Honeywell Home (Resideo)",
+    "model": "FocusPRO TH6110D / TH6220D",
+    "gen": "unspecified",
+    "firmware_range": {
+      "min": null,
+      "max": null,
+      "fw_sensitive": false,
+      "basis": "Non-Wi-Fi model; firmware not stated."
+    },
+    "step_id": "HW-FP6.EHEAT.01",
+    "screen": 1,
+    "menu_path": [
+      "Front panel",
+      "System button"
+    ],
+    "lines": [
+      {
+        "label": "Em Heat",
+        "type": "status",
+        "selected": false,
+        "verified": "text",
+        "condition": "Heat pumps with backup heat only",
+        "note": "emergency heat is on"
+      }
+    ],
+    "buttons": [
+      {
+        "label": "System",
+        "on_screen_text": "System",
+        "kind": "physical",
+        "verified": "text"
+      }
+    ],
+    "source_url": "https://comfort-pro.com/wp-content/uploads/Honeywell-6000-Tstat.pdf",
+    "source_pages": "p.8 (system setting), p.5 (display callout); 2-up scan",
+    "source_version": "Honeywell FocusPRO TH6110D/TH6220D owner's guide, doc. 69-1715 (third-party host; PDF date not recorded; retrieved 2026-10-10)",
+    "source_host": "unofficial",
+    "verified_status": "verified",
+    "verified_basis": "source_text",
+    "verified_by": "Second Wrench research worker (AI-assisted, single pass)",
+    "verified_on": "2026-10-10",
+    "second_check_by": "Tree Lead",
+    "second_check_on": "2026-10-10",
+    "recheck_cadence": "12m",
+    "recheck_due": "2027-10-10",
+    "verification_notes": [
+      "Per settings-matrix.md HW-FP6.EHEAT.01.",
+      "2026-10-10 Tree Lead blind second check: PASS (mirror-second-check.md #13). verified_on is reset to that check date (unchanged, 2026-10-10)."
+    ],
+    "our_instruction_text": [
+      "Em Heat on the display means only the backup heat is running, and it costs more.",
+      "Press System until the display shows Heat to go back to normal heat."
+    ]
+  },
+  {
+    "id": "HW-TH4.EHEAT.01/1",
+    "brand": "Honeywell Home (Resideo)",
+    "model": "PRO TH4000 series",
+    "gen": "unspecified",
+    "firmware_range": {
+      "min": null,
+      "max": null,
+      "fw_sensitive": false,
+      "basis": "Non-Wi-Fi model; firmware not stated."
+    },
+    "step_id": "HW-TH4.EHEAT.01",
+    "screen": 1,
+    "menu_path": [
+      "Front",
+      "Display"
+    ],
+    "lines": [
+      {
+        "label": "Em",
+        "type": "status",
+        "selected": false,
+        "verified": "text",
+        "condition": "Heat pumps with backup heat only",
+        "note": "emergency heat is on"
+      },
+      {
+        "label": "Aux",
+        "type": "status",
+        "selected": false,
+        "verified": "text",
+        "condition": "Heat pumps with backup heat only",
+        "note": "backup heat is helping"
+      }
+    ],
+    "buttons": [
+      {
+        "label": "System",
+        "on_screen_text": "System",
+        "kind": "physical",
+        "verified": "text",
+        "note": "slide switch"
+      }
+    ],
+    "source_url": "https://customer.resideo.com/resources/Techlit/TechLitDocuments/69-0000s/69-1760EFS.pdf",
+    "source_pages": "p.2 (display figure and legend), p.1 (System switch)",
+    "source_version": "Honeywell PRO TH4000 series guide, doc. 69-1760EFS-10 (PDF date not recorded; retrieved 2026-10-10)",
+    "source_host": "official",
+    "verified_status": "verified",
+    "verified_basis": "source_text",
+    "verified_by": "Second Wrench research worker (AI-assisted, single pass)",
+    "verified_on": "2026-10-10",
+    "second_check_by": "Tree Lead",
+    "second_check_on": "2026-10-10",
+    "recheck_cadence": "12m",
+    "recheck_due": "2027-10-10",
+    "verification_notes": [
+      "Per settings-matrix.md HW-TH4.EHEAT.01 (Em and Aux indicators).",
+      "2026-10-10 Tree Lead blind second check: PASS (mirror-second-check.md #14). verified_on is reset to that check date (unchanged, 2026-10-10)."
+    ],
+    "our_instruction_text": [
+      "Em on the display means emergency heat is on. Slide the System switch to Heat to go back to normal heat.",
+      "Aux on the display means backup heat is helping the heat pump. That’s normal now and then. If it shows most of the time, call a pro."
+    ]
+  },
+  {
+    "id": "HW-FP6.FAN.01/1",
+    "brand": "Honeywell Home (Resideo)",
+    "model": "FocusPRO TH6110D / TH6220D",
+    "gen": "unspecified",
+    "firmware_range": {
+      "min": null,
+      "max": null,
+      "fw_sensitive": false,
+      "basis": "Non-Wi-Fi model; firmware not stated."
+    },
+    "step_id": "HW-FP6.FAN.01",
+    "screen": 1,
+    "menu_path": [
+      "Front panel",
+      "Fan button"
+    ],
+    "lines": [
+      {
+        "label": "Auto",
+        "type": "option",
+        "selected": false,
+        "verified": "figure",
+        "condition": null,
+        "note": "confirmed (p.7 figures); shown"
+      },
+      {
+        "label": "On",
+        "type": "option",
+        "selected": false,
+        "verified": "figure",
+        "condition": null,
+        "note": "confirmed (p.7 figures); shown"
+      }
+    ],
+    "buttons": [
+      {
+        "label": "Fan",
+        "on_screen_text": "Fan",
+        "kind": "physical",
+        "verified": "text"
+      }
+    ],
+    "source_url": "https://comfort-pro.com/wp-content/uploads/Honeywell-6000-Tstat.pdf",
+    "source_pages": "p.7 (fan setting figures); 2-up scan",
+    "source_version": "Honeywell FocusPRO TH6110D/TH6220D owner's guide, doc. 69-1715 (third-party host; PDF date not recorded; retrieved 2026-10-10)",
+    "source_host": "unofficial",
+    "verified_status": "verified",
+    "verified_basis": "source_text",
+    "verified_by": "Second Wrench research worker (AI-assisted, single pass)",
+    "verified_on": "2026-10-10",
+    "second_check_by": "Tree Lead",
+    "second_check_on": "2026-10-10",
+    "recheck_cadence": "12m",
+    "recheck_due": "2027-10-10",
+    "verification_notes": [
+      "Matrix status: verified (control names). Setting labels not confirmed, so hidden.",
+      "2026-10-10 Tree Lead blind second check: PASS (mirror-second-check.md #15). verified_on is reset to that check date (unchanged, 2026-10-10)."
+    ],
+    "our_instruction_text": [
+      "Press Fan until the display shows Auto. Auto runs the fan only while heating or cooling.",
+      "On runs the fan all the time."
+    ]
+  },
+  {
+    "id": "HW-TH4.FAN.01/1",
+    "brand": "Honeywell Home (Resideo)",
+    "model": "PRO TH4000 series",
+    "gen": "unspecified",
+    "firmware_range": {
+      "min": null,
+      "max": null,
+      "fw_sensitive": false,
+      "basis": "Non-Wi-Fi model; firmware not stated."
+    },
+    "step_id": "HW-TH4.FAN.01",
+    "screen": 1,
+    "menu_path": [
+      "Front",
+      "Fan switch"
+    ],
+    "lines": [
+      {
+        "label": "Auto",
+        "type": "option",
+        "selected": false,
+        "verified": "figure",
+        "condition": null,
+        "note": "confirmed (p.1 device photo); shown"
+      },
+      {
+        "label": "On",
+        "type": "option",
+        "selected": false,
+        "verified": "figure",
+        "condition": null,
+        "note": "confirmed (p.1 device photo); shown"
+      }
+    ],
+    "buttons": [
+      {
+        "label": "Fan",
+        "on_screen_text": "Fan",
+        "kind": "physical",
+        "verified": "text",
+        "note": "slide switch"
+      }
+    ],
+    "source_url": "https://customer.resideo.com/resources/Techlit/TechLitDocuments/69-0000s/69-1760EFS.pdf",
+    "source_pages": "p.1 (device photo and callouts)",
+    "source_version": "Honeywell PRO TH4000 series guide, doc. 69-1760EFS-10 (PDF date not recorded; retrieved 2026-10-10)",
+    "source_host": "official",
+    "verified_status": "verified",
+    "verified_basis": "source_text",
+    "verified_by": "Second Wrench research worker (AI-assisted, single pass)",
+    "verified_on": "2026-10-10",
+    "second_check_by": "Tree Lead",
+    "second_check_on": "2026-10-10",
+    "recheck_cadence": "12m",
+    "recheck_due": "2027-10-10",
+    "verification_notes": [
+      "Matrix status: verified (control names).",
+      "2026-10-10 Tree Lead blind second check: PASS (mirror-second-check.md #16). verified_on is reset to that check date (unchanged, 2026-10-10)."
+    ],
+    "our_instruction_text": [
+      "Slide the Fan switch to Auto so the fan runs only while heating or cooling.",
+      "On runs the fan all the time."
+    ]
+  },
+  {
+    "id": "HW-RTH76.BATT.01/1",
+    "brand": "Honeywell Home (Resideo)",
+    "model": "RTH7600D",
+    "gen": "unspecified",
+    "firmware_range": {
+      "min": null,
+      "max": null,
+      "fw_sensitive": false,
+      "basis": "Non-Wi-Fi model; firmware not stated."
+    },
+    "step_id": "HW-RTH76.BATT.01",
+    "screen": 1,
+    "menu_path": [
+      "Home screen"
+    ],
+    "lines": [
+      {
+        "label": "LO BATT",
+        "type": "status",
+        "selected": false,
+        "verified": "text",
+        "condition": null,
+        "note": "flashes"
+      }
+    ],
+    "buttons": [],
+    "source_url": "https://customer.resideo.com/resources/Techlit/TechLitDocuments/69-0000s/69-2207ES.pdf",
+    "source_pages": "p.18 (battery replacement)",
+    "source_version": "Honeywell RTH7600 operating manual, doc. 69-2207ES-05 (Resideo-hosted; printed page numbers; retrieved 2026-10-10)",
+    "source_host": "official",
+    "verified_status": "verified",
+    "verified_basis": "source_text",
+    "verified_by": "Second Wrench research worker (AI-assisted, single pass)",
+    "verified_on": "2026-10-10",
+    "second_check_by": "Tree Lead",
+    "second_check_on": "2026-10-10",
+    "recheck_cadence": "12m",
+    "recheck_due": "2027-10-10",
+    "verification_notes": [
+      "Per settings-matrix.md HW-RTH76.BATT.01.",
+      "2026-10-10 Tree Lead blind second check: PASS (mirror-second-check.md #17). verified_on is reset to that check date (unchanged, 2026-10-10)."
+    ],
+    "our_instruction_text": [
+      "LO BATT flashing means the batteries have about a month left.",
+      "Put in two fresh AA alkaline batteries. Your manual shows where they go.",
+      "If the thermostat also gets power from the system, the batteries are a backup. Replace them anyway."
+    ]
+  },
+  {
+    "id": "HW-FP6.BATT.01/1",
+    "brand": "Honeywell Home (Resideo)",
+    "model": "FocusPRO TH6110D / TH6220D",
+    "gen": "unspecified",
+    "firmware_range": {
+      "min": null,
+      "max": null,
+      "fw_sensitive": false,
+      "basis": "Non-Wi-Fi model; firmware not stated."
+    },
+    "step_id": "HW-FP6.BATT.01",
+    "screen": 1,
+    "menu_path": [
+      "Display"
+    ],
+    "lines": [
+      {
+        "label": "Replace Battery",
+        "type": "status",
+        "selected": false,
+        "verified": "figure",
+        "condition": null,
+        "note": "flashes (p.5 and p.17 display figures)"
+      }
+    ],
+    "buttons": [],
+    "source_url": "https://comfort-pro.com/wp-content/uploads/Honeywell-6000-Tstat.pdf",
+    "source_pages": "p.17 (battery replacement figure and text), p.5 (display figure); 2-up scan",
+    "source_version": "Honeywell FocusPRO TH6110D/TH6220D owner's guide, doc. 69-1715 (third-party host; PDF date not recorded; retrieved 2026-10-10)",
+    "source_host": "unofficial",
+    "verified_status": "verified",
+    "verified_basis": "source_text",
+    "verified_by": "Second Wrench research worker (AI-assisted, single pass)",
+    "verified_on": "2026-10-10",
+    "second_check_by": "Tree Lead",
+    "second_check_on": "2026-10-10",
+    "recheck_cadence": "12m",
+    "recheck_due": "2027-10-10",
+    "verification_notes": [
+      "Per settings-matrix.md HW-FP6.BATT.01.",
+      "2026-10-10 Tree Lead blind second check: FAIL (mirror-second-check.md #18). Fixed against the primary source, not the matrix: REPLACE BATT → Replace Battery (p.5 and p.17 display figures). Also held for an unofficial host. Held until Tree Lead re-checks it.",
+      "2026-10-10 Tree Lead re-check: PASS. verified_on reset to the check date (shown in the LC-4 caption). Still held: unofficial source."
+    ],
+    "our_instruction_text": [
+      "Replace Battery flashing means the batteries have about two months left.",
+      "Put in fresh AA alkaline batteries. Swap them within about 2 minutes so the clock keeps its time."
+    ]
+  },
+  {
+    "id": "HW-TH4.BATT.01/1",
+    "brand": "Honeywell Home (Resideo)",
+    "model": "PRO TH4000 series",
+    "gen": "unspecified",
+    "firmware_range": {
+      "min": null,
+      "max": null,
+      "fw_sensitive": false,
+      "basis": "Non-Wi-Fi model; firmware not stated."
+    },
+    "step_id": "HW-TH4.BATT.01",
+    "screen": 1,
+    "menu_path": [
+      "Display"
+    ],
+    "lines": [
+      {
+        "label": "Replace Batt",
+        "type": "status",
+        "selected": false,
+        "verified": "figure",
+        "condition": null,
+        "note": "flashes (p.2 display figure)"
+      }
+    ],
+    "buttons": [],
+    "source_url": "https://customer.resideo.com/resources/Techlit/TechLitDocuments/69-0000s/69-1760EFS.pdf",
+    "source_pages": "p.2 (display figure), p.5 (battery replacement text)",
+    "source_version": "Honeywell PRO TH4000 series guide, doc. 69-1760EFS-10 (PDF date not recorded; retrieved 2026-10-10)",
+    "source_host": "official",
+    "verified_status": "verified",
+    "verified_basis": "source_text",
+    "verified_by": "Second Wrench research worker (AI-assisted, single pass)",
+    "verified_on": "2026-10-10",
+    "second_check_by": "Tree Lead",
+    "second_check_on": "2026-10-10",
+    "recheck_cadence": "12m",
+    "recheck_due": "2027-10-10",
+    "verification_notes": [
+      "Per settings-matrix.md HW-TH4.BATT.01.",
+      "2026-10-10 Tree Lead blind second check: FAIL (mirror-second-check.md #19). Fixed against the primary source, not the matrix: REPLACE BATT → Replace Batt (p.2 display figure). Held until Tree Lead re-checks it.",
+      "2026-10-10 Tree Lead re-check: PASS. verified_on reset to the check date (shown in the LC-4 caption). Un-held in v3.1."
+    ],
+    "our_instruction_text": [
+      "Replace Batt flashing means the batteries have about two months left.",
+      "Put in fresh AA alkaline batteries. Swap them within about 1 minute so the clock keeps its time."
+    ]
+  },
+  {
+    "id": "HW-RTH76.ALERT.01/1",
+    "brand": "Honeywell Home (Resideo)",
+    "model": "RTH7600D",
+    "gen": "unspecified",
+    "firmware_range": {
+      "min": null,
+      "max": null,
+      "fw_sensitive": false,
+      "basis": "Non-Wi-Fi model; firmware not stated."
+    },
+    "step_id": "HW-RTH76.ALERT.01",
+    "screen": 1,
+    "menu_path": [
+      "Home screen"
+    ],
+    "lines": [
+      {
+        "label": "Wait",
+        "type": "status",
+        "selected": false,
+        "verified": "text",
+        "condition": null,
+        "note": null
+      }
+    ],
+    "buttons": [],
+    "source_url": "https://customer.resideo.com/resources/Techlit/TechLitDocuments/69-0000s/69-2207ES.pdf",
+    "source_pages": "p.17 (compressor protection), p.20 (troubleshooting)",
+    "source_version": "Honeywell RTH7600 operating manual, doc. 69-2207ES-05 (Resideo-hosted; printed page numbers; retrieved 2026-10-10)",
+    "source_host": "official",
+    "verified_status": "verified",
+    "verified_basis": "source_text",
+    "verified_by": "Second Wrench research worker (AI-assisted, single pass)",
+    "verified_on": "2026-10-10",
+    "second_check_by": "Tree Lead",
+    "second_check_on": "2026-10-10",
+    "recheck_cadence": "12m",
+    "recheck_due": "2027-10-10",
+    "verification_notes": [
+      "Per settings-matrix.md HW-RTH76.ALERT.01.",
+      "2026-10-10 Tree Lead blind second check: PASS (mirror-second-check.md #20). verified_on is reset to that check date (unchanged, 2026-10-10)."
+    ],
+    "our_instruction_text": [
+      "Wait on the display means the thermostat is holding off for about 5 minutes to protect the equipment.",
+      "Don’t keep changing the setting. Give it 5 minutes."
+    ]
+  },
+  {
+    "id": "HW-FP6.ALERT.01/1",
+    "brand": "Honeywell Home (Resideo)",
+    "model": "FocusPRO TH6110D / TH6220D",
+    "gen": "unspecified",
+    "firmware_range": {
+      "min": null,
+      "max": null,
+      "fw_sensitive": false,
+      "basis": "Non-Wi-Fi model; firmware not stated."
+    },
+    "step_id": "HW-FP6.ALERT.01",
+    "screen": 1,
+    "menu_path": [
+      "Display"
+    ],
+    "lines": [
+      {
+        "label": "Cool On",
+        "type": "status",
+        "selected": false,
+        "verified": "text",
+        "condition": null,
+        "note": "flashing = waiting; steady = running"
+      },
+      {
+        "label": "Heat On",
+        "type": "status",
+        "selected": false,
+        "verified": "text",
+        "condition": "Heat pumps",
+        "note": "flashing = waiting; steady = running"
+      }
+    ],
+    "buttons": [],
+    "source_url": "https://comfort-pro.com/wp-content/uploads/Honeywell-6000-Tstat.pdf",
+    "source_pages": "p.15 (compressor protection figure and text), p.19 (troubleshooting); 2-up scan",
+    "source_version": "Honeywell FocusPRO TH6110D/TH6220D owner's guide, doc. 69-1715 (third-party host; PDF date not recorded; retrieved 2026-10-10)",
+    "source_host": "unofficial",
+    "verified_status": "verified",
+    "verified_basis": "source_text",
+    "verified_by": "Second Wrench research worker (AI-assisted, single pass)",
+    "verified_on": "2026-10-10",
+    "second_check_by": "Tree Lead",
+    "second_check_on": "2026-10-10",
+    "recheck_cadence": "12m",
+    "recheck_due": "2027-10-10",
+    "verification_notes": [
+      "Per settings-matrix.md HW-FP6.ALERT.01.",
+      "2026-10-10 Tree Lead blind second check: PASS (mirror-second-check.md #21). verified_on is reset to that check date (unchanged, 2026-10-10)."
+    ],
+    "our_instruction_text": [
+      "Cool On flashing (or Heat On on a heat pump) means the thermostat is waiting a few minutes to protect the equipment.",
+      "It stops flashing once the system runs. Give it about 5 minutes and don’t keep changing the setting."
+    ]
+  },
+  {
+    "id": "HW-X2P.ALERT.01/1",
+    "brand": "Honeywell Home (Resideo)",
+    "model": "X2P (RTH20B / RTH21B / RTH22B)",
+    "gen": "unspecified",
+    "firmware_range": {
+      "min": null,
+      "max": null,
+      "fw_sensitive": false,
+      "basis": "Non-Wi-Fi model; firmware not stated."
+    },
+    "step_id": "HW-X2P.ALERT.01",
+    "screen": 1,
+    "menu_path": [
+      "Home screen",
+      "MENU",
+      "ALRT",
+      "Select"
+    ],
+    "lines": [
+      {
+        "label": "(Alert icon)",
+        "type": "status",
+        "selected": false,
+        "verified": "text",
+        "condition": null,
+        "note": "generic word; icon not drawn"
+      },
+      {
+        "label": "405",
+        "type": "status",
+        "selected": false,
+        "verified": "text",
+        "condition": null,
+        "note": "example alert number"
+      }
+    ],
+    "buttons": [
+      {
+        "label": "MENU",
+        "on_screen_text": "MENU",
+        "kind": "text",
+        "verified": "figure",
+        "note": "on-screen label beside an unlabeled button (M39528)"
+      },
+      {
+        "label": "Select",
+        "on_screen_text": "Select",
+        "kind": "text",
+        "verified": "figure",
+        "note": "on-screen label above an unlabeled button (M39513)"
+      },
+      {
+        "label": "Exit",
+        "on_screen_text": "Exit",
+        "kind": "text",
+        "verified": "figure",
+        "note": "on-screen label (M39513, M39514)"
+      },
+      {
+        "label": "Dismiss",
+        "on_screen_text": "Dismiss",
+        "kind": "text",
+        "verified": "figure",
+        "condition": "reminders only (p.17, M39515)",
+        "note": "alerts can’t be dismissed"
+      }
+    ],
+    "source_url": "https://customer.resideo.com/resources/Techlit/TechLitDocuments/33-00000s/33-00688EFS.pdf",
+    "source_pages": "p.16–17",
+    "source_version": "Honeywell Home X2P guide, doc. 33-00688EFS-03 (Resideo-hosted; byte-identical to the honeywellstore.com copy; retrieved 2026-10-10)",
+    "source_host": "official",
+    "verified_status": "verified",
+    "verified_basis": "source_text",
+    "verified_by": "Second Wrench research worker (AI-assisted, single pass)",
+    "verified_on": "2026-10-10",
+    "second_check_by": "Tree Lead",
+    "second_check_on": "2026-10-10",
+    "recheck_cadence": "12m",
+    "recheck_due": "2027-10-10",
+    "verification_notes": [
+      "Alert numbers and MENU / SELECT / DISMISS per settings-matrix.md HW-X2P.ALERT.01. 405/407 are P1; 170/171/173 are P2 and appear only in our instructions.",
+      "2026-10-10 Tree Lead blind second check: FAIL (mirror-second-check.md #22). Fixed against the primary source, not the matrix: Select / Dismiss in screen case and set as on-screen labels; path step ALRT; Exit key added. The invented line \"Alerts clear on their own\" is removed; p.16 says an alert can’t be dismissed. Held until Tree Lead re-checks it.",
+      "2026-10-10 Tree Lead re-check: PASS. verified_on reset to the check date (shown in the LC-4 caption). Un-held in v3.1."
+    ],
+    "our_instruction_text": [
+      "An alert symbol on the screen means there’s an alert.",
+      "Press MENU, use the arrows to reach ALRT, then press Select to see the alert number. Press Exit to go back.",
+      "405 or 407: the batteries are low or very low. Put in fresh AA alkaline batteries.",
+      "171: set the time and date. 170 or 173: the thermostat itself has a fault, so call a pro.",
+      "An alert can’t be dismissed. Fix the cause, for example by putting in fresh batteries. Dismiss is only for reminders."
+    ]
+  },
+  {
+    "id": "HW-X2P.ALERT.02/1",
+    "brand": "Honeywell Home (Resideo)",
+    "model": "X2P (RTH20B / RTH21B / RTH22B)",
+    "gen": "unspecified",
+    "firmware_range": {
+      "min": null,
+      "max": null,
+      "fw_sensitive": false,
+      "basis": "Non-Wi-Fi model; firmware not stated."
+    },
+    "step_id": "HW-X2P.ALERT.02",
+    "screen": 1,
+    "menu_path": [
+      "Home screen"
+    ],
+    "lines": [
+      {
+        "label": "Waiting For Equipment",
+        "type": "status",
+        "selected": false,
+        "verified": "text",
+        "condition": null,
+        "note": "under the room temperature"
+      }
+    ],
+    "buttons": [],
+    "source_url": "https://customer.resideo.com/resources/Techlit/TechLitDocuments/33-00000s/33-00688EFS.pdf",
+    "source_pages": "p.17, p.19",
+    "source_version": "Honeywell Home X2P guide, doc. 33-00688EFS-03 (Resideo-hosted; byte-identical to the honeywellstore.com copy; retrieved 2026-10-10)",
+    "source_host": "official",
+    "verified_status": "verified",
+    "verified_basis": "source_text",
+    "verified_by": "Second Wrench research worker (AI-assisted, single pass)",
+    "verified_on": "2026-10-10",
+    "second_check_by": "Tree Lead",
+    "second_check_on": "2026-10-10",
+    "recheck_cadence": "12m",
+    "recheck_due": "2027-10-10",
+    "verification_notes": [
+      "Per settings-matrix.md HW-X2P.ALERT.02.",
+      "2026-10-10 Tree Lead blind second check: PASS (mirror-second-check.md #23). verified_on is reset to that check date (unchanged, 2026-10-10)."
+    ],
+    "our_instruction_text": [
+      "Waiting For Equipment means the thermostat is holding off to protect the equipment.",
+      "Give it about 5 minutes and don’t keep changing the setting."
+    ]
+  },
+  {
+    "id": "HW-T5.MODE.01/1",
+    "brand": "Honeywell Home (Resideo)",
+    "model": "T5 / T5+ Smart Thermostat",
+    "gen": "unspecified",
+    "firmware_range": {
+      "min": null,
+      "max": null,
+      "fw_sensitive": true,
+      "basis": "Not stated in source. Wi-Fi model."
+    },
+    "step_id": "HW-T5.MODE.01",
+    "screen": 1,
+    "menu_path": [
+      "Home screen",
+      "Mode"
+    ],
+    "lines": [
+      {
+        "label": "Auto",
+        "type": "option",
+        "selected": false,
+        "verified": "text",
+        "condition": "Only if the installer set it up",
+        "note": null
+      },
+      {
+        "label": "Heat",
+        "type": "option",
+        "selected": false,
+        "verified": "text",
+        "condition": null,
+        "note": null
+      },
+      {
+        "label": "Cool",
+        "type": "option",
+        "selected": false,
+        "verified": "text",
+        "condition": null,
+        "note": null
+      },
+      {
+        "label": "Off",
+        "type": "option",
+        "selected": false,
+        "verified": "text",
+        "condition": null,
+        "note": null
+      },
+      {
+        "label": "EM Heat",
+        "type": "option",
+        "selected": false,
+        "verified": "text",
+        "condition": "Heat pumps with backup heat, set up by the installer",
+        "note": null
+      }
+    ],
+    "buttons": [
+      {
+        "label": "Mode",
+        "on_screen_text": "Mode",
+        "kind": "text",
+        "verified": "text"
+      },
+      {
+        "label": "Menu",
+        "on_screen_text": "Menu",
+        "kind": "text",
+        "verified": "text"
+      },
+      {
+        "label": "Fan",
+        "on_screen_text": "Fan",
+        "kind": "text",
+        "verified": "text"
+      }
+    ],
+    "source_url": "https://images.thdstatic.com/catalog/pdfImages/69/6945cb70-2440-45f8-805c-155a2d7126bb.pdf",
+    "source_pages": "p.17",
+    "source_version": "Honeywell Home T5 Smart Thermostat guide, doc. 33-00498EF-03 (PDF date not recorded; retrieved 2026-10-10)",
+    "source_host": "unofficial",
+    "verified_status": "verified",
+    "verified_basis": "source_text",
+    "verified_by": "Second Wrench research worker (AI-assisted, single pass)",
+    "verified_on": "2026-10-10",
+    "second_check_by": null,
+    "second_check_on": null,
+    "recheck_cadence": "90d",
+    "recheck_due": "2027-01-08",
+    "verification_notes": [
+      "HELD: the p.17 figure text reads 'MODE  FAN  SCHEDULE' in capitals, while the callouts and the matrix say Mode / Menu / Fan. Resolve against the figure before serving."
+    ],
+    "our_instruction_text": [
+      "On the home screen, press the mode button.",
+      "Pick Heat or Cool. Auto and emergency heat show only if the installer set them up."
+    ]
+  },
+  {
+    "id": "HW-T5.EHEAT.01/1",
+    "brand": "Honeywell Home (Resideo)",
+    "model": "T5 / T5+ Smart Thermostat",
+    "gen": "unspecified",
+    "firmware_range": {
+      "min": null,
+      "max": null,
+      "fw_sensitive": true,
+      "basis": "Not stated in source. Wi-Fi model."
+    },
+    "step_id": "HW-T5.EHEAT.01",
+    "screen": 1,
+    "menu_path": [
+      "Home screen",
+      "Mode"
+    ],
+    "lines": [
+      {
+        "label": "EM Heat",
+        "type": "option",
+        "selected": false,
+        "verified": "text",
+        "condition": "Heat pumps with backup heat only",
+        "note": null
+      }
+    ],
+    "buttons": [
+      {
+        "label": "Mode",
+        "on_screen_text": "Mode",
+        "kind": "text",
+        "verified": "text"
+      }
+    ],
+    "source_url": "https://images.thdstatic.com/catalog/pdfImages/69/6945cb70-2440-45f8-805c-155a2d7126bb.pdf",
+    "source_pages": "p.17",
+    "source_version": "Honeywell Home T5 Smart Thermostat guide, doc. 33-00498EF-03 (PDF date not recorded; retrieved 2026-10-10)",
+    "source_host": "unofficial",
+    "verified_status": "verified",
+    "verified_basis": "source_text",
+    "verified_by": "Second Wrench research worker (AI-assisted, single pass)",
+    "verified_on": "2026-10-10",
+    "second_check_by": null,
+    "second_check_on": null,
+    "recheck_cadence": "90d",
+    "recheck_due": "2027-01-08",
+    "verification_notes": [
+      "HELD: same Mode/MODE case conflict as HW-T5.MODE.01/1."
+    ],
+    "our_instruction_text": [
+      "EM Heat runs only the backup heat, and it costs more.",
+      "Press the mode button and pick Heat to go back to normal heat."
+    ]
+  },
+  {
+    "id": "HW-T5.FAN.01/1",
+    "brand": "Honeywell Home (Resideo)",
+    "model": "T5 / T5+ Smart Thermostat",
+    "gen": "unspecified",
+    "firmware_range": {
+      "min": null,
+      "max": null,
+      "fw_sensitive": true,
+      "basis": "Not stated in source. Wi-Fi model."
+    },
+    "step_id": "HW-T5.FAN.01",
+    "screen": 1,
+    "menu_path": [
+      "Home screen",
+      "Fan"
+    ],
+    "lines": [
+      {
+        "label": "Auto",
+        "type": "option",
+        "selected": false,
+        "verified": "text",
+        "condition": null,
+        "note": null
+      },
+      {
+        "label": "On",
+        "type": "option",
+        "selected": false,
+        "verified": "text",
+        "condition": null,
+        "note": null
+      },
+      {
+        "label": "Circulate",
+        "type": "option",
+        "selected": false,
+        "verified": "text",
+        "condition": null,
+        "note": null
+      }
+    ],
+    "buttons": [
+      {
+        "label": "Fan",
+        "on_screen_text": "Fan",
+        "kind": "text",
+        "verified": "text"
+      }
+    ],
+    "source_url": "https://images.thdstatic.com/catalog/pdfImages/69/6945cb70-2440-45f8-805c-155a2d7126bb.pdf",
+    "source_pages": "p.17",
+    "source_version": "Honeywell Home T5 Smart Thermostat guide, doc. 33-00498EF-03 (PDF date not recorded; retrieved 2026-10-10)",
+    "source_host": "unofficial",
+    "verified_status": "verified",
+    "verified_basis": "source_text",
+    "verified_by": "Second Wrench research worker (AI-assisted, single pass)",
+    "verified_on": "2026-10-10",
+    "second_check_by": null,
+    "second_check_on": null,
+    "recheck_cadence": "90d",
+    "recheck_due": "2027-01-08",
+    "verification_notes": [
+      "HELD: the p.17 figure text shows 'FAN' in capitals; the callout and matrix say Fan."
+    ],
+    "our_instruction_text": [
+      "Press the fan button and pick Auto so the fan runs only while heating or cooling.",
+      "Circulate runs the fan part of the time between cycles. On runs it all the time."
+    ]
+  },
+  {
+    "id": "HW-X2P.MODE.01/1",
+    "brand": "Honeywell Home (Resideo)",
+    "model": "X2P (RTH20B / RTH21B / RTH22B)",
+    "gen": "unspecified",
+    "firmware_range": {
+      "min": null,
+      "max": null,
+      "fw_sensitive": false,
+      "basis": "Non-Wi-Fi model; firmware not stated."
+    },
+    "step_id": "HW-X2P.MODE.01",
+    "screen": 1,
+    "menu_path": [
+      "Home screen",
+      "MODE"
+    ],
+    "lines": [
+      {
+        "label": "AUTO",
+        "type": "option",
+        "selected": false,
+        "verified": "text",
+        "condition": "Varies by model and setup",
+        "note": null
+      },
+      {
+        "label": "HEAT",
+        "type": "option",
+        "selected": false,
+        "verified": "text",
+        "condition": null,
+        "note": null
+      },
+      {
+        "label": "COOL",
+        "type": "option",
+        "selected": false,
+        "verified": "text",
+        "condition": null,
+        "note": null
+      },
+      {
+        "label": "EM HEAT",
+        "type": "option",
+        "selected": false,
+        "verified": "text",
+        "condition": "Heat pumps with backup heat only",
+        "note": null
+      },
+      {
+        "label": "OFF",
+        "type": "option",
+        "selected": false,
+        "verified": "text",
+        "condition": null,
+        "note": null
+      }
+    ],
+    "buttons": [
+      {
+        "label": "MODE",
+        "on_screen_text": "MODE",
+        "kind": "physical",
+        "verified": "text"
+      }
+    ],
+    "source_url": "https://customer.resideo.com/resources/Techlit/TechLitDocuments/33-00000s/33-00688EFS.pdf",
+    "source_pages": "p.12",
+    "source_version": "Honeywell Home X2P guide, doc. 33-00688EFS-03 (Resideo-hosted; byte-identical to the honeywellstore.com copy; retrieved 2026-10-10)",
+    "source_host": "official",
+    "verified_status": "verified",
+    "verified_basis": "source_text",
+    "verified_by": "Second Wrench research worker (AI-assisted, single pass)",
+    "verified_on": "2026-10-10",
+    "second_check_by": null,
+    "second_check_on": null,
+    "recheck_cadence": "12m",
+    "recheck_due": "2027-10-10",
+    "verification_notes": [
+      "HELD: the p.12 figure shows the display reading 'Heat' and 'Auto' in mixed case, while the text list is in capitals. On-screen case unresolved."
+    ],
+    "our_instruction_text": [
+      "Press the mode button. Each press moves to the next mode.",
+      "Stop when Heat or Cool shows. The modes you see depend on how it was set up."
+    ]
+  },
+  {
+    "id": "HW-X2P.FAN.01/1",
+    "brand": "Honeywell Home (Resideo)",
+    "model": "X2P (RTH20B / RTH21B / RTH22B)",
+    "gen": "unspecified",
+    "firmware_range": {
+      "min": null,
+      "max": null,
+      "fw_sensitive": false,
+      "basis": "Non-Wi-Fi model; firmware not stated."
+    },
+    "step_id": "HW-X2P.FAN.01",
+    "screen": 1,
+    "menu_path": [
+      "Home screen",
+      "FAN"
+    ],
+    "lines": [
+      {
+        "label": "AUTO",
+        "type": "option",
+        "selected": false,
+        "verified": "text",
+        "condition": null,
+        "note": null
+      },
+      {
+        "label": "ON",
+        "type": "option",
+        "selected": false,
+        "verified": "text",
+        "condition": null,
+        "note": null
+      },
+      {
+        "label": "CIRC",
+        "type": "option",
+        "selected": false,
+        "verified": "text",
+        "condition": null,
+        "note": null
+      }
+    ],
+    "buttons": [
+      {
+        "label": "FAN",
+        "on_screen_text": "FAN",
+        "kind": "physical",
+        "verified": "text"
+      }
+    ],
+    "source_url": "https://customer.resideo.com/resources/Techlit/TechLitDocuments/33-00000s/33-00688EFS.pdf",
+    "source_pages": "p.13",
+    "source_version": "Honeywell Home X2P guide, doc. 33-00688EFS-03 (Resideo-hosted; byte-identical to the honeywellstore.com copy; retrieved 2026-10-10)",
+    "source_host": "official",
+    "verified_status": "verified",
+    "verified_basis": "source_text",
+    "verified_by": "Second Wrench research worker (AI-assisted, single pass)",
+    "verified_on": "2026-10-10",
+    "second_check_by": null,
+    "second_check_on": null,
+    "recheck_cadence": "12m",
+    "recheck_due": "2027-10-10",
+    "verification_notes": [
+      "HELD: the p.13 figure shows the display reading 'Auto' in mixed case; the text list is in capitals."
+    ],
+    "our_instruction_text": [
+      "Press the fan button until Auto shows, so the fan runs only while heating or cooling.",
+      "Circulate runs the fan about a third of the time. On runs it all the time."
+    ]
+  },
+  {
+    "id": "HW-X2P.HOLD.01/1",
+    "brand": "Honeywell Home (Resideo)",
+    "model": "X2P (RTH20B / RTH21B / RTH22B)",
+    "gen": "unspecified",
+    "firmware_range": {
+      "min": null,
+      "max": null,
+      "fw_sensitive": false,
+      "basis": "Non-Wi-Fi model; firmware not stated."
+    },
+    "step_id": "HW-X2P.HOLD.01",
+    "screen": 1,
+    "menu_path": [
+      "Home screen",
+      "HOLD"
+    ],
+    "lines": [
+      {
+        "label": "CANCEL HOLD",
+        "type": "option",
+        "selected": false,
+        "verified": "text",
+        "condition": null,
+        "note": null
+      },
+      {
+        "label": "HOLD PERMANANTLY",
+        "type": "option",
+        "selected": false,
+        "verified": "text",
+        "condition": null,
+        "note": "the guide's spelling; confirm on a device"
+      }
+    ],
+    "buttons": [
+      {
+        "label": "HOLD",
+        "on_screen_text": "HOLD",
+        "kind": "physical",
+        "verified": "text"
+      }
+    ],
+    "source_url": "https://customer.resideo.com/resources/Techlit/TechLitDocuments/33-00000s/33-00688EFS.pdf",
+    "source_pages": "p.15",
+    "source_version": "Honeywell Home X2P guide, doc. 33-00688EFS-03 (Resideo-hosted; byte-identical to the honeywellstore.com copy; retrieved 2026-10-10)",
+    "source_host": "official",
+    "verified_status": "verified",
+    "verified_basis": "source_text",
+    "verified_by": "Second Wrench research worker (AI-assisted, single pass)",
+    "verified_on": "2026-10-10",
+    "second_check_by": null,
+    "second_check_on": null,
+    "recheck_cadence": "12m",
+    "recheck_due": "2027-10-10",
+    "verification_notes": [
+      "HELD: the p.12–13 figures label the button 'Hold' in mixed case; the text says HOLD. The 'PERMANANTLY' spelling also needs a device check."
+    ],
+    "our_instruction_text": [
+      "Using the arrows alone holds the change until the next scheduled time.",
+      "To keep it until you cancel it, press the hold button until the permanent option shows.",
+      "To end any hold, press the hold button until the cancel option shows."
+    ]
+  }
+]

@@ -1,7 +1,7 @@
 /* Public configuration. Never place passwords, tokens, or API keys in this file. */
 window.SW_CONFIG = Object.freeze({
   version: '0.1.0-beta',
-  contentVersion: '2026-10-10.2',
+  contentVersion: '2026-10-10.3',
   domain: 'secondwrench.co',
   contactEmail: 'lonnie@secondwrench.co',
   operatorName: 'Second Wrench',
@@ -11,6 +11,8 @@ window.SW_CONFIG = Object.freeze({
   // Public runtime. Capacitor steps exist in the tree and run only when this is true.
   // Do not set true on main. The private sandbox zip is the only flag-on copy.
   advancedRepairsEnabled: false,
+  aiThermostatEnabled: false,
+  mirrorsEnabled: false,
   releaseChecks: {
     operatorDetailsConfirmed: false,
     contactEmailApproved: true,

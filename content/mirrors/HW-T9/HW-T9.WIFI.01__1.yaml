@@ -1,0 +1,35 @@
+id: "HW-T9.WIFI.01/1"
+brand: "Honeywell Home (Resideo)"
+model: "T9 Smart Thermostat (RCHT9510WF / RCHT9610WF families)"
+gen: "unspecified"
+firmware_range: {min: null, max: null, fw_sensitive: true, basis: "Not stated in source. Wi-Fi model."}
+step_id: "HW-T9.WIFI.01"
+screen: 1
+menu_path: ["Home screen", "Menu"]
+lines:
+  - {label: "[other menu items above: not shown]", type: "placeholder", selected: false, verified: "figure", condition: null, note: "only the CONFIGURATION group is mirrored"}
+  - {label: "CONFIGURATION", type: "section_header", selected: false, verified: "figure", condition: null, note: null}
+  - {label: "Wi-Fi", type: "option", selected: false, verified: "figure", condition: null, note: null}
+  - {label: "Connect App", type: "option", selected: false, verified: "figure", condition: null, note: null}
+  - {label: "Connect HomeKit", type: "option", selected: false, verified: "figure", condition: null, note: null}
+  - {label: "Security", type: "option", selected: false, verified: "figure", condition: null, note: null}
+  - {label: "Preferences", type: "option", selected: false, verified: "figure", condition: null, note: null}
+  - {label: "Advanced Setup", type: "option", selected: false, verified: "figure", condition: null, note: "not used by this guide"}
+buttons: []
+source_url: "https://digitalassets.resideo.com/damroot/Original/10015/33-00478.pdf"
+source_pages: "p.13 (CONFIGURATION menu figure)"
+source_version: "Honeywell Home T9 Smart Thermostat User Guide, doc. 33-00478-04 (PDF dated 2022-06-23)"
+source_host: "official"
+verified_status: "verified"
+verified_basis: "source_figure"
+verified_by: "Second Wrench research worker (AI-assisted, single pass)"
+verified_on: "2026-10-10"
+second_check_by: "Tree Lead"
+second_check_on: "2026-10-10"
+recheck_cadence: "90d"
+recheck_due: "2027-01-08"
+verification_notes: ["CONFIGURATION items as listed in settings-matrix.md HW-T9.WIFI.01 (verified, manual figure). Items above CONFIGURATION are not mirrored.", "2026-10-10 Tree Lead blind second check: PASS (mirror-second-check.md #3). verified_on is reset to that check date (unchanged, 2026-10-10)."]
+our_instruction_text:
+  - "Tap the screen to wake it, then tap the menu icon at the bottom."
+  - "Scroll down to the CONFIGURATION group and tap Wi-Fi."
+  - "Don’t open Advanced Setup. It holds setup and reset options this guide doesn’t use."

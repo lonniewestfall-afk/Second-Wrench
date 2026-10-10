@@ -1,3 +1,4 @@
+// Thermostat lane: ts.settings.v0 (settings help, P1 brands, Basic only, no AI). Start → Something else: mini-split, geothermal, thermostat, other → Thermostat or settings problem.
 /* Deterministic decision engine. No model calls and no free-text diagnosis routing.
  * Browser or Node. Every action comes from the current node's choices.
  *
@@ -67,6 +68,12 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
 
+  const TS = (typeof module === 'object' && module.exports && typeof require === 'function')
+    ? require('./ts-lane.js')
+    : globalThis.SW_TS_LANE;
+  if (!TS) throw new Error('Thermostat lane failed to load');
+  const TREE_TS = 'ts.settings.v0';
+  const TS_V0 = TS.v0;
   const TREE_VERSION = 'ac.cool.v1';
   const TREE_HP = 'hp.air_source.v1';
   const TREE_WSHP = 'wshp.water_to_air.v0';
@@ -247,16 +254,19 @@
         o('cooling_only_ac', 'Cooling-only AC', 'ac.cool.intake.system_confirm', 'The outdoor unit is for cooling. A furnace, boiler, or other heater provides heat.', 'Cooling-only central AC reported.'),
         o('heat_pump', 'Heat pump (heats and cools with the outdoor unit)', 'hp.intake.system_confirm', 'The outdoor unit runs for heat and for cooling.', 'Heat pump reported at system type.'),
         o('furnace', 'Furnace (gas or electric, with or without central AC)', 'fn.gate.combustion_co', 'Heat comes from a furnace inside. A furnace safety check comes first.', 'Furnace reported at system type.'),
-        o('other_heat_or_ductless', 'Something else: mini-split, geothermal, other', 'sw.intake.other_system', 'A ductless mini-split, a water-source or geothermal heat pump, or another system.', 'Something else reported at system type.'),
+        o('other_heat_or_ductless', 'Something else: mini-split, geothermal, thermostat, other', 'sw.intake.other_system', 'A ductless mini-split, a water-source or geothermal heat pump, or another system.', 'Something else reported at system type.'),
         o('not_sure', 'Not sure', 'sw.identify.winter_outdoor', 'Up to three plain questions. If it is still unclear, the check uses the heat-pump path.')
       ]),
 
     'sw.intake.other_system': n('Your system', 'Which one is it?',
-      'Answer from what you already know. Do not remove a cover or climb to identify the equipment.\n\nA ductless mini-split has an indoor unit on a wall, floor, or ceiling. It blows air into the room. There are no vents.\n\nA water-source or geothermal heat pump sits indoors, often in a basement or closet. There is no outdoor unit with a fan. Water or loop fluid comes in through pipes from the ground, a well, or a pond.', [
+      'Answer from what you already know. Do not remove a cover or climb to identify the equipment.\n\nA ductless mini-split has an indoor unit on a wall, floor, or ceiling. It blows air into the room. There are no vents.\n\nA water-source or geothermal heat pump sits indoors, often in a basement or closet. There is no outdoor unit with a fan. Water or loop fluid comes in through pipes from the ground, a well, or a pond.\n\nThermostat problems on any kind of system, like a blank screen, the wrong mode, a schedule, the fan, or Wi-Fi, have their own check.', [
         o('ductless_mini_split', 'Ductless mini-split', 'ms.intake.system_confirm', 'Indoor unit on a wall, floor, or ceiling, with no vents. Cooling problems on one indoor unit.', 'Ductless mini-split reported at Start.'),
         o('water_source_geo', 'Water-source / geothermal heat pump', 'wshp.hazard.flood_electrical',
           'No outdoor unit with a fan. Water pipes run to a ground loop, a well, or a pond.',
           'Water-source or geothermal heat pump reported at system type.'),
+        o('thermostat_settings', 'Thermostat or settings problem', 'ts.gate.safety_stops',
+          'Screen, mode, schedule, fan, Wi-Fi, or a message on a Nest, Honeywell Home, ecobee, or Amazon thermostat.',
+          'Thermostat or settings problem reported at Start.'),
         o('not_listed', 'None of these', '@sw_other_not_listed', 'This beta does not check that equipment yet.', 'Equipment not listed on the Something else screen.')
       ]),
 
@@ -290,7 +300,7 @@
         o('heat_pump', 'A heat pump', 'hp.intake.system_confirm', 'A heat pump heats and cools. Leave this cooling-only check and continue on the air-source heat pump check.', 'Heat pump reported. Switching to the heat pump tree.'),
         o('ductless_mini_split', 'A ductless mini-split', 'ms.intake.system_confirm', 'Indoor unit on the wall, floor, or ceiling, no vents. Continue on the mini-split check.', 'Ductless mini-split reported. Switching to the mini-split check.'),
         o('window_portable', 'A window or portable unit', '@out_of_scope_equipment', 'Out of scope for this beta.', 'Window or portable equipment reported.'),
-        o('geo_packaged_other', 'Geothermal, packaged, or another system', '@out_of_scope_equipment', 'Geothermal or water-source: start again, choose Something else: mini-split, geothermal, other, then Water-source / geothermal heat pump. Packaged or other systems are not covered yet.', 'Geothermal, packaged, or another system reported.'),
+        o('geo_packaged_other', 'Geothermal, packaged, or another system', '@out_of_scope_equipment', 'Geothermal or water-source: start again, choose Something else: mini-split, geothermal, thermostat, other, then Water-source / geothermal heat pump. Packaged or other systems are not covered yet.', 'Geothermal, packaged, or another system reported.'),
         o('not_sure', 'I am not sure', '@system_unconfirmed', 'Do not open covers to find out.')
       ]),
 
@@ -997,7 +1007,7 @@
       'insufficient_info', 'heat_pump_out_of_scope'),
     out_of_scope_equipment: r('More information needed', 'Not covered in this beta yet', 'This equipment is outside the cooling-only split central AC check.',
       'Window and portable units, packaged systems, and other types are not diagnosed here.',
-      ['Hire a technician who works on that type of equipment, or use that manufacturer’s owner guidance.', 'If this is a water-source or geothermal heat pump: Start again, choose Something else: mini-split, geothermal, other, then Water-source / geothermal heat pump.', 'You can write down an already-known model number yourself. Do not remove a cover or climb to find it.'],
+      ['Hire a technician who works on that type of equipment, or use that manufacturer’s owner guidance.', 'If this is a water-source or geothermal heat pump: Start again, choose Something else: mini-split, geothermal, thermostat, other, then Water-source / geothermal heat pump.', 'You can write down an already-known model number yourself. Do not remove a cover or climb to find it.'],
       'Do not apply this central-AC guide to other equipment.', 'scope',
       'insufficient_info', 'out_of_scope_equipment'),
     system_unconfirmed: r('More information needed', 'Confirm the system first', 'This check needs a confirmed split central air conditioner.',
@@ -1317,12 +1327,12 @@
       'insufficient_info', 'hp_cool_only_use_ac'),
     hp_mini_split_oos: r('More information needed', 'Outside this heat-pump check', 'Use the mini-split check instead.',
       'This ducted heat-pump check will not guess a mini-split diagnosis. Second Wrench has a separate mini-split check for cooling and heating on one indoor unit.',
-      ['Go back home, press Start, and choose “Something else: mini-split, geothermal, other”, then “Ductless mini-split”. It covers cooling and heating problems on a single indoor unit.', 'For a system with more than one indoor unit, use a technician who works on mini-splits or the manufacturer owner guidance.', 'Do not remove a cover to force an identification.'],
+      ['Go back home, press Start, and choose “Something else: mini-split, geothermal, thermostat, other”, then “Ductless mini-split”. It covers cooling and heating problems on a single indoor unit.', 'For a system with more than one indoor unit, use a technician who works on mini-splits or the manufacturer owner guidance.', 'Do not remove a cover to force an identification.'],
       'Do not apply this ducted heat-pump guide to a mini-split.', 'scope',
       'insufficient_info', 'hp_mini_split_oos'),
     hp_water_source_oos: r('More information needed', 'Outside this heat-pump check', 'This air-source check does not cover a water-source heat pump.',
       'Loop water and related work are not part of this check.',
-      ['Start again, choose Something else: mini-split, geothermal, other, then Water-source / geothermal heat pump.', 'Use a technician who works on that system.', 'Do not open covers or service a ground loop from this result.'],
+      ['Start again, choose Something else: mini-split, geothermal, thermostat, other, then Water-source / geothermal heat pump.', 'Use a technician who works on that system.', 'Do not open covers or service a ground loop from this result.'],
       'Do not apply this air-source guide to a water-source heat pump.', 'scope',
       'insufficient_info', 'hp_water_source_oos'),
     hp_packaged_oos: r('More information needed', 'Outside this heat-pump check', 'Packaged or unconfirmed equipment is not covered in this wave.',
@@ -1472,7 +1482,7 @@
       'insufficient_info', 'wshp_system_unconfirmed'),
     wshp_divert_mini_split: r('More information needed', 'Use the right check', 'A ductless mini-split has its own check.',
       'This check is for water-source and geothermal heat pumps. Cooling problems on one indoor mini-split unit start from the home screen.',
-      ['Go back home, press Start, and choose “Something else: mini-split, geothermal, other”, then “Ductless mini-split”.', 'If anything is unsafe, use Stop / get help.'],
+      ['Go back home, press Start, and choose “Something else: mini-split, geothermal, thermostat, other”, then “Ductless mini-split”.', 'If anything is unsafe, use Stop / get help.'],
       'Do not use these water-source steps on a mini-split.', 'scope',
       'insufficient_info', 'wshp_divert_mini_split'),
     wshp_divert_furnace: r('Professional guidance', 'Fuel-burning equipment · use the furnace check', 'A gas or electric furnace has its own check.',
@@ -1572,7 +1582,7 @@
       'insufficient_info', 'fn_out_of_scope_equipment'),
     fn_mini_split_oos: r('More information needed', 'Use the mini-split check', 'A ductless mini-split has its own check.',
       'This furnace check is for ducted furnaces. Cooling problems on one indoor unit start on the Something else screen.',
-      ['Go back home, press Start, and choose “Something else: mini-split, geothermal, other”, then “Ductless mini-split”.', FN_CO_LINE],
+      ['Go back home, press Start, and choose “Something else: mini-split, geothermal, thermostat, other”, then “Ductless mini-split”.', FN_CO_LINE],
       "Don't remove covers to identify the equipment.", 'scope',
       'insufficient_info', 'fn_mini_split_oos'),
     fn_system_unconfirmed: r('More information needed', 'Confirm the furnace first', 'We need to know the furnace type.',
@@ -2118,7 +2128,7 @@
       throw new Error('Start choices drifted');
     }
     if (systemChoice('furnace').next !== 'fn.gate.combustion_co') throw new Error('Furnace must enter the furnace gate');
-    if (systemChoice('other_heat_or_ductless').next !== 'sw.intake.other_system' || systemChoice('other_heat_or_ductless').label !== 'Something else: mini-split, geothermal, other') {
+    if (systemChoice('other_heat_or_ductless').next !== 'sw.intake.other_system' || systemChoice('other_heat_or_ductless').label !== 'Something else: mini-split, geothermal, thermostat, other') {
       throw new Error('Something else Start choice drifted');
     }
     if (wshpChoice('ductless_mini_split').next !== 'ms.intake.system_confirm') throw new Error('Ductless must enter the mini-split check');
@@ -2450,7 +2460,10 @@
     if (results.ms_advanced_off.outcome !== 'call_pro' || results.ms_advanced_off.diyTier !== 'pro_only') {
       throw new Error('Mini-split advanced defense drifted');
     }
+    TS.assertTs(nodes, results);
   }
+  Object.keys(TS.nodes).forEach(id => { nodes[id] = TS.nodes[id]; });
+  Object.keys(TS.results).forEach(id => { results[id] = TS.results[id]; });
   assertGraph();
 
   function create(seed = '', mode = 'real') {
@@ -2463,7 +2476,8 @@
       hpWeakAirflow: false, hpOutdoorNotRunning: false, hpConcludeFrom: null, defrostReturns: 0,
       idWinter: null, idEm: null, wshpLoop: null,
       fnFuel: null, fnLanding: null, fnReason: null, hpGasFurnace: null,
-      msLanding: null, msSingleZone: false
+      msLanding: null, msSingleZone: false,
+      tsModel: null, tsLanding: null
     };
     pushAudit(state, 'node_entered:' + ENTRY);
     pushAudit(state, 'product_lane:ask');
@@ -2471,7 +2485,7 @@
   }
   function enterLane(state, lane) {
     state.product = lane;
-    state.treeVersion = lane === 'hp' ? TREE_HP : lane === 'wshp' ? TREE_WSHP : lane === 'fn' ? TREE_FN : lane === 'ms' ? TREE_MS : TREE_VERSION;
+    state.treeVersion = lane === 'hp' ? TREE_HP : lane === 'wshp' ? TREE_WSHP : lane === 'fn' ? TREE_FN : lane === 'ms' ? TREE_MS : lane === 'ts' ? TREE_TS : TREE_VERSION;
     pushAudit(state, 'product_lane:' + lane);
   }
   function uuid() {
@@ -2553,6 +2567,7 @@
     if (state.product !== 'ac' && (target === CONCLUDE || target.indexOf('ac.adv.cap.') === 0 || target === '@suspected_capacitor_contactor_advanced_off' || target === '@next_step_advanced')) {
       if (state.product === 'wshp') return '@wshp_advanced_off';
       if (state.product === 'ms') return '@ms_advanced_off';
+      if (state.product === 'ts') return '@ts_advanced_off';
       return '@hp_advanced_electrical_off';
     }
     if (state.product !== 'hp') return target;
@@ -2668,6 +2683,7 @@
     if (nodeId === 'sw.intake.system_type' && choice === 'heat_pump') enterLane(state, 'hp');
     if (nodeId === 'sw.intake.system_type' && choice === 'furnace') enterLane(state, 'fn');
     if (nodeId === 'sw.intake.other_system' && choice === 'ductless_mini_split') enterLane(state, 'ms');
+    if (nodeId === 'sw.intake.other_system' && choice === 'thermostat_settings') enterLane(state, 'ts');
     if (nodeId === 'ac.cool.intake.system_confirm' && choice === 'ductless_mini_split') enterLane(state, 'ms');
     if (nodeId === 'hp.intake.system_confirm' && (choice === 'air_source_hp_gas_furnace' || choice === 'air_source_hp_gas_unsure')) {
       state.hpGasFurnace = choice === 'air_source_hp_gas_furnace' ? 'yes' : 'not_sure';
@@ -2711,6 +2727,17 @@
     const shownOption = shown && shown.options.find(item => item.id === choice);
     state.answers.push({ node: nodeId, choice, label: shownOption ? shownOption.label : option.label, fact: shownOption && shownOption.fact != null ? shownOption.fact : option.fact, at: new Date().toISOString() });
     pushAudit(state, 'answer_selected:' + choice);
+    if (TS.modelOf[choice]) {
+      state.tsModel = TS.modelOf[choice];
+      pushAudit(state, 'flag:ts_model=' + state.tsModel);
+    }
+    if (TS.landingOf[choice]) {
+      state.tsLanding = TS.landingOf[choice];
+      pushAudit(state, 'flag:ts_landing=' + state.tsLanding);
+    }
+    if (choice === 'screen_looks_different' && TS.fnOf[nodeId]) {
+      pushAudit(state, 'flag:ts_mirror_mismatch=' + TS.fnOf[nodeId] + ':' + (state.tsModel || ''));
+    }
     if (nodeId === 'hp.landing.picker' && state.hpLanding) pushAudit(state, 'flag:hp_landing=' + state.hpLanding);
     if (nodeId === 'hp.ambient.outdoor_band' && state.hpAmbient) pushAudit(state, 'flag:hp_ambient_band=' + state.hpAmbient);
     if (nodeId === 'hp.intake.system_confirm' && choice === 'air_source_ducted_hp') pushAudit(state, 'flag:hp_equipment=air_source_ducted');
@@ -2839,6 +2866,9 @@
         pushAudit(state, 'capacitor_label_recorded');
       }
       pushAudit(state, 'node_entered:' + target);
+      if (state.product === 'ts' && TS.fnOf[target] && state.tsModel) {
+        TS.renderTsPanel(state.tsModel, target).served.forEach(block => pushAudit(state, 'flag:ts_mirror=' + block.id));
+      }
       if (target === 'wshp.handback.call_pro') pushAudit(state, 'handback:wshp.handback.call_pro');
     }
     return state;
@@ -2874,6 +2904,10 @@
     return state;
   }
   function summary(state, extra = {}) {
+    if (state && state.product === 'ts') {
+      const version = (typeof globalThis !== 'undefined' && globalThis.SW_CONFIG && globalThis.SW_CONFIG.contentVersion) || '';
+      return TS.summary(state, extra, version);
+    }
     const clean = x => String(x || '').replace(/[\r\n\t]+/g, ' ').trim().slice(0, 140);
     const facts = state.answers.map(x => x.fact).filter(Boolean);
     const complaint = clean(extra.complaint) || clean(state.seed) || facts.find(x => x.startsWith('Complaint:')) || (state.result === 'sw_other_not_listed' ? 'Equipment this beta does not check yet; see reported observations.' : state.product === 'wshp' ? 'Water-source / geothermal heat pump concern; see reported observations.' : state.product === 'hp' ? 'Heat pump concern; see reported observations.' : state.product === 'fn' ? 'Furnace concern; see reported observations.' : state.product === 'ms' ? (state.msLanding === 'no_heat' ? 'Mini-split heating concern; see reported observations.' : 'Mini-split concern; see reported observations.') : 'AC concern; see reported observations.');
@@ -2935,6 +2969,7 @@
   function presentResult(state) {
     const res = state && results[state.result];
     if (!res) return null;
+    if (state && state.product === 'ts') return TS.presentResult(state, results);
     if (state && state.product === 'wshp' && state.result === 'gas') {
       return Object.assign({}, res, {
         avoid: String(res.avoid).replace('switch the AC off', 'switch the system off')
@@ -2972,7 +3007,10 @@
   }
   return {
     nodes, results, create, answer, stop, resume, summary, activity, viewNode, presentResult, advancedEnabled,
-    treeVersion: TREE_VERSION, treeVersionHp: TREE_HP, treeVersionWshp: TREE_WSHP, treeVersionMs: TREE_MS, msPr1: MS_PR1, msV1: MS_V1, wave1: WAVE1, wave2: WAVE2, advanced: ADVANCED,
+    treeVersion: TREE_VERSION, treeVersionHp: TREE_HP, treeVersionWshp: TREE_WSHP, treeVersionMs: TREE_MS, treeVersionTs: TREE_TS, tsV0: TS_V0, msPr1: MS_PR1, msV1: MS_V1, wave1: WAVE1, wave2: WAVE2, advanced: ADVANCED,
+    tsSteps: TS.steps, tsModels: TS.models, tsLc: TS.lc, tsFallbacks: TS.fallbacks, tsMirrors: { records: TS.records, byId: TS.byId, serve: TS.serve, hold: TS.hold },
+    tsMirrorRenderable: TS.tsMirrorRenderable, renderTsPanel: TS.renderTsPanel, assertTs: TS.assertTs, assertGraph: assertGraph,
+    tsFnOf: TS.fnOf, tsModelOf: TS.modelOf, tsLandingOf: TS.landingOf, tsU1: TS.u1, tsU2: TS.u2, tsTellPro: TS.tellPro, tsForbiddenScan: TS.forbiddenScan,
     hpWave1: HP_WAVE1, wshpWave1: WSHP_WAVE1, treeVersionFn: TREE_FN, fnWave1: FN_WAVE1, fnReused: FN_REUSED, fnForbidden: FN_FORBIDDEN,
     fnCoLine: FN_CO_LINE, fnReasonCopy: FN_REASON_COPY, fnEdge: FN_EDGE
   };

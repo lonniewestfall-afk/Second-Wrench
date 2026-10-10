@@ -1,0 +1,31 @@
+id: "HW-FP6.HOLD.01/1"
+brand: "Honeywell Home (Resideo)"
+model: "FocusPRO TH6110D / TH6220D"
+gen: "unspecified"
+firmware_range: {min: null, max: null, fw_sensitive: false, basis: "Non-Wi-Fi model; firmware not stated."}
+step_id: "HW-FP6.HOLD.01"
+screen: 1
+menu_path: ["Front panel"]
+lines:
+  - {label: "Temporary", type: "status", selected: false, verified: "text", condition: null, note: "after using the arrows"}
+  - {label: "Hold", type: "status", selected: false, verified: "text", condition: null, note: "after pressing HOLD"}
+buttons:
+  - {label: "HOLD", on_screen_text: "HOLD", kind: "physical", verified: "text"}
+  - {label: "Run Schedule", on_screen_text: "Run Schedule", kind: "physical", verified: "text"}
+source_url: "https://comfort-pro.com/wp-content/uploads/Honeywell-6000-Tstat.pdf"
+source_pages: "p.12–13 (schedule override figures), p.4 (controls); 2-up scan"
+source_version: "Honeywell FocusPRO TH6110D/TH6220D owner's guide, doc. 69-1715 (third-party host; PDF date not recorded; retrieved 2026-10-10)"
+source_host: "unofficial"
+verified_status: "verified"
+verified_basis: "source_text"
+verified_by: "Second Wrench research worker (AI-assisted, single pass)"
+verified_on: "2026-10-10"
+second_check_by: "Tree Lead"
+second_check_on: "2026-10-10"
+recheck_cadence: "12m"
+recheck_due: "2027-10-10"
+verification_notes: ["Labels per settings-matrix.md HW-FP6.HOLD.01. The guide uses both 'Run Schedule' and 'RUN SCHEDULE'; compare against the device or a figure (H4).", "2026-10-10 Tree Lead blind second check: PASS (mirror-second-check.md #10). verified_on is reset to that check date (unchanged, 2026-10-10)."]
+our_instruction_text:
+  - "Temporary on the display means a change made with the arrows. It ends at the next scheduled time."
+  - "Hold means the temperature stays put until you cancel it."
+  - "To go back to your schedule from either one, press Run Schedule."

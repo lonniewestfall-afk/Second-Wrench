@@ -1,0 +1,31 @@
+id: "HW-TH4.HOLD.01/1"
+brand: "Honeywell Home (Resideo)"
+model: "PRO TH4000 series"
+gen: "unspecified"
+firmware_range: {min: null, max: null, fw_sensitive: false, basis: "Non-Wi-Fi model; firmware not stated."}
+step_id: "HW-TH4.HOLD.01"
+screen: 1
+menu_path: ["Front panel"]
+lines:
+  - {label: "[display: not mirrored]", type: "placeholder", selected: false, verified: "text", condition: null, note: "only button names are verified"}
+buttons:
+  - {label: "SET", on_screen_text: "SET", kind: "physical", verified: "figure", note: "left (p.1 device photo)"}
+  - {label: "HOLD", on_screen_text: "HOLD", kind: "physical", verified: "figure", note: "centre"}
+  - {label: "RUN", on_screen_text: "RUN", kind: "physical", verified: "figure", note: "right"}
+source_url: "https://customer.resideo.com/resources/Techlit/TechLitDocuments/69-0000s/69-1760EFS.pdf"
+source_pages: "p.1 (device photo and callouts), p.2–4 (steps)"
+source_version: "Honeywell PRO TH4000 series guide, doc. 69-1760EFS-10 (PDF date not recorded; retrieved 2026-10-10)"
+source_host: "official"
+verified_status: "verified"
+verified_basis: "source_text"
+verified_by: "Second Wrench research worker (AI-assisted, single pass)"
+verified_on: "2026-10-10"
+second_check_by: "Tree Lead"
+second_check_on: "2026-10-10"
+recheck_cadence: "12m"
+recheck_due: "2027-10-10"
+verification_notes: ["Matrix status: verified (button names).", "2026-10-10 Tree Lead blind second check: FAIL (mirror-second-check.md #12). Fixed against the primary source, not the matrix: Buttons are now SET, HOLD, RUN, in left-to-right order as printed (p.1 device photo). Held until Tree Lead re-checks it.", "2026-10-10 Tree Lead re-check: PASS. verified_on reset to the check date (shown in the LC-4 caption). Un-held in v3.1."]
+our_instruction_text:
+  - "Press RUN to go back to your schedule."
+  - "HOLD keeps the current temperature until you press RUN."
+  - "SET is for the clock and schedule. You don’t need it for this step."

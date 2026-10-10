@@ -1,0 +1,35 @@
+id: "HW-X2P.ALERT.01/1"
+brand: "Honeywell Home (Resideo)"
+model: "X2P (RTH20B / RTH21B / RTH22B)"
+gen: "unspecified"
+firmware_range: {min: null, max: null, fw_sensitive: false, basis: "Non-Wi-Fi model; firmware not stated."}
+step_id: "HW-X2P.ALERT.01"
+screen: 1
+menu_path: ["Home screen", "MENU", "ALRT", "Select"]
+lines:
+  - {label: "(Alert icon)", type: "status", selected: false, verified: "text", condition: null, note: "generic word; icon not drawn"}
+  - {label: "405", type: "status", selected: false, verified: "text", condition: null, note: "example alert number"}
+buttons:
+  - {label: "MENU", on_screen_text: "MENU", kind: "text", verified: "figure", note: "on-screen label beside an unlabeled button (M39528)"}
+  - {label: "Select", on_screen_text: "Select", kind: "text", verified: "figure", note: "on-screen label above an unlabeled button (M39513)"}
+  - {label: "Exit", on_screen_text: "Exit", kind: "text", verified: "figure", note: "on-screen label (M39513, M39514)"}
+  - {label: "Dismiss", on_screen_text: "Dismiss", kind: "text", verified: "figure", condition: "reminders only (p.17, M39515)", note: "alerts can’t be dismissed"}
+source_url: "https://customer.resideo.com/resources/Techlit/TechLitDocuments/33-00000s/33-00688EFS.pdf"
+source_pages: "p.16–17"
+source_version: "Honeywell Home X2P guide, doc. 33-00688EFS-03 (Resideo-hosted; byte-identical to the honeywellstore.com copy; retrieved 2026-10-10)"
+source_host: "official"
+verified_status: "verified"
+verified_basis: "source_text"
+verified_by: "Second Wrench research worker (AI-assisted, single pass)"
+verified_on: "2026-10-10"
+second_check_by: "Tree Lead"
+second_check_on: "2026-10-10"
+recheck_cadence: "12m"
+recheck_due: "2027-10-10"
+verification_notes: ["Alert numbers and MENU / SELECT / DISMISS per settings-matrix.md HW-X2P.ALERT.01. 405/407 are P1; 170/171/173 are P2 and appear only in our instructions.", "2026-10-10 Tree Lead blind second check: FAIL (mirror-second-check.md #22). Fixed against the primary source, not the matrix: Select / Dismiss in screen case and set as on-screen labels; path step ALRT; Exit key added. The invented line \"Alerts clear on their own\" is removed; p.16 says an alert can’t be dismissed. Held until Tree Lead re-checks it.", "2026-10-10 Tree Lead re-check: PASS. verified_on reset to the check date (shown in the LC-4 caption). Un-held in v3.1."]
+our_instruction_text:
+  - "An alert symbol on the screen means there’s an alert."
+  - "Press MENU, use the arrows to reach ALRT, then press Select to see the alert number. Press Exit to go back."
+  - "405 or 407: the batteries are low or very low. Put in fresh AA alkaline batteries."
+  - "171: set the time and date. 170 or 173: the thermostat itself has a fault, so call a pro."
+  - "An alert can’t be dismissed. Fix the cause, for example by putting in fresh batteries. Dismiss is only for reminders."

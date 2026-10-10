@@ -1,0 +1,29 @@
+id: "HW-FP6.FAN.01/1"
+brand: "Honeywell Home (Resideo)"
+model: "FocusPRO TH6110D / TH6220D"
+gen: "unspecified"
+firmware_range: {min: null, max: null, fw_sensitive: false, basis: "Non-Wi-Fi model; firmware not stated."}
+step_id: "HW-FP6.FAN.01"
+screen: 1
+menu_path: ["Front panel", "Fan button"]
+lines:
+  - {label: "Auto", type: "option", selected: false, verified: "figure", condition: null, note: "confirmed (p.7 figures); shown"}
+  - {label: "On", type: "option", selected: false, verified: "figure", condition: null, note: "confirmed (p.7 figures); shown"}
+buttons:
+  - {label: "Fan", on_screen_text: "Fan", kind: "physical", verified: "text"}
+source_url: "https://comfort-pro.com/wp-content/uploads/Honeywell-6000-Tstat.pdf"
+source_pages: "p.7 (fan setting figures); 2-up scan"
+source_version: "Honeywell FocusPRO TH6110D/TH6220D owner's guide, doc. 69-1715 (third-party host; PDF date not recorded; retrieved 2026-10-10)"
+source_host: "unofficial"
+verified_status: "verified"
+verified_basis: "source_text"
+verified_by: "Second Wrench research worker (AI-assisted, single pass)"
+verified_on: "2026-10-10"
+second_check_by: "Tree Lead"
+second_check_on: "2026-10-10"
+recheck_cadence: "12m"
+recheck_due: "2027-10-10"
+verification_notes: ["Matrix status: verified (control names). Setting labels not confirmed, so hidden.", "2026-10-10 Tree Lead blind second check: PASS (mirror-second-check.md #15). verified_on is reset to that check date (unchanged, 2026-10-10)."]
+our_instruction_text:
+  - "Press Fan until the display shows Auto. Auto runs the fan only while heating or cooling."
+  - "On runs the fan all the time."

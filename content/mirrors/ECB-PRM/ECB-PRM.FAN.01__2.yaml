@@ -1,0 +1,35 @@
+id: "ECB-PRM.FAN.01/2"
+brand: "ecobee"
+model: "Smart Thermostat Premium"
+gen: "Premium (manual v1, 2022)"
+firmware_range: {min: null, max: null, fw_sensitive: true, basis: "Not stated in source."}
+step_id: "ECB-PRM.FAN.01"
+screen: 2
+menu_path: ["Home screen", "Menu", "Main Menu (System tab)", "Fan icon", "Fan Mode"]
+lines:
+  - {label: "Main Menu", type: "title", selected: false, verified: "figure", condition: null, note: null}
+  - {label: "Fan Mode", type: "subtitle", selected: false, verified: "figure", condition: null, note: null}
+  - {label: "Auto", type: "toggle_option", selected: true, verified: "figure", condition: null, note: null}
+  - {label: "On", type: "toggle_option", selected: false, verified: "figure", condition: null, note: null}
+  - {label: "[fan run-time message: not copied]", type: "placeholder", selected: false, verified: "figure", condition: null, note: "two explanatory sentences on the real screen"}
+  - {label: "15 min / hour", type: "dropdown_value", selected: false, verified: "figure", condition: null, note: "example value as shown in the figure"}
+buttons:
+  - {label: "Close", on_screen_text: null, kind: "icon", verified: "figure", note: "'x' icon, top left"}
+source_url: "https://downloads.ctfassets.net/a3qyhfznts9y/55gpc6jhRTJ7KjXDjxDRzu/ad17b04461596be3b00b9c65d6e3a895/ecobee_Premium_install-setup-user_manual_v1.pdf"
+source_pages: "p.72 ('Fan Mode' section and figure)"
+source_version: "ecobee Smart Thermostat Premium Installation, Setup and User Guide, v1 (PDF dated 2022-07-11)"
+source_host: "official"
+verified_status: "verified"
+verified_basis: "source_figure"
+verified_by: "Second Wrench research worker (AI-assisted, single pass)"
+verified_on: "2026-10-10"
+second_check_by: "Tree Lead"
+second_check_on: "2026-10-10"
+recheck_cadence: "90d"
+recheck_due: "2027-01-08"
+verification_notes: ["Matches the p.72 figure. Fan Hold durations (15 minutes, 30 minutes, 45 minutes, 1 hour, 2 hours, Indefinitely) from p.72 text.", "The matrix now lists ECB-PRM.FAN.02 (the '15 min / hour' drop-down) as verified (manual figure); the sample's note saying unverified is superseded.", "2026-10-10 Tree Lead blind second check: FAIL (mirror-second-check.md #5). Fixed against the primary source, not the matrix: Fan Hold line removed from the mirrored Fan Mode screen; the p.72 figure doesn’t show it. Fan Hold stays in the instruction text (p.72 step 2). Held until Tree Lead re-checks it.", "2026-10-10 Tree Lead re-check: PASS. verified_on reset to the check date (shown in the LC-4 caption). Un-held in v3.1."]
+our_instruction_text:
+  - "On the main screen, tap the menu icon (three short lines)."
+  - "The menu opens on its System tab. Tap the fan symbol in the row along the bottom."
+  - "Tap On to run the fan now, or Auto to let it run only when heating or cooling needs it."
+  - "For a fan run with an end time, tap Fan Hold and pick how long. Tap the X at the top left to leave."

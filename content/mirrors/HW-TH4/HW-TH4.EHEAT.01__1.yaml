@@ -1,0 +1,29 @@
+id: "HW-TH4.EHEAT.01/1"
+brand: "Honeywell Home (Resideo)"
+model: "PRO TH4000 series"
+gen: "unspecified"
+firmware_range: {min: null, max: null, fw_sensitive: false, basis: "Non-Wi-Fi model; firmware not stated."}
+step_id: "HW-TH4.EHEAT.01"
+screen: 1
+menu_path: ["Front", "Display"]
+lines:
+  - {label: "Em", type: "status", selected: false, verified: "text", condition: "Heat pumps with backup heat only", note: "emergency heat is on"}
+  - {label: "Aux", type: "status", selected: false, verified: "text", condition: "Heat pumps with backup heat only", note: "backup heat is helping"}
+buttons:
+  - {label: "System", on_screen_text: "System", kind: "physical", verified: "text", note: "slide switch"}
+source_url: "https://customer.resideo.com/resources/Techlit/TechLitDocuments/69-0000s/69-1760EFS.pdf"
+source_pages: "p.2 (display figure and legend), p.1 (System switch)"
+source_version: "Honeywell PRO TH4000 series guide, doc. 69-1760EFS-10 (PDF date not recorded; retrieved 2026-10-10)"
+source_host: "official"
+verified_status: "verified"
+verified_basis: "source_text"
+verified_by: "Second Wrench research worker (AI-assisted, single pass)"
+verified_on: "2026-10-10"
+second_check_by: "Tree Lead"
+second_check_on: "2026-10-10"
+recheck_cadence: "12m"
+recheck_due: "2027-10-10"
+verification_notes: ["Per settings-matrix.md HW-TH4.EHEAT.01 (Em and Aux indicators).", "2026-10-10 Tree Lead blind second check: PASS (mirror-second-check.md #14). verified_on is reset to that check date (unchanged, 2026-10-10)."]
+our_instruction_text:
+  - "Em on the display means emergency heat is on. Slide the System switch to Heat to go back to normal heat."
+  - "Aux on the display means backup heat is helping the heat pump. That’s normal now and then. If it shows most of the time, call a pro."

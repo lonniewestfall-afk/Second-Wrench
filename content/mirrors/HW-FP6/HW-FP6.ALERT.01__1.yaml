@@ -1,0 +1,28 @@
+id: "HW-FP6.ALERT.01/1"
+brand: "Honeywell Home (Resideo)"
+model: "FocusPRO TH6110D / TH6220D"
+gen: "unspecified"
+firmware_range: {min: null, max: null, fw_sensitive: false, basis: "Non-Wi-Fi model; firmware not stated."}
+step_id: "HW-FP6.ALERT.01"
+screen: 1
+menu_path: ["Display"]
+lines:
+  - {label: "Cool On", type: "status", selected: false, verified: "text", condition: null, note: "flashing = waiting; steady = running"}
+  - {label: "Heat On", type: "status", selected: false, verified: "text", condition: "Heat pumps", note: "flashing = waiting; steady = running"}
+buttons: []
+source_url: "https://comfort-pro.com/wp-content/uploads/Honeywell-6000-Tstat.pdf"
+source_pages: "p.15 (compressor protection figure and text), p.19 (troubleshooting); 2-up scan"
+source_version: "Honeywell FocusPRO TH6110D/TH6220D owner's guide, doc. 69-1715 (third-party host; PDF date not recorded; retrieved 2026-10-10)"
+source_host: "unofficial"
+verified_status: "verified"
+verified_basis: "source_text"
+verified_by: "Second Wrench research worker (AI-assisted, single pass)"
+verified_on: "2026-10-10"
+second_check_by: "Tree Lead"
+second_check_on: "2026-10-10"
+recheck_cadence: "12m"
+recheck_due: "2027-10-10"
+verification_notes: ["Per settings-matrix.md HW-FP6.ALERT.01.", "2026-10-10 Tree Lead blind second check: PASS (mirror-second-check.md #21). verified_on is reset to that check date (unchanged, 2026-10-10)."]
+our_instruction_text:
+  - "Cool On flashing (or Heat On on a heat pump) means the thermostat is waiting a few minutes to protect the equipment."
+  - "It stops flashing once the system runs. Give it about 5 minutes and don’t keep changing the setting."

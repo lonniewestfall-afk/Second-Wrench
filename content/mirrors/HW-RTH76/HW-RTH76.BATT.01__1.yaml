@@ -1,0 +1,28 @@
+id: "HW-RTH76.BATT.01/1"
+brand: "Honeywell Home (Resideo)"
+model: "RTH7600D"
+gen: "unspecified"
+firmware_range: {min: null, max: null, fw_sensitive: false, basis: "Non-Wi-Fi model; firmware not stated."}
+step_id: "HW-RTH76.BATT.01"
+screen: 1
+menu_path: ["Home screen"]
+lines:
+  - {label: "LO BATT", type: "status", selected: false, verified: "text", condition: null, note: "flashes"}
+buttons: []
+source_url: "https://customer.resideo.com/resources/Techlit/TechLitDocuments/69-0000s/69-2207ES.pdf"
+source_pages: "p.18 (battery replacement)"
+source_version: "Honeywell RTH7600 operating manual, doc. 69-2207ES-05 (Resideo-hosted; printed page numbers; retrieved 2026-10-10)"
+source_host: "official"
+verified_status: "verified"
+verified_basis: "source_text"
+verified_by: "Second Wrench research worker (AI-assisted, single pass)"
+verified_on: "2026-10-10"
+second_check_by: "Tree Lead"
+second_check_on: "2026-10-10"
+recheck_cadence: "12m"
+recheck_due: "2027-10-10"
+verification_notes: ["Per settings-matrix.md HW-RTH76.BATT.01.", "2026-10-10 Tree Lead blind second check: PASS (mirror-second-check.md #17). verified_on is reset to that check date (unchanged, 2026-10-10)."]
+our_instruction_text:
+  - "LO BATT flashing means the batteries have about a month left."
+  - "Put in two fresh AA alkaline batteries. Your manual shows where they go."
+  - "If the thermostat also gets power from the system, the batteries are a backup. Replace them anyway."

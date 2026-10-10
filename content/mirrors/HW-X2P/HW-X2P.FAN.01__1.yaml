@@ -1,0 +1,30 @@
+id: "HW-X2P.FAN.01/1"
+brand: "Honeywell Home (Resideo)"
+model: "X2P (RTH20B / RTH21B / RTH22B)"
+gen: "unspecified"
+firmware_range: {min: null, max: null, fw_sensitive: false, basis: "Non-Wi-Fi model; firmware not stated."}
+step_id: "HW-X2P.FAN.01"
+screen: 1
+menu_path: ["Home screen", "FAN"]
+lines:
+  - {label: "AUTO", type: "option", selected: false, verified: "text", condition: null, note: null}
+  - {label: "ON", type: "option", selected: false, verified: "text", condition: null, note: null}
+  - {label: "CIRC", type: "option", selected: false, verified: "text", condition: null, note: null}
+buttons:
+  - {label: "FAN", on_screen_text: "FAN", kind: "physical", verified: "text"}
+source_url: "https://customer.resideo.com/resources/Techlit/TechLitDocuments/33-00000s/33-00688EFS.pdf"
+source_pages: "p.13"
+source_version: "Honeywell Home X2P guide, doc. 33-00688EFS-03 (Resideo-hosted; byte-identical to the honeywellstore.com copy; retrieved 2026-10-10)"
+source_host: "official"
+verified_status: "verified"
+verified_basis: "source_text"
+verified_by: "Second Wrench research worker (AI-assisted, single pass)"
+verified_on: "2026-10-10"
+second_check_by: null
+second_check_on: null
+recheck_cadence: "12m"
+recheck_due: "2027-10-10"
+verification_notes: ["HELD: the p.13 figure shows the display reading 'Auto' in mixed case; the text list is in capitals."]
+our_instruction_text:
+  - "Press the fan button until Auto shows, so the fan runs only while heating or cooling."
+  - "Circulate runs the fan about a third of the time. On runs it all the time."

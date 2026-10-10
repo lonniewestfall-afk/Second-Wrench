@@ -1,0 +1,33 @@
+id: "HW-FP6.MODE.01/1"
+brand: "Honeywell Home (Resideo)"
+model: "FocusPRO TH6110D / TH6220D"
+gen: "unspecified"
+firmware_range: {min: null, max: null, fw_sensitive: false, basis: "Non-Wi-Fi model; firmware not stated."}
+step_id: "HW-FP6.MODE.01"
+screen: 1
+menu_path: ["Front panel", "System button"]
+lines:
+  - {label: "Heat", type: "option", selected: false, verified: "text", condition: null, note: "one mode shows at a time"}
+  - {label: "Cool", type: "option", selected: false, verified: "text", condition: null, note: null}
+  - {label: "Off", type: "option", selected: false, verified: "text", condition: null, note: null}
+  - {label: "Auto", type: "option", selected: false, verified: "text", condition: "Only if set up at installation", note: null}
+  - {label: "Em Heat", type: "option", selected: false, verified: "text", condition: "Heat pumps with backup heat only", note: null}
+buttons:
+  - {label: "System", on_screen_text: "System", kind: "physical", verified: "text"}
+source_url: "https://comfort-pro.com/wp-content/uploads/Honeywell-6000-Tstat.pdf"
+source_pages: "p.8 (system setting), p.5 (display callout); 2-up scan, each printed page appears twice"
+source_version: "Honeywell FocusPRO TH6110D/TH6220D owner's guide, doc. 69-1715 (third-party host; PDF date not recorded; retrieved 2026-10-10)"
+source_host: "unofficial"
+verified_status: "verified"
+verified_basis: "source_text"
+verified_by: "Second Wrench research worker (AI-assisted, single pass)"
+verified_on: "2026-10-10"
+second_check_by: "Tree Lead"
+second_check_on: "2026-10-10"
+recheck_cadence: "12m"
+recheck_due: "2027-10-10"
+verification_notes: ["Button System and mode Em Heat confirmed per settings-matrix.md. Mode order as the manual lists it. Compare case against a figure at second check (H4).", "2026-10-10 Tree Lead blind second check: PASS (mirror-second-check.md #7). verified_on is reset to that check date (unchanged, 2026-10-10)."]
+our_instruction_text:
+  - "Press System. Each press moves to the next mode."
+  - "Stop when the display shows Heat or Cool."
+  - "Auto and Em Heat show only on some setups. If the mode you need isn’t there, an installer has to turn it on."
