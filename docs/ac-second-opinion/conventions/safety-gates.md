@@ -23,6 +23,7 @@ Hard gates. Affirmative / failed check → tree **halts**. No soft continue. Pre
 | `ac.gate.breaker_wont_reset` | Breaker for the unit or loop pump keeps tripping or will not stay on | Leave the breaker off. Do not reset it again. | `emergency_exit` | `gate_fired:breaker_wont_reset` |
 | `wshp.gate.openloop_chemistry` | Open-loop session reaches the water-quality gate, or the user asks for water treatment, cleaning, or well work | Open-loop water care needs a professional. Do not add chemicals or work on the well, pump, or pressure tank. | `call_pro`. No node follows this gate. | `gate_fired:wshp_openloop_chemistry` |
 | `wshp.gate.new_hazard` | `hazard_now` on any `wshp.` node | A new hazard ends this check. | `emergency_exit` | `gate_fired:wshp_new_hazard` |
+| `ms.gate.new_hazard` | `hazard_now` on any `ms.` node | A new hazard ends this check. | `emergency_exit` | `gate_fired:ms_new_hazard` |
 
 ## Ordering
 
