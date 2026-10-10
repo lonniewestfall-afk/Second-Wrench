@@ -4,7 +4,7 @@ Tree version: `ms.ductless.v1`. Product key: `ms`. Content version `2026-10-10.2
 
 Basic look-only checks. No ladder, breaker, disconnect, refrigerant, capacitor, or panel-removal steps. No defrost buttons. Look at the outdoor unit only from a window or dry ground. Advanced stays off. Multi-zone stays out.
 
-Entry: Start → Something else: mini-split, geothermal, other → Ductless mini-split. Also from the cooling-system question. A ductless answer on the water-source equipment question points back to that Start path.
+Entry: Start → Something else: mini-split, geothermal, thermostat, other → Ductless mini-split. Also from the cooling-system question. A ductless answer on the water-source equipment question points back to that Start path.
 
 | Node | Title |
 |---|---|

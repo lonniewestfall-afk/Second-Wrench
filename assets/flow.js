@@ -19,6 +19,11 @@
  *   also enters this lane. The furnace question points back to that Start
  *   path. No capacitor, refrigerant, breaker, disconnect, or panel-removal
  *   steps. Water on electrical parts is a look-only stop. Advanced stays off.
+ * - ts.settings.v0 for U.S. residential low-voltage thermostat settings
+ *   (Basic only). Start stays five choices. Something else opens thermostat
+ *   settings before “None of these”. Text steps and a Check your manual link
+ *   only. No breaker reset. Installer, equipment, and wiring settings stop.
+ *   aiThermostatEnabled and mirrorsEnabled stay false. Advanced stays off.
  * Session entry: ac.gate.cluster_entry → ac.session.consent →
  *   sw.intake.system_type. Consent text is shared and its stored agree
  *   edge stays ac.cool.intake.system_confirm (not a second consent node).
@@ -28,7 +33,8 @@
  *   Furnace → fn.gate.combustion_co, then look-only checks.
  *   Something else → sw.intake.other_system. Ductless mini-split →
  *   ms.intake.system_confirm. Water-source / geothermal →
- *   wshp.hazard.flood_electrical.
+ *   wshp.hazard.flood_electrical. Thermostat settings →
+ *   ts.gate.safety_stops.
  *   Not sure → sw.identify.* (at most three questions). A heat-pump signal
  *   or a still-unclear answer enters the heat-pump tree. Cooling-only is
  *   only outdoor-off in winter AND a separate furnace or boiler AND no
@@ -129,6 +135,7 @@
   const CONCLUDE = 'ac.cool.conclude.call_pro_capacitor_contactor';
   const TREE_FN = 'fn.furnace.v0';
   const TREE_MS = 'ms.ductless.v1';
+  const TREE_TS = 'ts.settings.v0';
   const MS_PR1 = [
     'ms.intake.system_confirm',
     'ms.landing.picker',
@@ -157,6 +164,99 @@
     landing_outdoor_unit: 'outdoor_unit',
     landing_something_else: 'something_else'
   };
+  const TS_WAVE1 = [
+    'ts.gate.safety_stops',
+    'ts.intake.confirm_low_voltage',
+    'ts.brand.group',
+    'ts.landing.picker',
+    'ts.blank.screen',
+    'ts.blank.batteries',
+    'ts.controls.mode_setpoint',
+    'ts.controls.schedule_hold',
+    'ts.controls.fan',
+    'ts.controls.auto_deadband',
+    'ts.display.lock',
+    'ts.app.wall_disagree',
+    'ts.aux.emergency',
+    'ts.settings.installer_stop',
+    'ts.reading.seems_wrong',
+    'ts.wifi.offline_wall'
+  ];
+  const TS_MODEL_NODES = [
+    'ts.blank.batteries',
+    'ts.controls.mode_setpoint',
+    'ts.controls.schedule_hold',
+    'ts.controls.fan',
+    'ts.controls.auto_deadband',
+    'ts.display.lock',
+    'ts.app.wall_disagree',
+    'ts.aux.emergency',
+    'ts.wifi.offline_wall'
+  ];
+  const TS_BRAND = {
+    brand_nest: 'nest',
+    brand_honeywell_smart: 'honeywell_home_smart',
+    brand_ecobee: 'ecobee',
+    brand_honeywell_nonsmart: 'honeywell_home_nonsmart',
+    brand_amazon: 'amazon',
+    brand_other_low_voltage: 'other_low_voltage',
+    brand_not_sure: 'not_sure'
+  };
+  const TS_BRAND_LABEL = {
+    nest: 'Nest',
+    honeywell_home_smart: 'Honeywell Home smart',
+    ecobee: 'ecobee',
+    honeywell_home_nonsmart: 'Honeywell Home non-smart',
+    amazon: 'Amazon',
+    other_low_voltage: 'other low-voltage',
+    not_sure: 'brand not confirmed'
+  };
+  const TS_LANDING = {
+    landing_blank: 'blank',
+    landing_wont_reach_setpoint: 'wont_reach_setpoint',
+    landing_schedule_or_hold: 'schedule_or_hold',
+    landing_fan: 'fan',
+    landing_auto_switch: 'auto_switch',
+    landing_locked: 'locked',
+    landing_app_vs_wall: 'app_vs_wall',
+    landing_aux_or_emergency: 'aux_or_emergency',
+    landing_installer_or_wiring: 'installer_or_wiring',
+    landing_reading_wrong: 'reading_wrong',
+    landing_wifi_offline: 'wifi_offline',
+    landing_something_else: 'something_else'
+  };
+  const TS_MODEL_STEPS = {
+    nest: 'On a Nest, turn the ring to Heat, Cool, or Off, then press the ring. Fan and Hold are in the Nest app or under Settings on the display. Don’t open a wiring screen.',
+    honeywell_home_smart: 'On a Honeywell Home smart thermostat, mode is on the display or in the Honeywell Home app. Schedule and Hold are there too. Don’t open Installer Setup.',
+    ecobee: 'On an ecobee, open the menu, choose System, then Heat or Cool. Hold and Comfort Settings are in that menu. Don’t open Installation Settings.',
+    honeywell_home_nonsmart: 'On a Honeywell Home non-smart thermostat, use the System switch for Heat, Cool, or Off. Fan is usually Auto or On. Program and Hold are on the face. Don’t pull the thermostat off the wall.',
+    amazon: 'On an Amazon smart thermostat, use the face buttons or the Amazon app for Heat, Cool, or Off. Don’t open an advanced setup screen.',
+    other_low_voltage: 'Button names differ by model. Use the owner’s manual for Heat, Cool, Off, Fan, and Hold. Don’t open a setup screen you don’t already use.',
+    not_sure: 'Button names differ by model. Use the owner’s manual for Heat, Cool, Off, Fan, and Hold. Don’t open a setup screen you don’t already use.'
+  };
+  const TS_MANUAL = {
+    nest: 'https://support.google.com/googlenest/',
+    honeywell_home_smart: 'https://www.honeywellhome.com/us/en/support',
+    honeywell_home_nonsmart: 'https://www.honeywellhome.com/us/en/support',
+    ecobee: 'https://support.ecobee.com/',
+    amazon: 'https://www.amazon.com/gp/help/customer/display.html',
+    other_low_voltage: '',
+    not_sure: ''
+  };
+  const TS_LEGAL = [
+    'This thermostat check is free informational guidance.',
+    'It isn’t a licensed inspection, a diagnosis, or emergency help.',
+    'It’s operator-authored and has not been attorney-reviewed.',
+    'It covers U.S. residential low-voltage thermostat settings only.',
+    'Brand groups in this check are Nest, Honeywell Home smart, ecobee, Honeywell Home non-smart, and Amazon.',
+    'This version shows text steps and a Check your manual link only.',
+    'Installer, equipment, and wiring settings always stop.',
+    'A blank screen is not a reason to reset a breaker.',
+    'Your manual and a qualified professional take priority.'
+  ];
+  const TS_LEGAL_FOOTER = 'Operator-authored thermostat guidance. Not attorney-reviewed. Not a diagnosis. Your manual and a professional take priority.';
+  const TS_CHECK_MANUAL = 'Check your manual for the button names on your model.';
+  const TS_SKIP_INSTALLER = 'Skip any installer, equipment, or wiring page in that manual.';
   const FN_GATE = 'fn.gate.combustion_co';
   const FN_CONCLUDE = 'fn.conclude.call_pro';
   const FN_WAVE1 = [
@@ -222,6 +322,8 @@
     ({ section, title, body, options, caution: extra.caution || '', diyTier: extra.diyTier || 'basic', safetyGate: !!extra.safetyGate });
   const FN_HAZARD = o('hazard_now', 'New gas smell, CO alarm, smoke, sparks, or burning smell right now', '@fn_hazard_now', 'Stop. Get to safety.', 'New hazard reported during the furnace check.', { gate: 'fn_new_hazard' });
   const MS_HAZARD = o('hazard_now', 'New hazard now (burning smell, smoke, sparks, gas smell, or water at electrical parts)', '@ms_hazard_now', 'Stop. Don’t keep checking.', 'New hazard reported during the mini-split check.', { gate: 'ms_new_hazard' });
+  const TS_HAZARD = o('hazard_now', 'New hazard now (gas smell, smoke, sparks, burning smell, or water at the thermostat)', '@ts_hazard_now', 'Stop. Don’t keep checking.', 'New hazard reported during the thermostat check.', { gate: 'ts_new_hazard' });
+  const TS_SLOT = '\n\n{{tsModelSteps}}';
   const MS_BACKUP_HEAT = 'If the home is getting dangerously cold, use safe backup heat per its manufacturer. Never run a space heater near water or the indoor unit. Never use an oven, stove, grill, or generator indoors (carbon monoxide).';
 
   const nodes = {
@@ -243,20 +345,21 @@
       ]),
 
     'sw.intake.system_type': n('Your system', 'What kind of system is this?',
-      'Answer from what you already know. Do not remove a cover or climb to identify the equipment.\n\nA cooling-only air conditioner cools the house. Heat usually comes from a separate furnace or boiler, and the outdoor unit stays off in winter.\n\nA heat pump heats and cools with the outdoor unit.\n\nA furnace heats the house from inside with gas or electric heat. Many homes have a furnace inside and a cooling-only AC outside.\n\nSomething else covers a ductless mini-split, a water-source or geothermal heat pump, or equipment this beta does not check yet.', [
+      'Answer from what you already know. Do not remove a cover or climb to identify the equipment.\n\nA cooling-only air conditioner cools the house. Heat usually comes from a separate furnace or boiler, and the outdoor unit stays off in winter.\n\nA heat pump heats and cools with the outdoor unit.\n\nA furnace heats the house from inside with gas or electric heat. Many homes have a furnace inside and a cooling-only AC outside.\n\nSomething else covers a ductless mini-split, a water-source or geothermal heat pump, thermostat settings, or equipment this beta does not check yet.', [
         o('cooling_only_ac', 'Cooling-only AC', 'ac.cool.intake.system_confirm', 'The outdoor unit is for cooling. A furnace, boiler, or other heater provides heat.', 'Cooling-only central AC reported.'),
         o('heat_pump', 'Heat pump (heats and cools with the outdoor unit)', 'hp.intake.system_confirm', 'The outdoor unit runs for heat and for cooling.', 'Heat pump reported at system type.'),
         o('furnace', 'Furnace (gas or electric, with or without central AC)', 'fn.gate.combustion_co', 'Heat comes from a furnace inside. A furnace safety check comes first.', 'Furnace reported at system type.'),
-        o('other_heat_or_ductless', 'Something else: mini-split, geothermal, other', 'sw.intake.other_system', 'A ductless mini-split, a water-source or geothermal heat pump, or another system.', 'Something else reported at system type.'),
+        o('other_heat_or_ductless', 'Something else: mini-split, geothermal, thermostat, other', 'sw.intake.other_system', 'A ductless mini-split, a water-source or geothermal heat pump, thermostat settings, or another system.', 'Something else reported at system type.'),
         o('not_sure', 'Not sure', 'sw.identify.winter_outdoor', 'Up to three plain questions. If it is still unclear, the check uses the heat-pump path.')
       ]),
 
     'sw.intake.other_system': n('Your system', 'Which one is it?',
-      'Answer from what you already know. Do not remove a cover or climb to identify the equipment.\n\nA ductless mini-split has an indoor unit on a wall, floor, or ceiling. It blows air into the room. There are no vents.\n\nA water-source or geothermal heat pump sits indoors, often in a basement or closet. There is no outdoor unit with a fan. Water or loop fluid comes in through pipes from the ground, a well, or a pond.', [
+      'Answer from what you already know. Do not remove a cover or climb to identify the equipment.\n\nA ductless mini-split has an indoor unit on a wall, floor, or ceiling. It blows air into the room. There are no vents.\n\nA water-source or geothermal heat pump sits indoors, often in a basement or closet. There is no outdoor unit with a fan. Water or loop fluid comes in through pipes from the ground, a well, or a pond.\n\nThermostat settings is for a low-voltage wall thermostat on a home furnace, heat pump, or central air conditioner. It stays on the screen you already use, or in the thermostat’s app.', [
         o('ductless_mini_split', 'Ductless mini-split', 'ms.intake.system_confirm', 'Indoor unit on a wall, floor, or ceiling, with no vents. Cooling problems on one indoor unit.', 'Ductless mini-split reported at Start.'),
         o('water_source_geo', 'Water-source / geothermal heat pump', 'wshp.hazard.flood_electrical',
           'No outdoor unit with a fan. Water pipes run to a ground loop, a well, or a pond.',
           'Water-source or geothermal heat pump reported at system type.'),
+        o('thermostat_settings', 'Thermostat settings', 'ts.gate.safety_stops', 'A low-voltage wall thermostat. Settings you can see on the screen or in the app.', 'Thermostat settings reported at Start.'),
         o('not_listed', 'None of these', '@sw_other_not_listed', 'This beta does not check that equipment yet.', 'Equipment not listed on the Something else screen.')
       ]),
 
@@ -290,7 +393,7 @@
         o('heat_pump', 'A heat pump', 'hp.intake.system_confirm', 'A heat pump heats and cools. Leave this cooling-only check and continue on the air-source heat pump check.', 'Heat pump reported. Switching to the heat pump tree.'),
         o('ductless_mini_split', 'A ductless mini-split', 'ms.intake.system_confirm', 'Indoor unit on the wall, floor, or ceiling, no vents. Continue on the mini-split check.', 'Ductless mini-split reported. Switching to the mini-split check.'),
         o('window_portable', 'A window or portable unit', '@out_of_scope_equipment', 'Out of scope for this beta.', 'Window or portable equipment reported.'),
-        o('geo_packaged_other', 'Geothermal, packaged, or another system', '@out_of_scope_equipment', 'Geothermal or water-source: start again, choose Something else: mini-split, geothermal, other, then Water-source / geothermal heat pump. Packaged or other systems are not covered yet.', 'Geothermal, packaged, or another system reported.'),
+        o('geo_packaged_other', 'Geothermal, packaged, or another system', '@out_of_scope_equipment', 'Geothermal or water-source: start again, choose Something else: mini-split, geothermal, thermostat, other, then Water-source / geothermal heat pump. Packaged or other systems are not covered yet.', 'Geothermal, packaged, or another system reported.'),
         o('not_sure', 'I am not sure', '@system_unconfirmed', 'Do not open covers to find out.')
       ]),
 
@@ -933,7 +1036,191 @@
         o('ice_seen_cooling', 'There’s ice or frost on the indoor unit, its pipes, or the pipes at the outdoor unit', '@ms_ice_cooling_wave1', 'Turn it off, let it thaw, call a pro.', 'Ice or frost seen while cooling.'),
         o('ice_outdoor_heating_or_unsure', 'It’s frost on the outdoor unit while heating, or I’m not sure it’s ice', '@ms_ice_unclear_or_heat', 'Safe steps next, including what a normal defrost looks like.', 'Outdoor frost while heating, or ice not confirmed.'),
         MS_HAZARD
-      ], { caution: 'No chipping ice, no covers, and no refrigerant or electrical work.', safetyGate: true })
+      ], { caution: 'No chipping ice, no covers, and no refrigerant or electrical work.', safetyGate: true }),
+
+    'ts.gate.safety_stops': n('Safety first', 'Is any of this happening right now?',
+      'Do not approach the thermostat or the equipment to find out. Choose from what you already know.\n\n' + TS_LEGAL.join(' ') + '\n\nUnited States beta. For immediate danger, get to safety and call 911.', [
+        o('hazard_gas_co', 'Gas smell or a carbon monoxide alarm', '@gas', 'Leave the building. Get help from outside.', 'Gas smell or CO alarm reported during the thermostat check.', { gate: 'gas_co' }),
+        o('hazard_smoke_fire_sparks_burn', 'Smoke, fire, sparks, or a burning smell', '@fire', 'Stop troubleshooting and move away.', 'Smoke, sparks, fire, or burning smell reported during the thermostat check.', { gate: 'smoke_fire_sparks_burn' }),
+        o('hazard_water_electrical', 'Water at the thermostat, its wires, or damaged wiring', '@ts_water_electrical', 'Do not touch the thermostat or stand in water.', 'Water at the thermostat or damaged thermostat wiring reported.', { gate: 'water_near_electrical' }),
+        o('hazard_heat_illness', 'Someone is confused, fainting, or seriously ill in the heat', '@heat', 'Call 911. Do not wait on the thermostat.', 'Possible heat-related medical emergency reported during the thermostat check.', { gate: 'heat_illness_911' }),
+        o('hazard_cold_exposure', 'Someone’s at risk from the cold and there’s no safe heat', '@ts_cold_exposure', 'Get them warm first.', 'Someone at risk from the cold with no safe heat.', { gate: 'cold_exposure_911' }),
+        o('hazard_unsure', 'I am not sure whether there is a hazard', '@uncertain', 'Prefer a stop. Do not continue into settings.', 'Homeowner was not sure whether a hazard was present.', { gate: 'unsure_hazard' }),
+        o('none_of_these', 'None of these', 'ts.intake.confirm_low_voltage', 'Continue with settings you can see on the screen.')
+      ], { caution: 'Emergency help never requires accepting terms. After a hazard, this check does not continue.', safetyGate: true }),
+
+    'ts.intake.confirm_low_voltage': n('Your thermostat', 'Is this a low-voltage wall thermostat?',
+      'Answer from what you already know. Don’t pull the thermostat off the wall.\n\nThis check is for a U.S. home thermostat that runs a furnace, central air conditioner, or ducted heat pump. It uses the screen or the thermostat’s app. It is not a line-voltage dial on a baseboard heater, and it is not a mini-split remote.', [
+        o('low_voltage_wall', 'Yes. It’s a low-voltage wall thermostat', 'ts.brand.group', 'Settings on the screen or in the app come next.', 'Low-voltage wall thermostat reported.'),
+        o('line_voltage', 'It’s a line-voltage dial or switch on a baseboard or wall heater', '@ts_line_voltage_oos', 'That kind of control is out of this check.', 'Line-voltage control reported.'),
+        o('mini_split_remote', 'It’s a mini-split remote or the mini-split’s own app', '@ts_use_mini_split', 'Use the mini-split check instead.', 'Mini-split remote or app reported on the thermostat check.'),
+        o('not_a_thermostat', 'It’s something else (a smart speaker, a window unit, or no thermostat)', '@ts_not_this_equipment', 'This check doesn’t cover that control.', 'Not a low-voltage wall thermostat.'),
+        o('not_sure', 'I’m not sure', '@ts_system_unconfirmed', 'Don’t pull it off the wall to find out.', 'Thermostat type not confirmed.'),
+        TS_HAZARD
+      ]),
+
+    'ts.brand.group': n('Your thermostat', 'Which brand group is it?',
+      'Pick the closest match from the name on the thermostat or in its app. If you don’t know, say so. Don’t open the wall to read a model sticker.\n\nThe steps stay the same. The next screen names the buttons for the group you pick, and the result links to that maker’s manual.', [
+        o('brand_nest', 'Nest', 'ts.landing.picker', 'Google Nest thermostat.', 'Brand group: Nest.'),
+        o('brand_honeywell_smart', 'Honeywell Home, with an app (T9, T10, or similar)', 'ts.landing.picker', 'Honeywell Home smart thermostat.', 'Brand group: Honeywell Home smart.'),
+        o('brand_ecobee', 'ecobee', 'ts.landing.picker', 'ecobee thermostat.', 'Brand group: ecobee.'),
+        o('brand_honeywell_nonsmart', 'Honeywell Home, no app (a switch or buttons on the face)', 'ts.landing.picker', 'Honeywell Home non-smart thermostat.', 'Brand group: Honeywell Home non-smart.'),
+        o('brand_amazon', 'Amazon smart thermostat', 'ts.landing.picker', 'Amazon brand thermostat.', 'Brand group: Amazon.'),
+        o('brand_other_low_voltage', 'Another low-voltage brand', 'ts.landing.picker', 'Still a settings check. Use your manual for button names.', 'Brand group: other low-voltage.'),
+        o('brand_not_sure', 'I’m not sure of the brand', 'ts.landing.picker', 'Generic steps, then check your manual.', 'Brand group: not sure.'),
+        TS_HAZARD
+      ]),
+
+    'ts.landing.picker': n('What you noticed', 'What’s going on with the thermostat?',
+      'Pick the closest match. This check stays on settings you can see. It does not open installer, equipment, or wiring screens.\n\nIf a new hazard shows up, choose the last option.', [
+        o('landing_blank', 'The screen is blank or dead', 'ts.blank.screen', 'Batteries first. No breaker reset.', 'Complaint: thermostat screen is blank.'),
+        o('landing_wont_reach_setpoint', 'It won’t heat or cool to the temperature I set', 'ts.controls.mode_setpoint', 'Mode and setpoint come first.', 'Complaint: thermostat will not reach the setpoint.'),
+        o('landing_schedule_or_hold', 'A schedule or Hold keeps changing the temperature', 'ts.controls.schedule_hold', 'Homeowner schedule and Hold only.', 'Complaint: schedule or Hold is changing the setpoint.'),
+        o('landing_fan', 'The fan won’t stop, or it won’t run', 'ts.controls.fan', 'Fan Auto or On on the thermostat.', 'Complaint: thermostat fan setting.'),
+        o('landing_auto_switch', 'Heat and cool fight each other, or Auto feels wrong', 'ts.controls.auto_deadband', 'Leave Auto for Heat or Cool if you can.', 'Complaint: Auto changeover or a narrow gap.'),
+        o('landing_locked', 'The screen is locked or it asks for a PIN', 'ts.display.lock', 'Only a PIN you already know.', 'Complaint: thermostat screen is locked.'),
+        o('landing_app_vs_wall', 'The app and the wall thermostat disagree', 'ts.app.wall_disagree', 'The wall screen wins for this check.', 'Complaint: app and wall thermostat disagree.'),
+        o('landing_aux_or_emergency', 'Emergency Heat, Aux, or Em Heat is on', 'ts.aux.emergency', 'A homeowner mode, not a wiring change.', 'Complaint: Emergency or Aux heat is on.'),
+        o('landing_installer_or_wiring', 'I need installer, equipment, or wiring settings', 'ts.settings.installer_stop', 'Those settings always stop.', 'Complaint: installer, equipment, or wiring settings.'),
+        o('landing_reading_wrong', 'The temperature on the screen seems wrong', 'ts.reading.seems_wrong', 'No calibration from this check.', 'Complaint: thermostat reading seems wrong.'),
+        o('landing_wifi_offline', 'Wi-Fi or the app is offline, and I still have the wall screen', 'ts.wifi.offline_wall', 'The wall screen can still run the system.', 'Complaint: thermostat Wi-Fi or app is offline.'),
+        o('landing_something_else', 'Something else', '@ts_complaint_not_in_wave1', 'This first version covers the settings problems above.', 'Complaint is outside the thermostat settings list.'),
+        TS_HAZARD
+      ]),
+
+    'ts.blank.screen': n('Blank screen', 'What do you already know about power?',
+      'A blank screen is not a breaker job in this check. Don’t open the breaker panel, and don’t reset a breaker.\n\nIf the face has a battery door you already use, fresh batteries are the only power step here. Anything about a breaker, a furnace switch you don’t already know, or a plug you don’t recognize stops the check.', [
+        o('has_battery_door', 'It has a battery door I can open by hand', 'ts.blank.batteries', 'Fresh batteries of the printed type.', 'Thermostat has a homeowner battery door.'),
+        o('replaced_batteries_still_blank', 'I already put in fresh batteries, and it’s still blank', '@ts_blank_after_batteries', 'Stop. A pro checks power from here.', 'Screen stayed blank after fresh batteries.'),
+        o('hardwired_no_batteries', 'There’s no battery door. It looks hardwired', '@ts_hardwired_blank', 'Don’t pull wires to test it.', 'Blank thermostat with no battery door.'),
+        o('breaker_involved', 'A breaker is involved', '@ts_power_breaker_pro', 'This check stops. It does not reset anything in the panel.', 'A breaker is involved with a blank thermostat.'),
+        o('other_power_off', 'Some other power is off, and it isn’t the thermostat batteries', '@ts_other_power_off', 'Don’t turn that power back on from this check.', 'Power other than thermostat batteries is off.'),
+        o('not_sure_power', 'I’m not sure how it’s powered', '@ts_blank_unsure', 'Don’t open the wall to find out.', 'Blank-screen power source not confirmed.'),
+        TS_HAZARD
+      ], { caution: 'No breaker reset. If a breaker is part of the story, the check stops for a pro.' }),
+
+    'ts.blank.batteries': n('Blank screen', 'Replace the batteries the manual shows',
+      'Only if this thermostat has a battery door you already open by hand.\n\n1. Match the battery type printed in the door or in the owner’s manual.\n2. Put the face back the way it came off.\n3. Don’t pull the thermostat off the wall to chase a wire.\n\nIf the manual tells you to use a breaker first, stop. This check does not do that step.' + TS_SLOT, [
+        o('fresh_batteries_display_back', 'Fresh batteries brought the screen back', '@ts_batteries_display_back', 'Set the mode again and watch it.', 'Fresh batteries brought the thermostat screen back.'),
+        o('fresh_batteries_still_blank', 'Fresh batteries, and the screen is still blank', '@ts_blank_after_batteries', 'Stop for a pro.', 'Screen stayed blank after fresh batteries.'),
+        o('no_battery_door', 'There isn’t a battery door after all', '@ts_hardwired_blank', 'Don’t force the face off.', 'No battery door on a blank thermostat.'),
+        o('manual_says_breaker', 'My manual says to use a breaker first', '@ts_power_breaker_pro', 'This check stops there.', 'Manual asks for a breaker before a blank-screen check.'),
+        o('other_power_off', 'Some other power is off, and it isn’t the batteries', '@ts_other_power_off', 'Don’t turn that power back on from this check.', 'Power other than thermostat batteries is off.'),
+        o('not_sure', 'I’m not sure', '@ts_blank_unsure', 'Don’t guess, and don’t pull wires.', 'Not sure whether batteries belong in this thermostat.'),
+        TS_HAZARD
+      ]),
+
+    'ts.controls.mode_setpoint': n('Settings', 'Set the mode and the temperature',
+      'Look at the thermostat you already use. Don’t open a setup menu.\n\n1. Set Heat if you need heat, or Cool if you need cooling. Leave Auto for now.\n2. Set the temperature a few degrees past the room, so the system should be calling.\n3. Wait a few minutes. A heat pump can take longer to start.\n\nIf the screen offers installer, equipment, or wiring, stop.' + TS_SLOT, [
+        o('set_heat_or_cool_fixed', 'I set Heat or Cool, and the room is responding', '@ts_mode_setpoint_fixed', 'Leave it in that mode.', 'User set Heat or Cool and the room started responding.'),
+        o('was_off_now_calling', 'It was Off. I set Heat or Cool, and it started', '@ts_mode_setpoint_fixed', 'Off was the setting.', 'Thermostat was Off. Heat or Cool started a call.'),
+        o('settings_already_right', 'Heat or Cool is set, the temperature should be calling, and nothing’s changed', 'ts.controls.schedule_hold', 'A schedule or Hold is the next place to look.', 'Mode and setpoint were already calling.'),
+        o('could_not_change_mode', 'I can’t change the mode or the temperature', '@ts_could_not_change', 'Don’t force a menu you don’t know.', 'Thermostat mode or setpoint could not be changed.'),
+        o('screen_locked', 'The screen is locked', 'ts.display.lock', 'Only a PIN you already know.', 'Screen locked while changing mode.'),
+        o('saw_installer_menu', 'The only way forward looks like installer or wiring', 'ts.settings.installer_stop', 'That always stops.', 'Installer or wiring menu seen while setting mode.'),
+        o('screen_went_blank', 'The screen went blank', 'ts.blank.screen', 'No breaker reset on that path.', 'Screen went blank during the mode check.'),
+        o('not_sure', 'I’m not sure', '@ts_not_sure', 'Don’t guess the mode.', 'Not sure whether Heat or Cool is calling.'),
+        TS_HAZARD
+      ]),
+
+    'ts.controls.schedule_hold': n('Settings', 'Is a schedule or Hold in the way?',
+      'A schedule can move the temperature back after you set it. Hold, Permanent Hold, or a similar word keeps your setting.\n\nUse only the schedule or Hold control you already see. Don’t open installer setup to delete a program.' + TS_SLOT, [
+        o('hold_set_problem_gone', 'I set Hold, and the temperature stayed where I put it', '@ts_schedule_hold_fixed', 'Leave Hold on while you need that temperature.', 'User set Hold and the setpoint stayed.'),
+        o('schedule_paused_problem_gone', 'I paused the schedule, and it’s behaving', '@ts_schedule_hold_fixed', 'You can turn the schedule back on later from the same screen.', 'User paused the schedule and the setpoint stayed.'),
+        o('no_schedule_still_wrong', 'There’s no schedule or Hold, and it’s still wrong', 'ts.controls.fan', 'Fan setting is next.', 'No schedule or Hold, and the problem remains.'),
+        o('schedule_wont_release', 'The schedule or Hold won’t let go', '@ts_schedule_still_overrides', 'Don’t open installer setup to force it.', 'Schedule or Hold would not release.'),
+        o('saw_installer_menu', 'Changing it wants an installer menu', 'ts.settings.installer_stop', 'That always stops.', 'Installer menu required to change the schedule.'),
+        o('not_sure_schedule', 'I’m not sure whether a schedule is running', '@ts_not_sure', 'Check the manual for the Hold button name, then stop if it’s still unclear.', 'Not sure whether a schedule is running.'),
+        TS_HAZARD
+      ]),
+
+    'ts.controls.fan': n('Settings', 'What is Fan set to?',
+      'Fan On runs the fan all the time. Fan Auto runs it only when the system is heating or cooling. Circulating or a percent-of-time setting can feel like the fan won’t stop.\n\nChange only the Fan control on the screen you already use.' + TS_SLOT, [
+        o('fan_was_on_set_auto', 'Fan was On. I set Auto, and that matches what I want', '@ts_fan_set_auto', 'Leave Fan on Auto unless you want it running.', 'User set Fan to Auto.'),
+        o('fan_was_off_now_runs', 'The fan wasn’t running when it should. Auto, with Heat or Cool calling, fixed it', '@ts_fan_set_auto', 'Give it a few minutes.', 'Fan runs now with Auto and a calling setpoint.'),
+        o('fan_already_auto_still_wrong', 'Fan is already Auto, and the problem remains', 'ts.controls.auto_deadband', 'Auto changeover is the next setting.', 'Fan was already Auto and the problem remains.'),
+        o('fan_wont_change', 'I can’t change the fan setting', '@ts_fan_still_wrong', 'Don’t open the equipment to find the fan.', 'Fan setting could not be changed.'),
+        o('saw_installer_menu', 'The fan choice is inside an installer menu', 'ts.settings.installer_stop', 'That always stops.', 'Fan change required an installer menu.'),
+        o('not_sure', 'I’m not sure what Fan is set to', '@ts_not_sure', 'Use the manual’s Fan page, then stop if it’s still unclear.', 'Fan setting not confirmed.'),
+        TS_HAZARD
+      ]),
+
+    'ts.controls.auto_deadband': n('Settings', 'Is Auto switching between heat and cool?',
+      'Auto can heat, then cool, if the two setpoints are close. For a steady need, Heat or Cool is clearer than Auto.\n\nIf you keep Auto, the heat setpoint and the cool setpoint need a gap. Your manual names that gap. Don’t change cycles-per-hour or a differential in a setup menu.' + TS_SLOT, [
+        o('left_auto_for_heat_or_cool', 'I left Auto and set Heat or Cool, and that fixed it', '@ts_deadband_widened', 'Stay out of Auto while you need one mode.', 'User left Auto for Heat or Cool.'),
+        o('widened_gap_problem_gone', 'I widened the gap between heat and cool, and Auto is fine', '@ts_deadband_widened', 'Keep that gap.', 'User widened the Auto heat-cool gap.'),
+        o('already_one_mode_still_wrong', 'It’s already on Heat or Cool, and it’s still wrong', '@ts_settings_still_wrong', 'The basic settings are used up.', 'Heat or Cool was already set and the problem remains.'),
+        o('cannot_leave_auto', 'I can’t leave Auto', '@ts_could_not_change', 'Don’t open a setup menu to force it.', 'Could not leave Auto mode.'),
+        o('saw_installer_menu', 'The gap lives in an installer menu', 'ts.settings.installer_stop', 'That always stops.', 'Auto gap required an installer menu.'),
+        o('not_sure', 'I’m not sure', '@ts_not_sure', 'Check the manual for Auto, then stop if it’s still unclear.', 'Not sure about Auto changeover.'),
+        TS_HAZARD
+      ]),
+
+    'ts.display.lock': n('Settings', 'Is the screen locked?',
+      'Some thermostats lock the screen with a PIN, a passcode, or a child lock. Use a code you already know. Don’t guess through a long list of codes, and don’t open the wall.\n\nAn installer lock is a stop.' + TS_SLOT, [
+        o('unlocked_with_known_pin', 'I unlocked it with a PIN I already knew', '@ts_lock_cleared', 'You can set Heat or Cool now.', 'User unlocked the thermostat with a known PIN.'),
+        o('no_lock_continue', 'It isn’t locked', '@ts_lock_cleared', 'Set Heat or Cool on the screen you already use.', 'Screen was not locked. Set Heat or Cool from the homeowner screen.'),
+        o('pin_unknown', 'It’s asking for a PIN I don’t know', '@ts_lock_unknown', 'Don’t guess codes.', 'Thermostat PIN is unknown.'),
+        o('child_lock_cleared', 'A child lock was on. I cleared it the way the manual shows, and the screen works', '@ts_lock_cleared', 'The manual’s homeowner lock only.', 'User cleared a child lock from the manual.'),
+        o('saw_installer_lock', 'It says installer lock or equipment lock', 'ts.settings.installer_stop', 'That always stops.', 'Installer or equipment lock on the thermostat.'),
+        o('not_sure', 'I’m not sure', '@ts_not_sure', 'Check the manual for the lock, then stop if the code is unknown.', 'Not sure whether the screen is locked.'),
+        TS_HAZARD
+      ]),
+
+    'ts.app.wall_disagree': n('Settings', 'Which one is actually set?',
+      'When the app and the wall thermostat disagree, use the wall screen for this check. The app can be holding an old schedule.\n\nDon’t reconfigure wiring from the app. If the app asks for equipment type or a wiring diagram, stop.' + TS_SLOT, [
+        o('wall_set_and_matches', 'I set the wall screen, and the app now matches', '@ts_wall_controls', 'Trust the wall screen if they drift again.', 'Wall thermostat and app now match.'),
+        o('app_was_holding_released', 'The app had a Hold. I released it, and they agree', '@ts_schedule_hold_fixed', 'A Hold in the app was the override.', 'User released an app Hold and the setpoints agree.'),
+        o('still_disagree', 'They still disagree', '@ts_app_wall_disagree', 'Stop. Don’t rewire to settle it.', 'App and wall thermostat still disagree.'),
+        o('wifi_offline_wall_works', 'Wi-Fi is offline, and the wall screen still changes the system', '@ts_wifi_offline_wall_ok', 'The system can run without the app.', 'Wi-Fi offline and the wall thermostat still controls the system.'),
+        o('app_asks_wiring', 'The app wants equipment type or a wiring diagram', 'ts.settings.installer_stop', 'That always stops.', 'App asked for equipment or wiring setup.'),
+        o('not_sure', 'I’m not sure which one is right', '@ts_not_sure', 'Don’t guess. Use the wall screen or call a pro.', 'Not sure whether the app or the wall screen is in control.'),
+        TS_HAZARD
+      ]),
+
+    'ts.aux.emergency': n('Settings', 'Is Emergency or Aux heat on?',
+      'Emergency Heat, Aux, Em Heat, or Auxiliary is a homeowner mode on many heat-pump thermostats. It is not a repair. If you can turn it off from the mode screen, do that and return to Heat.\n\nDon’t change an O/B setting, a reversing valve, or a wiring terminal to get there.' + TS_SLOT, [
+        o('turned_em_aux_off_heat_ok', 'I turned Emergency or Aux off, set Heat, and heat is back', '@ts_aux_turned_off', 'Leave it in Heat, not Emergency.', 'User turned Emergency or Aux off and Heat is calling.'),
+        o('no_em_aux_on_screen', 'I don’t see Emergency or Aux on the screen', 'ts.controls.mode_setpoint', 'Mode and setpoint are next.', 'No Emergency or Aux heat on the thermostat screen.'),
+        o('em_aux_wont_turn_off', 'Emergency or Aux won’t turn off', '@ts_aux_stuck', 'Don’t open wiring to force it off.', 'Emergency or Aux heat would not turn off.'),
+        o('only_em_heat_and_house_cold', 'Emergency heat is the only heat, and the house is getting cold', '@ts_aux_stuck', 'Don’t stay in a menu. Get safe heat and call a pro.', 'Emergency heat is the only heat and the house is cold.'),
+        o('saw_installer_menu', 'Turning it off wants an installer menu', 'ts.settings.installer_stop', 'That always stops.', 'Installer menu required to leave Emergency or Aux.'),
+        o('not_sure', 'I’m not sure whether Emergency or Aux is on', '@ts_not_sure', 'Use the manual’s mode names, then stop if it’s still unclear.', 'Not sure whether Emergency or Aux is on.'),
+        o('cold_person_now', 'Someone’s at risk from the cold and there’s no safe heat', '@ts_cold_exposure', 'Get them warm first.', 'Someone at risk from the cold with no safe heat.', { gate: 'cold_exposure_911' }),
+        TS_HAZARD
+      ]),
+
+    'ts.settings.installer_stop': n('Stop', 'Installer, equipment, and wiring settings stop here',
+      'This check does not change installer setup, equipment type, terminal labels, cycles per hour, or a temperature offset in a setup menu.\n\nThose choices can make the system run the wrong way. A pro sets them. You can still read your manual’s homeowner pages. Skip the installer, equipment, and wiring pages.', [
+        o('saw_installer_setup', 'I see installer setup or a configuration menu', '@ts_installer_stop', 'Leave that menu.', 'Installer setup menu seen.'),
+        o('saw_wiring_or_terminals', 'I see wiring, terminals, or a diagram of wires', '@ts_installer_stop', 'Don’t move a wire.', 'Wiring or terminal screen seen.'),
+        o('saw_equipment_type', 'I see equipment type, heat pump, or conventional system', '@ts_installer_stop', 'Don’t change the equipment type.', 'Equipment-type setting seen.'),
+        o('saw_cycles_or_differential', 'I see cycles per hour, differential, or a swing setting', '@ts_installer_stop', 'Don’t change those numbers.', 'Cycle or differential setting seen.'),
+        o('want_to_change_anyway', 'I want to change one of those anyway', '@ts_installer_stop', 'This check won’t walk that change.', 'Homeowner wanted to change an installer setting.'),
+        o('not_sure_what_menu', 'I’m not sure what menu this is', '@ts_installer_stop', 'If it might be setup, stop.', 'Unidentified thermostat setup menu.'),
+        TS_HAZARD
+      ], { diyTier: 'pro_only', caution: 'Installer, equipment, and wiring settings always stop.' }),
+
+    'ts.reading.seems_wrong': n('Settings', 'The number on the screen seems off',
+      'A degree or two can be the sensor’s location, sun on the wall, or a supply vent blowing on the thermostat. This check does not calibrate the sensor and does not add a temperature offset.\n\nIf the number is far from a thermometer you already trust, a pro should look. Don’t open a setup menu to “fix” the reading.', [
+        o('reading_off_by_a_lot', 'It’s off by a lot compared with a thermometer I already have', '@ts_reading_seems_wrong', 'Don’t enter an offset.', 'Thermostat reading is far from another thermometer.'),
+        o('reading_close_schedule_issue', 'It’s close. The problem is really the schedule', 'ts.controls.schedule_hold', 'Schedule and Hold are next.', 'Reading is close. Schedule is the complaint.'),
+        o('sensor_remote_disagree', 'A room sensor and the thermostat disagree', '@ts_reading_seems_wrong', 'Don’t re-pair sensors from this check.', 'Room sensor and thermostat disagree.'),
+        o('want_to_calibrate', 'I want to calibrate it or enter an offset', '@ts_reading_seems_wrong', 'That stays with a pro or the manual’s installer pages, which this check skips.', 'Homeowner wanted to calibrate the thermostat.'),
+        o('saw_installer_offset', 'The offset is in an installer menu', 'ts.settings.installer_stop', 'That always stops.', 'Temperature offset is in an installer menu.'),
+        o('not_sure', 'I’m not sure the reading is wrong', '@ts_not_sure', 'Don’t change an offset to test it.', 'Not sure the thermostat reading is wrong.'),
+        TS_HAZARD
+      ]),
+
+    'ts.wifi.offline_wall': n('Settings', 'The app is offline. Does the wall screen still work?',
+      'Wi-Fi can drop while the thermostat still runs the heating and cooling. This check does not walk a Wi-Fi setup, a router reset, or an account recovery.\n\nIf the wall screen still sets Heat or Cool, you can keep using it and check the manual later for the app.' + TS_SLOT, [
+        o('wall_still_controls', 'The wall screen still sets Heat or Cool', '@ts_wifi_offline_wall_ok', 'The system doesn’t need the app to run.', 'Wall thermostat still controls the system while Wi-Fi is offline.'),
+        o('wall_blank_too', 'The wall screen is blank too', 'ts.blank.screen', 'Blank-screen steps next. No breaker reset.', 'Wall screen is blank and the app is offline.'),
+        o('app_asks_reconfigure', 'The app wants me to set up equipment or wires to reconnect', 'ts.settings.installer_stop', 'That always stops.', 'Reconnect flow asked for equipment or wiring.'),
+        o('not_sure', 'I’m not sure the wall screen is in control', '@ts_not_sure', 'Don’t factory-reset the thermostat to find out.', 'Not sure the wall thermostat works without Wi-Fi.'),
+        TS_HAZARD
+      ])
+
   };
 
   const r = (tier, urgency, title, explanation, actions, avoid, source, outcome, reason, extra = {}) =>
@@ -997,7 +1284,7 @@
       'insufficient_info', 'heat_pump_out_of_scope'),
     out_of_scope_equipment: r('More information needed', 'Not covered in this beta yet', 'This equipment is outside the cooling-only split central AC check.',
       'Window and portable units, packaged systems, and other types are not diagnosed here.',
-      ['Hire a technician who works on that type of equipment, or use that manufacturer’s owner guidance.', 'If this is a water-source or geothermal heat pump: Start again, choose Something else: mini-split, geothermal, other, then Water-source / geothermal heat pump.', 'You can write down an already-known model number yourself. Do not remove a cover or climb to find it.'],
+      ['Hire a technician who works on that type of equipment, or use that manufacturer’s owner guidance.', 'If this is a water-source or geothermal heat pump: Start again, choose Something else: mini-split, geothermal, thermostat, other, then Water-source / geothermal heat pump.', 'You can write down an already-known model number yourself. Do not remove a cover or climb to find it.'],
       'Do not apply this central-AC guide to other equipment.', 'scope',
       'insufficient_info', 'out_of_scope_equipment'),
     system_unconfirmed: r('More information needed', 'Confirm the system first', 'This check needs a confirmed split central air conditioner.',
@@ -1317,12 +1604,12 @@
       'insufficient_info', 'hp_cool_only_use_ac'),
     hp_mini_split_oos: r('More information needed', 'Outside this heat-pump check', 'Use the mini-split check instead.',
       'This ducted heat-pump check will not guess a mini-split diagnosis. Second Wrench has a separate mini-split check for cooling and heating on one indoor unit.',
-      ['Go back home, press Start, and choose “Something else: mini-split, geothermal, other”, then “Ductless mini-split”. It covers cooling and heating problems on a single indoor unit.', 'For a system with more than one indoor unit, use a technician who works on mini-splits or the manufacturer owner guidance.', 'Do not remove a cover to force an identification.'],
+      ['Go back home, press Start, and choose “Something else: mini-split, geothermal, thermostat, other”, then “Ductless mini-split”. It covers cooling and heating problems on a single indoor unit.', 'For a system with more than one indoor unit, use a technician who works on mini-splits or the manufacturer owner guidance.', 'Do not remove a cover to force an identification.'],
       'Do not apply this ducted heat-pump guide to a mini-split.', 'scope',
       'insufficient_info', 'hp_mini_split_oos'),
     hp_water_source_oos: r('More information needed', 'Outside this heat-pump check', 'This air-source check does not cover a water-source heat pump.',
       'Loop water and related work are not part of this check.',
-      ['Start again, choose Something else: mini-split, geothermal, other, then Water-source / geothermal heat pump.', 'Use a technician who works on that system.', 'Do not open covers or service a ground loop from this result.'],
+      ['Start again, choose Something else: mini-split, geothermal, thermostat, other, then Water-source / geothermal heat pump.', 'Use a technician who works on that system.', 'Do not open covers or service a ground loop from this result.'],
       'Do not apply this air-source guide to a water-source heat pump.', 'scope',
       'insufficient_info', 'hp_water_source_oos'),
     hp_packaged_oos: r('More information needed', 'Outside this heat-pump check', 'Packaged or unconfirmed equipment is not covered in this wave.',
@@ -1472,7 +1759,7 @@
       'insufficient_info', 'wshp_system_unconfirmed'),
     wshp_divert_mini_split: r('More information needed', 'Use the right check', 'A ductless mini-split has its own check.',
       'This check is for water-source and geothermal heat pumps. Cooling problems on one indoor mini-split unit start from the home screen.',
-      ['Go back home, press Start, and choose “Something else: mini-split, geothermal, other”, then “Ductless mini-split”.', 'If anything is unsafe, use Stop / get help.'],
+      ['Go back home, press Start, and choose “Something else: mini-split, geothermal, thermostat, other”, then “Ductless mini-split”.', 'If anything is unsafe, use Stop / get help.'],
       'Do not use these water-source steps on a mini-split.', 'scope',
       'insufficient_info', 'wshp_divert_mini_split'),
     wshp_divert_furnace: r('Professional guidance', 'Fuel-burning equipment · use the furnace check', 'A gas or electric furnace has its own check.',
@@ -1572,7 +1859,7 @@
       'insufficient_info', 'fn_out_of_scope_equipment'),
     fn_mini_split_oos: r('More information needed', 'Use the mini-split check', 'A ductless mini-split has its own check.',
       'This furnace check is for ducted furnaces. Cooling problems on one indoor unit start on the Something else screen.',
-      ['Go back home, press Start, and choose “Something else: mini-split, geothermal, other”, then “Ductless mini-split”.', FN_CO_LINE],
+      ['Go back home, press Start, and choose “Something else: mini-split, geothermal, thermostat, other”, then “Ductless mini-split”.', FN_CO_LINE],
       "Don't remove covers to identify the equipment.", 'scope',
       'insufficient_info', 'fn_mini_split_oos'),
     fn_system_unconfirmed: r('More information needed', 'Confirm the furnace first', 'We need to know the furnace type.',
@@ -1785,9 +2072,174 @@
       ['Leave covers on.', 'Call a licensed HVAC professional. Tell them what the unit was doing and that you did not remove covers.'],
       'Do not start a capacitor, contactor, inverter, or board repair from this mini-split check.', 'electrical',
       'call_pro', 'ms_advanced_off', { diyTier: 'pro_only' }),
+    ts_hazard_now: r('Emergency', 'Stop. Get to safety.', 'A new hazard ends this check.',
+      'Gas, smoke, sparks, a burning smell, or water at the thermostat is not a settings path.',
+      ['If you smell gas or a carbon monoxide alarm is sounding, leave the building and call for help from outside. Do not operate switches inside.', 'If there is smoke, fire, or sparks, get people away and call 911 from safety.', 'If water is at the thermostat or its wires, stay clear and don’t touch it. Call a licensed HVAC pro or an electrician.', 'Do not return to the thermostat until the hazard has been handled.'],
+      'Do not keep changing settings or touch wet equipment.', 'safety',
+      'emergency_exit', 'ts_new_hazard', { gate: 'ts_new_hazard' }),
+    ts_cold_exposure: r('Emergency', 'Get warm now · call 911 if needed', 'Get the person warm first.',
+      'Someone at risk from the cold matters more than the thermostat.',
+      ['If anyone is confused, very drowsy, or hard to wake, call 911 now.', 'Otherwise, get them somewhere warm: a neighbor, family, or a warming center.', 'Add blankets and dry layers in the meantime.', 'Use safe backup heat per its manufacturer. Don’t run a heater next to water or the thermostat.', 'Call a licensed HVAC pro for the thermostat once everyone’s safe.'],
+      'Don’t wait on a thermostat setting to get someone warm.', 'safety',
+      'emergency_exit', 'cold_exposure_911', { gate: 'cold_exposure_911' }),
+    ts_water_electrical: r('Stop / professional', 'Keep away · urgent help', 'Don’t touch the thermostat or stand in the water.',
+      'Water is on or near the thermostat or its wires.',
+      ['Don’t touch the thermostat, any switch, or the breaker panel, and don’t stand in the water.', 'Leave the area and call a licensed HVAC pro or an electrician.', 'If you see sparks or smoke, or smell burning, get out and call 911 from outside.'],
+      'Don’t touch the thermostat, any switch, or the breaker panel.', 'electrical',
+      'emergency_exit', 'water_near_electrical', { gate: 'water_near_electrical' }),
+    ts_line_voltage_oos: r('More information needed', 'Not this check', 'Line-voltage controls are out of this check.',
+      'A dial or switch on a baseboard or wall heater is not a low-voltage thermostat. This check won’t walk that control.',
+      ['Leave the control as it is.', 'Use the heater’s owner manual, or a licensed pro who works on that heater.', TS_CHECK_MANUAL],
+      'Don’t open the heater or the dial to identify it.', 'scope',
+      'insufficient_info', 'ts_line_voltage_oos'),
+    ts_use_mini_split: r('More information needed', 'Use the mini-split check', 'This remote belongs on the mini-split check.',
+      'A ductless mini-split uses its own remote or app. The thermostat settings check is for a low-voltage wall thermostat.',
+      ['Go back home, press Start, and choose “Something else: mini-split, geothermal, thermostat, other”, then “Ductless mini-split”.', TS_CHECK_MANUAL],
+      'Don’t pull a wall plate off to force a match.', 'scope',
+      'insufficient_info', 'ts_use_mini_split'),
+    ts_not_this_equipment: r('More information needed', 'Not this check', 'This control isn’t a low-voltage wall thermostat.',
+      'Smart speakers, window units, and other controls aren’t in this settings check.',
+      ['Use that product’s owner manual, or a pro who works on it.', TS_CHECK_MANUAL],
+      'Don’t take the device apart to identify it.', 'scope',
+      'insufficient_info', 'ts_not_this_equipment'),
+    ts_system_unconfirmed: r('More information needed', 'Stop rather than guess', 'The thermostat type isn’t confirmed.',
+      'This check only continues for a low-voltage wall thermostat. Don’t pull it off the wall to decide.',
+      ['Look at the owner’s manual you already have, or the name on the face.', 'If it’s still unclear, call a licensed HVAC pro and describe the control you see.', TS_CHECK_MANUAL],
+      'Don’t remove the thermostat from the wall.', 'scope',
+      'insufficient_info', 'ts_system_unconfirmed'),
+    ts_blank_after_batteries: r('Professional guidance', 'Arrange HVAC service', 'Fresh batteries didn’t bring the screen back.',
+      'A screen that stays blank after the right batteries needs a pro. This isn’t a diagnosis, and it isn’t a breaker reset.',
+      ['Leave the thermostat on the wall.', 'Call a licensed HVAC pro. Tell them the screen stayed blank after fresh batteries, if you installed any.', 'Don’t follow a breaker step from the manual in this check.', TS_CHECK_MANUAL, TS_SKIP_INSTALLER],
+      'Don’t pull wires, and don’t reset a breaker to test the screen.', 'electrical',
+      'call_pro', 'ts_blank_after_batteries'),
+    ts_hardwired_blank: r('Professional guidance', 'Arrange HVAC service', 'A blank hardwired thermostat needs a pro.',
+      'If there’s no battery door, the screen is powered with the system. Finding that power is not a homeowner settings step.',
+      ['Leave the thermostat on the wall.', 'Call a licensed HVAC pro. Tell them the screen is blank and you didn’t see a battery door.', 'Don’t follow a breaker step from the manual in this check.', TS_CHECK_MANUAL, TS_SKIP_INSTALLER],
+      'Don’t pull the thermostat off the wall or land a wire to test it.', 'electrical',
+      'call_pro', 'ts_hardwired_blank'),
+    ts_power_breaker_pro: r('Professional guidance', 'Leave the panel alone · call a pro', 'A breaker ends this check.',
+      'This thermostat check does not reset a breaker, open a panel, or tell you which breaker is which.',
+      ['Leave the breaker panel closed.', 'Call a licensed HVAC pro or an electrician. Tell them the thermostat screen and that a breaker is involved.', 'Don’t follow a breaker step from the manual in this check.', TS_CHECK_MANUAL],
+      'Don’t reset a breaker from this check.', 'electrical',
+      'call_pro', 'ts_power_breaker_pro'),
+    ts_other_power_off: r('Professional guidance', 'Leave that power alone · call a pro', 'Other power that’s off is a stop.',
+      'A furnace switch, a plug, or any power you don’t already use as a homeowner control is not a step in this check.',
+      ['Don’t turn that power back on from this check.', 'Call a licensed HVAC pro. Tell them what looks off, without switching it.', TS_CHECK_MANUAL, TS_SKIP_INSTALLER],
+      'Don’t experiment with switches you don’t recognize.', 'electrical',
+      'call_pro', 'ts_other_power_off'),
+    ts_blank_unsure: r('More information needed', 'Stop rather than guess', 'The blank screen isn’t sorted out.',
+      'If you can’t tell whether it takes batteries, stop. Don’t open the wall, and don’t use a breaker to test it.',
+      ['Leave the thermostat on the wall.', 'Check your manual only for whether the face takes batteries. If it mentions a breaker, stop and call a pro.', 'Call a licensed HVAC pro if the screen stays blank.', TS_CHECK_MANUAL],
+      'Don’t reset a breaker to see if the screen wakes up.', 'electrical',
+      'insufficient_info', 'ts_blank_unsure'),
+    ts_batteries_display_back: r('Basic homeowner check', 'Screen’s back · set the mode again', 'Fresh batteries brought the screen back.',
+      'That doesn’t prove the heating or cooling is fine. Set the mode you need and watch the room.',
+      ['Set Heat or Cool, not Auto, with the temperature a few degrees past the room.', 'If the screen dies again soon, call a licensed HVAC pro. Don’t move on to a breaker.', TS_CHECK_MANUAL, TS_SKIP_INSTALLER],
+      'Don’t pull the thermostat off the wall now that the screen is on.', 'maintenance',
+      'next_step', 'ts_batteries_display_back', { diyTier: 'basic' }),
+    ts_mode_setpoint_fixed: r('Basic homeowner check', 'Leave it in that mode', 'Heat or Cool was the setting.',
+      'The thermostat is calling for the mode you need. Give the system time to catch up. A heat pump can take longer than a furnace.',
+      ['Leave it in Heat or Cool, not Auto, while you need that mode.', 'If the room doesn’t catch up, start a new check and say the mode is already right.', TS_CHECK_MANUAL, TS_SKIP_INSTALLER],
+      'Don’t open an installer menu to “help it along.”', 'maintenance',
+      'next_step', 'ts_mode_setpoint_fixed', { diyTier: 'basic' }),
+    ts_could_not_change: r('Professional guidance', 'Arrange HVAC service', 'The mode or temperature won’t change.',
+      'A locked menu, a schedule you can’t see, or a control fault can do that. Forcing a setup screen is not the next step.',
+      ['Leave the thermostat as it is.', 'Call a licensed HVAC pro. Tell them which button wouldn’t change.', TS_CHECK_MANUAL, TS_SKIP_INSTALLER],
+      'Don’t open installer, equipment, or wiring screens to force a change.', 'maintenance',
+      'call_pro', 'ts_could_not_change'),
+    ts_schedule_hold_fixed: r('Basic homeowner check', 'Leave Hold while you need it', 'A schedule or Hold was moving the setpoint.',
+      'Hold, or a paused schedule, keeps the temperature you set. The schedule can take over again when Hold ends.',
+      ['Leave Hold on while you need this temperature.', 'When you want the schedule back, use the same screen. Don’t delete the program from a setup menu.', TS_CHECK_MANUAL, TS_SKIP_INSTALLER],
+      'Don’t open installer setup to erase the schedule.', 'maintenance',
+      'next_step', 'ts_schedule_hold_fixed', { diyTier: 'basic' }),
+    ts_schedule_still_overrides: r('Professional guidance', 'Arrange HVAC service', 'The schedule or Hold won’t release.',
+      'If the homeowner Hold control won’t keep your temperature, stop. Installer scheduling is not a step here.',
+      ['Leave the screen on the mode you need, if it will stay there.', 'Call a licensed HVAC pro, or the maker’s owner support, and say the schedule won’t release.', TS_CHECK_MANUAL, TS_SKIP_INSTALLER],
+      'Don’t factory-reset the thermostat to clear a schedule.', 'maintenance',
+      'call_pro', 'ts_schedule_still_overrides'),
+    ts_fan_set_auto: r('Basic homeowner check', 'Leave Fan where you set it', 'The fan setting matched the complaint.',
+      'Auto runs the fan with heat or cool. On runs it all the time. Either can be right. This check doesn’t change equipment fan speeds.',
+      ['Leave Fan on the setting that matches what you want.', 'If the fan still won’t follow that setting, call a licensed HVAC pro.', TS_CHECK_MANUAL, TS_SKIP_INSTALLER],
+      'Don’t open the furnace or air handler to move a fan wire.', 'maintenance',
+      'next_step', 'ts_fan_set_auto', { diyTier: 'basic' }),
+    ts_fan_still_wrong: r('Professional guidance', 'Arrange HVAC service', 'The fan setting won’t change, or it doesn’t stick.',
+      'Fan On, Auto, and Circulate are homeowner settings. If those won’t change, the next step is a pro.',
+      ['Leave Fan as it is.', 'Call a licensed HVAC pro. Tell them whether the fan runs all the time or not at all.', TS_CHECK_MANUAL, TS_SKIP_INSTALLER],
+      'Don’t open the equipment to find the fan control.', 'maintenance',
+      'call_pro', 'ts_fan_still_wrong'),
+    ts_deadband_widened: r('Basic homeowner check', 'Keep Heat or Cool, or keep the gap', 'Auto was switching, or the two setpoints were close.',
+      'Heat or Cool is steadier when you need one thing. If you use Auto, the heat and cool numbers need the gap your manual describes.',
+      ['Leave the mode you set.', 'If Auto starts fighting again, set Heat or Cool.', TS_CHECK_MANUAL, TS_SKIP_INSTALLER],
+      'Don’t change cycles per hour or a differential in a setup menu.', 'maintenance',
+      'next_step', 'ts_deadband_widened', { diyTier: 'basic' }),
+    ts_settings_still_wrong: r('Professional guidance', 'Arrange HVAC service', 'The basic settings are already right.',
+      'Mode, schedule, fan, and Auto were checked as far as this guide goes. What remains needs a pro. It isn’t a reason to open setup menus.',
+      ['Leave the thermostat in the mode you need.', 'Call a licensed HVAC pro. Tell them the mode, the setpoint, and that a schedule isn’t overriding it.', TS_CHECK_MANUAL, TS_SKIP_INSTALLER],
+      'Don’t open installer, equipment, or wiring screens because the room is still wrong.', 'maintenance',
+      'call_pro', 'ts_settings_still_wrong'),
+    ts_lock_cleared: r('Basic homeowner check', 'The screen is unlocked', 'The screen isn’t held by a lock you can’t clear.',
+      'Set Heat or Cool from the homeowner screen. If it locks again and you don’t know the code, stop.',
+      ['Set the mode you need.', 'Keep the code with the other house papers. Don’t write it on the face if the thermostat is in a shared space and that bothers you.', TS_CHECK_MANUAL, TS_SKIP_INSTALLER],
+      'Don’t guess extra codes, and don’t open an installer lock.', 'maintenance',
+      'next_step', 'ts_lock_cleared', { diyTier: 'basic' }),
+    ts_lock_unknown: r('Professional guidance', 'Arrange HVAC service', 'The PIN isn’t one you know.',
+      'Guessing codes can lock the thermostat harder. An installer lock is not a homeowner bypass.',
+      ['Leave the lock as it is.', 'Call a licensed HVAC pro, or the maker’s owner support, and say the screen is locked.', TS_CHECK_MANUAL, TS_SKIP_INSTALLER],
+      'Don’t pull the thermostat off the wall to clear a lock.', 'maintenance',
+      'call_pro', 'ts_lock_unknown'),
+    ts_wall_controls: r('Basic homeowner check', 'Use the wall screen', 'The wall thermostat and the app agree.',
+      'If they drift again, set the wall screen and give the app a minute. You don’t need the app for the system to run.',
+      ['Leave Heat or Cool as you set it on the wall.', 'If they disagree again, start a new check.', TS_CHECK_MANUAL, TS_SKIP_INSTALLER],
+      'Don’t reconfigure equipment type in the app.', 'maintenance',
+      'next_step', 'ts_wall_controls', { diyTier: 'basic' }),
+    ts_app_wall_disagree: r('Professional guidance', 'Arrange HVAC service', 'The app and the wall screen still disagree.',
+      'Forcing them together from a wiring or equipment screen is not a homeowner step.',
+      ['Use the wall screen if it still changes Heat or Cool. Otherwise leave both alone.', 'Call a licensed HVAC pro. Tell them the app and the wall show different setpoints.', TS_CHECK_MANUAL, TS_SKIP_INSTALLER],
+      'Don’t follow an in-app wiring diagram.', 'maintenance',
+      'call_pro', 'ts_app_wall_disagree'),
+    ts_wifi_offline_wall_ok: r('Basic homeowner check', 'The wall screen can run it', 'Wi-Fi is offline, and the thermostat still calls.',
+      'The heating and cooling don’t require the app. Reconnecting Wi-Fi can wait. This check doesn’t walk router or account steps.',
+      ['Keep using Heat or Cool on the wall screen.', 'When you want the app back, use the maker’s owner steps. Stop if those steps ask for equipment type or wires.', TS_CHECK_MANUAL, TS_SKIP_INSTALLER],
+      'Don’t factory-reset the thermostat to chase Wi-Fi.', 'maintenance',
+      'next_step', 'ts_wifi_offline_wall_ok', { diyTier: 'basic' }),
+    ts_aux_turned_off: r('Basic homeowner check', 'Leave it in Heat', 'Emergency or Aux was on.',
+      'Emergency heat is a mode, not a repair. Heat is the normal call. If the house gets cold and Heat won’t run, get safe backup heat and call a pro.',
+      ['Leave Emergency and Aux off unless a pro told you to use them.', 'If Heat stops working, don’t go back to a wiring screen. Call a licensed HVAC pro.', 'Use safe backup heat per its manufacturer if the house gets cold. Don’t run a heater next to water or the thermostat.', TS_CHECK_MANUAL, TS_SKIP_INSTALLER],
+      'Don’t change an O/B or terminal setting to leave Emergency heat.', 'maintenance',
+      'next_step', 'ts_aux_turned_off', { diyTier: 'basic' }),
+    ts_aux_stuck: r('Professional guidance', 'Arrange HVAC service', 'Emergency or Aux won’t turn off, or it’s the only heat.',
+      'Leaving it stuck, or changing wires to clear it, can run the wrong heat. If someone is cold, warmth comes before the thermostat.',
+      ['If someone is at risk from the cold, get them warm first and call 911 if they are confused or hard to wake.', 'Use safe backup heat per its manufacturer. Don’t run a heater next to water or the thermostat.', 'Call a licensed HVAC pro. Tell them Emergency or Aux is on and whether it will turn off.', TS_CHECK_MANUAL, TS_SKIP_INSTALLER],
+      'Don’t change wiring, O/B, or equipment type to clear Emergency heat.', 'maintenance',
+      'call_pro', 'ts_aux_stuck'),
+    ts_installer_stop: r('Professional guidance', 'Leave that menu · call a pro', 'Installer, equipment, and wiring settings always stop.',
+      'Those screens choose how the thermostat talks to the equipment. A wrong pick can heat when you want cool, or the reverse. This check does not walk them.',
+      ['Back out of the menu if you can do that without changing a value. If a value already changed, tell the pro.', 'Call a licensed HVAC pro. Name the menu you saw.', TS_CHECK_MANUAL, TS_SKIP_INSTALLER],
+      'Don’t change installer, equipment, wiring, cycles, or an offset from this check.', 'maintenance',
+      'call_pro', 'ts_installer_stop'),
+    ts_reading_seems_wrong: r('Professional guidance', 'Arrange HVAC service', 'Don’t calibrate the thermostat from this check.',
+      'Sun, a nearby vent, or a sensor location can shift the number. An offset in a setup menu is not a homeowner step here.',
+      ['Leave the reading as it is.', 'Call a licensed HVAC pro if the number is far from a thermometer you already trust.', TS_CHECK_MANUAL, TS_SKIP_INSTALLER],
+      'Don’t enter a temperature offset or open a sensor-setup screen.', 'maintenance',
+      'call_pro', 'ts_reading_seems_wrong'),
+    ts_not_sure: r('More information needed', 'Stop rather than guess', 'This setting isn’t clear enough to continue.',
+      'The manual names the button. If it still isn’t clear, a pro is the next step. Don’t open a setup menu to experiment.',
+      [TS_CHECK_MANUAL, 'If the manual’s homeowner page doesn’t match the screen, call a licensed HVAC pro.', TS_SKIP_INSTALLER],
+      'Don’t guess a mode, a PIN, or an equipment type.', 'scope',
+      'insufficient_info', 'ts_not_sure'),
+    ts_complaint_not_in_wave1: r('More information needed', 'Not in this settings check', 'That complaint isn’t one of the settings problems this check covers.',
+      'This version covers a blank screen, mode and setpoint, schedule or Hold, fan, Auto, a lock, the app versus the wall, Emergency or Aux, a wrong reading, and Wi-Fi with a working wall screen.',
+      ['If the complaint is the heating or cooling equipment, start again and choose that system.', 'Otherwise call a licensed HVAC pro and describe what you see.', TS_CHECK_MANUAL, TS_SKIP_INSTALLER],
+      'Don’t open installer or wiring screens to chase a different complaint.', 'scope',
+      'insufficient_info', 'ts_complaint_not_in_wave1'),
+    ts_advanced_off: r('Professional guidance', 'Thermostat electrical DIY is off', 'Advanced repairs are off on this thermostat check.',
+      'This lane is settings you can see, plus a link to your manual. It does not open another system’s repair steps.',
+      ['Leave covers on.', 'Call a licensed HVAC pro. Tell them what the thermostat was showing.', TS_CHECK_MANUAL, TS_SKIP_INSTALLER],
+      'Don’t start a wiring, panel, or parts repair from this check.', 'electrical',
+      'call_pro', 'ts_advanced_off', { diyTier: 'pro_only' }),
     sw_other_not_listed: r('More information needed', 'Not covered yet', 'This beta does not check that equipment yet.',
-      'Ductless mini-splits and water-source or geothermal heat pumps each have a check on the previous screen. Anything else needs a technician who works on that equipment.',
-      ['Go back and choose Ductless mini-split or Water-source / geothermal heat pump if that is what you have.', 'Otherwise use the maker’s owner guidance, or call a licensed pro who works on that equipment.', 'If you already know the model number, write it down. Don’t remove a cover or climb to find it.'],
+      'Ductless mini-splits, thermostat settings, and water-source or geothermal heat pumps each have a check on the previous screen. Anything else needs a technician who works on that equipment.',
+      ['Go back and choose Ductless mini-split, Thermostat settings, or Water-source / geothermal heat pump if that is what you have.', 'Otherwise use the maker’s owner guidance, or call a licensed pro who works on that equipment.', 'If you already know the model number, write it down. Don’t remove a cover or climb to find it.'],
       'Don’t open covers or climb to identify the equipment.', 'scope',
       'insufficient_info', 'sw_other_not_listed')
   };
@@ -1962,6 +2414,107 @@
     }
     return seen;
   }
+  function assertTsInvariants() {
+    if (TS_WAVE1.length !== 16) throw new Error('Thermostat node count drifted');
+    let options = 0;
+    const resetRe = /reset\w*\s+(the\s+|a\s+)?breaker|\bflip\b[^.]{0,40}breaker|breaker\s+(off|on)\b/i;
+    const resetStop = /^(Don’t|Do not|Never|No )|does not reset|not a reason to reset|No breaker reset|Leave the breaker panel closed|Don’t follow a breaker step/;
+    const scanReset = (text, where) => {
+      String(text || '').split(/(?<=[.!?])\s+|\n+/).map(sentence => sentence.trim()).filter(Boolean).forEach(sentence => {
+        if (resetRe.test(sentence) && !resetStop.test(sentence)) throw new Error('Breaker reset instruction in ' + where + ': ' + sentence);
+        if (/\bmirror panel\b|\bAI copy\b|ai_explanation_shown/i.test(sentence)) throw new Error('AI or mirror copy in ' + where + ': ' + sentence);
+        if (/lawyer-reviewed|attorney-approved|reviewed by an attorney/i.test(sentence)) throw new Error('Lawyer-reviewed claim in ' + where + ': ' + sentence);
+      });
+    };
+    TS_WAVE1.forEach(id => {
+      const node = nodes[id];
+      if (!node) throw new Error('Missing thermostat node ' + id);
+      if (node.diyTier === 'advanced') throw new Error('Thermostat node is Advanced ' + id);
+      options += node.options.length;
+      node.options.forEach(op => {
+        if (typeof op.next !== 'string') throw new Error('Thermostat edge must be a plain string: ' + id + '/' + op.id);
+        if (targetsForFlag(op.next, false).join('|') !== targetsForFlag(op.next, true).join('|')) {
+          throw new Error('Thermostat edge changes with the advanced flag: ' + id + '/' + op.id);
+        }
+        scanReset(op.label, id + '/' + op.id + ' label');
+        scanReset(op.hint, id + '/' + op.id + ' hint');
+        scanReset(op.fact, id + '/' + op.id + ' fact');
+        if (op.gate) {
+          const res = op.next.charAt(0) === '@' ? results[op.next.slice(1)] : null;
+          if (!res || res.outcome !== 'emergency_exit' || res.continueTo) throw new Error('Gated thermostat choice must emergency-exit: ' + id + '/' + op.id);
+        }
+      });
+      scanReset(node.title, id + ' title');
+      scanReset(node.body.replace('{{tsModelSteps}}', ''), id + ' body');
+      scanReset(node.caution, id + ' caution');
+      if (id !== 'ts.gate.safety_stops') {
+        const last = node.options[node.options.length - 1];
+        if (!last || last.id !== 'hazard_now' || last.next !== '@ts_hazard_now' || last.gate !== 'ts_new_hazard') {
+          throw new Error('Thermostat hazard_now drifted ' + id);
+        }
+      }
+    });
+    if (options !== 119) throw new Error('Thermostat option count drifted: ' + options);
+    const tsResults = Object.keys(results).filter(id => id.indexOf('ts_') === 0);
+    if (tsResults.length !== 33) throw new Error('Thermostat result count drifted: ' + tsResults.length);
+    tsResults.forEach(id => {
+      const res = results[id];
+      if (res.continueTo) throw new Error('Thermostat result continues: ' + id);
+      if (res.outcome === 'emergency_exit' && !res.gate) throw new Error('Thermostat emergency missing a gate: ' + id);
+      [res.title, res.urgency, res.explanation, res.avoid].concat(res.actions || []).forEach((text, index) => scanReset(text, id + ' field ' + index));
+    });
+    nodes['ts.settings.installer_stop'].options.forEach(op => {
+      if (op.id === 'hazard_now') return;
+      const res = results[op.next.slice(1)];
+      if (!res || res.outcome !== 'call_pro' || op.next !== '@ts_installer_stop') throw new Error('Installer choice must stop: ' + op.id);
+    });
+    const breaker = nodes['ts.blank.screen'].options.find(op => op.id === 'breaker_involved');
+    const otherPower = nodes['ts.blank.screen'].options.find(op => op.id === 'other_power_off');
+    const batteryBreaker = nodes['ts.blank.batteries'].options.find(op => op.id === 'manual_says_breaker');
+    if (!breaker || breaker.next !== '@ts_power_breaker_pro' || results.ts_power_breaker_pro.outcome !== 'call_pro') {
+      throw new Error('Breaker involvement must call a pro');
+    }
+    if (!otherPower || otherPower.next !== '@ts_other_power_off' || results.ts_other_power_off.outcome !== 'call_pro') {
+      throw new Error('other_power_off must call a pro');
+    }
+    if (!batteryBreaker || batteryBreaker.next !== '@ts_power_breaker_pro') throw new Error('Manual breaker step must call a pro');
+    const gateBody = nodes['ts.gate.safety_stops'].body;
+    TS_LEGAL.forEach(sentence => {
+      if (gateBody.indexOf(sentence) === -1) throw new Error('Legal sentence missing: ' + sentence);
+    });
+    if (/lawyer-reviewed/i.test(gateBody)) throw new Error('Must not claim lawyer-reviewed');
+    const cfg = typeof globalThis !== 'undefined' ? globalThis.SW_CONFIG : null;
+    if (cfg && (cfg.aiThermostatEnabled === true || cfg.mirrorsEnabled === true)) {
+      throw new Error('Thermostat AI and mirrors stay off');
+    }
+    const doorIds = nodes['sw.intake.other_system'].options.map(op => op.id);
+    if (doorIds.indexOf('thermostat_settings') !== doorIds.indexOf('not_listed') - 1) {
+      throw new Error('thermostat_settings must sit before not_listed');
+    }
+    const door = nodes['sw.intake.other_system'].options.find(op => op.id === 'thermostat_settings');
+    if (!door || door.next !== 'ts.gate.safety_stops') throw new Error('Thermostat door drifted');
+    if (nodes['sw.intake.system_type'].options.length !== 5) throw new Error('Start system type must stay five choices');
+    const something = nodes['sw.intake.system_type'].options.find(op => op.id === 'other_heat_or_ductless');
+    if (!something || something.label !== 'Something else: mini-split, geothermal, thermostat, other') {
+      throw new Error('Something else label drifted');
+    }
+    TS_MODEL_NODES.forEach(id => {
+      if (nodes[id].body.indexOf('{{tsModelSteps}}') === -1) throw new Error('Model slot missing on ' + id);
+    });
+    const tsSeen = {};
+    function tsCycle(id, stack) {
+      tsSeen[id] = 1;
+      stack.push(id);
+      nodes[id].options.forEach(op => {
+        if (op.next.charAt(0) === '@') return;
+        if (tsSeen[op.next] === 1) throw new Error('Thermostat cycle: ' + stack.concat(op.next).join(' -> '));
+        if (!tsSeen[op.next]) tsCycle(op.next, stack);
+      });
+      stack.pop();
+      tsSeen[id] = 2;
+    }
+    TS_WAVE1.forEach(id => { if (!tsSeen[id]) tsCycle(id, []); });
+  }
   function assertGraph() {
     const outcomes = ['next_step', 'call_pro', 'emergency_exit', 'insufficient_info'];
     WAVE1.forEach(id => { if (!nodes[id]) throw new Error('Missing Wave-1 node ' + id); });
@@ -2118,7 +2671,7 @@
       throw new Error('Start choices drifted');
     }
     if (systemChoice('furnace').next !== 'fn.gate.combustion_co') throw new Error('Furnace must enter the furnace gate');
-    if (systemChoice('other_heat_or_ductless').next !== 'sw.intake.other_system' || systemChoice('other_heat_or_ductless').label !== 'Something else: mini-split, geothermal, other') {
+    if (systemChoice('other_heat_or_ductless').next !== 'sw.intake.other_system' || systemChoice('other_heat_or_ductless').label !== 'Something else: mini-split, geothermal, thermostat, other') {
       throw new Error('Something else Start choice drifted');
     }
     if (wshpChoice('ductless_mini_split').next !== 'ms.intake.system_confirm') throw new Error('Ductless must enter the mini-split check');
@@ -2450,6 +3003,7 @@
     if (results.ms_advanced_off.outcome !== 'call_pro' || results.ms_advanced_off.diyTier !== 'pro_only') {
       throw new Error('Mini-split advanced defense drifted');
     }
+    assertTsInvariants();
   }
   assertGraph();
 
@@ -2463,7 +3017,8 @@
       hpWeakAirflow: false, hpOutdoorNotRunning: false, hpConcludeFrom: null, defrostReturns: 0,
       idWinter: null, idEm: null, wshpLoop: null,
       fnFuel: null, fnLanding: null, fnReason: null, hpGasFurnace: null,
-      msLanding: null, msSingleZone: false
+      msLanding: null, msSingleZone: false,
+      tsModel: null, tsLanding: null
     };
     pushAudit(state, 'node_entered:' + ENTRY);
     pushAudit(state, 'product_lane:ask');
@@ -2471,7 +3026,7 @@
   }
   function enterLane(state, lane) {
     state.product = lane;
-    state.treeVersion = lane === 'hp' ? TREE_HP : lane === 'wshp' ? TREE_WSHP : lane === 'fn' ? TREE_FN : lane === 'ms' ? TREE_MS : TREE_VERSION;
+    state.treeVersion = lane === 'hp' ? TREE_HP : lane === 'wshp' ? TREE_WSHP : lane === 'fn' ? TREE_FN : lane === 'ms' ? TREE_MS : lane === 'ts' ? TREE_TS : TREE_VERSION;
     pushAudit(state, 'product_lane:' + lane);
   }
   function uuid() {
@@ -2550,9 +3105,15 @@
     if (nodeId === CONSENT && choice === 'agree_18_terms') target = 'sw.intake.system_type';
     if (typeof target !== 'string') return target;
     if (state.product === 'fn') return fnOverlay(state, nodeId, choice, target);
+    if (state.product === 'ts') {
+      const sharedStop = target === '@gas' || target === '@fire' || target === '@heat' || target === '@uncertain';
+      const own = target.indexOf('ts.') === 0 || target.indexOf('@ts_') === 0;
+      if (!sharedStop && !own) return '@ts_advanced_off';
+    }
     if (state.product !== 'ac' && (target === CONCLUDE || target.indexOf('ac.adv.cap.') === 0 || target === '@suspected_capacitor_contactor_advanced_off' || target === '@next_step_advanced')) {
       if (state.product === 'wshp') return '@wshp_advanced_off';
       if (state.product === 'ms') return '@ms_advanced_off';
+      if (state.product === 'ts') return '@ts_advanced_off';
       return '@hp_advanced_electrical_off';
     }
     if (state.product !== 'hp') return target;
@@ -2634,6 +3195,13 @@
         })
       });
     }
+    if (state && TS_MODEL_NODES.indexOf(id) !== -1) {
+      const steps = TS_MODEL_STEPS[state.tsModel] || TS_MODEL_STEPS.not_sure;
+      view = Object.assign({}, view, {
+        body: String(view.body).replace(/\n*\{\{tsModelSteps\}\}/, ''),
+        modelSlot: steps
+      });
+    }
     return view;
   }
   function answer(state, choice, meta = {}) {
@@ -2668,6 +3236,7 @@
     if (nodeId === 'sw.intake.system_type' && choice === 'heat_pump') enterLane(state, 'hp');
     if (nodeId === 'sw.intake.system_type' && choice === 'furnace') enterLane(state, 'fn');
     if (nodeId === 'sw.intake.other_system' && choice === 'ductless_mini_split') enterLane(state, 'ms');
+    if (nodeId === 'sw.intake.other_system' && choice === 'thermostat_settings') enterLane(state, 'ts');
     if (nodeId === 'ac.cool.intake.system_confirm' && choice === 'ductless_mini_split') enterLane(state, 'ms');
     if (nodeId === 'hp.intake.system_confirm' && (choice === 'air_source_hp_gas_furnace' || choice === 'air_source_hp_gas_unsure')) {
       state.hpGasFurnace = choice === 'air_source_hp_gas_furnace' ? 'yes' : 'not_sure';
@@ -2739,6 +3308,14 @@
     if (nodeId === 'ms.landing.picker' && MS_LANDING[choice]) {
       state.msLanding = MS_LANDING[choice];
       pushAudit(state, 'flag:ms_landing=' + state.msLanding);
+    }
+    if (nodeId === 'ts.brand.group' && TS_BRAND[choice]) {
+      state.tsModel = TS_BRAND[choice];
+      pushAudit(state, 'flag:ts_model=' + state.tsModel);
+    }
+    if (nodeId === 'ts.landing.picker' && TS_LANDING[choice]) {
+      state.tsLanding = TS_LANDING[choice];
+      pushAudit(state, 'flag:ts_landing=' + state.tsLanding);
     }
     if (nodeId === 'sw.intake.other_system' && choice === 'water_source_geo') {
       enterLane(state, 'wshp');
@@ -2876,7 +3453,7 @@
   function summary(state, extra = {}) {
     const clean = x => String(x || '').replace(/[\r\n\t]+/g, ' ').trim().slice(0, 140);
     const facts = state.answers.map(x => x.fact).filter(Boolean);
-    const complaint = clean(extra.complaint) || clean(state.seed) || facts.find(x => x.startsWith('Complaint:')) || (state.result === 'sw_other_not_listed' ? 'Equipment this beta does not check yet; see reported observations.' : state.product === 'wshp' ? 'Water-source / geothermal heat pump concern; see reported observations.' : state.product === 'hp' ? 'Heat pump concern; see reported observations.' : state.product === 'fn' ? 'Furnace concern; see reported observations.' : state.product === 'ms' ? (state.msLanding === 'no_heat' ? 'Mini-split heating concern; see reported observations.' : 'Mini-split concern; see reported observations.') : 'AC concern; see reported observations.');
+    const complaint = clean(extra.complaint) || clean(state.seed) || facts.find(x => x.startsWith('Complaint:')) || (state.result === 'sw_other_not_listed' ? 'Equipment this beta does not check yet; see reported observations.' : state.product === 'wshp' ? 'Water-source / geothermal heat pump concern; see reported observations.' : state.product === 'hp' ? 'Heat pump concern; see reported observations.' : state.product === 'fn' ? 'Furnace concern; see reported observations.' : state.product === 'ms' ? (state.msLanding === 'no_heat' ? 'Mini-split heating concern; see reported observations.' : 'Mini-split concern; see reported observations.') : state.product === 'ts' ? 'Thermostat settings concern; see reported observations.' : 'AC concern; see reported observations.');
     const somethingElse = 'Something else reported at system type.';
     let observations = [...new Set(facts.filter(x => !x.startsWith('Complaint:') && !x.startsWith('User ') && !x.startsWith('Residential ') && !(state.product === 'wshp' && x.startsWith('Loop type:'))))].slice(-5);
     if (facts.indexOf(somethingElse) !== -1 && observations.indexOf(somethingElse) === -1) observations = [somethingElse].concat(observations);
@@ -2900,7 +3477,9 @@
           ? 'HOMEOWNER SERVICE NOTE — furnace observations, not a diagnosis'
           : state.product === 'ms'
             ? 'HOMEOWNER SERVICE NOTE — mini-split observations, not a diagnosis'
-            : 'HOMEOWNER SERVICE NOTE — observations, not a diagnosis';
+            : state.product === 'ts'
+              ? 'HOMEOWNER SERVICE NOTE — thermostat settings observations, not a diagnosis'
+              : 'HOMEOWNER SERVICE NOTE — observations, not a diagnosis';
     const inScopeWshpNote = state.product === 'wshp'
       && state.result !== 'wshp_out_of_scope_call_pro'
       && state.result !== 'wshp_divert_mini_split'
@@ -2911,6 +3490,7 @@
       : state.product === 'fn' && state.fnFuel ? 'Equipment: ' + state.fnFuel + ' furnace.'
       : state.product === 'ms' && state.msSingleZone ? 'Equipment: ductless mini-split, one indoor unit (homeowner reported).'
       : state.product === 'ms' ? 'Equipment: ductless mini-split (homeowner reported).'
+      : state.product === 'ts' ? 'Equipment: U.S. residential low-voltage thermostat (' + (TS_BRAND_LABEL[state.tsModel] || 'brand not confirmed') + ', homeowner reported).'
       : '';
     return [header,
       equipment,
@@ -2952,6 +3532,14 @@
         actions: ['Leave it in Cool, not Auto, while you need cooling.', 'If you use Quiet, Sleep, or a schedule, check that it isn’t turning the fan down when you need air.', 'If the air gets weak again with the right settings, start a new check and choose Weak air from the indoor unit while cooling.']
       });
     }
+    if (state && state.product === 'ts') {
+      const copy = Object.assign({}, res, { actions: (res.actions || []).slice() });
+      const url = state.tsModel && TS_MANUAL[state.tsModel];
+      if (url && res.outcome !== 'emergency_exit' && copy.actions.every(action => action.indexOf(url) === -1)) {
+        copy.actions.push('Check your manual: ' + url);
+      }
+      return copy;
+    }
     if (!state || state.product !== 'hp') return res;
     const swap = s => String(s)
       .replace('Set the system to Cool and retest after 15–30 minutes.', 'Set Heat or Cool to match the complaint and retest after 15–30 minutes.')
@@ -2972,7 +3560,7 @@
   }
   return {
     nodes, results, create, answer, stop, resume, summary, activity, viewNode, presentResult, advancedEnabled,
-    treeVersion: TREE_VERSION, treeVersionHp: TREE_HP, treeVersionWshp: TREE_WSHP, treeVersionMs: TREE_MS, msPr1: MS_PR1, msV1: MS_V1, wave1: WAVE1, wave2: WAVE2, advanced: ADVANCED,
+    treeVersion: TREE_VERSION, treeVersionHp: TREE_HP, treeVersionWshp: TREE_WSHP, treeVersionMs: TREE_MS, treeVersionTs: TREE_TS, tsWave1: TS_WAVE1, tsLegal: TS_LEGAL, tsLegalFooter: TS_LEGAL_FOOTER, tsModelSteps: TS_MODEL_STEPS, tsManual: TS_MANUAL, assertTsInvariants, msPr1: MS_PR1, msV1: MS_V1, wave1: WAVE1, wave2: WAVE2, advanced: ADVANCED,
     hpWave1: HP_WAVE1, wshpWave1: WSHP_WAVE1, treeVersionFn: TREE_FN, fnWave1: FN_WAVE1, fnReused: FN_REUSED, fnForbidden: FN_FORBIDDEN,
     fnCoLine: FN_CO_LINE, fnReasonCopy: FN_REASON_COPY, fnEdge: FN_EDGE
   };

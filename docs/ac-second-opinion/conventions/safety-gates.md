@@ -26,6 +26,10 @@ Hard gates. Affirmative / failed check → tree **halts**. No soft continue. Pre
 | `ms.gate.new_hazard` | `hazard_now` on any `ms.` node | A new hazard ends this check. | `emergency_exit` | `gate_fired:ms_new_hazard` |
 | `cold_exposure_911` | Someone at risk from the cold (a baby, an older adult, or a medical need) and no safe heat | Get the person warm first. Call 911 if they are confused or drowsy. | `emergency_exit` | `gate_fired:cold_exposure_911` |
 | `ms.heat.ice_keep_running` | Ice on a mini-split outdoor unit in heat, and the user wants to keep it running | Stop. Turn the mini-split Off. Use safe backup heat per its manufacturer. Never run a space heater near water or the indoor unit. | `emergency_exit` (`ms_ice_heat_keep_running`). Same gate id as `ice_keep_running`. No Emergency/Aux line. | `gate_fired:ice_keep_running` |
+| `ts.gate.safety_stops` | Gas, carbon monoxide, smoke, sparks, burning, water at the thermostat, heat illness, cold exposure, or not sure, on the thermostat safety screen | Stop. Do not approach the thermostat to find out. | `emergency_exit` on the shared hazard result. Settings do not continue. | `gate_fired:` plus `gas_co`, `smoke_fire_sparks_burn`, `water_near_electrical`, `heat_illness_911`, `cold_exposure_911`, or `unsure_hazard` |
+| `ts_new_hazard` | `hazard_now` on any later `ts.` node | A new hazard ends this check. | `emergency_exit` (`ts_hazard_now`). No soft continue. | `gate_fired:ts_new_hazard` |
+| `ts.blank.breaker` | A breaker, or a manual that says to use a breaker, on a blank thermostat | A blank screen is not a reason to reset a breaker. | `call_pro` (`ts_power_breaker_pro`). No breaker step. | answer audit |
+| `ts.installer_stop` | Installer, equipment, or wiring settings | Those settings always stop. | `call_pro` (`ts_installer_stop`). No continue into a setup menu. | answer audit |
 
 ## Ordering
 

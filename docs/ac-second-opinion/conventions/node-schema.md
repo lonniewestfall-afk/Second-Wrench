@@ -59,9 +59,10 @@ Use in `notes` / outline docs for authoring clarity. Not a separate schema field
 ```
 ac.<domain>.<topic>.<step>
 ms.<domain>.<topic>.<step>
+ts.<domain>.<topic>.<step>
 ```
 
-Live cooling-only sessions use `ac.cool.v1`. Live single-zone ductless sessions use `ms.ductless.v1`.
+Live cooling-only sessions use `ac.cool.v1`. Live single-zone ductless sessions use `ms.ductless.v1`. Live low-voltage thermostat settings sessions use `ts.settings.v0`.
 
 Examples:
 
