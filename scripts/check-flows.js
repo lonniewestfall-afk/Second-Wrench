@@ -441,6 +441,19 @@ assert(appText.includes('Advanced repair steps are not enabled. Call a licensed 
 assert(appText.includes('Optional. Do not include passwords, serial photos you shouldn’t share, or medical details.'), 'feedback warning');
 assert(appText.includes('Optional: I agree Second Wrench may use my feedback to improve the product, including in anonymized form.'), 'feedback consent line');
 assert(indexText.includes('href="#/terms"') && indexText.includes('href="#/privacy"'), 'every app page footer links to Terms and Privacy');
+const SOCIAL_LINKS = [
+  ['https://x.com/SecondWrench', 'Second Wrench on X'],
+  ['https://www.facebook.com/profile.php?id=61595153885270', 'Second Wrench on Facebook'],
+  ['https://www.reddit.com/user/SecondWrench/', 'Second Wrench on Reddit']
+];
+SOCIAL_LINKS.forEach(([href, label]) => {
+  const anchor = 'href="' + href + '" target="_blank" rel="noopener noreferrer" aria-label="' + label + '"';
+  assert(indexText.includes(anchor), 'site footer social link ' + label);
+  assert(appText.includes(anchor), 'home social link ' + label);
+});
+assert((indexText.match(/class="social-follow"/g) || []).length === 1, 'site footer has one follow row');
+assert((appText.match(/aria-label="Follow Second Wrench"/g) || []).length === 1, 'home has one follow row');
+assert(!/instagram/i.test(indexText + '\n' + appText), 'no Instagram link or embed');
 
 const gas = F.create();
 F.answer(gas, 'hazard_gas_co');
@@ -1349,6 +1362,23 @@ function pageChecks() {
     assert(errors.length === 0, 'page scripts load without error: ' + errors.join(' | '));
     assert(norm(doc.querySelector('.beta-bar')) === 'Free public beta. A better next step. · Not an emergency service', 'rendered beta bar');
     assert(norm(doc.querySelector('.quiet-note')).startsWith('Free public beta. Try it on your own system and tell us what was clear or confusing.'), 'rendered home note');
+    function assertSocial(nav, where) {
+      assert(nav && nav.getAttribute('aria-label') === 'Follow Second Wrench', where + ' follow row');
+      const links = [...nav.querySelectorAll('a')];
+      assert(links.length === SOCIAL_LINKS.length, where + ' follow row has only the three links');
+      SOCIAL_LINKS.forEach(([href, label]) => {
+        const link = links.find(el => el.getAttribute('href') === href);
+        assert(link && link.getAttribute('target') === '_blank' && link.getAttribute('rel') === 'noopener noreferrer' && link.getAttribute('aria-label') === label, where + ' link ' + label);
+      });
+      assert(!links.some(el => /instagram/i.test(el.getAttribute('href') || '') || /instagram/i.test(el.textContent || '')), where + ' has no Instagram link');
+    }
+    const heroCta = doc.querySelector('.hero-cta');
+    const startBtn = heroCta && heroCta.querySelector('[data-action="start"]');
+    const heroFollow = heroCta && heroCta.querySelector('.social-follow');
+    assert(startBtn && heroFollow && (startBtn.compareDocumentPosition(heroFollow) & window.Node.DOCUMENT_POSITION_FOLLOWING), 'follow row sits below Start');
+    assertSocial(heroFollow, 'home');
+    assertSocial(doc.querySelector('.site-footer .social-follow'), 'site footer');
+    assert(![...doc.querySelectorAll('a')].some(el => /instagram/i.test(el.getAttribute('href') || '')), 'rendered page has no Instagram link');
     for (const [id, title] of HAZARDS) {
       await home();
       assert(!doc.getElementById('agree'), id + ' starts on the safety gate without a checkbox');
