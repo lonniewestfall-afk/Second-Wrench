@@ -4,7 +4,7 @@ Tree version: `ms.ductless.v0`. Product key: `ms`. Content version `2026-10-10.1
 
 Basic look-only checks. No ladder, breaker, disconnect, refrigerant, capacitor, or panel-removal steps. Advanced stays off.
 
-Entry: Start → Something else: mini-split, geothermal, other → Ductless mini-split. Also from the cooling-system question, and from the water-source equipment question.
+Entry: Start → Something else: mini-split, geothermal, other → Ductless mini-split. Also from the cooling-system question. A ductless answer on the water-source equipment question points back to that Start path.
 
 | Node | Title |
 |---|---|
@@ -15,8 +15,8 @@ Entry: Start → Something else: mini-split, geothermal, other → Ductless mini
 | `ms.head.filter_clean` | Clean the filters the way your manual shows |
 | `ms.head.discharge_clear` | Is anything blocking the air? |
 | `ms.head.airflow_result` | Run it for 15 minutes, then check |
-| `ms.head.water_observe` | Where is the water? |
+| `ms.head.water_observe` | Where is the water or melting ice? |
 | `ms.error.capture` | Write down the code |
 | `ms.ice.stop_observe` | Ice on the mini-split: stop and thaw |
 
-Water on or near electrical parts ends at `ms_water_electrical` (`emergency_exit`). That result does not say to shut off main power.
+Water on or near electrical parts ends at `ms_water_electrical` (`emergency_exit`). Not being sure ends at `ms_unsure_water_electrical`. Neither result tells anyone to shut off power or a breaker.

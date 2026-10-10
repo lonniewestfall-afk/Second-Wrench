@@ -276,7 +276,7 @@
     'ac.cool.intake.system_confirm': n('Your system', 'What kind of cooling system is this?',
       'Use an existing manual or what you already know. Do not remove a cover or climb to identify equipment.\n\nThis beta covers confirmed conventional, cooling-only split-system central AC (outdoor cooling-only condenser + indoor furnace or air handler).', [
         o('split_central_cool_only', 'Central AC with separate indoor and outdoor units', 'ac.cool.landing.picker', 'A cooling-only outdoor AC connected to an indoor furnace or air handler.', 'Residential split-system central AC reported.'),
-        o('heat_pump', 'A heat pump', 'hp.intake.system_confirm', 'Continue on the air-source heat pump check. Cooling-only steps stay on this AC path.', 'Heat pump reported. Switching to the heat pump tree.'),
+        o('heat_pump', 'A heat pump', 'hp.intake.system_confirm', 'A heat pump heats and cools. Leave this cooling-only check and continue on the air-source heat pump check.', 'Heat pump reported. Switching to the heat pump tree.'),
         o('ductless_mini_split', 'A ductless mini-split', 'ms.intake.system_confirm', 'Indoor unit on the wall, floor, or ceiling, no vents. Continue on the mini-split check.', 'Ductless mini-split reported. Switching to the mini-split check.'),
         o('window_portable', 'A window or portable unit', '@out_of_scope_equipment', 'Out of scope for this beta.', 'Window or portable equipment reported.'),
         o('geo_packaged_other', 'Geothermal, packaged, or another system', '@out_of_scope_equipment', 'Geothermal or water-source: start again, choose Something else: mini-split, geothermal, other, then Water-source / geothermal heat pump. Packaged or other systems are not covered yet.', 'Geothermal, packaged, or another system reported.'),
@@ -689,7 +689,7 @@
         o('wshp_open_loop', 'Open loop (well, lake, or pond water)', 'wshp.openloop.chemistry_gate', 'Often a well pump and pressure tank. Used water drains away outside.', 'Loop type: open loop (well, lake, or pond water).'),
         o('wshp_loop_unsure', 'Water-source or geothermal, but I am not sure which loop', 'wshp.handback.call_pro', 'That is OK. A pro can tell.', 'Loop type: homeowner not sure.'),
         o('wshp_air_source', 'Actually, there is an outdoor unit with a big fan', 'hp.intake.system_confirm', 'That is an air-source heat pump. Use the heat pump check.', 'Outdoor unit with a fan reported; switched to the air-source heat pump check.'),
-        o('wshp_ductless', 'Actually, it is a ductless mini-split (wall or ceiling units in rooms)', 'ms.intake.system_confirm', 'Continue on the mini-split check.', 'Ductless mini-split reported at the water-source equipment question.'),
+        o('wshp_ductless', 'Actually, it is a ductless mini-split (wall or ceiling units in rooms)', '@wshp_divert_mini_split', 'That is a different check.', 'Ductless mini-split reported at the water-source equipment question.'),
         o('wshp_furnace_combustion', 'The problem is a gas, oil, or propane furnace or boiler', '@wshp_divert_furnace', 'Gas or electric furnace: start again and choose Furnace (gas or electric, with or without central AC). Oil and boilers still need a pro.', 'Fuel-burning furnace or boiler problem reported at the water-source equipment question.'),
         o('wshp_out_of_scope_size', 'Something bigger or different: over 6 tons, a business or large building, or it heats water for floors or radiators', '@wshp_out_of_scope_call_pro', 'Outside this beta. A pro is the right next step.', 'Over 6 tons, commercial, or water-to-water system reported.'),
         o('wshp_system_unsure', 'I am not sure what kind of system I have', '@wshp_system_unconfirmed', 'Do not open covers to find out.', 'Homeowner unsure of system type at the water-source equipment question.'),
@@ -838,18 +838,18 @@
 
     'ms.head.airflow_result': n('Indoor unit airflow', 'Run it for 15 minutes, then check',
       'Set Cool, at least 3°F below the room, with the fan on High. Let it run about 15 minutes.\n\nThen stand in front of the indoor unit and feel the air.\n\nIf you see ice or dripping water now, choose that option. Don’t keep it running.', [
-        o('improved_ok', 'Better. Strong, cool air now', '@ms_airflow_improved_basic', 'Basic fix. We’ll show how to keep it that way.', 'Airflow and cooling improved after the Basic checks.'),
+        o('improved_ok', 'Better. Airflow is back to normal', '@ms_airflow_improved_basic', 'Basic fix. We’ll show how to keep it that way.', 'Airflow is back to normal after the basic checks.'),
         o('still_weak_air', 'The air is still weak', '@ms_weak_air_after_basics', 'A pro checks the inside of the unit.', 'Airflow still weak after settings, filters, and clearance checks.'),
-        o('air_ok_not_cooling', 'The air is strong, but it isn’t cold, or the room won’t cool', '@ms_no_cool_after_basics', 'A pro checks the system.', 'Airflow strong but not cooling after the Basic checks.'),
-        o('now_ice_or_water', 'Now I see ice or dripping water', 'ms.head.water_observe', 'Electrical safety question next.', 'Ice or dripping water appeared during the airflow check.'),
+        o('air_ok_not_cooling', 'The air is strong, but it isn’t cold, or the room won’t cool', '@ms_no_cool_after_basics', 'A pro checks the system.', 'Airflow strong but not cooling after the basic checks.'),
+        o('now_ice_or_water', 'Now I see ice or dripping water', 'ms.head.water_observe', 'Next: where the water or melting ice is. Electrical safety comes first.', 'Ice or dripping water appeared during the airflow check.'),
         o('not_sure_result', 'I’m not sure', '@ms_airflow_unsure', 'Don’t open the unit to check.', ''),
         MS_HAZARD
       ]),
 
-    'ms.head.water_observe': n('Water', 'Where is the water?',
-      'Answer from where you’re standing. Don’t step into water, touch the unit, or climb up to look. Don’t go into an attic or crawlspace.\n\nFirst: is any water on or near an outlet, a power cord, a light, a switch, or the unit’s wiring? Or dripping onto anything that plugs in?', [
+    'ms.head.water_observe': n('Water', 'Where is the water or melting ice?',
+      'Answer from where you’re standing. Don’t step into water, touch the unit, or climb up to look. Don’t go into an attic or crawlspace. Ice that is melting counts as water for this question.\n\nFirst: is any water, or ice that is melting, on or near an outlet, a power cord, a light, a switch, or the unit’s wiring? Or dripping onto anything that plugs in?', [
         o('water_on_electrical', 'Yes, water is on or near something electrical', '@ms_water_electrical', 'Stop. Don’t touch it.', 'Water on or near electrical parts at the mini-split.', { gate: 'water_near_electrical' }),
-        o('water_unsure_electrical', 'I can’t tell if it’s near anything electrical', '@unsure_water_electrical', 'Stop. It’s safer to halt.', 'Not sure whether water was near electrical parts.', { gate: 'unsure_water_electrical' }),
+        o('water_unsure_electrical', 'I can’t tell if it’s near anything electrical', '@ms_unsure_water_electrical', 'Stop. It’s safer to halt.', 'Not sure whether water was near electrical parts.', { gate: 'unsure_water_electrical' }),
         o('water_with_ice', 'Nothing electrical, but I also see ice on the unit or its pipes', 'ms.ice.stop_observe', 'Stop-and-thaw steps next.', 'Water and ice seen. No electrical contact reported.'),
         o('water_drip_away_from_electrical', 'It’s dripping or pooling under the unit, away from anything electrical', '@ms_condensate_leak_wave1', 'Towels down. A pro clears the drain.', 'Water dripping or pooling under the indoor unit, away from electrical parts.'),
         o('water_hidden_or_pump', 'Water is in the wall or ceiling, or a small pump box is beeping or overflowing', '@ms_condensate_leak_wave1', 'Near a light or outlet? Choose the first option.', 'Water in the wall or ceiling, or a condensate pump alarm or overflow.'),
@@ -1600,12 +1600,12 @@
       ['Leave the louver where it is.', 'If air still comes out, you can keep using the unit. If the louver is closed and blocking the air, turn it Off with the remote.', 'Call a licensed HVAC pro and tell them what the louver does.'],
       'Don’t push, pry, or bend the louver, or open the unit.', 'maintenance',
       'call_pro', 'ms_louver_stuck'),
-    ms_airflow_improved_basic: r('Basic homeowner check', 'Keep the filters clean', 'The Basic checks brought the air back.',
+    ms_airflow_improved_basic: r('Basic homeowner check', 'Keep the filters clean', 'The basic checks brought the air back.',
       'Clean filters and a clear path in front of the unit are common fixes for weak air.',
       ['Clean the filters as often as your manual says. Many say every two weeks when it runs a lot.', 'Keep curtains and furniture clear of the indoor unit.', 'If the air gets weak again soon after cleaning, or you see ice or water, start a new check.'],
       'Don’t spray cleaners into the unit or open it past the filters.', 'maintenance',
       'next_step', 'ms_airflow_improved_basic', { diyTier: 'basic' }),
-    ms_weak_air_after_basics: r('Professional guidance', 'Arrange HVAC service', 'Air is still weak after the Basic checks.',
+    ms_weak_air_after_basics: r('Professional guidance', 'Arrange HVAC service', 'Air is still weak after the basic checks.',
       'Settings, filters, and a clear path are done. What’s left is inside the unit, and that needs a pro. This isn’t a confirmed diagnosis.',
       ['If you see ice or water, or it isn’t cooling, turn it Off with the remote.', 'Call a licensed HVAC pro. Tell them what you checked: settings, filters, and anything blocking the unit.', 'Your service note below lists what you told this check.'],
       'Don’t open the unit, spray cleaners inside, or add refrigerant.', 'maintenance',
@@ -1622,17 +1622,17 @@
       'insufficient_info', 'ms_airflow_unsure'),
     ms_condensate_leak_wave1: r('Professional guidance', 'Protect the area · arrange service', 'Water from the indoor unit needs a pro.',
       'The water usually comes from the drain that carries water away from the unit. Clearing or fixing the drain, pump, or pan is a pro job.',
-      ['Turn the unit Off with the remote to stop new water. Remote Off doesn’t cut the power, so stay away from the unit’s wiring.', 'Put towels or a bucket under it. Keep water away from outlets and cords.', 'Call a licensed HVAC pro. Tell them where the water is and how much.', 'If water reaches an outlet, cord, or light, stay clear and call a pro or electrician.'],
+      ['Turn the unit Off with the remote to stop new water. Remote Off doesn’t cut the power, so stay away from the unit’s wiring.', 'Put towels or a bucket under it. Keep water away from outlets and cords.', 'Call a licensed HVAC pro. Tell them where the water is and how much.', 'If water reaches an outlet, cord, or light, stay clear and call a pro or electrician.', 'If you see sparks or smoke, or smell burning, get out and call 911 from outside.'],
       'Don’t open the unit, pour bleach, vinegar, or other chemicals into the drain, push anything through it, or drill holes.', 'safety',
       'call_pro', 'ms_condensate_leak_wave1'),
     ms_error_code_wave1: r('Professional guidance', 'Arrange HVAC service', 'Give the code to a pro.',
       'Error codes point a pro to what to check. They aren’t a homeowner repair list, and the same code can mean different things on different brands.',
       ['If it isn’t cooling, or the code keeps coming back, turn it Off with the remote.', 'Call a licensed HVAC pro, or the installer or maker. Give them the code or light pattern, when it showed, and what the unit was doing.', 'If you couldn’t read it from the floor, say so. Don’t climb to read it.'],
-      'Don’t keep restarting it to clear the code, open the unit, or follow repair steps that need tools or a meter.', 'safety',
+      'Don’t follow repair steps from a code list.', 'safety',
       'call_pro', 'ms_error_code_wave1'),
     ms_ice_cooling_wave1: r('Stop / professional', 'Turn it off · call a pro', 'Turn it off and let the ice melt.',
       'Running a mini-split with ice on it can damage it, and the melt can drip. A dirty filter can cause ice, and so can problems only a pro can check.',
-      ['Turn the unit Off with the remote or app.', 'Put towels or a bucket under the indoor unit. Keep water away from outlets and cords.', 'Let the ice melt on its own. It can take a few hours.', 'Call a licensed HVAC pro. Tell them where you saw ice and when the filters were last cleaned.', 'If water reaches an outlet, cord, or light, stay clear and call a pro or electrician.'],
+      ['Turn the unit Off with the remote or app.', 'Put towels or a bucket under the indoor unit. Keep water away from outlets and cords.', 'Let the ice melt on its own. It can take a few hours.', 'Call a licensed HVAC pro. Tell them where you saw ice and when the filters were last cleaned.', 'If water reaches an outlet, cord, or light, stay clear and call a pro or electrician.', 'If you see sparks or smoke, or smell burning, get out and call 911 from outside.'],
       'Don’t chip or pick at the ice, or use a hair dryer, heat gun, or hot water. Don’t restart cooling while any ice remains.', 'ice',
       'call_pro', 'ms_ice_cooling_wave1'),
     ms_ice_keep_running: r('Stop / professional', 'Hard stop · call a pro', 'Stop. Turn it off and let the ice melt.',
@@ -1647,9 +1647,14 @@
       'insufficient_info', 'ms_ice_unclear_or_heat'),
     ms_hazard_now: r('Emergency', 'Stop. Get to safety.', 'A new hazard ends this check.',
       'Gas, smoke, sparks, a burning smell, or water at electrical equipment is not a mini-split DIY path.',
-      ['If you smell gas or a carbon monoxide alarm is sounding, leave the building and call for help from outside. Do not operate switches inside.', 'If there is smoke, fire, or sparks, get people away and call 911 from safety.', 'If water is at electrical equipment, stay clear. Shut power only from a dry place you already know.', 'Do not return to troubleshooting until the hazard has been handled.'],
+      ['If you smell gas or a carbon monoxide alarm is sounding, leave the building and call for help from outside. Do not operate switches inside.', 'If there is smoke, fire, or sparks, get people away and call 911 from safety.', 'If water is at electrical equipment, stay clear and don’t touch anything. Leave the area and call a licensed HVAC pro or an electrician.', 'Do not return to troubleshooting until the hazard has been handled.'],
       'Do not keep diagnosing, open covers, or touch wet equipment.', 'safety',
       'emergency_exit', 'ms_new_hazard', { gate: 'ms_new_hazard' }),
+    ms_unsure_water_electrical: r('Stop / professional', 'Do not continue the check', 'Don’t touch the indoor unit to find out.',
+      'If you can’t tell whether water or melting ice is near an outlet, a cord, or the unit’s wiring, stop.',
+      ['Stay clear of the indoor unit and any wet floor. Don’t touch the unit, a switch, a cord, or the breaker panel.', 'Leave the area and call a licensed HVAC pro or an electrician. Tell them what you already saw.', 'If you see sparks or smoke, or smell burning, get out and call 911 from outside.'],
+      'Don’t mop around the unit, and don’t touch the breaker panel.', 'electrical',
+      'emergency_exit', 'unsure_water_electrical', { gate: 'unsure_water_electrical' }),
     ms_water_electrical: r('Stop / professional', 'Keep away · urgent help', 'Don’t touch the indoor unit or stand in the water.',
       'Water is on or near the mini-split’s electrical parts.',
       ['Don’t touch the indoor unit, any switch, a cord, or the breaker panel, and don’t stand in the water.', 'Leave the area, keep others and pets away, and call a licensed HVAC pro or an electrician.', 'If you see sparks, smoke, or smell burning, get out and call 911 from outside.'],
@@ -2027,7 +2032,7 @@
     if (equipNext('wshp_air_source') !== 'hp.intake.system_confirm') throw new Error('Air-source divert must enter the heat pump tree');
     if (results[equipNext('wshp_out_of_scope_size').slice(1)].outcome !== 'call_pro') throw new Error('Oversize must call a pro');
     if (results[equipNext('wshp_system_unsure').slice(1)].outcome !== 'insufficient_info') throw new Error('Unsure system must be insufficient_info');
-    if (equipNext('wshp_ductless') !== 'ms.intake.system_confirm') throw new Error('Ductless divert must enter the mini-split check');
+    if (equipNext('wshp_ductless') !== '@wshp_divert_mini_split') throw new Error('Ductless divert must stay on the mini-split pointer');
     if (equipNext('wshp_furnace_combustion') !== '@wshp_divert_furnace' && equipNext('wshp_furnace_combustion') !== 'fn.gate.combustion_co') {
       throw new Error('Furnace divert drifted');
     }
@@ -2069,10 +2074,9 @@
       if (id.indexOf('wshp_') !== 0) return;
       if (results[id].outcome === 'next_step' || results[id].diyTier === 'advanced') throw new Error('WSHP result tier drifted: ' + id);
     });
-    ['wshp.hazard.flood_electrical', 'wshp.entry.equipment_gate', 'wshp.openloop.chemistry_gate', 'wshp.handback.call_pro', 'ms.intake.system_confirm', '@fire', '@electrical', '@gas', '@uncertain', '@wshp_hazard_now', '@wshp_mech_room_flood', '@wshp_breaker_wont_reset', '@wshp_openloop_water_quality_pro', '@wshp_handback_call_pro', '@wshp_out_of_scope_call_pro', '@wshp_system_unconfirmed', '@wshp_divert_furnace'].forEach(id => {
+    ['wshp.hazard.flood_electrical', 'wshp.entry.equipment_gate', 'wshp.openloop.chemistry_gate', 'wshp.handback.call_pro', '@fire', '@electrical', '@gas', '@uncertain', '@wshp_hazard_now', '@wshp_mech_room_flood', '@wshp_breaker_wont_reset', '@wshp_openloop_water_quality_pro', '@wshp_handback_call_pro', '@wshp_out_of_scope_call_pro', '@wshp_system_unconfirmed', '@wshp_divert_mini_split', '@wshp_divert_furnace'].forEach(id => {
       if (!wshpSeen.has(id)) throw new Error('WSHP walk missing ' + id);
     });
-    if (wshpSeen.has('@wshp_divert_mini_split')) throw new Error('WSHP walk still ends on the mini-split pointer');
     const bannedDiy = /\b(acid|bleach|chlorin\w*|biocide|descal\w*|flush\w*|purg\w*|glycol|antifreeze|refrigerant|gauges?|jump\w*|bypass\w*)\b/ig;
     const allowedPhrase = 'The water loop, pump, refrigerant, and controls';
     const allowedStart = /^(?:Do not|Never|Not offered|This check will not|No )/;
@@ -2247,16 +2251,39 @@
         throw new Error('Mini-split overlay must map advanced targets to @ms_advanced_off');
       }
     });
+    const shutOff = /\b(shut|turn|switch|cut)\w*\s+(off\s+)?(the\s+)?(main\s+)?(power|breaker)\b|\bshut power\b|breaker\s+(off|on)\b|\bflip\b|\breset\w*\s+(the\s+)?breaker/i;
+    const shutOffAllow = new Set([
+      'If it says to switch off power at a breaker or switch, stop here.',
+      'It doesn’t cut the power.',
+      'My manual says to switch off power at a breaker or switch first',
+      'Remote Off doesn’t cut the power.',
+      'Don’t open covers, reset breakers, or open the outdoor unit to look for the cause.',
+      'Don’t open the indoor or outdoor unit, rewire anything, or reset breakers to test it.',
+      'Don’t add refrigerant, open the outdoor unit, or reset breakers to test it.',
+      'Remote Off doesn’t cut the power, so stay away from the unit’s wiring.',
+      'Don’t touch the indoor unit, any switch, a cord, or the breaker panel, and don’t stand in the water.',
+      'Don’t touch the indoor unit, any switch, or the breaker panel.',
+      'Don’t mop around the unit, and don’t touch the breaker panel.',
+      'Stay clear of the indoor unit and any wet floor. Don’t touch the unit, a switch, a cord, or the breaker panel.'
+    ]);
+    const assertNoShutOff = (text, where) => {
+      String(text || '').split(/(?<=[.!?])\s+|\n+/).map(sentence => sentence.trim()).filter(Boolean).forEach(sentence => {
+        if (shutOff.test(sentence) && !shutOffAllow.has(sentence)) throw new Error('Shut-off instruction in ' + where + ': ' + sentence);
+      });
+    };
     Object.keys(results).forEach(id => {
-      if (id.indexOf('ms_') !== 0) return;
+      if (id.indexOf('ms_') !== 0 && id !== 'unsure_water_electrical' && id !== 'leak') return;
       const res = results[id];
-      const blob = [res.title, res.urgency, res.explanation, res.avoid].concat(res.actions || []).join('\n');
-      if (/shut off main power/i.test(blob)) throw new Error('Mini-split result says shut off main power: ' + id);
+      [res.title, res.urgency, res.explanation, res.avoid].concat(res.actions || []).forEach((text, index) => assertNoShutOff(text, id + ' field ' + index));
     });
     MS_PR1.forEach(id => {
       const node = nodes[id];
-      const blob = [node.title, node.body, node.caution].concat(node.options.map(op => [op.label, op.hint, op.fact].join(' '))).join('\n');
-      if (/shut off main power/i.test(blob)) throw new Error('Mini-split node says shut off main power: ' + id);
+      [node.title, node.body, node.caution].forEach((text, index) => assertNoShutOff(text, id + ' field ' + index));
+      node.options.forEach(op => {
+        assertNoShutOff(op.label, id + '/' + op.id + ' label');
+        assertNoShutOff(op.hint, id + '/' + op.id + ' hint');
+        assertNoShutOff(op.fact, id + '/' + op.id + ' fact');
+      });
     });
     if (results.ms_advanced_off.outcome !== 'call_pro' || results.ms_advanced_off.diyTier !== 'pro_only') {
       throw new Error('Mini-split advanced defense drifted');
@@ -2436,6 +2463,15 @@
     if (state && state.product === 'fn' && FN_REUSED.indexOf(id) !== -1) {
       view = Object.assign({}, view, { options: view.options.concat([FN_HAZARD]) });
     }
+    if (state && state.msLanding === 'weak_airflow' && id === 'ms.controls.mode_setpoint') {
+      view = Object.assign({}, view, {
+        options: view.options.map(op => {
+          if (op.id === 'settings_fixed_now_cooling') return Object.assign({}, op, { label: 'I changed a setting, and airflow is back to normal', fact: 'User changed the remote or app settings, and airflow is back to normal.' });
+          if (op.id === 'remote_batteries_fixed') return Object.assign({}, op, { label: 'The remote was dead. Fresh batteries fixed it, and airflow is back to normal', fact: 'User replaced the remote batteries, and airflow is back to normal.' });
+          return op;
+        })
+      });
+    }
     return view;
   }
   function answer(state, choice, meta = {}) {
@@ -2471,7 +2507,6 @@
     if (nodeId === 'sw.intake.system_type' && choice === 'furnace') enterLane(state, 'fn');
     if (nodeId === 'sw.intake.other_system' && choice === 'ductless_mini_split') enterLane(state, 'ms');
     if (nodeId === 'ac.cool.intake.system_confirm' && choice === 'ductless_mini_split') enterLane(state, 'ms');
-    if (nodeId === 'wshp.entry.equipment_gate' && choice === 'wshp_ductless') enterLane(state, 'ms');
     if (nodeId === 'hp.intake.system_confirm' && (choice === 'air_source_hp_gas_furnace' || choice === 'air_source_hp_gas_unsure')) {
       state.hpGasFurnace = choice === 'air_source_hp_gas_furnace' ? 'yes' : 'not_sure';
     }
@@ -2510,7 +2545,9 @@
     if (nodeId === 'hp.defrost.sanity' && choice === 'iced_solid_no_recover') state.hpConcludeFrom = 'defrost_failure_suspected';
     if (nodeId === 'hp.rv.mode_asymmetric' && choice === 'asymmetric_pattern_confirmed') state.hpConcludeFrom = 'mode_asymmetric_rv_ob_control';
     if (nodeId === 'hp.rv.mode_asymmetric' && choice === 'recent_tstat_swap_ob_unsure') state.hpConcludeFrom = 'thermostat_ob_uncertain_after_swap';
-    state.answers.push({ node: nodeId, choice, label: option.label, fact: option.fact, at: new Date().toISOString() });
+    const shown = viewNode(nodeId, state);
+    const shownOption = shown && shown.options.find(item => item.id === choice);
+    state.answers.push({ node: nodeId, choice, label: shownOption ? shownOption.label : option.label, fact: shownOption && shownOption.fact != null ? shownOption.fact : option.fact, at: new Date().toISOString() });
     pushAudit(state, 'answer_selected:' + choice);
     if (nodeId === 'hp.landing.picker' && state.hpLanding) pushAudit(state, 'flag:hp_landing=' + state.hpLanding);
     if (nodeId === 'hp.ambient.outdoor_band' && state.hpAmbient) pushAudit(state, 'flag:hp_ambient_band=' + state.hpAmbient);
@@ -2677,8 +2714,10 @@
   function summary(state, extra = {}) {
     const clean = x => String(x || '').replace(/[\r\n\t]+/g, ' ').trim().slice(0, 140);
     const facts = state.answers.map(x => x.fact).filter(Boolean);
-    const complaint = clean(extra.complaint) || clean(state.seed) || facts.find(x => x.startsWith('Complaint:')) || (state.product === 'wshp' ? 'Water-source / geothermal heat pump concern; see reported observations.' : state.product === 'hp' ? 'Heat pump concern; see reported observations.' : state.product === 'fn' ? 'Furnace concern; see reported observations.' : state.product === 'ms' ? 'Mini-split concern; see reported observations.' : 'AC concern; see reported observations.');
-    const observations = [...new Set(facts.filter(x => !x.startsWith('Complaint:') && !x.startsWith('User ') && !x.startsWith('Residential ') && !(state.product === 'wshp' && x.startsWith('Loop type:'))))].slice(-5);
+    const complaint = clean(extra.complaint) || clean(state.seed) || facts.find(x => x.startsWith('Complaint:')) || (state.result === 'sw_other_not_listed' ? 'Equipment this beta does not check yet; see reported observations.' : state.product === 'wshp' ? 'Water-source / geothermal heat pump concern; see reported observations.' : state.product === 'hp' ? 'Heat pump concern; see reported observations.' : state.product === 'fn' ? 'Furnace concern; see reported observations.' : state.product === 'ms' ? 'Mini-split concern; see reported observations.' : 'AC concern; see reported observations.');
+    const somethingElse = 'Something else reported at system type.';
+    let observations = [...new Set(facts.filter(x => !x.startsWith('Complaint:') && !x.startsWith('User ') && !x.startsWith('Residential ') && !(state.product === 'wshp' && x.startsWith('Loop type:'))))].slice(-5);
+    if (facts.indexOf(somethingElse) !== -1 && observations.indexOf(somethingElse) === -1) observations = [somethingElse].concat(observations);
     const actions = [...new Set(facts.filter(x => x.startsWith('User ')))].slice(-2);
     const loopLine = state.product !== 'wshp' || !state.wshpLoop ? ''
       : state.wshpLoop === 'closed' ? 'Loop type: closed loop.'
@@ -2744,6 +2783,12 @@
       if (state.result === 'fn_call_pro' && FN_REASON_COPY[state.fnReason]) fnCopy.explanation = FN_REASON_COPY[state.fnReason];
       if (fnCopy.actions.indexOf(FN_CO_LINE) === -1) fnCopy.actions.push(FN_CO_LINE);
       return fnCopy;
+    }
+    if (state && state.product === 'ms' && state.msLanding === 'weak_airflow' && state.result === 'ms_settings_fixed_basic') {
+      return Object.assign({}, res, {
+        explanation: 'Cool mode, a setting below the room, and a normal fan speed let the indoor unit move air the way it should. Airflow is back to normal.',
+        actions: ['Leave it in Cool, not Auto, while you need cooling.', 'If you use Quiet, Sleep, or a schedule, check that it isn’t turning the fan down when you need air.', 'If the air gets weak again with the right settings, start a new check and choose Weak air from the indoor unit.']
+      });
     }
     if (!state || state.product !== 'hp') return res;
     const swap = s => String(s)

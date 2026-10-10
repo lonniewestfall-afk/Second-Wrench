@@ -28,3 +28,5 @@ Remote screen blank? You can put in fresh batteries if the battery cover slides 
 | `remote_or_unit_not_responding` | The remote or app won’t change anything, or the indoor unit shows no lights | `@ms_no_response_wave1` |  |
 | `not_sure` | I’m not sure | `@ms_controls_unsure` |  |
 | `hazard_now` | New hazard now (burning smell, smoke, sparks, gas smell, or water at electrical parts) | `@ms_hazard_now` | ms_new_hazard |
+
+When the complaint is weak airflow, the two success labels say airflow is back to normal instead of “now it’s cooling.”

@@ -14,6 +14,29 @@ function assert(cond, msg) {
     console.error('FAIL', msg);
   }
 }
+const SHUT_OFF = /\b(shut|turn|switch|cut)\w*\s+(off\s+)?(the\s+)?(main\s+)?(power|breaker)\b|\bshut power\b|breaker\s+(off|on)\b|\bflip\b|\breset\w*\s+(the\s+)?breaker/i;
+const SHUT_OFF_ALLOW = new Set([
+  'If it says to switch off power at a breaker or switch, stop here.',
+  'It doesn’t cut the power.',
+  'My manual says to switch off power at a breaker or switch first',
+  'Remote Off doesn’t cut the power.',
+  'Don’t open covers, reset breakers, or open the outdoor unit to look for the cause.',
+  'Don’t open the indoor or outdoor unit, rewire anything, or reset breakers to test it.',
+  'Don’t add refrigerant, open the outdoor unit, or reset breakers to test it.',
+  'Remote Off doesn’t cut the power, so stay away from the unit’s wiring.',
+  'Don’t touch the indoor unit, any switch, a cord, or the breaker panel, and don’t stand in the water.',
+  'Don’t touch the indoor unit, any switch, or the breaker panel.',
+  'Don’t mop around the unit, and don’t touch the breaker panel.',
+  'Stay clear of the indoor unit and any wet floor. Don’t touch the unit, a switch, a cord, or the breaker panel.',
+  'Never flip the furnace switch or a breaker.',
+  'Clean filters only when the manual shows a tool-free path from the floor and does not ask you to switch a breaker off.',
+  'The outdoor disconnect step is visual only — it does not tell you to flip the lever.'
+]);
+function assertNoShutOff(text, where) {
+  String(text || '').split(/(?<=[.!?])\s+|\n+/).map(sentence => sentence.trim()).filter(Boolean).forEach(sentence => {
+    if (SHUT_OFF.test(sentence) && !SHUT_OFF_ALLOW.has(sentence)) assert(false, where + ': ' + sentence);
+  });
+}
 function walk(lane, choices, mode) {
   const state = F.create('', mode || 'test');
   const steps = choices.slice();
@@ -577,7 +600,7 @@ assert(eqNext('wshp_closed_loop') === 'wshp.handback.call_pro' && eqNext('wshp_l
 assert(eqNext('wshp_air_source') === 'hp.intake.system_confirm', 'A-12 air-source divert');
 assert(F.results[eqNext('wshp_out_of_scope_size').slice(1)].outcome === 'call_pro', 'A-12 oversize call_pro');
 assert(F.results[eqNext('wshp_system_unsure').slice(1)].outcome === 'insufficient_info', 'A-12 unsure system');
-assert(eqNext('wshp_ductless') === 'ms.intake.system_confirm', 'A-12 ductless enters the mini-split check');
+assert(eqNext('wshp_ductless') === '@wshp_divert_mini_split', 'A-12 mini-split interim');
 assert(eqNext('wshp_furnace_combustion') === '@wshp_divert_furnace', 'A-12 furnace interim');
 const chemGate = F.nodes['wshp.openloop.chemistry_gate'];
 assert(chemGate.diyTier === 'pro_only' && chemGate.safetyGate === true, 'A-13 chemistry gate');
@@ -627,7 +650,7 @@ Object.keys(F.results).forEach(id => {
   if (id.indexOf('wshp_') !== 0) return;
   assert(F.results[id].outcome !== 'next_step' && F.results[id].diyTier !== 'advanced', 'A-19 ' + id);
 });
-['wshp.hazard.flood_electrical', 'wshp.entry.equipment_gate', 'wshp.openloop.chemistry_gate', 'wshp.handback.call_pro', 'ms.intake.system_confirm', '@fire', '@electrical', '@gas', '@uncertain', '@wshp_hazard_now', '@wshp_mech_room_flood', '@wshp_breaker_wont_reset', '@wshp_openloop_water_quality_pro', '@wshp_handback_call_pro', '@wshp_out_of_scope_call_pro', '@wshp_system_unconfirmed', '@wshp_divert_furnace'].forEach(id => {
+['wshp.hazard.flood_electrical', 'wshp.entry.equipment_gate', 'wshp.openloop.chemistry_gate', 'wshp.handback.call_pro', '@fire', '@electrical', '@gas', '@uncertain', '@wshp_hazard_now', '@wshp_mech_room_flood', '@wshp_breaker_wont_reset', '@wshp_openloop_water_quality_pro', '@wshp_handback_call_pro', '@wshp_out_of_scope_call_pro', '@wshp_system_unconfirmed', '@wshp_divert_mini_split', '@wshp_divert_furnace'].forEach(id => {
   assert(wshpSeen.has(id), 'A-20 reachable ' + id);
 });
 const bannedDiy = /\b(acid|bleach|chlorin\w*|biocide|descal\w*|flush\w*|purg\w*|glycol|antifreeze|refrigerant|gauges?|jump\w*|bypass\w*)\b/ig;
@@ -715,7 +738,7 @@ assert(t13.node === 'hp.intake.system_confirm' && t13.product === 'hp' && t13.tr
 const t14 = walk('ask', gate.concat(['other_heat_or_ductless', 'water_source_geo', 'wshp_hz_none', 'wshp_air_source', 'air_source_ducted_hp']));
 assert(t14.node === 'hp.landing.picker', 'T-14 continues into the live heat-pump tree');
 const t15 = walk('ask', gate.concat(['other_heat_or_ductless', 'water_source_geo', 'wshp_hz_none', 'wshp_ductless']));
-assert(t15.node === 'ms.intake.system_confirm' && t15.product === 'ms' && t15.treeVersion === 'ms.ductless.v0', 'T-15 ductless enters the mini-split check');
+assert(t15.result === 'wshp_divert_mini_split' && F.results[t15.result].outcome === 'insufficient_info' && t15.product === 'wshp' && t15.treeVersion === 'wshp.water_to_air.v0', 'T-15 mini-split interim');
 const t16 = walk('ask', gate.concat(['other_heat_or_ductless', 'water_source_geo', 'wshp_hz_none', 'wshp_furnace_combustion']));
 assert(t16.result === 'wshp_divert_furnace' && F.results[t16.result].outcome === 'call_pro', 'T-16 furnace interim');
 const t17 = walk('ask', gate.concat(['other_heat_or_ductless', 'water_source_geo', 'wshp_hz_none', 'wshp_out_of_scope_size']));
@@ -1142,7 +1165,7 @@ assert(/yellow or orange flame already seen/.test(d012) && /bang at ignition/.te
 assert(F.treeVersionMs === 'ms.ductless.v0', 'MS-A1 mini-split tree version');
 assert(Array.isArray(F.msPr1) && F.msPr1.length === 10, 'MS-G1 ten mini-split nodes exported');
 assert(Object.keys(F.nodes).length === 64, 'node count is 64');
-assert(Object.keys(F.results).length === 157, 'result count is 157');
+assert(Object.keys(F.results).length === 158, 'result count is 158');
 const ms1 = ['none_of_these', 'agree_18_terms', 'other_heat_or_ductless', 'ductless_mini_split', 'ductless_single_zone'];
 const msGate = ms1.slice(0, 4);
 const msAt = walk('ask', msGate);
@@ -1162,9 +1185,10 @@ const w2note = F.summary(w2);
 assert(w2note.indexOf('HOMEOWNER SERVICE NOTE — mini-split observations, not a diagnosis') === 0, 'MS-A13 header');
 assert(w2note.indexOf('Equipment: ductless mini-split, one indoor unit (homeowner reported).') !== -1, 'MS-A13 equipment');
 assert(w2note.indexOf('Tried:') !== -1 && w2note.indexOf('User cleaned the indoor-unit filters. They were dusty or dirty.') !== -1, 'MS-A13 tried');
+assert(w2note.indexOf('Something else reported at system type.') !== -1, 'weak-air note keeps the Something else system-type line');
 const w3 = walk('ask', ms1.concat(['landing_water_at_head', 'water_on_electrical']));
 assert(w3.result === 'ms_water_electrical' && F.results[w3.result].outcome === 'emergency_exit' && !F.results[w3.result].continueTo, 'W3 water/electrical stop');
-assert(/shut off main power/i.test([F.results.ms_water_electrical.title, F.results.ms_water_electrical.explanation, F.results.ms_water_electrical.avoid].concat(F.results.ms_water_electrical.actions).join('\n')) === false, 'W3 does not say shut off main power');
+assertNoShutOff([F.results.ms_water_electrical.title, F.results.ms_water_electrical.explanation, F.results.ms_water_electrical.avoid].concat(F.results.ms_water_electrical.actions).join('\n'), 'W3 shut-off instruction');
 const w3events = eventsOf(w3);
 assert(w3events.indexOf('gate_fired:water_near_electrical') !== -1 && w3events.indexOf('gate_fired:water_near_electrical') < w3events.indexOf('exit_ramp:water_near_electrical') && w3events.indexOf('exit_ramp:water_near_electrical') < w3events.indexOf('conclusion_reached:emergency_exit'), 'MS-A12 W3 audit order');
 assert(w3events.indexOf('diy_tier_shown:basic') === -1 && w3events.indexOf('diy_tier_shown:advanced') === -1, 'W3 shows no DIY tier');
@@ -1198,7 +1222,9 @@ const openMs = walk('ask', ms1);
 const openAc = walk('ac', gate.concat(['split_central_cool_only']));
 F.stop(openMs); F.stop(openAc);
 assert(openMs.node === openAc.node && openMs.node === 'ac.gate.cluster_entry' && openMs.result === null && openMs.safetyCleared === false, 'MS-A14 stop on an open mini-split node matches the AC stop');
-assert(F.nodes['ac.session.consent'].options.filter(op => op.id === 'agree_18_terms').length === 1 && F.nodes['ac.session.consent'].options.find(op => op.id === 'agree_18_terms').next === 'ac.cool.intake.system_confirm', 'consent is not forked');
+const agreeEdges = [];
+Object.keys(F.nodes).forEach(id => F.nodes[id].options.forEach(op => { if (op.id === 'agree_18_terms') agreeEdges.push(id + ':' + op.next); }));
+assert(agreeEdges.length === 1 && agreeEdges[0] === 'ac.session.consent:ac.cool.intake.system_confirm', 'consent is not forked');
 assert(F.results.hp_mini_split_oos.actions[0] === 'Go back home, press Start, and choose “Something else: mini-split, geothermal, other”, then “Ductless mini-split”. It covers cooling problems on a single indoor unit.', 'MS-C14');
 assert(F.results.out_of_scope_equipment.explanation === 'Window and portable units, packaged systems, and other types are not diagnosed here.', 'MS-C15');
 assert(F.nodes['ms.intake.system_confirm'].body.indexOf('Don’t remove a cover or climb up to check.') !== -1, 'MS-C16');
@@ -1214,10 +1240,24 @@ assert(F.results.ms_ice_keep_running.title === 'Stop. Turn it off and let the ic
 assert(F.results.ms_ice_keep_running.avoid === 'Don’t chip or pick at the ice, use a hair dryer, heat gun, or hot water, or keep restarting it.', 'MS-C10');
 assert(F.results.ms_ice_cooling_wave1.avoid.indexOf('Don’t chip or pick at the ice') !== -1, 'MS-C11');
 assert(F.results.ms_condensate_leak_wave1.actions[0] === 'Turn the unit Off with the remote to stop new water. Remote Off doesn’t cut the power, so stay away from the unit’s wiring.', 'MS-C12');
-assert(JSON.stringify(F.results.ms_hazard_now.actions) === JSON.stringify(F.results.hp_hazard_now.actions), 'MS-C13');
+assert(F.results.ms_condensate_leak_wave1.actions.some(action => action === 'If you see sparks or smoke, or smell burning, get out and call 911 from outside.'), 'condensate call_pro says to call 911 for sparks or smoke');
+assert(F.results.ms_ice_cooling_wave1.actions.some(action => action === 'If you see sparks or smoke, or smell burning, get out and call 911 from outside.'), 'ice call_pro says to call 911 for sparks or smoke');
+assert(F.results.ms_error_code_wave1.avoid === 'Don’t follow repair steps from a code list.', 'error-code avoid line');
+assert(F.nodes['ms.head.airflow_result'].options.find(op => op.id === 'improved_ok').label === 'Better. Airflow is back to normal', 'weak-air success says airflow is back to normal');
+assert(F.nodes['ms.head.water_observe'].options.find(op => op.id === 'water_unsure_electrical').next === '@ms_unsure_water_electrical', 'mini-split unsure water uses the look-only twin');
+assert(!/wet hands/i.test(JSON.stringify(F.results.ms_unsure_water_electrical)) && /wet hands/i.test(F.results.unsure_water_electrical.avoid), 'unsure-water twin drops wet-hands wording; the shared result keeps it');
+assert(F.nodes['ac.cool.intake.system_confirm'].options.find(op => op.id === 'heat_pump').hint === 'A heat pump heats and cools. Leave this cooling-only check and continue on the air-source heat pump check.', 'AC heat-pump choice leaves the cooling-only check');
+assert(appText.includes('A mini-split filter is only for a cover you can open by hand from the floor'), 'safety page states the mini-split filter rule');
+assert(appText.includes('Remote Off stops the unit running. It is not electrical isolation.') && appText.includes('Those go to a licensed pro.'), 'Trane filter note says remote Off is not isolation');
+const notListed = walk('ask', gate.concat(['other_heat_or_ductless', 'not_listed']));
+assert(notListed.result === 'sw_other_not_listed' && F.summary(notListed).indexOf('AC concern') === -1 && F.summary(notListed).indexOf('Equipment this beta does not check yet; see reported observations.') !== -1, 'not-listed service note is neutral');
+const weakFixed = walk('ask', ms1.concat(['landing_weak_airflow', 'settings_fixed_now_cooling']));
+assert(F.presentResult(weakFixed).explanation.indexOf('Airflow is back to normal') !== -1 && F.summary(weakFixed).indexOf('airflow is back to normal') !== -1, 'weak-air settings success talks about airflow');
+[0, 1, 3].forEach(index => assert(F.results.ms_hazard_now.actions[index] === F.results.hp_hazard_now.actions[index], 'MS-C13 action ' + index));
+assert(F.results.ms_hazard_now.actions.length === 4 && F.results.ms_hazard_now.actions[2] === 'If water is at electrical equipment, stay clear and don’t touch anything. Leave the area and call a licensed HVAC pro or an electrician.', 'MS-C13 action 2');
 const hardFail = /\bgreen\b|guarantee|\bcertified\b|\bwarranty\b|\bcure\b|you should be fine|safe to (keep|continue)|\bscrewdriver\b|multimeter|voltmeter|\bgauges?\b|\brecharge\b|\btop off\b|\bjumper\b|\bbypass\b|step ?ladder|ladder (to|and) |use a ladder|on a ladder|!/i;
 const prohibWord = /refrigerant|breaker|capacitor|contactor|inverter|board|compressor|flare|line set|coil|motor|(?<!heat[ -])pump|float|bleach|vinegar|drill|panel|wiring|rewire|meter|heat gun|hair dryer|chip/i;
-const prohibOk = /^(Don’t|Do not|No |Never)|stop here|\bpro\b|professional|electrician|leak/i;
+const prohibOk = /^(Don’t|Do not|No |Never)|stop here/i;
 const prohibAllow = new Set([
   'Some newer units show a code for a refrigerant leak.',
   'Manual asks for power to be switched off at a breaker or switch before filter cleaning.',
@@ -1226,11 +1266,16 @@ const prohibAllow = new Set([
   'Let them dry in the shade, not in the sun or with a heater or hair dryer.',
   'Melting ice is dripping on or near an outlet, cord, or anything electrical',
   'My manual says to switch off power at a breaker or switch first',
-  'First: is any water on or near an outlet, a power cord, a light, a switch, or the unit’s wiring?',
+  'First: is any water, or ice that is melting, on or near an outlet, a power cord, a light, a switch, or the unit’s wiring?',
   'When the remote or app can’t control it, or the indoor unit shows no lights, the cause can be power, wiring, or the controls inside.',
   'Spray cleaners and bleach can damage the unit.',
   'Remote Off doesn’t cut the power, so stay away from the unit’s wiring.',
-  'Capacitor, contactor, inverter, and board work are not offered on a mini-split in this beta.'
+  'Capacitor, contactor, inverter, and board work are not offered on a mini-split in this beta.',
+  'The screen, app, or manual says it’s a refrigerant leak',
+  'Mini-split showed a refrigerant leak alert.',
+  'If the filters are out of reach from the floor, need tools or force, or need power switched off at a breaker first, let a pro do it.',
+  'Clearing or fixing the drain, pump, or pan is a pro job.',
+  'If you can’t tell whether water or melting ice is near an outlet, a cord, or the unit’s wiring, stop.'
 ]);
 function msSentences(text) { return String(text || '').split(/(?<=[.!?])\s+|\n+/).map(x => x.trim()).filter(Boolean); }
 function scanMsCopy(text, where) {
@@ -1259,9 +1304,13 @@ Object.keys(F.results).filter(id => id.indexOf('ms_') === 0).concat(['hp_mini_sp
 const otherNode = F.nodes['sw.intake.other_system'];
 [otherNode.title, otherNode.body, otherNode.caution].forEach(text => scanMsCopy(text, 'other_system'));
 otherNode.options.forEach(op => scanMsCopy([op.label, op.hint, op.fact].join('\n'), 'other_system/' + op.id));
-Object.keys(F.results).filter(id => id.indexOf('ms_') === 0).forEach(id => {
+Object.keys(F.results).filter(id => id.indexOf('ms_') === 0 || id === 'unsure_water_electrical' || id === 'leak').forEach(id => {
   const res = F.results[id];
-  assert(!/shut off main power/i.test([res.title, res.urgency, res.explanation, res.avoid].concat(res.actions || []).join('\n')), 'ms result says shut off main power ' + id);
+  assertNoShutOff([res.title, res.urgency, res.explanation, res.avoid].concat(res.actions || []).join('\n'), 'shut-off instruction in ' + id);
+});
+F.msPr1.forEach(id => {
+  const node = F.nodes[id];
+  assertNoShutOff([node.title, node.body, node.caution].concat(node.options.map(op => [op.label, op.hint, op.fact].join('\n'))).join('\n'), 'shut-off instruction in ' + id);
 });
 assert(!/mini-splits? (are|is) (excluded|later)|later phase|aren't covered here yet|not part of this check yet/i.test(appText + '\n' + fs.readFileSync(path.join(__dirname, '../README.md'), 'utf8')), 'public copy still treats mini-splits as later');
 function msLeaves(flag) {
@@ -1505,7 +1554,7 @@ function pageChecks() {
     assert(doc.querySelector('h1').textContent === "Don't touch the furnace or stand in the water.", 'furnace water-at-electrical title');
     assert(doc.querySelector('.result-heading.emergency'), 'furnace water-at-electrical renders an emergency result');
     assert(norm(doc.querySelector('.explanation')) === "Water is at or near the furnace's electrical parts.", 'furnace water-at-electrical explanation');
-    assert(rendered().indexOf('shut off main power') === -1, 'furnace water-at-electrical page does not say shut off main power');
+    assertNoShutOff(rendered(), 'furnace water-at-electrical page shut-off instruction');
     assert(doc.querySelector('.legal-footer') && doc.querySelector('.legal-footer').textContent === EMERGENCY_LINE, 'furnace water-at-electrical shows the emergency result line');
     assert(!doc.getElementById('flow-error'), 'furnace water-at-electrical has no error');
     await home();
@@ -1535,7 +1584,7 @@ function pageChecks() {
     assert(window.location.hash === '#/result', 'mini-split water/electrical reaches a result');
     assert(doc.querySelector('h1').textContent === 'Don’t touch the indoor unit or stand in the water.', 'mini-split water/electrical title');
     assert(doc.querySelector('.result-heading.emergency'), 'mini-split water/electrical renders an emergency result');
-    assert(rendered().indexOf('shut off main power') === -1, 'mini-split water/electrical page does not say shut off main power');
+    assertNoShutOff(rendered(), 'mini-split water/electrical page shut-off instruction');
     assert(!doc.getElementById('flow-error'), 'mini-split water/electrical has no error');
     await home();
     click(doc.querySelector('[data-answer="none_of_these"]'));
