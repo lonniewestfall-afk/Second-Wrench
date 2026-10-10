@@ -1256,7 +1256,7 @@ assert(F.presentResult(weakFixed).explanation.indexOf('Airflow is back to normal
 [0, 1, 3].forEach(index => assert(F.results.ms_hazard_now.actions[index] === F.results.hp_hazard_now.actions[index], 'MS-C13 action ' + index));
 assert(F.results.ms_hazard_now.actions.length === 4 && F.results.ms_hazard_now.actions[2] === 'If water is at electrical equipment, stay clear and don’t touch anything. Leave the area and call a licensed HVAC pro or an electrician.', 'MS-C13 action 2');
 const hardFail = /\bgreen\b|guarantee|\bcertified\b|\bwarranty\b|\bcure\b|you should be fine|safe to (keep|continue)|\bscrewdriver\b|multimeter|voltmeter|\bgauges?\b|\brecharge\b|\btop off\b|\bjumper\b|\bbypass\b|step ?ladder|ladder (to|and) |use a ladder|on a ladder|!/i;
-const prohibWord = /refrigerant|breaker|capacitor|contactor|inverter|board|compressor|flare|line set|coil|motor|(?<!heat[ -])pump|float|bleach|vinegar|drill|panel|wiring|rewire|meter|heat gun|hair dryer|chip/i;
+const prohibWord = /refrigerant|breaker|capacitor|contactor|inverter|board|compressor|flare|line set|coil|motor|(?<!heat[ -])pump|float|bleach|vinegar|drill|panel|wiring|rewire|meter|heat gun|hair dryer|chip|ladder|chair|stool|tool|chemical|cleaner|unplug/i;
 const prohibOk = /^(Don’t|Do not|No |Never)|stop here/i;
 const prohibAllow = new Set([
   'Some newer units show a code for a refrigerant leak.',
@@ -1275,7 +1275,12 @@ const prohibAllow = new Set([
   'Mini-split showed a refrigerant leak alert.',
   'If the filters are out of reach from the floor, need tools or force, or need power switched off at a breaker first, let a pro do it.',
   'Clearing or fixing the drain, pump, or pan is a pro job.',
-  'If you can’t tell whether water or melting ice is near an outlet, a cord, or the unit’s wiring, stop.'
+  'If you can’t tell whether water or melting ice is near an outlet, a cord, or the unit’s wiring, stop.',
+  'Your owner’s manual shows the filter steps without tools.',
+  'Owner’s manual shows a tool-free filter path reachable from the floor.',
+  'I’d need a ladder, chair, or step stool',
+  'The cover needs tools, feels stuck, or the clips might break',
+  'Filter cover needs tools or force.'
 ]);
 function msSentences(text) { return String(text || '').split(/(?<=[.!?])\s+|\n+/).map(x => x.trim()).filter(Boolean); }
 function scanMsCopy(text, where) {
