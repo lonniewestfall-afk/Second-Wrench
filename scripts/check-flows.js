@@ -72,7 +72,7 @@ function assertNoCap(state, msg) {
 const gate = ['none_of_these', 'agree_18_terms'];
 
 assert(/advancedRepairsEnabled:\s*false/.test(configText), 'public advanced flag must stay false');
-const SHIP = '2026-10-10.2';
+const SHIP = '2026-10-10.3';
 assert(configText.includes("contentVersion: '" + SHIP + "'"), 'content version must be ' + SHIP);
 assert(['config', 'flow', 'app'].every(f => indexText.includes(f + '.js?v=' + SHIP)), 'script cache-bust must match content version');
 assert(indexText.includes('HOME HVAC CHECKS') && !indexText.includes('AC + HEAT PUMP'), 'header lockup is HOME HVAC CHECKS');
@@ -118,7 +118,7 @@ const sitemapText = fs.readFileSync(path.join(__dirname, '../sitemap.xml'), 'utf
 assert(sitemapText.includes('<loc>https://beta-secondwrench.netlify.app/</loc>') && !/thanks\.html/.test(sitemapText), 'sitemap lists the home page and excludes thanks.html');
 assert(indexText.includes('<link rel="canonical" href="https://beta-secondwrench.netlify.app/">'), 'canonical home URL');
 const shareTitle = 'Second Wrench — free home HVAC checks';
-const shareDesc = 'Free guided checks for AC, heat pumps, mini-splits, geothermal, and furnaces. Know what’s wrong, what’s safe, and when to call a pro. Informational only; not a licensed technician.';
+const shareDesc = 'Free guided checks for AC, heat pumps, mini-splits, geothermal, furnaces, and thermostat settings. Know what’s wrong, what’s safe, and when to call a pro. Informational only; not a licensed technician.';
 assert(indexText.includes('property="og:title" content="' + shareTitle + '"'), 'og title');
 assert(indexText.includes('property="og:description" content="' + shareDesc + '"'), 'og description');
 assert(indexText.includes('property="og:image" content="https://beta-secondwrench.netlify.app/assets/icons/icon-512.png"'), 'og image is the 512 icon');
@@ -571,8 +571,8 @@ assert(!!wshpStart && wshpStart.next === 'wshp.hazard.flood_electrical' && wshpS
 assert(wshpStart.hint === 'No outdoor unit with a fan. Water pipes run to a ground loop, a well, or a pond.' && wshpStart.fact === 'Water-source or geothermal heat pump reported at system type.', 'A-3 water-source copy unchanged');
 const typeIds = systemType.options.map(o => o.id);
 assert(typeIds.join('|') === 'cooling_only_ac|heat_pump|furnace|other_heat_or_ductless|not_sure', 'A-4 start stays five choices');
-assert(otherSystem.options.map(o => o.id).join('|') === 'ductless_mini_split|water_source_geo|not_listed', 'A-4 other-system order');
-assert(systemType.options.find(o => o.id === 'other_heat_or_ductless').label === 'Something else: mini-split, geothermal, other' && systemType.options.find(o => o.id === 'other_heat_or_ductless').next === 'sw.intake.other_system', 'A-4 something-else label');
+assert(otherSystem.options.map(o => o.id).join('|') === 'ductless_mini_split|water_source_geo|thermostat_settings|not_listed', 'A-4 other-system order');
+assert(systemType.options.find(o => o.id === 'other_heat_or_ductless').label === 'Something else: mini-split, geothermal, thermostat, other' && systemType.options.find(o => o.id === 'other_heat_or_ductless').next === 'sw.intake.other_system', 'A-4 something-else label');
 assert(systemType.options.find(o => o.id === 'cooling_only_ac').next === 'ac.cool.intake.system_confirm', 'A-5 cooling-only edge unchanged');
 assert(systemType.options.find(o => o.id === 'heat_pump').next === 'hp.intake.system_confirm', 'A-5 heat-pump edge unchanged');
 assert(systemType.options.find(o => o.id === 'not_sure').next === 'sw.identify.winter_outdoor', 'A-5 not-sure edge unchanged');
@@ -796,7 +796,7 @@ assert(F.summary(t17).indexOf(scopedEquipment) === -1, 'N8 oversize divert omits
 assert(F.results.gas.avoid === 'Do not search for the leak, reset an alarm, or re-enter to switch the AC off.', 'AC gas avoid stays unchanged');
 assert(F.presentResult(t6).avoid === 'Do not search for the leak, reset an alarm, or re-enter to switch the system off.', 'N9 WSHP gas avoid says the system');
 assert(F.presentResult(t6) !== F.results.gas, 'N9 WSHP gas copy is a swap, not the shared result');
-const pointer = 'Start again, choose Something else: mini-split, geothermal, other, then Water-source / geothermal heat pump.';
+const pointer = 'Start again, choose Something else: mini-split, geothermal, thermostat, other, then Water-source / geothermal heat pump.';
 const hpWater = F.results.hp_water_source_oos;
 assert(!/later phase/i.test([hpWater.title, hpWater.explanation, hpWater.avoid].concat(hpWater.actions).join(' ')), 'hp water-source result drops later phase');
 assert(!/geothermal/i.test(hpWater.title + ' ' + hpWater.explanation + ' ' + hpWater.avoid), 'hp water-source result drops geothermal from the out-of-scope wording');
@@ -816,18 +816,18 @@ assert(F.summary(ductWork).indexOf('HOMEOWNER SERVICE NOTE') === 0, 'want_duct_w
 const finComb = walk('ac', gate.concat(['split_central_cool_only', 'landing_not_cooling', 'mode_cool_setpoint_ok', 'filter_clean_ok', 'fan_spinning', 'want_fin_comb_deep_coil']));
 assert(finComb.result === 'coil_service_pro_only' && F.results[finComb.result].outcome === 'call_pro', 'want_fin_comb_deep_coil reaches call_pro');
 assert(F.summary(finComb).indexOf('HOMEOWNER SERVICE NOTE') === 0, 'want_fin_comb_deep_coil service note builds');
-assert(/Five checks in this United States beta\./.test(appText), 'safety page names five checks');
+assert(/Six checks in this United States beta\./.test(appText), 'safety page names six checks');
 assert(/Water-source \/ geothermal heat pumps up to 6 tons, residential water-to-air\./.test(appText), 'safety page includes the water-source check');
 assert(/Open-loop well, lake, or pond water-care problems always go to a pro, and there is no loop, pump, refrigerant, or electrical work\./.test(appText), 'safety page states the water-source limits');
 assert(/For water-source systems, this beta gives safety screens and a service note for a pro, not repairs\./.test(appText), 'safety page says water-source is screens and a note');
 assert(!/water-source and geothermal equipment/.test(appText), 'safety page no longer lists water-source equipment as out of scope');
 const geoOption = F.nodes['ac.cool.intake.system_confirm'].options.find(op => op.id === 'geo_packaged_other');
 assert(geoOption && geoOption.next === '@out_of_scope_equipment', 'geothermal packaged option keeps its route');
-assert(geoOption.hint === 'Geothermal or water-source: start again, choose Something else: mini-split, geothermal, other, then Water-source / geothermal heat pump. Packaged or other systems are not covered yet.', 'geothermal packaged hint points back to the water-source check');
+assert(geoOption.hint === 'Geothermal or water-source: start again, choose Something else: mini-split, geothermal, thermostat, other, then Water-source / geothermal heat pump. Packaged or other systems are not covered yet.', 'geothermal packaged hint points back to the water-source check');
 assert(F.results.out_of_scope_equipment.urgency === 'Not covered in this beta yet', 'out-of-scope equipment urgency is not a hard outside-the-beta title');
 const geoMention = /water[-\s]?source|geothermal/i;
 const oosClaim = /out of scope|outside this beta|outside these checks|not diagnosed|not covered|not part of this beta/i;
-const redirect = /start again, choose Something else: mini-split, geothermal, other, then Water-source \/ geothermal heat pump/i;
+const redirect = /start again, choose Something else: mini-split, geothermal, thermostat, other, then Water-source \/ geothermal heat pump/i;
 function sentencesOf(text) {
   return String(text || '').split(/(?<=[.!?])\s+/).map(s => s.trim()).filter(Boolean);
 }
@@ -1151,7 +1151,7 @@ const fnReturnsBody = F.viewNode(fnReturns.node, fnReturns).body;
 assert(fnReturnsBody.indexOf('rooms you want heated') !== -1 && fnReturnsBody.indexOf('rooms you want cooled') === -1, 'F17 furnace returns body says heated');
 
 // F18 public copy nits
-assert(appText.includes('Cooling-only AC, a heat pump, a furnace, something else (a mini-split or geothermal), or not sure.'), 'F18 notice card names a furnace and a mini-split');
+assert(appText.includes('Cooling-only AC, a heat pump, a furnace, something else (a mini-split, geothermal, or thermostat), or not sure.'), 'F18 notice card names a furnace, a mini-split, and thermostat settings');
 assert(/equipment-cabinet removal, gas valves, pilots, relighting, or reset buttons\./.test(appText), 'F18 safety list names gas valves, pilots, relighting, and reset buttons');
 assert(appText.includes('Furnace checks are look-only: every session starts at the combustion and CO check, with no gas valve, pilot, relight, reset, or panel work.'), 'F18 sources furnace sentence');
 assert(/const dualFuel = onHp && \(state\.hpGasFurnace === 'yes' \|\| state\.hpGasFurnace === 'not_sure'\)/.test(appText), 'F18 dual-fuel sidebar condition');
@@ -1165,8 +1165,8 @@ assert(/yellow or orange flame already seen/.test(d012) && /bang at ignition/.te
 assert(F.treeVersionMs === 'ms.ductless.v1', 'MS-A1 mini-split tree version');
 assert(Array.isArray(F.msPr1) && F.msPr1.length === 10, 'MS-G1 ten original mini-split nodes exported');
 assert(Array.isArray(F.msV1) && F.msV1.join('|') === 'ms.heat.mode_setpoint|ms.heat.force_heat|ms.heat.defrost_sanity|ms.outdoor.safe_observe', 'MS-G1 heat and outdoor nodes');
-assert(Object.keys(F.nodes).length === 68, 'node count is 68');
-assert(Object.keys(F.results).length === 170, 'result count is 170');
+assert(Object.keys(F.nodes).length === 84, 'node count is 84');
+assert(Object.keys(F.results).length === 203, 'result count is 203');
 const ms1 = ['none_of_these', 'agree_18_terms', 'other_heat_or_ductless', 'ductless_mini_split', 'ductless_single_zone'];
 const msGate = ms1.slice(0, 4);
 const msAt = walk('ask', msGate);
@@ -1269,7 +1269,7 @@ assert(openMs.node === openAc.node && openMs.node === 'ac.gate.cluster_entry' &&
 const agreeEdges = [];
 Object.keys(F.nodes).forEach(id => F.nodes[id].options.forEach(op => { if (op.id === 'agree_18_terms') agreeEdges.push(id + ':' + op.next); }));
 assert(agreeEdges.length === 1 && agreeEdges[0] === 'ac.session.consent:ac.cool.intake.system_confirm', 'consent is not forked');
-assert(F.results.hp_mini_split_oos.actions[0] === 'Go back home, press Start, and choose “Something else: mini-split, geothermal, other”, then “Ductless mini-split”. It covers cooling and heating problems on a single indoor unit.', 'MS-C14');
+assert(F.results.hp_mini_split_oos.actions[0] === 'Go back home, press Start, and choose “Something else: mini-split, geothermal, thermostat, other”, then “Ductless mini-split”. It covers cooling and heating problems on a single indoor unit.', 'MS-C14');
 assert(F.results.hp_mini_split_oos.actions[1] === 'For a system with more than one indoor unit, use a technician who works on mini-splits or the manufacturer owner guidance.', 'HP mini-split pointer leaves multi-zone to a pro');
 assert(F.results.out_of_scope_equipment.explanation === 'Window and portable units, packaged systems, and other types are not diagnosed here.', 'MS-C15');
 assert(F.nodes['ms.intake.system_confirm'].body.indexOf('Don’t remove a cover or climb up to check.') !== -1, 'MS-C16');
@@ -1436,12 +1436,97 @@ hpDigestLines.sort();
 assert(require('crypto').createHash('sha256').update(hpDigestLines.join('\n')).digest('hex').slice(0, 16) === '0a90560104be1a12', 'HP edge digest re-baselined to a3c2f60');
 assert(hpDigestLines.length === 65, 'HP edge digest line count');
 
+// ---- Thermostat ts.settings.v0 ----
+assert(F.treeVersionTs === 'ts.settings.v0', 'TS-A1 thermostat tree version');
+assert(Array.isArray(F.tsWave1) && F.tsWave1.length === 16, 'TS-G1 sixteen thermostat nodes');
+assert(F.tsWave1.reduce((sum, id) => sum + F.nodes[id].options.length, 0) === 119, 'TS-G2 119 thermostat options');
+assert(Object.keys(F.results).filter(id => id.indexOf('ts_') === 0).length === 33, 'TS-G3 33 thermostat results');
+assert(/aiThermostatEnabled:\s*false/.test(configText) && /mirrorsEnabled:\s*false/.test(configText), 'TS-G19 AI and mirrors stay off');
+assert(!/data-mirror|mirror panel|ai_explanation_shown/.test(appText), 'TS-G19 no mirror panel and no AI copy in the page');
+assert(F.nodes['sw.intake.system_type'].options.length === 5, 'TS start stays five choices');
+const tsDoor = F.nodes['sw.intake.other_system'].options.map(op => op.id);
+assert(tsDoor.indexOf('thermostat_settings') === tsDoor.indexOf('not_listed') - 1 && F.nodes['sw.intake.other_system'].options.find(op => op.id === 'thermostat_settings').next === 'ts.gate.safety_stops', 'thermostat door sits before not_listed');
+F.tsLegal.forEach(sentence => assert(F.nodes['ts.gate.safety_stops'].body.indexOf(sentence) !== -1, 'TS-G18 legal sentence: ' + sentence));
+assert(appText.indexOf(F.tsLegalFooter) !== -1, 'TS-G18 footer is on the page');
+assert(!/lawyer-reviewed|attorney-approved|reviewed by an attorney/i.test(F.nodes['ts.gate.safety_stops'].body + F.tsLegalFooter), 'TS-G18 does not claim lawyer review');
+assert(/Not attorney-reviewed/.test(F.tsLegalFooter) && /operator-authored/i.test(F.nodes['ts.gate.safety_stops'].body), 'TS-G18 names operator-authored and not attorney-reviewed');
+const tsGate = ['none_of_these', 'agree_18_terms', 'other_heat_or_ductless', 'thermostat_settings'];
+const tsAt = walk('ask', tsGate);
+assert(tsAt.node === 'ts.gate.safety_stops' && tsAt.product === 'ts' && tsAt.treeVersion === 'ts.settings.v0', 'TS-A2 start reaches the thermostat safety gate');
+const tsLaneAt = tsAt.audit.findIndex(e => e.event === 'product_lane:ts');
+assert(tsLaneAt > tsAt.audit.findIndex(e => e.event === 'answer_selected:other_heat_or_ductless') && tsLaneAt < tsAt.audit.findIndex(e => e.event === 'answer_selected:thermostat_settings'), 'TS lane is entered before the thermostat answer is recorded');
+assert(tsAt.audit.slice(tsLaneAt).every(e => e.tree === 'ts.settings.v0'), 'TS-A1 audit tree from product_lane:ts');
+const tsOk = walk('ask', tsGate.concat(['none_of_these', 'low_voltage_wall', 'brand_nest', 'landing_wont_reach_setpoint', 'set_heat_or_cool_fixed']));
+assert(tsOk.result === 'ts_mode_setpoint_fixed' && F.results[tsOk.result].outcome === 'next_step' && F.results[tsOk.result].diyTier === 'basic', 'TS-A21 basic settings success');
+const tsOkEvents = tsOk.audit.map(e => e.event);
+assert(tsOkEvents.indexOf('conclusion_reached:next_step_basic') !== -1 && tsOkEvents.indexOf('diy_tier_shown:basic') !== -1 && tsOkEvents.indexOf('ai_explanation_shown') === -1 && tsOkEvents.indexOf('flag:ts_model=nest') !== -1, 'TS-A21 audit has no AI explanation');
+const tsPresented = F.presentResult(tsOk);
+assert(tsPresented.actions.some(action => action === 'Check your manual for the button names on your model.'), 'TS-A21 check your manual');
+assert(tsPresented.actions.some(action => action === 'Check your manual: https://support.google.com/googlenest/'), 'TS-A21 Nest manual link');
+assert(!/mirror/i.test(JSON.stringify(tsPresented)), 'TS-A21 result has no mirror');
+const tsMode = walk('ask', tsGate.concat(['none_of_these', 'low_voltage_wall', 'brand_ecobee', 'landing_wont_reach_setpoint']));
+const tsView = F.viewNode(tsMode.node, tsMode);
+assert(tsView.modelSlot && tsView.modelSlot.indexOf('On an ecobee') === 0 && tsView.body.indexOf('{{tsModelSteps}}') === -1, 'TS-A21 model slot is filled and the edge token is not shown');
+assert(F.nodes['ts.controls.mode_setpoint'].options.every(op => typeof op.next === 'string'), 'TS-A21 edges stay plain strings');
+const tsBreaker = walk('ask', tsGate.concat(['none_of_these', 'low_voltage_wall', 'brand_amazon', 'landing_blank', 'breaker_involved']));
+assert(tsBreaker.result === 'ts_power_breaker_pro' && F.results[tsBreaker.result].outcome === 'call_pro', 'blank screen with a breaker calls a pro');
+const tsOtherPower = walk('ask', tsGate.concat(['none_of_these', 'low_voltage_wall', 'brand_nest', 'landing_blank', 'other_power_off']));
+assert(tsOtherPower.result === 'ts_other_power_off' && F.results[tsOtherPower.result].outcome === 'call_pro', 'other_power_off calls a pro');
+const tsInstaller = walk('ask', tsGate.concat(['none_of_these', 'low_voltage_wall', 'brand_honeywell_smart', 'landing_installer_or_wiring', 'want_to_change_anyway']));
+assert(tsInstaller.result === 'ts_installer_stop' && F.results[tsInstaller.result].outcome === 'call_pro', 'installer settings always stop');
+const tsHazard = walk('ask', tsGate.concat(['none_of_these', 'low_voltage_wall', 'brand_nest', 'hazard_now']));
+assert(tsHazard.result === 'ts_hazard_now' && F.results[tsHazard.result].outcome === 'emergency_exit' && !F.results[tsHazard.result].continueTo, 'TS-A21 hazard does not soft-continue');
+let tsResumed = false;
+try { F.resume(JSON.parse(JSON.stringify(tsHazard))); tsResumed = true; } catch (err) { tsResumed = false; }
+assert(!tsResumed, 'TS-A21 resume after a hazard throws');
+assert(F.summary(tsOk).indexOf('HOMEOWNER SERVICE NOTE — thermostat settings observations, not a diagnosis') === 0, 'thermostat service note header');
+assert(F.summary(tsOk).indexOf('Equipment: U.S. residential low-voltage thermostat (Nest, homeowner reported).') !== -1, 'thermostat service note names the brand group');
+const installerOpt = F.nodes['ts.settings.installer_stop'].options.find(op => op.id === 'want_to_change_anyway');
+const savedInstallerNext = installerOpt.next;
+installerOpt.next = '@ts_mode_setpoint_fixed';
+let mutationThrew = false;
+try { F.assertTsInvariants(); } catch (err) { mutationThrew = /Installer choice must stop/.test(err.message); }
+installerOpt.next = savedInstallerNext;
+assert(mutationThrew, 'TS mutation of an installer edge fails closed');
+F.assertTsInvariants();
+function tsLeaves(flag) {
+  globalThis.SW_CONFIG.advancedRepairsEnabled = flag;
+  const out = [];
+  const start = walk('ask', tsGate);
+  const stack = [[start, 0]];
+  let maxDepth = 0;
+  while (stack.length) {
+    const [s, depth] = stack.pop();
+    if (depth > maxDepth) maxDepth = depth;
+    if (s.result) {
+      out.push(s.result);
+      assert(F.results[s.result].diyTier !== 'advanced' && !F.results[s.result].continueTo, 'TS-G19 leaf ' + s.result);
+      let resumed = false;
+      try { F.resume(JSON.parse(JSON.stringify(s))); resumed = true; } catch (err) { resumed = false; }
+      assert(!resumed, 'TS leaf does not resume ' + s.result);
+      continue;
+    }
+    if (depth > 12) throw new Error('TS depth at ' + s.node);
+    F.viewNode(s.node, s).options.forEach(op => {
+      const copy = JSON.parse(JSON.stringify(s));
+      F.answer(copy, op.id, { agreed: true, termsVersion: 'beta-2026-09-13' });
+      stack.push([copy, depth + 1]);
+    });
+  }
+  return { out: out.sort(), maxDepth };
+}
+const tsOff = tsLeaves(false);
+const tsOn = tsLeaves(true);
+globalThis.SW_CONFIG.advancedRepairsEnabled = false;
+assert(tsOff.out.join('|') === tsOn.out.join('|') && tsOff.out.length > 0, 'TS-G19 leaf set is identical with Advanced on');
+assert(tsOff.maxDepth <= 12, 'TS depth ' + tsOff.maxDepth);
+
 function finish() {
   if (failed) {
     console.error(failed + ' failed');
     process.exit(1);
   }
-  console.log('AC Wave-2, HP Wave-1, WSHP Wave-1 PR-1, furnace Wave-1, and mini-split heat v1 sanity passed');
+  console.log('AC Wave-2, HP Wave-1, WSHP Wave-1 PR-1, furnace Wave-1, mini-split heat v1, and thermostat settings v0 sanity passed');
 }
 
 function bootPage() {
@@ -1725,6 +1810,35 @@ function pageChecks() {
     assert(norm(doc.querySelector('.sidebar')).indexOf('No ladders, chairs, or tools.') !== -1, 'mini-split sidebar limit');
     assert(doc.title.indexOf('Guided mini-split check') === 0, 'mini-split route title');
     assert(errors.length === 0, 'mini-split page has no script error: ' + errors.join(' | '));
+    await home();
+    click(doc.querySelector('[data-answer="none_of_these"]'));
+    await flush();
+    await acceptAndContinue();
+    await clickPath(['other_heat_or_ductless', 'thermostat_settings', 'none_of_these', 'low_voltage_wall', 'brand_ecobee', 'landing_wont_reach_setpoint']);
+    assert(doc.querySelector('h1').textContent === 'Set the mode and the temperature', 'thermostat mode question is on screen');
+    const modelSlot = doc.querySelector('[data-slot="ts-model"]');
+    assert(modelSlot && modelSlot.textContent.indexOf('On an ecobee') === 0, 'TS-A21 rendered model slot');
+    assert(!doc.querySelector('[data-mirror]'), 'TS-G19 rendered page has no mirror panel');
+    assert(doc.querySelector('[data-legal="thermostat"]') && doc.querySelector('[data-legal="thermostat"]').textContent === 'Operator-authored thermostat guidance. Not attorney-reviewed. Not a diagnosis. Your manual and a professional take priority.', 'TS-G18 rendered legal line');
+    assert(norm(doc.querySelector('.sidebar')).indexOf('No installer, equipment, or wiring changes') !== -1, 'thermostat sidebar limit');
+    answer('set_heat_or_cool_fixed');
+    await flush();
+    assert(window.location.hash === '#/result', 'thermostat basic path reaches a result');
+    assert(doc.querySelector('h1').textContent === 'Heat or Cool was the setting.', 'thermostat basic success title');
+    assert(doc.querySelector('[data-legal="thermostat"]'), 'TS-G18 legal line stays on the result');
+    assert(rendered().indexOf('https://support.ecobee.com/') !== -1, 'TS-A21 result links the ecobee manual');
+    assert(!doc.querySelector('[data-mirror]'), 'TS-G19 result has no mirror panel');
+    assert(!doc.getElementById('flow-error'), 'thermostat basic result has no error');
+    await home();
+    click(doc.querySelector('[data-answer="none_of_these"]'));
+    await flush();
+    await acceptAndContinue();
+    await clickPath(['other_heat_or_ductless', 'thermostat_settings', 'none_of_these', 'low_voltage_wall', 'brand_nest', 'landing_blank', 'breaker_involved']);
+    assert(doc.querySelector('h1').textContent === 'A breaker ends this check.', 'breaker involvement renders call_pro');
+    assert(doc.querySelector('.pill').textContent === 'Professional guidance', 'breaker involvement is call_pro');
+    assertNoShutOff(rendered(), 'thermostat breaker page shut-off instruction');
+    assert(!doc.getElementById('flow-error'), 'thermostat breaker result has no error');
+    assert(errors.length === 0, 'thermostat page has no script error: ' + errors.join(' | '));
     window.location.hash = '#/terms';
     await flush();
     const termsBody = norm(doc.querySelector('.document-panel'));

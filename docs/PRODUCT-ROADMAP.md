@@ -48,6 +48,11 @@ Success: a trade pro can walk a real “not cooling” call and trust the exits.
 **Shipped (`ms.ductless.v1`):** cooling and heating checks for one indoor unit, including a safe look at the outdoor unit. Multi-zone stays out.  
 **Folder:** `docs/mini-split/`
 
+### Thermostat settings
+**Prefix:** `ts.`
+**Shipped (`ts.settings.v0`):** U.S. residential low-voltage thermostat settings. Text steps and a Check your manual link. Advanced, model-written steps, and manual-picture panels stay off.
+**Folder:** `docs/thermostat/`
+
 ### Phase 4 — Water-to-air water-source HP ≤ 6 tons
 **Owner:** Water Source Lead  
 **Prefix:** `wshp.`  
