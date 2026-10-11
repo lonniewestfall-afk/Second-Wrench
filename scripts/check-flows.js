@@ -1177,8 +1177,8 @@ assert(/yellow or orange flame already seen/.test(d012) && /bang at ignition/.te
 assert(F.treeVersionMs === 'ms.ductless.v1', 'MS-A1 mini-split tree version');
 assert(Array.isArray(F.msPr1) && F.msPr1.length === 10, 'MS-G1 ten original mini-split nodes exported');
 assert(Array.isArray(F.msV1) && F.msV1.join('|') === 'ms.heat.mode_setpoint|ms.heat.force_heat|ms.heat.defrost_sanity|ms.outdoor.safe_observe', 'MS-G1 heat and outdoor nodes');
-assert(Object.keys(F.nodes).length === 103, 'node count is 103');
-assert(Object.keys(F.results).length === 245, 'result count is 245');
+assert(Object.keys(F.nodes).length === 104, 'node count is ' + Object.keys(F.nodes).length);
+assert(Object.keys(F.results).length === 247, 'result count is ' + Object.keys(F.results).length);
 assert(!Object.keys(F.nodes).some(id => id.indexOf('ac.adv.cap.') === 0), 'advanced capacitor nodes are absent from the public bundle');
 const ms1 = ['none_of_these', 'agree_18_terms', 'other_heat_or_ductless', 'ductless_mini_split', 'ductless_single_zone'];
 const msGate = ms1.slice(0, 4);
@@ -1452,7 +1452,7 @@ assert(require('crypto').createHash('sha256').update(hpDigestLines.join('\n')).d
 assert(hpDigestLines.length === 70, 'HP edge digest line count ' + hpDigestLines.length);
 
 // ---- Thermostat ts.settings.v0 (TS-A1–TS-A21, mutations M1–M17) ----
-assert(F.treeVersionTs === 'ts.settings.v1' && Array.isArray(F.tsV0) && F.tsV0.length === 16 && Array.isArray(F.tsV1) && F.tsV1.length === 40, 'TS-A1 tree and TS_V1');
+assert(F.treeVersionTs === 'ts.settings.v1' && Array.isArray(F.tsV0) && F.tsV0.length === 16 && Array.isArray(F.tsV1) && F.tsV1.length === 41, 'TS-A1 tree and TS_V1');
 assert(F.treeVersion === 'ac.cool.v1' && F.treeVersionHp === 'hp.air_source.v1' && F.treeVersionMs === 'ms.ductless.v1', 'TS-A1 AC HP ms versions');
 const tsGate = ['none_of_these', 'agree_18_terms', 'other_heat_or_ductless', 'thermostat_settings'];
 const ts0 = tsGate.concat(['ts_none_of_these']);
@@ -1466,13 +1466,16 @@ assert(Object.keys(F.nodes).filter(id => F.nodes[id].options.some(op => op.id ==
 assert(F.nodes['ts.gate.safety_stops'].body.indexOf('Don’t take the thermostat off the wall or open any equipment to check.') !== -1, 'TS-C1');
 assert(F.nodes['ts.power.blank_screen'].body.indexOf('Don’t reset breakers in this check.') !== -1, 'TS-C2');
 assert(F.nodes['ts.power.blank_screen'].caution === 'Look only at the furnace door and power switch. Don’t remove the door, don’t flip the switch, and don’t touch thermostat wires.', 'TS-C3');
-assert(F.tsV1.reduce((n, id) => n + F.nodes[id].options.length, 0) === 329, 'ts options');
-assert(F.nodes['ts.power.blank_screen'].options.length === 11, 'blank screen options');
-assert(F.nodes['ts.power.battery'].body.indexOf('If you’d have to disconnect any wires to reach them, stop.') !== -1, 'TS-C4');
+assert(F.tsV1.reduce((n, id) => n + F.nodes[id].options.length, 0) === 346, 'ts options');
+assert(F.nodes['ts.power.blank_screen'].options.length === 12, 'blank screen options');
+assert(F.nodes['ts.power.battery'].body.indexOf('If you’d have to disconnect any wires to reach batteries, stop.') !== -1, 'TS-C4');
 assert(F.nodes['ts.status.wait_delay'].body.indexOf('Changing the setting during the wait can start it over.') !== -1, 'TS-C5');
 assert(JSON.stringify(F.results.ts_hazard_now.actions) === JSON.stringify(F.results.hp_hazard_now.actions), 'TS-C6');
 assert(F.results.ts_installer_guard.explanation === F.tsLc.lc6, 'TS-C7');
 assert(F.results.ts_screen_different.explanation === F.tsLc.lc5, 'TS-C8');
+assert(appText.indexOf('Viewing a thermostat guide doesn’t send anything to us, and neither does tapping <strong>My screen looks different</strong>.') !== -1, 'TS-G64 privacy paragraph');
+assert(appText.indexOf('we receive the guide ID') === -1, 'TS-G64 retired privacy line');
+assert(F.results.leak.actions[1] === F.results.ts_refrigerant_alarm.actions[1], 'TS-G54 shared leak line');
 ['ts_co_gas_now', 'ts_burning_electrical', 'ts_hazard_now'].forEach(id => assert(F.results[id].explanation === F.tsLc.lc7, 'TS-C9 ' + id));
 assert(F.nodes['ts.intake.brand_picker'].body.indexOf(F.tsLc.lc1) !== -1, 'TS-C10');
 F.tsV0.filter(id => F.tsFnOf[id]).forEach(id => assert(F.nodes[id].options.some(op => op.label === 'My screen looks different'), 'TS-C11 ' + id));
@@ -1500,7 +1503,7 @@ const tw5 = tsWalk(['brand_amazon', 'landing_blank_screen', 'breaker_looks_tripp
 assert(tw5.result === 'ts_power_breaker_pro' && F.results[tw5.result].outcome === 'call_pro', 'W5 result');
 assert(!tsEvents(tw5).some(e => e.indexOf('gate_fired:') === 0 || e === 'diy_tier_shown:basic' || e === 'diy_tier_shown:advanced'), 'W5 no gate and no diy tier');
 assert(tw5.answers.some(a => a.fact === 'A breaker for the HVAC looked tripped. User did not reset it.'), 'W5 fact');
-const tw6 = tsWalk(['brand_ecobee', 'ecb_premium', 'landing_em_aux_heat', 'installer_setting_came_up']);
+const tw6 = tsWalk(['brand_ecobee', 'ecb_premium', 'landing_em_aux_heat', 'eh_no_reason', 'installer_setting_came_up']);
 assert(tw6.result === 'ts_installer_guard' && F.results[tw6.result].tier === 'Stop / professional', 'W6 result');
 assert(F.renderTsPanel('ECB-PRM', 'ts.settings.em_aux_heat').lc6 === F.tsLc.lc6 && F.presentResult(tw6).explanation === F.tsLc.lc6, 'W6 LC-6 inline and explanation');
 const ttw6Stopped = F.stop(JSON.parse(JSON.stringify(tw6)));
@@ -1532,6 +1535,22 @@ assert(F.results.ts_power_breaker_pro.avoid === 'Don’t reset breakers, turn th
 const wVisited = new Set();
 [tw1, tw2, tw3, tw4, tw5, tw6, tw7, tw8, tw9, ttw10a, ttw10b, ttw10c, tw11].forEach(state => visited(state).forEach(id => { if (id.indexOf('ts.') === 0) wVisited.add(id); }));
 F.tsV0.forEach(id => assert(wVisited.has(id), 'W1–W11 visit ' + id));
+const expiredMirror = { id: 'TS-A37', second_check_by: 'Tree Lead', second_check_on: '2026-10-01', verified_by: 'A', verified_on: '2026-10-01', verified_status: 'verified', recheck_due: '2020-01-01' };
+assert(F.tsMirrorRenderable(expiredMirror, { mirrorsEnabled: true, serve: ['TS-A37'], hold: [], today: '2026-10-11' }) === false, 'TS-A37 expired mirror withholds text');
+assert(F.tsMirrorRenderable(Object.assign({}, expiredMirror, { recheck_due: '2027-01-01' }), { mirrorsEnabled: true, serve: ['TS-A37'], hold: [{ id: 'TS-A37', reason: 'held' }], today: '2026-10-11' }) === false, 'TS-A37 held mirror withholds text');
+const testNote = tsWalk(['brand_amazon']);
+assert(testNote.mode === 'test' && F.summary(testNote).indexOf('TEST SCENARIO — not an actual equipment report.') !== -1, 'TS-A38 test label');
+const liveNote = tsWalk(['brand_amazon']);
+liveNote.mode = 'ask';
+assert(F.summary(liveNote).indexOf('TEST SCENARIO') === -1, 'TS-A38 live note');
+function assertFreshStop(state, resultId) {
+  assert(state.result === resultId, 'TS-A39 ' + resultId + ' ' + (state.result || state.node));
+  F.stop(state);
+  assert(state.result === null && state.node === 'ac.gate.cluster_entry' && state.noDiyLock === true && state.priorResults.indexOf(resultId) !== -1, 'TS-A39 stop ' + resultId);
+}
+assertFreshStop(walk('ask', tsGate.concat(['refrigerant_alarm'])), 'ts_refrigerant_alarm');
+assertFreshStop(tsWalk(['brand_honeywell_smart', 'hw_t6', 'landing_em_aux_heat', 'eh_tech_left_on']), 'ts_eheat_keep_pro');
+assertFreshStop(tsWalk(['brand_honeywell_smart', 'hw_t6', 'landing_no_heat_cool', 'cold_home_risk']), 'ts_cold_home_urgent');
 const ttw2Note = F.summary(tw2);
 assert(ttw2Note.indexOf('HOMEOWNER SERVICE NOTE — thermostat observations, not a diagnosis') === 0, 'TS-A14 line 1');
 assert(ttw2Note.indexOf('Thermostat: Honeywell Home T9 (homeowner reported).') !== -1 && ttw2Note.indexOf('Tried:') !== -1, 'TS-A14 thermostat and tried');
@@ -1625,7 +1644,7 @@ const tsOff = tsLeaves();
 globalThis.SW_CONFIG.advancedRepairsEnabled = true;
 const tsOn = tsLeaves();
 globalThis.SW_CONFIG.advancedRepairsEnabled = false;
-const TS_LEAF_COUNT = 12511;
+const TS_LEAF_COUNT = 8562;
 assert(tsOff.out.length === TS_LEAF_COUNT && tsOff.out.join('|') === tsOn.out.join('|'), 'TS-A4/A5 leaf count ' + tsOff.out.length);
 assert(tsOff.maxDepth <= 12 && tsOn.maxDepth <= 12, 'TS-A5 depth ' + tsOff.maxDepth);
 assert(!tsWave.a22.length, 'TS-A22 lockouts stay behind hp_air and guard_ok ' + tsWave.a22.slice(0, 2).join(' | '));
@@ -1753,7 +1772,7 @@ globalThis.SW_CONFIG.stageLatchStepsEnabled = false;
 const tsTextRows = [];
 Object.keys(F.tsSteps).forEach(fn => Object.keys(F.tsSteps[fn]).forEach(key => { const cell = F.tsSteps[fn][key]; if (!cell.generic) tsTextRows.push([fn + '|' + key, cell.text || '']); }));
 tsTextRows.sort((a, b) => a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0);
-assert(tsTextRows.length === 177 && require('crypto').createHash('sha256').update(JSON.stringify(tsTextRows)).digest('hex') === '1feb3a93ed92bff20572bc5440da759d6f6b531eb9dca6e09437f4478a405c73', 'TS-G20 non-generic step text equals spec §3.17');
+assert(tsTextRows.length === 177 && require('crypto').createHash('sha256').update(JSON.stringify(tsTextRows)).digest('hex') === 'd1e058edb14d0c428538b8e90cea68018e7b5dee4b60c6f9fb98e6a8abc31c54', 'TS-G20 non-generic step text equals spec §3.17');
 const tsModelPaths = [
   ['NEST-LT4', ['brand_nest', 'nest_lt4']], ['NEST-NT', ['brand_nest', 'nest_nt']], ['NEST-LT3', ['brand_nest', 'nest_lt3']], ['NEST-E', ['brand_nest', 'nest_e']],
   ['HW-T5', ['brand_honeywell_smart', 'hw_t5']], ['HW-T6', ['brand_honeywell_smart', 'hw_t6']], ['HW-T9', ['brand_honeywell_smart', 'hw_t9']],
@@ -1979,7 +1998,7 @@ function expectTs(label, fn) {
     }));
     scratchRows.sort((a, b) => a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0);
     const scratchHash = require('crypto').createHash('sha256').update(JSON.stringify(scratchRows)).digest('hex');
-    const pin = '1feb3a93ed92bff20572bc5440da759d6f6b531eb9dca6e09437f4478a405c73';
+    const pin = 'd1e058edb14d0c428538b8e90cea68018e7b5dee4b60c6f9fb98e6a8abc31c54';
     assert(scratchRows.length === 177 && scratchHash !== pin, 'M17c pin still matches ' + scratchHash);
     console.log('TS-MUT M17c PIN_MISMATCH');
   } finally {
@@ -2148,6 +2167,33 @@ function expectTs(label, fn) {
   mut('M54', () => { fp6Cph.text = fp6CphText + ' Never raise 365 or 366.'; }, () => { fp6Cph.text = fp6CphText; }, 'TS-G32');
   const offsetBody = F.nodes['ts.step.offset'].body;
   mut('M55', () => { F.nodes['ts.step.offset'].body = 'These steps match the model you picked.\n\n' + offsetBody; }, () => { F.nodes['ts.step.offset'].body = offsetBody; }, 'TS-G52');
+  const hwT6Opt = F.nodes['ts.model.honeywell_smart'].options.find(op => op.id === 'hw_t6');
+  const hwT6Label = hwT6Opt.label;
+  mut('M72', () => { hwT6Opt.label = 'T6 Pro'; }, () => { hwT6Opt.label = hwT6Label; }, 'TS-G65');
+  const t6PowerCell = F.tsSteps.POWER['HW-T6'];
+  const t6PowerText = t6PowerCell.text;
+  mut('M73', () => { t6PowerCell.text = 'Some T6 Pro models take AA batteries.'; }, () => { t6PowerCell.text = t6PowerText; }, 'TS-G57');
+  const lc5 = F.tsLc.lc5;
+  mut('M74', () => { F.tsLc.lc5 = lc5.replace('support@secondwrench.co', 'help@secondwrench.co'); }, () => { F.tsLc.lc5 = lc5; }, 'TS-G64');
+  const leakAction = F.results.ts_refrigerant_alarm.actions[1];
+  mut('M75', () => { F.results.ts_refrigerant_alarm.actions[1] = 'Call from a safe location.'; }, () => { F.results.ts_refrigerant_alarm.actions[1] = leakAction; }, 'TS-G54');
+  const waitBody = F.nodes['ts.status.wait_delay'].body;
+  mut('M76', () => { F.nodes['ts.status.wait_delay'].body = waitBody.replace('5 minutes', '10 minutes'); }, () => { F.nodes['ts.status.wait_delay'].body = waitBody; }, 'TS-G62');
+  const installerOpt = F.nodes['ts.settings.em_aux_check'].options.find(op => op.id === 'installer_setting_came_up');
+  const installerLabel = installerOpt.label;
+  mut('M77', () => { installerOpt.label = 'Installer settings came up'; }, () => { installerOpt.label = installerLabel; }, 'TS-G66');
+  const cyclingOpts = F.nodes['ts.diag.cycling'].options;
+  const cyclingCold = cyclingOpts[0];
+  mut('M78', () => { cyclingOpts.shift(); }, () => { cyclingOpts.unshift(cyclingCold); }, 'TS-G63');
+  const blankOpts = F.nodes['ts.power.blank_screen'].options;
+  mut('M79', () => { const first = blankOpts.shift(); blankOpts.splice(1, 0, first); }, () => { const moved = blankOpts.splice(1, 1)[0]; blankOpts.unshift(moved); }, 'TS-G63');
+  const coldNext = F.nodes['ts.settings.mode_setpoint'].options[0].next;
+  mut('M80', () => { F.nodes['ts.settings.mode_setpoint'].options[0].next = 'ts.settings.mode_setpoint'; }, () => { F.nodes['ts.settings.mode_setpoint'].options[0].next = coldNext; }, 'TS-G63');
+  const hwOther = F.nodes['ts.model.honeywell_smart'].options.find(op => op.id === 'hw_t6_other');
+  const hwOtherFact = hwOther.fact;
+  mut('M81', () => { hwOther.fact = 'Another T6.'; }, () => { hwOther.fact = hwOtherFact; }, 'TS-G65');
+  const lc23 = F.tsLc.lc23;
+  mut('M82', () => { F.tsLc.lc23 = lc23.replace('If a screen asks you to enter a password or access code, stop. That menu is for installers.', ''); }, () => { F.tsLc.lc23 = lc23; }, 'TS-G66');
   F.assertTs(F.nodes, F.results);
 })();
 

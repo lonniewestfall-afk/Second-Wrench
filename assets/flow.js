@@ -2969,7 +2969,7 @@
   function stop(state) {
     if (!state) return state;
     const res = state.result && results[state.result];
-    const lock = !!(res && ['Emergency', 'Stop / professional'].indexOf(res.tier) !== -1);
+    const lock = !!(res && (['Emergency', 'Stop / professional'].indexOf(res.tier) !== -1 || ['ts_eheat_keep_pro', 'ts_refrigerant_alarm', 'ts_cold_home_urgent'].indexOf(state.result) !== -1));
     const prior = state.result ? [state.result] : [];
     const keep = {
       seed: state.seed, mode: state.mode, product: state.product,

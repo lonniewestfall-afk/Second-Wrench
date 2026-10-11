@@ -100,7 +100,14 @@
     'Refrigerant leak / refrigerant sensor alarm': 1,
     'Refrigerant leak alarm or warning reported.': 1,
     'Refrigerant leak alarm or sensor message recorded.': 1,
-    'If a refrigerant leak alarm is going off, move people out of the affected area to fresh air without operating switches or creating ignition sources.': 1
+    'If a refrigerant leak alarm is going off, move people out of the affected area to fresh air without operating switches or creating ignition sources.': 1,
+    'A refrigerant leak alarm or alert is going off (some newer systems have a leak sensor that can show an alert on the thermostat)': 1,
+    'Refrigerant leak alarm or alert reported at the thermostat check.': 1,
+    'It says refrigerant leak, leak detected, or refrigerant sensor': 1,
+    'Thermostat showed a refrigerant leak alert.': 1,
+    'If anything new comes up, like a burning smell, smoke, a CO alarm, a refrigerant leak alarm, or water at electrical parts, choose the last option.': 1,
+    'First: any burning smell, smoke, scorched wires, or a refrigerant leak alarm?': 1,
+    'This beta cannot identify the refrigerant, concentration, or alarm cause.': 1
   };
   /* Spec G12 treats the common noun "equipment" like an installer menu name.
    * These approved sentences stay verbatim. The allowlist is the adaptation. */
@@ -379,6 +386,10 @@
     var ui = data.wave2ui || {};
     if (!option) return false;
     if (option.requiresFlag === 'stageLatchStepsEnabled' && config().stageLatchStepsEnabled !== true) return false;
+    if (option.requires && state.tsModel && data.steps[option.requires]) {
+      var required = data.steps[option.requires][state.tsModel];
+      if (!required || required.kind === 'not_on_model') return false;
+    }
     if (option.hiddenIf && option.hiddenIf.length) {
       if (ui.showHpAirInWshp && option.id === 'hp_air') return true;
       if (option.hiddenIf.indexOf('ts_geo') !== -1 && state.tsGeo) return false;
@@ -621,7 +632,8 @@
   function forbiddenScan(text, where) {
     var failures = [];
     var raw = String(text || '').replace(/\{step panel:[^}]+\}/g, ' ').replace(/\*\*/g, '');
-    if (HARD_FAIL.test(raw)) failures.push('TS-A10: ' + where + ' hard fail');
+    var hardRaw = raw.split('Do not turn off a mitigation blower, cycle power, bypass a sensor, use flames, or open refrigerant lines.').join('');
+    if (HARD_FAIL.test(hardRaw)) failures.push('TS-A10: ' + where + ' hard fail');
     sentences(raw).forEach(function (sentence) {
       if (/\bwarranty\b/i.test(sentence) && !WARRANTY_OK.test(sentence)) failures.push('TS-A10: ' + where + ' warranty');
       if (LC_SENTENCES[sentence]) return;
@@ -884,9 +896,9 @@
       if (ids[ids.length - 1] !== 'hazard_now' || ids[something + 1] !== 'hazard_now') fail('TS-G23', 'tail');
     }
     var newIds = (data.v1 || []).filter(function (id) { return data.v0.indexOf(id) === -1; });
-    if (newIds.length !== 24) fail('TS-G21', 'count ' + newIds.length);
+    if (newIds.length !== 25) fail('TS-G21', 'count ' + newIds.length);
     newIds.forEach(function (id) {
-      if (!/^ts\.(diag|guard|step|look)\./.test(id)) fail('TS-G21', id);
+      if (!/^ts\.(diag|guard|step|look)\./.test(id) && id !== 'ts.settings.em_aux_check') fail('TS-G21', id);
       var node = nodes[id];
       if (!node) { fail('TS-G21', 'missing ' + id); return; }
       var tail = node.options.slice(-3).map(function (option) { return option.id; }).join('|');
@@ -1167,6 +1179,63 @@
         if (actions.length || res.avoid) fail('TS-G52', id);
         if (!res.nextAction || res.nextAction.label !== 'Open the early start steps' || res.nextAction.next !== 'ts.step.recovery') fail('TS-G52', 'next action');
       } else if (actions.length || res.avoid || res.nextAction) fail('TS-G52', id);
+    });
+    var pl35 = 'Call a licensed HVAC professional with EPA 608 capability from outside the affected area and follow the equipment\u2019s alarm instructions. For breathing trouble or immediate danger, call 911.';
+    var leak = results.ts_refrigerant_alarm;
+    var leakOpt = nodes['ts.gate.safety_stops'] && nodes['ts.gate.safety_stops'].options.filter(function (option) { return option.id === 'refrigerant_alarm'; })[0];
+    var leakCode = nodes['ts.alert.capture'] && nodes['ts.alert.capture'].options.filter(function (option) { return option.id === 'code_refrigerant_alarm'; })[0];
+    if (!leak || leak.actions[1] !== pl35 || leak.urgency !== 'Leave the affected area' || leak.outcome !== 'emergency_exit') fail('TS-G54', 'result');
+    if (!leakOpt || leakOpt.next !== '@ts_refrigerant_alarm' || leakOpt.gate !== 'ts_refrigerant_alarm') fail('TS-G54', 'gate');
+    if (!leakCode || leakCode.next !== '@ts_refrigerant_alarm' || leakCode.hint !== 'Leave the area. Don\u2019t reset it.') fail('TS-G54', 'code');
+    var t6Power = 'This model has no batteries. It gets its power from the heating and cooling system.';
+    ['POWER', 'BATT'].forEach(function (fn) {
+      var cell = data.steps[fn] && data.steps[fn]['HW-T6'];
+      if (!cell || cell.generic || cell.kind === 'not_on_model' || cell.text !== t6Power) fail('TS-G57', fn);
+      if (!cell || !cell.fallback || !cell.fallback[0] || cell.fallback[0].id !== 'F-HW-T6' || cell.fallback[0].section !== 'p.29') fail('TS-G57', fn + ' cite');
+    });
+    Object.keys(nodes).forEach(function (id) {
+      if (id.indexOf('ts.') !== 0) return;
+      nodes[id].options.forEach(function (option) {
+        var fn = data.fnOf[option.next];
+        if (!fn || !data.v1Fns[fn]) return;
+        if (option.requires !== fn) fail('TS-G58', id + '/' + option.id);
+        V1_MODELS.forEach(function (model) {
+          var cell = data.steps[fn][model];
+          if (cell && cell.kind === 'not_on_model' && optionVisible(option, { tsModel: model })) fail('TS-G58', model + ' ' + option.id);
+        });
+      });
+    });
+    var ten = /10 minutes/;
+    collectCopy(nodes, results).forEach(function (pair) {
+      if (ten.test(String(pair[1] || ''))) fail('TS-G62', pair[0]);
+    });
+    var waitSlots = [
+      [nodes['ts.status.wait_delay'] && nodes['ts.status.wait_delay'].body, '1. Make one change, then don\u2019t touch it for 5 minutes.'],
+      [nodes['ts.settings.mode_setpoint'] && nodes['ts.settings.mode_setpoint'].body, '3. Wait 5 minutes.']
+    ];
+    waitSlots.forEach(function (pair) { if (!pair[0] || pair[0].indexOf(pair[1]) === -1) fail('TS-G62', pair[1]); });
+    if ((data.steps.WAIT['AMZ-AST'].text || '').indexOf('Allow 5 to 7 minutes.') === -1) fail('TS-G62', 'amazon');
+    var coldNodes = ['ts.settings.em_aux_check', 'ts.settings.mode_setpoint', 'ts.power.blank_screen', 'ts.status.wait_delay', 'ts.settings.em_aux_heat', 'ts.diag.cycling', 'ts.diag.heat_pump_aux', 'ts.diag.recovery'];
+    var coldLabel = 'The house is getting cold, and someone at home is at risk from the cold (an infant, an older adult, or someone who is ill or medically fragile)';
+    coldNodes.forEach(function (id) {
+      var first = nodes[id] && nodes[id].options[0];
+      if (!first || first.id !== 'cold_home_risk' || first.label !== coldLabel || first.next !== '@ts_cold_home_urgent' || first.hint !== 'Warmth first.') fail('TS-G63', id);
+    });
+    if (data.lc.lc5.indexOf('support@secondwrench.co') === -1 || data.lc.lc5.indexOf('Don\u2019t include your address, phone number, or serial numbers.') === -1) fail('TS-G64', 'lc5');
+    var hwT6 = nodes['ts.model.honeywell_smart'].options.filter(function (option) { return option.id === 'hw_t6'; })[0];
+    var hwOther = nodes['ts.model.honeywell_smart'].options.filter(function (option) { return option.id === 'hw_t6_other'; })[0];
+    if (!hwT6 || hwT6.label !== 'T6 Pro Smart (TH6320WF or TH6220WF)' || hwT6.fact !== 'Thermostat model: Honeywell Home T6 Pro Smart (TH6320WF or TH6220WF).') fail('TS-G65', 'label');
+    if (!data.models['HW-T6'] || data.models['HW-T6'].label !== 'Honeywell Home T6 Pro Smart (TH6320WF or TH6220WF)') fail('TS-G65', 'model');
+    if (!hwOther || hwOther.label !== 'Another T6 Pro model' || hwOther.next !== '@ts_model_not_in_v0' || hwOther.fact !== 'Honeywell T6 Pro model outside the checked models.') fail('TS-G65', 'other');
+    if ((data.steps.BATT['HW-T9'].text || '').indexOf('LOW SENSOR BATTERIES') === -1) fail('TS-G65', 't9');
+    var lc23tail = 'If a step would take you to one of these, stop. If a screen asks you to enter a password or access code, stop. That menu is for installers.';
+    var tailLabel = 'A step or screen is asking about a setting on the \u201CDon\u2019t change these\u201D list, or asks me to enter a password or access code';
+    if (data.lc.lc23.indexOf(lc23tail) === -1) fail('TS-G66', 'lc23');
+    Object.keys(nodes).forEach(function (id) {
+      if (id.indexOf('ts.') !== 0) return;
+      nodes[id].options.forEach(function (option) {
+        if (option.id === 'installer_setting_came_up' && option.label !== tailLabel) fail('TS-G66', id);
+      });
     });
   }
 

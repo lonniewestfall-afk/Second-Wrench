@@ -1,5 +1,6 @@
 /* Authoring source for ts.settings.v1. Run once on ts.settings.v0 data.
- * Legal copy is 02 rev 8. User copy is spec v2.2, with Legal replacements E7, E13, E19, and E20.
+ * Legal copy is 02 rev 8, plus the D-022 and D-027 strings in the PR #17 builder pass rev 3.
+ * User copy is spec v2.2, with Legal replacements E7, E13, E19, and E20.
  */
 'use strict';
 const fs = require('fs');
@@ -44,7 +45,8 @@ data.lc.lc20 = 'A wider [Setting] means fewer starts and bigger temperature chan
 data.lc.lc20c = 'A lower cycles-per-hour number means fewer starts. A higher number means more starts, which is harder on your equipment.';
 data.lc.lc21 = 'An offset changes what the thermostat shows. It doesn\u2019t fix a sensor problem. If the reading seems far off, or keeps drifting, call a professional.';
 data.lc.lc22 = 'To undo, go back to the same setting and enter the value you wrote down. If you can\u2019t get back to how it was, or you think you changed something else by mistake, stop and call a licensed HVAC professional. Don\u2019t use a factory reset to fix it. That can erase your system\u2019s setup.';
-data.lc.lc23 = '**Don\u2019t change these. They protect your equipment and safety, and they\u2019re for professionals only:**\nCompressor protection or minimum off time\nSystem, equipment, or fuel type (including heat pump, furnace, boiler, gas, electric, or oil)\nFan operation for gas or electric heat (often shown as HG/HE or Fan in Heat)\nThe changeover point on a gas furnace plus heat pump system (often called dual fuel)\nHeat pump reversing valve (often shown as O/B)\nAnything about wiring, terminals, or accessories (humidifier, dehumidifier, ventilation)\nRaising the cooling or heat pump cycle rate (CPH) above where it was set\nIf a step would take you to one of these, stop. If you see a password or code prompt, stop. That menu is for installers.';
+data.lc.lc23 = '**Don\u2019t change these. They protect your equipment and safety, and they\u2019re for professionals only:**\nCompressor protection or minimum off time\nSystem, equipment, or fuel type (including heat pump, furnace, boiler, gas, electric, or oil)\nFan operation for gas or electric heat (often shown as HG/HE or Fan in Heat)\nThe changeover point on a gas furnace plus heat pump system (often called dual fuel)\nHeat pump reversing valve (often shown as O/B)\nAnything about wiring, terminals, or accessories (humidifier, dehumidifier, ventilation)\nRaising the cooling or heat pump cycle rate (CPH) above where it was set\nIf a step would take you to one of these, stop. If a screen asks you to enter a password or access code, stop. That menu is for installers.';
+data.lc.lc5 = 'Thanks. Stop here and don\u2019t keep pressing through menus. Your device may have a newer layout. Check [Brand]\u2019s official help page ([link]) or contact a licensed HVAC professional. Choosing this doesn\u2019t send us anything. To tell us this step is wrong, use Give beta feedback at the bottom of this page, or email support@secondwrench.co with the page link and what your screen shows. Don\u2019t include your address, phone number, or serial numbers. If you send a photo, show only the thermostat screen, with no faces, addresses, or other personal details.';
 data.lc.lc24 = 'You can lower your cooling or heat pump cycle rate, within the range in your thermostat\u2019s manual. A lower number means fewer starts, which is easier on the outdoor unit. Don\u2019t raise it above the number it was set to. Raising it is a job for a professional.';
 data.lc.lc25 = 'You can raise or lower the cycle rate for your furnace or boiler heat, within the range in your thermostat\u2019s manual. A higher number means shorter, more frequent cycles. A lower number means longer cycles and bigger temperature swings.';
 data.lc.lc26 = 'Your thermostat\u2019s range for this setting: [low] to [high]. Source: [source title], [page or section] ([link]). Checked [Month D, YYYY].';
@@ -133,7 +135,7 @@ const HAZARD = {
 };
 const TAIL = [
   { id: 'screen_looks_different', label: 'My screen looks different', next: '@ts_screen_different', hint: 'Stop here. We\u2019ll point you to the maker\u2019s help.', fact: 'Thermostat screen did not match the guide.', gate: null },
-  { id: 'installer_setting_came_up', label: 'A step or screen is asking about a setting on the \u201CDon\u2019t change these\u201D list, or for a password or code', next: '@ts_installer_guard', hint: 'Don\u2019t change it.', fact: 'Locked installer setting came up.', gate: null },
+  { id: 'installer_setting_came_up', label: 'A step or screen is asking about a setting on the \u201CDon\u2019t change these\u201D list, or asks me to enter a password or access code', next: '@ts_installer_guard', hint: 'Don\u2019t change it.', fact: 'Locked installer setting came up.', gate: null },
   HAZARD
 ];
 function opt(id, label, next, hint, fact, extra) {
@@ -574,7 +576,7 @@ Object.keys(data.v1Fns).forEach(function (fn) { data.fnOf[data.v1Fns[fn]] = fn; 
 ['landing_short_cycling', 'landing_swings', 'landing_never_catches_up', 'landing_wrong_reading', 'landing_auto_mode', 'landing_backup_heat_cost', 'landing_humid', 'landing_stages'].forEach(function (id) {
   data.landingOf[id] = id.replace('landing_', '');
 });
-data.v1 = data.v0.concat(['ts.diag.reading_check', 'ts.diag.location', 'ts.diag.cycling', 'ts.diag.swing', 'ts.diag.recovery', 'ts.diag.auto_mode', 'ts.diag.heat_pump_aux', 'ts.diag.humidity', 'ts.diag.stages', 'ts.diag.new_install', 'ts.guard.cold_weather', 'ts.guard.outdoor_rating', 'ts.step.offset', 'ts.step.differential', 'ts.step.cph', 'ts.step.auto_deadband', 'ts.step.recovery', 'ts.step.setback', 'ts.step.hp_lockouts', 'ts.step.dehumidify', 'ts.step.sensors', 'ts.step.stage_latch', 'ts.guard.hp_source', 'ts.look.geo_lockouts']);
+data.v1 = data.v0.concat(['ts.diag.reading_check', 'ts.diag.location', 'ts.diag.cycling', 'ts.diag.swing', 'ts.diag.recovery', 'ts.diag.auto_mode', 'ts.diag.heat_pump_aux', 'ts.diag.humidity', 'ts.diag.stages', 'ts.diag.new_install', 'ts.guard.cold_weather', 'ts.guard.outdoor_rating', 'ts.step.offset', 'ts.step.differential', 'ts.step.cph', 'ts.step.auto_deadband', 'ts.step.recovery', 'ts.step.setback', 'ts.step.hp_lockouts', 'ts.step.dehumidify', 'ts.step.sensors', 'ts.step.stage_latch', 'ts.guard.hp_source', 'ts.look.geo_lockouts', 'ts.settings.em_aux_check']);
 data.v1Generic = [];
 Object.keys(data.steps).forEach(function (fn) {
   Object.keys(data.steps[fn]).forEach(function (key) {
@@ -582,12 +584,26 @@ Object.keys(data.steps).forEach(function (fn) {
   });
 });
 
+const COLD_HOME = opt('cold_home_risk', 'The house is getting cold, and someone at home is at risk from the cold (an infant, an older adult, or someone who is ill or medically fragile)', '@ts_cold_home_urgent', 'Warmth first.', 'House getting cold with someone at risk reported.');
+node('ts.settings.em_aux_check', 'Emergency heat', 'Before you switch emergency heat off',
+  'Emergency heat is sometimes left on for a reason. A technician may leave it on while the heat pump waits for a repair, or when the outdoor unit is iced over or not running. Switching back to Heat then can leave the house without enough heat. Answer from what you already know.',
+  withTail([
+    COLD_HOME,
+    opt('eh_tech_left_on', 'A technician or installer left it on emergency heat, or told me to use it until a repair', '@ts_eheat_keep_pro', 'Leave it on.', 'Emergency heat was left on by a technician or on a pro\u2019s advice.'),
+    opt('eh_outdoor_problem', 'The outdoor unit is iced over, damaged, or hasn\u2019t been running', '@ts_eheat_keep_pro', 'Leave it on. A pro checks the heat pump.', 'Outdoor unit reported iced over, damaged, or not running.'),
+    opt('not_sure', 'I\u2019m not sure why it\u2019s on', '@ts_eheat_keep_pro', 'Leave it on. Ask your technician or installer why.', 'Not sure why emergency heat is on.'),
+    opt('eh_no_reason', 'No one left it on for a repair, and the heat pump has been working', 'ts.settings.em_aux_heat', 'Steps to switch back to Heat.', 'No known reason for emergency heat; heat pump reported working.'),
+    opt('eh_aux_only', 'It isn\u2019t on emergency heat. Backup heat (Aux) runs a lot in normal Heat', '@ts_aux_persistent', '', '')
+  ]));
+['ts.diag.cycling', 'ts.diag.heat_pump_aux', 'ts.diag.recovery'].forEach(function (id) {
+  data.nodes[id].options.unshift(Object.assign({}, COLD_HOME));
+});
 const newIds = data.v1.slice(data.v0.length);
-if (newIds.length !== 24) throw new Error('node count ' + newIds.length);
+if (newIds.length !== 25) throw new Error('node count ' + newIds.length);
 let optCount = 0;
 newIds.forEach(function (id) { optCount += data.nodes[id].options.length; });
 optCount += 8;
-if (optCount !== 206) throw new Error('new options ' + optCount);
+if (optCount !== 218) throw new Error('new options ' + optCount);
 const kinds = {};
 ['OFFSET', 'DIFF', 'CPH', 'AUTO', 'RECOV', 'SETBACK', 'HPLOCK', 'DEHUM', 'SENSORS', 'LATCH', 'GEO'].forEach(function (fn) {
   kinds[fn] = { text: 0, held: 0, pointer: 0, not_on_model: 0 };
@@ -622,31 +638,125 @@ Object.keys(data.nodes).forEach(function (id) {
   });
 });
 const emNode = data.nodes['ts.settings.em_aux_heat'];
-emNode.body = u('Emergency heat runs only the backup heat, and it costs more to run. It stays on until someone switches it off.\n\nFirst: did someone set it on purpose? A technician, or someone at home, may have chosen emergency heat because the outdoor unit has a problem. If so, or if you\u2019re not sure, leave it on and pick that answer.\n\nIf it was left on by accident, switch the mode from emergency heat back to Heat. Then avoid big jumps in the temperature setting. They can bring on the backup heat. Within about 15 minutes, check from a window that the outdoor unit is running. If it isn\u2019t, or it\u2019s covered in ice, pick that answer.\n\nAn AUX light that comes on by itself in Heat is different. It\u2019s the thermostat adding backup heat, and that\u2019s often normal in cold weather.\n\n{step panel: EHEAT}');
-emNode.options.unshift(opt('eheat_set_on_purpose', 'Someone set emergency heat on purpose, or I\u2019m not sure why it\u2019s on', '@ts_eheat_intentional_keep', 'Leave it on. A pro checks the heat pump.', 'Emergency heat was set on purpose, or the reason is unknown. Left on.'));
+emNode.options.unshift(Object.assign({}, COLD_HOME));
 const heatFail = emNode.options.filter(function (op) { return op.id === 'heat_pump_failure'; })[0];
 if (heatFail) heatFail.label = u('It shows HEAT PUMP FAILURE, or after switching to Heat the outdoor unit isn\u2019t running or is iced');
+const landingEm = data.nodes['ts.landing.picker'].options.filter(function (op) { return op.id === 'landing_em_aux_heat'; })[0];
+landingEm.next = 'ts.settings.em_aux_check';
+['ts.settings.mode_setpoint', 'ts.power.blank_screen', 'ts.status.wait_delay'].forEach(function (id) {
+  data.nodes[id].options.unshift(Object.assign({}, COLD_HOME));
+});
 const stops = data.nodes['ts.gate.safety_stops'];
 const noneAt = stops.options.findIndex(function (op) { return op.id === 'ts_none_of_these'; });
-stops.options.splice(noneAt, 0, opt('hazard_refrigerant_alarm', 'A refrigerant-leak alarm is sounding, or the thermostat shows a refrigerant leak warning', '@ts_refrigerant_alarm', 'Leave the area.', 'Refrigerant leak alarm or warning reported.', { gate: 'ts_refrigerant_alarm' }));
+stops.options.splice(noneAt, 0, opt('refrigerant_alarm', 'A refrigerant leak alarm or alert is going off (some newer systems have a leak sensor that can show an alert on the thermostat)', '@ts_refrigerant_alarm', 'Leave the area. Don\u2019t reset it.', 'Refrigerant leak alarm or alert reported at the thermostat check.', { gate: 'ts_refrigerant_alarm' }));
 const alertNode = data.nodes['ts.alert.capture'];
 const recordedAt = alertNode.options.findIndex(function (op) { return op.id === 'code_recorded'; });
-alertNode.options.splice(recordedAt, 0, opt('code_refrigerant_alarm', 'Refrigerant leak / refrigerant sensor alarm', '@ts_refrigerant_alarm', 'Leave the area.', 'Refrigerant leak alarm or sensor message recorded.', { gate: 'ts_refrigerant_alarm' }));
-const powerBack = data.nodes['ts.power.blank_screen'].options.filter(function (op) { return op.id === 'power_back'; })[0];
+alertNode.options.splice(recordedAt, 0, opt('code_refrigerant_alarm', 'It says refrigerant leak, leak detected, or refrigerant sensor', '@ts_refrigerant_alarm', 'Leave the area. Don\u2019t reset it.', 'Thermostat showed a refrigerant leak alert.', { gate: 'ts_refrigerant_alarm' }));
+const blank = data.nodes['ts.power.blank_screen'];
+blank.body = u('First: any burning smell, smoke, scorched wires, or a refrigerant leak alarm? Choose the last option.\n\n' + blank.body.replace(/^First:[^\n]*\n\n/, ''));
+const powerBack = blank.options.filter(function (op) { return op.id === 'power_back'; })[0];
 powerBack.fact = 'The screen came back on during the floor checks.';
-const LEAK_ACTION = 'If a refrigerant leak alarm is going off, move people out of the affected area to fresh air without operating switches or creating ignition sources. Don\u2019t reset the alarm, cycle power, or turn off a blower that\u2019s running. Call a licensed HVAC professional from outside the affected area, and for breathing trouble or immediate danger, call 911.';
-res('ts_eheat_intentional_keep', 'call_pro', 'Leave emergency heat on for now.', 'Emergency heat is often set on purpose when the outdoor unit has a problem. Switching back could run a damaged or iced unit.');
-data.results.ts_eheat_intentional_keep.urgency = 'Leave emergency heat on \u00b7 call a pro';
-data.results.ts_eheat_intentional_keep.actions = [
-  'Leave the thermostat on emergency heat. Higher bills for a few days are normal.',
-  'Call a licensed HVAC professional. Tell them emergency heat was set on purpose, or that you don\u2019t know why, and whether the outdoor unit looks iced from a window.',
-  'If the house is getting cold and someone at home is at risk, get them somewhere warm. Never heat with an oven, stove, grill, or generator indoors.'
+const stillBlank = blank.options.filter(function (op) { return op.id === 'still_blank'; })[0];
+stillBlank.fact = 'The screen stayed blank after the floor checks.';
+const landingPicker = data.nodes['ts.landing.picker'];
+landingPicker.body = u(landingPicker.body.replace('If anything new comes up, like a burning smell, smoke, a CO alarm, or water at electrical parts, choose the last option.', 'If anything new comes up, like a burning smell, smoke, a CO alarm, a refrigerant leak alarm, or water at electrical parts, choose the last option.'));
+const waitHint = landing.options.filter(function (op) { return op.id === 'landing_wait_delay'; })[0];
+waitHint.hint = u('Usually a normal delay of a few minutes.');
+const waitNode = data.nodes['ts.status.wait_delay'];
+waitNode.title = u('Give it a few minutes');
+waitNode.body = u('Many systems wait a few minutes, often about 5, before cooling (or heat-pump heating) starts again. That protects the equipment. Some models and setups wait longer. Changing the setting during the wait can start it over.\n\n1. Make one change, then don\u2019t touch it for 5 minutes.\n\n{step panel: WAIT}');
+const waitCleared = waitNode.options.filter(function (op) { return op.id === 'wait_cleared'; })[0];
+waitCleared.fact = 'User waited, and the system started.';
+const waitPersists = waitNode.options.filter(function (op) { return op.id === 'wait_persists'; })[0];
+waitPersists.label = u('It\u2019s still waiting after 5 minutes, or it happens every time');
+waitPersists.fact = 'User waited 5 minutes. The wait message stayed, or it happens on every call.';
+const modeNode = data.nodes['ts.settings.mode_setpoint'];
+modeNode.body = u('1. Set the mode to Heat for heat, or Cool for cooling. Off stops normal heating and cooling. On a Google Nest, Off can still turn on heating or cooling when the home reaches a Safety Temperature that\u2019s turned on. Don\u2019t rely on it to keep pipes from freezing.\n2. Set the temperature at least 3°F above the room for Heat, or at least 3°F below the room for Cool.\n3. Wait 5 minutes. Many systems wait a few minutes to protect the equipment, and changing the setting again starts that wait over.\n\n{step panel: MODE}');
+const calling = modeNode.options.filter(function (op) { return op.id === 'calling_nothing_runs'; })[0];
+calling.label = u('The screen says it\u2019s heating or cooling, but nothing runs after 5 minutes');
+calling.fact = 'User set the mode and temperature. The thermostat showed a call, but nothing ran after 5 minutes.';
+const fanNode = data.nodes['ts.settings.fan'];
+fanNode.body = u('Auto runs the fan only while heating or cooling. After heating or cooling stops, many systems keep the fan running for a few minutes to push out the warm or cool air left in the ducts. That\u2019s normal. On runs it all the time. Some thermostats also have Circulate, or a minimum fan time each hour, which runs it between cycles.\n\n1. Set the fan to Auto.\n2. Stop any fan timer or fan schedule.\n3. If your thermostat has a minimum fan time, turn it down to zero.\n\n{step panel: FAN}');
+const fanAuto = fanNode.options.filter(function (op) { return op.id === 'fan_runs_on_auto'; })[0];
+fanAuto.label = u('The fan keeps running with Fan on Auto and no heating or cooling');
+fanAuto.fact = 'User set the fan to Auto. The fan kept running with no heating or cooling.';
+const battery = data.nodes['ts.power.battery'];
+battery.title = u('Low-battery warning');
+battery.body = u('What to do depends on your model. Some take batteries you can replace. Others charge a built-in battery from the system, or have no battery at all. Follow the steps for your model below. If you\u2019d have to disconnect any wires to reach batteries, stop.\n\n{step panel: BATT}');
+const nestBrand = data.nodes['ts.intake.brand_picker'].options.filter(function (op) { return op.id === 'brand_nest'; })[0];
+nestBrand.hint = u('Round thermostats.');
+const nest = data.nodes['ts.model.nest'];
+const nestLt3 = nest.options.filter(function (op) { return op.id === 'nest_lt3'; })[0];
+nestLt3.label = u('Nest Learning Thermostat (3rd gen)');
+nestLt3.hint = u('Has a turning ring and a large screen, about 3.25 in (8.3 cm) across.');
+nestLt3.fact = 'Thermostat model: Nest Learning Thermostat (3rd gen).';
+const nestSure = nest.options.filter(function (op) { return op.id === 'not_sure'; })[0];
+nestSure.hint = u('Check the box, or the Google Home app if it shows your thermostat.');
+const lt12At = nest.options.findIndex(function (op) { return op.id === 'nest_lt3'; }) + 1;
+nest.options.splice(lt12At, 0, opt('nest_lt12', 'Nest Learning Thermostat (1st or 2nd gen)', '@ts_nest_unsupported', 'Has a turning ring and a small screen, about 1.8 in (4.6 cm) across.', 'Thermostat model: Nest Learning Thermostat (1st or 2nd gen).'));
+data.models['NEST-LT3'].label = 'Nest Learning Thermostat (3rd gen)';
+const hw = data.nodes['ts.model.honeywell_smart'];
+const hwT6 = hw.options.filter(function (op) { return op.id === 'hw_t6'; })[0];
+hwT6.label = u('T6 Pro Smart (TH6320WF or TH6220WF)');
+hwT6.fact = 'Thermostat model: Honeywell Home T6 Pro Smart (TH6320WF or TH6220WF).';
+const t6OtherAt = hw.options.findIndex(function (op) { return op.id === 'hw_t6'; }) + 1;
+hw.options.splice(t6OtherAt, 0, opt('hw_t6_other', 'Another T6 Pro model', '@ts_model_not_in_v0', 'Not covered in this first version.', 'Honeywell T6 Pro model outside the checked models.'));
+data.models['HW-T6'].label = 'Honeywell Home T6 Pro Smart (TH6320WF or TH6220WF)';
+const t6Power = 'This model has no batteries. It gets its power from the heating and cooling system.';
+['POWER', 'BATT'].forEach(function (fn) {
+  const cell = data.steps[fn]['HW-T6'];
+  cell.text = u(t6Power);
+  cell.generic = false;
+  cell.kind = 'text';
+  cell.fallback = [{ id: 'F-HW-T6', section: 'p.29' }];
+});
+data.steps.BATT['HW-T9'].text = u('The thermostat itself has no batteries. It gets its power from the heating and cooling system. If you have wireless room sensors, they use AAA batteries. If the thermostat shows LOW SENSOR BATTERIES or asks you to change the batteries in a sensor, put 2 fresh AAA alkaline batteries in the sensor it names.');
+const fnByNode = {};
+Object.keys(data.v1Fns).forEach(function (fn) { fnByNode[data.v1Fns[fn]] = fn; });
+Object.keys(data.nodes).forEach(function (id) {
+  data.nodes[id].options.forEach(function (op) {
+    if (fnByNode[op.next]) op.requires = fnByNode[op.next];
+  });
+});
+data.results.ts_screen_different.explanation = data.lc.lc5;
+data.results.ts_blank_after_basics.explanation = u('If the screen stays blank or keeps losing power after the floor checks, the usual causes are a loose or missing power wire or a problem at the furnace or air-handler controls. A pro checks those.');
+data.results.ts_wait_cleared_basic.explanation = u('Many systems wait a few minutes before starting again, to protect the equipment.');
+data.results.ts_wait_cleared_basic.actions = [
+  'Change the setting once, then give it 5 minutes.',
+  'If the wait lasts longer than 5 minutes or happens every time, call a licensed HVAC professional.'
 ].map(u);
-data.results.ts_eheat_intentional_keep.avoid = u('Don\u2019t switch it back to test it, and don\u2019t change backup-heat lockout, balance-point, or threshold settings.');
-res('ts_refrigerant_alarm', 'emergency_exit', 'Do not reset a refrigerant-leak alarm.', 'Some systems run their own leak-mitigation controls. This check cannot name the alarm cause.', { tier: 'Emergency', urgency: 'Leave the affected area', gate: 'ts_refrigerant_alarm' });
+data.results.ts_wait_persists.explanation = u('A wait that lasts past 5 minutes, or comes back every time, can mean a power drop, a wiring fault, or an equipment problem that a pro should check.');
+data.results.ts_fan_problem_pro.explanation = u('If the fan keeps running long after heating or cooling stops with the thermostat on Auto, or won\u2019t run at all, the cause is usually in the equipment or its controls, which a pro checks.');
+const LEAK_ACTION = 'If a refrigerant leak alarm is going off, move people out of the affected area to fresh air without operating switches or creating ignition sources. Don\u2019t reset the alarm, cycle power, or turn off a blower that\u2019s running. Call a licensed HVAC professional from outside the affected area, and for breathing trouble or immediate danger, call 911.';
+res('ts_eheat_keep_pro', 'call_pro', 'Leave emergency heat on until a pro checks the heat pump.', 'Emergency heat may be on for a reason: a technician left it on, or the outdoor unit is iced over, damaged, or not running. If so, it may be what\u2019s keeping the house warm, and switching back to Heat could leave you without enough heat. If you\u2019re not sure why it\u2019s on, leave it on until you know. Emergency heat costs more to run, so get the heat pump checked soon.');
+data.results.ts_eheat_keep_pro.urgency = 'Leave emergency heat on for now';
+data.results.ts_eheat_keep_pro.actions = [
+  'Leave the mode on emergency heat.',
+  'Call the technician or installer who last worked on your system, or a licensed HVAC professional. Ask whether emergency heat should stay on, and tell them what the thermostat shows and whether the outdoor unit runs.',
+  'If the house is getting cold, call a licensed HVAC professional. If it\u2019s dangerously cold and anyone is at risk, get them somewhere warm first.'
+].map(u);
+data.results.ts_eheat_keep_pro.avoid = u('Don\u2019t switch back to Heat until your technician or a licensed HVAC professional says it\u2019s OK. Don\u2019t change backup-heat settings or clear ice from the outdoor unit yourself.');
+res('ts_refrigerant_alarm', 'emergency_exit', 'Do not reset a refrigerant-leak alarm.', 'Some systems use automatic leak-mitigation controls. This beta cannot identify the refrigerant, concentration, or alarm cause.', { tier: 'Stop / professional', urgency: 'Leave the affected area', gate: 'ts_refrigerant_alarm' });
 data.results.ts_refrigerant_alarm.reason = 'refrigerant_alarm';
-data.results.ts_refrigerant_alarm.actions = [u(LEAK_ACTION)];
-data.results.ts_refrigerant_alarm.avoid = u('Do not turn off a mitigation blower, cycle power, defeat a sensor, use flames, or open sealed lines.');
+data.results.ts_refrigerant_alarm.actions = [
+  'Move people out of the affected area to fresh air without operating switches or creating ignition sources.',
+  'Call a licensed HVAC professional with EPA 608 capability from outside the affected area and follow the equipment\u2019s alarm instructions. For breathing trouble or immediate danger, call 911.',
+  'Do not DIY-seal a leak or add refrigerant.'
+].map(u);
+data.results.ts_refrigerant_alarm.avoid = u('Do not turn off a mitigation blower, cycle power, bypass a sensor, use flames, or open refrigerant lines.');
+res('ts_cold_home_urgent', 'call_pro', 'Get warm first, then call a pro.', 'A house that\u2019s losing heat with someone at risk from the cold needs a licensed HVAC professional today. This check stops here.', { urgency: 'Warmth first \u00b7 call a pro today' });
+data.results.ts_cold_home_urgent.actions = [
+  'If the house is getting cold, call a licensed HVAC professional. If it\u2019s dangerously cold and anyone is at risk, get them somewhere warm first.',
+  'Call a licensed HVAC professional and tell them someone at home is at risk from the cold.',
+  'If the thermostat is on Heat or emergency heat, leave it there. If it\u2019s on Off or Cool and the screen works, you can set it to Heat. Don\u2019t change any other settings.'
+].map(u);
+data.results.ts_cold_home_urgent.avoid = u('Don\u2019t use an oven, stove, grill, or outdoor heater to warm the house.');
+res('ts_nest_unsupported', 'call_pro', 'Google ended app support for this Nest model.', 'Since October 25, 2025, Nest Learning Thermostats (1st and 2nd gen) no longer connect to or work in the Google Home or Nest app. You can still change the mode, temperature, schedule, and other settings on the thermostat itself. We don\u2019t have checked steps for this model. If you have a Nest Protect, it no longer connects to this thermostat, and its emergency shut-off no longer runs. If a smoke or CO alarm sounds, leave the home and call 911 from outside.', { urgency: 'No app support for this model' });
+data.results.ts_nest_unsupported.actions = [
+  'Use the thermostat\u2019s own menu, or Google\u2019s help page for this model: Google Nest Help, \u201CEnd of support for Nest Learning Thermostats (1st & 2nd gen)\u201D (https://support.google.com/googlenest/answer/16233096).',
+  'If heating or cooling isn\u2019t working after you check the mode and temperature, call a licensed HVAC professional.'
+].map(u);
+data.results.ts_nest_unsupported.avoid = u('Don\u2019t follow app steps meant for newer Nest models, and don\u2019t take the thermostat off the wall to check the model.');
 data.results.ts_hazard_now.actions = [
   'If you smell gas or a carbon monoxide alarm is sounding, leave the building and call for help from outside. Do not operate switches inside.',
   'If there is smoke, fire, or sparks, get people away and call 911 from safety.',

@@ -6,7 +6,7 @@
     "lc4": "Text recreation by Second Wrench, not an image of the actual screen. Checked against [source title] ([link]) on [Month D, YYYY].",
     "lc9": "Check your manual: [source title], [page or section] ([link]).",
     "lc10": "We don’t have checked steps for this on your model yet.",
-    "lc5": "Thanks. Stop here and don’t keep pressing through menus. Your device may have a newer layout. Check [Brand]’s official help page ([link]) or contact a licensed HVAC professional. We’ll review this step.",
+    "lc5": "Thanks. Stop here and don’t keep pressing through menus. Your device may have a newer layout. Check [Brand]’s official help page ([link]) or contact a licensed HVAC professional. Choosing this doesn’t send us anything. To tell us this step is wrong, use Give beta feedback at the bottom of this page, or email support@secondwrench.co with the page link and what your screen shows. Don’t include your address, phone number, or serial numbers. If you send a photo, show only the thermostat screen, with no faces, addresses, or other personal details.",
     "lc6": "This setting is for installers. Changing it can damage your equipment or leave you without heat or cooling. Don’t change it. Note what it says and share it with your HVAC professional.",
     "lc7": "Stop. This isn’t something to troubleshoot here. If you smell gas, a CO alarm is sounding, or you smell burning or see smoke: leave the home and call 911 or your gas utility from outside. For wiring or electrical problems, turn the system off at the thermostat and call a licensed professional.",
     "lc8": "**Corrections and rights concerns.** If a thermostat guide is wrong, out of date, or uses material you believe you own, email support@secondwrench.co with the page link, what’s wrong, and how to reach you. We’ll acknowledge within 2 business days. We’ll pull or fix a guide within 5 business days for a rights concern, and right away for anything that could cause a safety problem.",
@@ -19,7 +19,7 @@
     "lc20c": "A lower cycles-per-hour number means fewer starts. A higher number means more starts, which is harder on your equipment.",
     "lc21": "An offset changes what the thermostat shows. It doesn’t fix a sensor problem. If the reading seems far off, or keeps drifting, call a professional.",
     "lc22": "To undo, go back to the same setting and enter the value you wrote down. If you can’t get back to how it was, or you think you changed something else by mistake, stop and call a licensed HVAC professional. Don’t use a factory reset to fix it. That can erase your system’s setup.",
-    "lc23": "**Don’t change these. They protect your equipment and safety, and they’re for professionals only:**\nCompressor protection or minimum off time\nSystem, equipment, or fuel type (including heat pump, furnace, boiler, gas, electric, or oil)\nFan operation for gas or electric heat (often shown as HG/HE or Fan in Heat)\nThe changeover point on a gas furnace plus heat pump system (often called dual fuel)\nHeat pump reversing valve (often shown as O/B)\nAnything about wiring, terminals, or accessories (humidifier, dehumidifier, ventilation)\nRaising the cooling or heat pump cycle rate (CPH) above where it was set\nIf a step would take you to one of these, stop. If you see a password or code prompt, stop. That menu is for installers.",
+    "lc23": "**Don’t change these. They protect your equipment and safety, and they’re for professionals only:**\nCompressor protection or minimum off time\nSystem, equipment, or fuel type (including heat pump, furnace, boiler, gas, electric, or oil)\nFan operation for gas or electric heat (often shown as HG/HE or Fan in Heat)\nThe changeover point on a gas furnace plus heat pump system (often called dual fuel)\nHeat pump reversing valve (often shown as O/B)\nAnything about wiring, terminals, or accessories (humidifier, dehumidifier, ventilation)\nRaising the cooling or heat pump cycle rate (CPH) above where it was set\nIf a step would take you to one of these, stop. If a screen asks you to enter a password or access code, stop. That menu is for installers.",
     "lc24": "You can lower your cooling or heat pump cycle rate, within the range in your thermostat’s manual. A lower number means fewer starts, which is easier on the outdoor unit. Don’t raise it above the number it was set to. Raising it is a job for a professional.",
     "lc25": "You can raise or lower the cycle rate for your furnace or boiler heat, within the range in your thermostat’s manual. A higher number means shorter, more frequent cycles. A lower number means longer cycles and bigger temperature swings.",
     "lc26": "Your thermostat’s range for this setting: [low] to [high]. Source: [source title], [page or section] ([link]). Checked [Month D, YYYY].",
@@ -106,11 +106,11 @@
           "gate": "ts_open_cabinet"
         },
         {
-          "id": "hazard_refrigerant_alarm",
-          "label": "A refrigerant-leak alarm is sounding, or the thermostat shows a refrigerant leak warning",
+          "id": "refrigerant_alarm",
+          "label": "A refrigerant leak alarm or alert is going off (some newer systems have a leak sensor that can show an alert on the thermostat)",
           "next": "@ts_refrigerant_alarm",
-          "hint": "Leave the area.",
-          "fact": "Refrigerant leak alarm or warning reported.",
+          "hint": "Leave the area. Don’t reset it.",
+          "fact": "Refrigerant leak alarm or alert reported at the thermostat check.",
           "gate": "ts_refrigerant_alarm"
         },
         {
@@ -143,7 +143,7 @@
           "id": "brand_nest",
           "label": "Google Nest",
           "next": "ts.model.nest",
-          "hint": "Round thermostats. Uses the Google Home app.",
+          "hint": "Round thermostats.",
           "fact": "Thermostat brand: Google Nest.",
           "gate": null
         },
@@ -231,10 +231,18 @@
         },
         {
           "id": "nest_lt3",
-          "label": "Nest Learning Thermostat, 3rd gen or older",
+          "label": "Nest Learning Thermostat (3rd gen)",
           "next": "ts.landing.picker",
-          "hint": "Has a turning ring.",
-          "fact": "Thermostat model: Nest Learning Thermostat, 3rd gen or older.",
+          "hint": "Has a turning ring and a large screen, about 3.25 in (8.3 cm) across.",
+          "fact": "Thermostat model: Nest Learning Thermostat (3rd gen).",
+          "gate": null
+        },
+        {
+          "id": "nest_lt12",
+          "label": "Nest Learning Thermostat (1st or 2nd gen)",
+          "next": "@ts_nest_unsupported",
+          "hint": "Has a turning ring and a small screen, about 1.8 in (4.6 cm) across.",
+          "fact": "Thermostat model: Nest Learning Thermostat (1st or 2nd gen).",
           "gate": null
         },
         {
@@ -249,7 +257,7 @@
           "id": "not_sure",
           "label": "I’m not sure",
           "next": "@ts_model_unconfirmed",
-          "hint": "Check the Google Home app or the box.",
+          "hint": "Check the box, or the Google Home app if it shows your thermostat.",
           "fact": "",
           "gate": null
         },
@@ -281,10 +289,18 @@
         },
         {
           "id": "hw_t6",
-          "label": "T6 Pro Smart or T6 Pro Wi-Fi",
+          "label": "T6 Pro Smart (TH6320WF or TH6220WF)",
           "next": "ts.landing.picker",
           "hint": "",
-          "fact": "Thermostat model: Honeywell Home T6 Pro.",
+          "fact": "Thermostat model: Honeywell Home T6 Pro Smart (TH6320WF or TH6220WF).",
+          "gate": null
+        },
+        {
+          "id": "hw_t6_other",
+          "label": "Another T6 Pro model",
+          "next": "@ts_model_not_in_v0",
+          "hint": "Not covered in this first version.",
+          "fact": "Honeywell T6 Pro model outside the checked models.",
           "gate": null
         },
         {
@@ -443,7 +459,7 @@
     "ts.landing.picker": {
       "section": "What you noticed",
       "title": "What’s going on with the thermostat?",
-      "body": "Pick the closest match. Answer only what you know.\n\nIf anything new comes up, like a burning smell, smoke, a CO alarm, or water at electrical parts, choose the last option.",
+      "body": "Pick the closest match. Answer only what you know.\n\nIf anything new comes up, like a burning smell, smoke, a CO alarm, a refrigerant leak alarm, or water at electrical parts, choose the last option.",
       "options": [
         {
           "id": "landing_no_heat_cool",
@@ -465,7 +481,7 @@
           "id": "landing_wait_delay",
           "label": "It says Wait, or Cool On or Heat On is flashing, or it’s waiting for equipment",
           "next": "ts.status.wait_delay",
-          "hint": "Usually a normal 5-minute delay.",
+          "hint": "Usually a normal delay of a few minutes.",
           "fact": "Complaint: Thermostat shows a wait or delay.",
           "gate": null
         },
@@ -504,7 +520,7 @@
         {
           "id": "landing_em_aux_heat",
           "label": "Emergency heat or backup heat (Em Heat, Aux) is on or running a lot",
-          "next": "ts.settings.em_aux_heat",
+          "next": "ts.settings.em_aux_check",
           "hint": "Heat pump homes.",
           "fact": "Complaint: Emergency or backup heat on or running a lot.",
           "gate": null
@@ -605,8 +621,16 @@
     "ts.settings.mode_setpoint": {
       "section": "Thermostat settings",
       "title": "Check the mode and temperature",
-      "body": "1. Set the mode to Heat for heat, or Cool for cooling. In Off, nothing runs.\n2. Set the temperature at least 3°F above the room for Heat, or at least 3°F below the room for Cool.\n3. Wait 5 minutes. Many systems wait a few minutes to protect the equipment, and changing the setting again starts that wait over.\n\n{step panel: MODE}",
+      "body": "1. Set the mode to Heat for heat, or Cool for cooling. Off stops normal heating and cooling. On a Google Nest, Off can still turn on heating or cooling when the home reaches a Safety Temperature that’s turned on. Don’t rely on it to keep pipes from freezing.\n2. Set the temperature at least 3°F above the room for Heat, or at least 3°F below the room for Cool.\n3. Wait 5 minutes. Many systems wait a few minutes to protect the equipment, and changing the setting again starts that wait over.\n\n{step panel: MODE}",
       "options": [
+        {
+          "id": "cold_home_risk",
+          "label": "The house is getting cold, and someone at home is at risk from the cold (an infant, an older adult, or someone who is ill or medically fragile)",
+          "next": "@ts_cold_home_urgent",
+          "hint": "Warmth first.",
+          "fact": "House getting cold with someone at risk reported.",
+          "gate": null
+        },
         {
           "id": "mode_fixed",
           "label": "I changed the mode or temperature, and now it’s working",
@@ -665,7 +689,7 @@
         },
         {
           "id": "installer_setting_came_up",
-          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or for a password or code",
+          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or asks me to enter a password or access code",
           "next": "@ts_installer_guard",
           "hint": "Don’t change it.",
           "fact": "Locked installer setting came up.",
@@ -723,7 +747,7 @@
         },
         {
           "id": "installer_setting_came_up",
-          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or for a password or code",
+          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or asks me to enter a password or access code",
           "next": "@ts_installer_guard",
           "hint": "Don’t change it.",
           "fact": "Locked installer setting came up.",
@@ -745,7 +769,7 @@
     "ts.settings.fan": {
       "section": "Thermostat settings",
       "title": "Check the fan setting",
-      "body": "Auto runs the fan only while heating or cooling. On runs it all the time. Some thermostats also have Circulate, or a minimum fan time each hour, which runs it between cycles.\n\n1. Set the fan to Auto.\n2. Stop any fan timer or fan schedule.\n3. If your thermostat has a minimum fan time, turn it down to zero.\n\n{step panel: FAN}",
+      "body": "Auto runs the fan only while heating or cooling. After heating or cooling stops, many systems keep the fan running for a few minutes to push out the warm or cool air left in the ducts. That’s normal. On runs it all the time. Some thermostats also have Circulate, or a minimum fan time each hour, which runs it between cycles.\n\n1. Set the fan to Auto.\n2. Stop any fan timer or fan schedule.\n3. If your thermostat has a minimum fan time, turn it down to zero.\n\n{step panel: FAN}",
       "options": [
         {
           "id": "fan_fixed",
@@ -789,7 +813,7 @@
         },
         {
           "id": "installer_setting_came_up",
-          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or for a password or code",
+          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or asks me to enter a password or access code",
           "next": "@ts_installer_guard",
           "hint": "Don’t change it.",
           "fact": "Locked installer setting came up.",
@@ -847,7 +871,7 @@
         },
         {
           "id": "installer_setting_came_up",
-          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or for a password or code",
+          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or asks me to enter a password or access code",
           "next": "@ts_installer_guard",
           "hint": "Don’t change it.",
           "fact": "Locked installer setting came up.",
@@ -869,14 +893,14 @@
     "ts.settings.em_aux_heat": {
       "section": "Thermostat settings",
       "title": "Check emergency and backup heat",
-      "body": "Emergency heat runs only the backup heat, and it costs more to run. It stays on until someone switches it off.\n\nFirst: did someone set it on purpose? A technician, or someone at home, may have chosen emergency heat because the outdoor unit has a problem. If so, or if you’re not sure, leave it on and pick that answer.\n\nIf it was left on by accident, switch the mode from emergency heat back to Heat. Then avoid big jumps in the temperature setting. They can bring on the backup heat. Within about 15 minutes, check from a window that the outdoor unit is running. If it isn’t, or it’s covered in ice, pick that answer.\n\nAn AUX light that comes on by itself in Heat is different. It’s the thermostat adding backup heat, and that’s often normal in cold weather.\n\n{step panel: EHEAT}",
+      "body": "Emergency heat runs only the backup heat, and it costs more to run. It stays on until someone switches it off.\n\n1. Switch the mode from emergency heat back to Heat.\n2. Avoid big jumps in the temperature setting. They can bring on the backup heat.\n\n{step panel: EHEAT}",
       "options": [
         {
-          "id": "eheat_set_on_purpose",
-          "label": "Someone set emergency heat on purpose, or I’m not sure why it’s on",
-          "next": "@ts_eheat_intentional_keep",
-          "hint": "Leave it on. A pro checks the heat pump.",
-          "fact": "Emergency heat was set on purpose, or the reason is unknown. Left on.",
+          "id": "cold_home_risk",
+          "label": "The house is getting cold, and someone at home is at risk from the cold (an infant, an older adult, or someone who is ill or medically fragile)",
+          "next": "@ts_cold_home_urgent",
+          "hint": "Warmth first.",
+          "fact": "House getting cold with someone at risk reported.",
           "gate": null
         },
         {
@@ -929,7 +953,7 @@
         },
         {
           "id": "installer_setting_came_up",
-          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or for a password or code",
+          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or asks me to enter a password or access code",
           "next": "@ts_installer_guard",
           "hint": "Don’t change it.",
           "fact": "Locked installer setting came up.",
@@ -950,15 +974,23 @@
     },
     "ts.status.wait_delay": {
       "section": "Thermostat settings",
-      "title": "Give it 5 minutes",
-      "body": "Many systems wait about 5 minutes before cooling (or heat-pump heating) starts again. That protects the equipment. Changing the setting during the wait can start it over.\n\n1. Make one change, then don’t touch it for 5 minutes.\n\n{step panel: WAIT}",
+      "title": "Give it a few minutes",
+      "body": "Many systems wait a few minutes, often about 5, before cooling (or heat-pump heating) starts again. That protects the equipment. Some models and setups wait longer. Changing the setting during the wait can start it over.\n\n1. Make one change, then don’t touch it for 5 minutes.\n\n{step panel: WAIT}",
       "options": [
+        {
+          "id": "cold_home_risk",
+          "label": "The house is getting cold, and someone at home is at risk from the cold (an infant, an older adult, or someone who is ill or medically fragile)",
+          "next": "@ts_cold_home_urgent",
+          "hint": "Warmth first.",
+          "fact": "House getting cold with someone at risk reported.",
+          "gate": null
+        },
         {
           "id": "wait_cleared",
           "label": "It started after the wait",
           "next": "@ts_wait_cleared_basic",
           "hint": "",
-          "fact": "User waited 5 minutes, and the system started.",
+          "fact": "User waited, and the system started.",
           "gate": null
         },
         {
@@ -987,7 +1019,7 @@
         },
         {
           "id": "installer_setting_came_up",
-          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or for a password or code",
+          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or asks me to enter a password or access code",
           "next": "@ts_installer_guard",
           "hint": "Don’t change it.",
           "fact": "Locked installer setting came up.",
@@ -1009,8 +1041,16 @@
     "ts.power.blank_screen": {
       "section": "Power",
       "title": "Blank screen: checks from the floor",
-      "body": "First: any burning smell, smoke, or scorched wires? Choose the last option.\n\n1. If your thermostat takes batteries, put in fresh ones (steps below).\n2. Check that the furnace or air-handler door is fully closed. Look only. Some systems shut off when the door isn’t seated.\n3. Look at the furnace power switch. It often looks like a light switch on or near the furnace. Just look. If it’s off, don’t switch it on. Choose that option.\n4. Notice whether other equipment has power: the furnace or air-handler light, the outdoor unit, or lights on the same part of the house. Just look. Don’t touch anything.\n5. Don’t reset breakers in this check. If a breaker for the heating or cooling looks tripped, choose that option.\n\n{step panel: POWER}",
+      "body": "First: any burning smell, smoke, scorched wires, or a refrigerant leak alarm? Choose the last option.\n\n1. If your thermostat takes batteries, put in fresh ones (steps below).\n2. Check that the furnace or air-handler door is fully closed. Look only. Some systems shut off when the door isn’t seated.\n3. Look at the furnace power switch. It often looks like a light switch on or near the furnace. Just look. If it’s off, don’t switch it on. Choose that option.\n4. Notice whether other equipment has power: the furnace or air-handler light, the outdoor unit, or lights on the same part of the house. Just look. Don’t touch anything.\n5. Don’t reset breakers in this check. If a breaker for the heating or cooling looks tripped, choose that option.\n\n{step panel: POWER}",
       "options": [
+        {
+          "id": "cold_home_risk",
+          "label": "The house is getting cold, and someone at home is at risk from the cold (an infant, an older adult, or someone who is ill or medically fragile)",
+          "next": "@ts_cold_home_urgent",
+          "hint": "Warmth first.",
+          "fact": "House getting cold with someone at risk reported.",
+          "gate": null
+        },
         {
           "id": "power_back",
           "label": "The screen is back on",
@@ -1048,7 +1088,7 @@
           "label": "Still blank after these checks",
           "next": "@ts_blank_after_basics",
           "hint": "A pro checks power to the thermostat.",
-          "fact": "User checked batteries and the furnace door, and saw the furnace switch on. Other equipment seemed to have power. The screen stayed blank.",
+          "fact": "The screen stayed blank after the floor checks.",
           "gate": null
         },
         {
@@ -1085,7 +1125,7 @@
         },
         {
           "id": "installer_setting_came_up",
-          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or for a password or code",
+          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or asks me to enter a password or access code",
           "next": "@ts_installer_guard",
           "hint": "Don’t change it.",
           "fact": "Locked installer setting came up.",
@@ -1106,8 +1146,8 @@
     },
     "ts.power.battery": {
       "section": "Power",
-      "title": "Replace the batteries",
-      "body": "Fresh alkaline batteries clear most low-battery warnings. Use the type your manual names. If you’d have to disconnect any wires to reach them, stop.\n\n{step panel: BATT}",
+      "title": "Low-battery warning",
+      "body": "What to do depends on your model. Some take batteries you can replace. Others charge a built-in battery from the system, or have no battery at all. Follow the steps for your model below. If you’d have to disconnect any wires to reach batteries, stop.\n\n{step panel: BATT}",
       "options": [
         {
           "id": "battery_fixed",
@@ -1143,7 +1183,7 @@
         },
         {
           "id": "installer_setting_came_up",
-          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or for a password or code",
+          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or asks me to enter a password or access code",
           "next": "@ts_installer_guard",
           "hint": "Don’t change it.",
           "fact": "Locked installer setting came up.",
@@ -1201,10 +1241,10 @@
         },
         {
           "id": "code_refrigerant_alarm",
-          "label": "Refrigerant leak / refrigerant sensor alarm",
+          "label": "It says refrigerant leak, leak detected, or refrigerant sensor",
           "next": "@ts_refrigerant_alarm",
-          "hint": "Leave the area.",
-          "fact": "Refrigerant leak alarm or sensor message recorded.",
+          "hint": "Leave the area. Don’t reset it.",
+          "fact": "Thermostat showed a refrigerant leak alert.",
           "gate": "ts_refrigerant_alarm"
         },
         {
@@ -1233,7 +1273,7 @@
         },
         {
           "id": "installer_setting_came_up",
-          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or for a password or code",
+          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or asks me to enter a password or access code",
           "next": "@ts_installer_guard",
           "hint": "Don’t change it.",
           "fact": "Locked installer setting came up.",
@@ -1307,7 +1347,7 @@
         },
         {
           "id": "installer_setting_came_up",
-          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or for a password or code",
+          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or asks me to enter a password or access code",
           "next": "@ts_installer_guard",
           "hint": "Don’t change it.",
           "fact": "Locked installer setting came up.",
@@ -1337,7 +1377,8 @@
           "next": "ts.step.sensors",
           "hint": "",
           "fact": "Sun reaches the thermostat.",
-          "gate": null
+          "gate": null,
+          "requires": "SENSORS"
         },
         {
           "id": "heat_source_near",
@@ -1369,7 +1410,8 @@
           "next": "ts.step.sensors",
           "hint": "",
           "fact": "Room sensor in a different spot.",
-          "gate": null
+          "gate": null,
+          "requires": "SENSORS"
         },
         {
           "id": "location_ok_steady_difference",
@@ -1377,7 +1419,8 @@
           "next": "ts.step.offset",
           "hint": "Then an offset may fit.",
           "fact": "Location looked fine; steady reading difference.",
-          "gate": null
+          "gate": null,
+          "requires": "OFFSET"
         },
         {
           "id": "screen_looks_different",
@@ -1389,7 +1432,7 @@
         },
         {
           "id": "installer_setting_came_up",
-          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or for a password or code",
+          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or asks me to enter a password or access code",
           "next": "@ts_installer_guard",
           "hint": "Don’t change it.",
           "fact": "Locked installer setting came up.",
@@ -1413,6 +1456,14 @@
       "title": "What does the cycling look like?",
       "body": "Watch one or two cycles before you change anything. Note how long it runs, how long it’s off, and whether the room reaches the setting.",
       "options": [
+        {
+          "id": "cold_home_risk",
+          "label": "The house is getting cold, and someone at home is at risk from the cold (an infant, an older adult, or someone who is ill or medically fragile)",
+          "next": "@ts_cold_home_urgent",
+          "hint": "Warmth first.",
+          "fact": "House getting cold with someone at risk reported.",
+          "gate": null
+        },
         {
           "id": "near_heat_or_vent",
           "label": "A vent blows on the thermostat, or a lamp or device sits near it",
@@ -1443,7 +1494,8 @@
           "next": "ts.step.differential",
           "hint": "Comfort settings.",
           "fact": "Short cycles after reaching setpoint.",
-          "gate": null
+          "gate": null,
+          "requires": "DIFF"
         },
         {
           "id": "new_system_cycling",
@@ -1463,7 +1515,7 @@
         },
         {
           "id": "installer_setting_came_up",
-          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or for a password or code",
+          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or asks me to enter a password or access code",
           "next": "@ts_installer_guard",
           "hint": "Don’t change it.",
           "fact": "Locked installer setting came up.",
@@ -1493,7 +1545,8 @@
           "next": "ts.step.differential",
           "hint": "",
           "fact": "Large drift before the system starts.",
-          "gate": null
+          "gate": null,
+          "requires": "DIFF"
         },
         {
           "id": "overshoots",
@@ -1501,7 +1554,8 @@
           "next": "ts.step.cph",
           "hint": "",
           "fact": "Overshoot after the cycle.",
-          "gate": null
+          "gate": null,
+          "requires": "CPH"
         },
         {
           "id": "away_bigger",
@@ -1509,7 +1563,8 @@
           "next": "ts.step.setback",
           "hint": "",
           "fact": "Swings during Away, Eco, or Sleep.",
-          "gate": null
+          "gate": null,
+          "requires": "SETBACK"
         },
         {
           "id": "needs_big_setpoint",
@@ -1525,7 +1580,8 @@
           "next": "ts.step.sensors",
           "hint": "",
           "fact": "Other rooms differ from the thermostat room.",
-          "gate": null
+          "gate": null,
+          "requires": "SENSORS"
         },
         {
           "id": "feels_humid",
@@ -1545,7 +1601,7 @@
         },
         {
           "id": "installer_setting_came_up",
-          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or for a password or code",
+          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or asks me to enter a password or access code",
           "next": "@ts_installer_guard",
           "hint": "Don’t change it.",
           "fact": "Locked installer setting came up.",
@@ -1591,7 +1647,8 @@
           "next": "ts.step.differential",
           "hint": "",
           "fact": "Older install; checking comfort settings.",
-          "gate": null
+          "gate": null,
+          "requires": "DIFF"
         },
         {
           "id": "old_setup_suspect",
@@ -1611,7 +1668,7 @@
         },
         {
           "id": "installer_setting_came_up",
-          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or for a password or code",
+          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or asks me to enter a password or access code",
           "next": "@ts_installer_guard",
           "hint": "Don’t change it.",
           "fact": "Locked installer setting came up.",
@@ -1636,6 +1693,14 @@
       "body": "",
       "options": [
         {
+          "id": "cold_home_risk",
+          "label": "The house is getting cold, and someone at home is at risk from the cold (an infant, an older adult, or someone who is ill or medically fragile)",
+          "next": "@ts_cold_home_urgent",
+          "hint": "Warmth first.",
+          "fact": "House getting cold with someone at risk reported.",
+          "gate": null
+        },
+        {
           "id": "early_start_ok",
           "label": "It turns on before the schedule time, or shows Recovery or In Recovery",
           "next": "@ts_recovery_explained_basic",
@@ -1649,7 +1714,8 @@
           "next": "ts.step.recovery",
           "hint": "",
           "fact": "Wants early start off.",
-          "gate": null
+          "gate": null,
+          "requires": "RECOV"
         },
         {
           "id": "not_caught_up_hp",
@@ -1665,7 +1731,8 @@
           "next": "ts.step.recovery",
           "hint": "",
           "fact": "Furnace or boiler slow to recover.",
-          "gate": null
+          "gate": null,
+          "requires": "RECOV"
         },
         {
           "id": "new_thermostat_learning",
@@ -1681,7 +1748,8 @@
           "next": "ts.step.setback",
           "hint": "",
           "fact": "Eco or Away problem.",
-          "gate": null
+          "gate": null,
+          "requires": "SETBACK"
         },
         {
           "id": "screen_looks_different",
@@ -1693,7 +1761,7 @@
         },
         {
           "id": "installer_setting_came_up",
-          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or for a password or code",
+          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or asks me to enter a password or access code",
           "next": "@ts_installer_guard",
           "hint": "Don’t change it.",
           "fact": "Locked installer setting came up.",
@@ -1723,7 +1791,8 @@
           "next": "ts.step.auto_deadband",
           "hint": "",
           "fact": "Auto setpoints push each other.",
-          "gate": null
+          "gate": null,
+          "requires": "AUTO"
         },
         {
           "id": "auto_no_option",
@@ -1731,7 +1800,8 @@
           "next": "ts.step.auto_deadband",
           "hint": "",
           "fact": "Auto not offered.",
-          "gate": null
+          "gate": null,
+          "requires": "AUTO"
         },
         {
           "id": "auto_switches_too_soon",
@@ -1739,7 +1809,8 @@
           "next": "ts.step.auto_deadband",
           "hint": "",
           "fact": "Auto switches too soon.",
-          "gate": null
+          "gate": null,
+          "requires": "AUTO"
         },
         {
           "id": "screen_looks_different",
@@ -1751,7 +1822,7 @@
         },
         {
           "id": "installer_setting_came_up",
-          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or for a password or code",
+          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or asks me to enter a password or access code",
           "next": "@ts_installer_guard",
           "hint": "Don’t change it.",
           "fact": "Locked installer setting came up.",
@@ -1776,12 +1847,21 @@
       "body": "Backup heat (often shown as Aux or Aux Heat) helps a heat pump when it’s very cold, when the house is far below the setting, or during defrost. Big temperature changes make it come on more.",
       "options": [
         {
+          "id": "cold_home_risk",
+          "label": "The house is getting cold, and someone at home is at risk from the cold (an infant, an older adult, or someone who is ill or medically fragile)",
+          "next": "@ts_cold_home_urgent",
+          "hint": "Warmth first.",
+          "fact": "House getting cold with someone at risk reported.",
+          "gate": null
+        },
+        {
           "id": "big_setback",
           "label": "We turn it down a lot at night or when we’re away",
           "next": "ts.step.setback",
           "hint": "Start with the schedule.",
           "fact": "Large setbacks on a heat pump.",
-          "gate": null
+          "gate": null,
+          "requires": "SETBACK"
         },
         {
           "id": "aux_during_recovery",
@@ -1789,7 +1869,8 @@
           "next": "ts.step.setback",
           "hint": "Start with the schedule.",
           "fact": "Aux during recovery.",
-          "gate": null
+          "gate": null,
+          "requires": "SETBACK"
         },
         {
           "id": "aux_mild_weather",
@@ -1841,7 +1922,7 @@
         },
         {
           "id": "installer_setting_came_up",
-          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or for a password or code",
+          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or asks me to enter a password or access code",
           "next": "@ts_installer_guard",
           "hint": "Don’t change it.",
           "fact": "Locked installer setting came up.",
@@ -1885,7 +1966,8 @@
           "hint": "",
           "fact": "Geothermal or water-source heat pump.",
           "gate": null,
-          "flag": "ts_geo"
+          "flag": "ts_geo",
+          "requires": "GEO"
         },
         {
           "id": "hp_not_sure",
@@ -1905,7 +1987,7 @@
         },
         {
           "id": "installer_setting_came_up",
-          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or for a password or code",
+          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or asks me to enter a password or access code",
           "next": "@ts_installer_guard",
           "hint": "Don’t change it.",
           "fact": "Locked installer setting came up.",
@@ -1979,7 +2061,7 @@
         },
         {
           "id": "installer_setting_came_up",
-          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or for a password or code",
+          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or asks me to enter a password or access code",
           "next": "@ts_installer_guard",
           "hint": "Don’t change it.",
           "fact": "Locked installer setting came up.",
@@ -2010,7 +2092,8 @@
           "hint": "",
           "fact": "",
           "gate": null,
-          "flag": "ts_rated_min=not_needed"
+          "flag": "ts_rated_min=not_needed",
+          "requires": "HPLOCK"
         },
         {
           "id": "raise_hp_min",
@@ -2019,7 +2102,8 @@
           "hint": "",
           "fact": "",
           "gate": null,
-          "flag": "ts_rated_min=not_needed"
+          "flag": "ts_rated_min=not_needed",
+          "requires": "HPLOCK"
         },
         {
           "id": "lower_hp_min_rating_known",
@@ -2028,7 +2112,8 @@
           "hint": "",
           "fact": "",
           "gate": null,
-          "flag": "ts_rated_min=known"
+          "flag": "ts_rated_min=known",
+          "requires": "HPLOCK"
         },
         {
           "id": "lower_hp_min_rating_unknown",
@@ -2048,7 +2133,7 @@
         },
         {
           "id": "installer_setting_came_up",
-          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or for a password or code",
+          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or asks me to enter a password or access code",
           "next": "@ts_installer_guard",
           "hint": "Don’t change it.",
           "fact": "Locked installer setting came up.",
@@ -2086,7 +2171,8 @@
           "next": "ts.step.dehumidify",
           "hint": "",
           "fact": "",
-          "gate": null
+          "gate": null,
+          "requires": "DEHUM"
         },
         {
           "id": "overcool_cold",
@@ -2094,7 +2180,8 @@
           "next": "ts.step.dehumidify",
           "hint": "",
           "fact": "Overcool too cold.",
-          "gate": null
+          "gate": null,
+          "requires": "DEHUM"
         },
         {
           "id": "ice_seen",
@@ -2122,7 +2209,7 @@
         },
         {
           "id": "installer_setting_came_up",
-          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or for a password or code",
+          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or asks me to enter a password or access code",
           "next": "@ts_installer_guard",
           "hint": "Don’t change it.",
           "fact": "Locked installer setting came up.",
@@ -2177,7 +2264,8 @@
           "next": "ts.step.setback",
           "hint": "",
           "fact": "High stage after big change.",
-          "gate": null
+          "gate": null,
+          "requires": "SETBACK"
         },
         {
           "id": "check_stage_settings",
@@ -2186,7 +2274,8 @@
           "hint": "",
           "fact": "",
           "gate": null,
-          "requiresFlag": "stageLatchStepsEnabled"
+          "requiresFlag": "stageLatchStepsEnabled",
+          "requires": "LATCH"
         },
         {
           "id": "screen_looks_different",
@@ -2198,7 +2287,7 @@
         },
         {
           "id": "installer_setting_came_up",
-          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or for a password or code",
+          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or asks me to enter a password or access code",
           "next": "@ts_installer_guard",
           "hint": "Don’t change it.",
           "fact": "Locked installer setting came up.",
@@ -2264,7 +2353,7 @@
         },
         {
           "id": "installer_setting_came_up",
-          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or for a password or code",
+          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or asks me to enter a password or access code",
           "next": "@ts_installer_guard",
           "hint": "Don’t change it.",
           "fact": "Locked installer setting came up.",
@@ -2346,7 +2435,7 @@
         },
         {
           "id": "installer_setting_came_up",
-          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or for a password or code",
+          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or asks me to enter a password or access code",
           "next": "@ts_installer_guard",
           "hint": "Don’t change it.",
           "fact": "",
@@ -2424,7 +2513,8 @@
           "next": "ts.step.cph",
           "hint": "",
           "fact": "",
-          "gate": null
+          "gate": null,
+          "requires": "CPH"
         },
         {
           "id": "screen_looks_different",
@@ -2436,7 +2526,7 @@
         },
         {
           "id": "installer_setting_came_up",
-          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or for a password or code",
+          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or asks me to enter a password or access code",
           "next": "@ts_installer_guard",
           "hint": "Don’t change it.",
           "fact": "",
@@ -2526,7 +2616,7 @@
         },
         {
           "id": "installer_setting_came_up",
-          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or for a password or code",
+          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or asks me to enter a password or access code",
           "next": "@ts_installer_guard",
           "hint": "Don’t change it.",
           "fact": "",
@@ -2608,7 +2698,7 @@
         },
         {
           "id": "installer_setting_came_up",
-          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or for a password or code",
+          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or asks me to enter a password or access code",
           "next": "@ts_installer_guard",
           "hint": "Don’t change it.",
           "fact": "",
@@ -2690,7 +2780,7 @@
         },
         {
           "id": "installer_setting_came_up",
-          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or for a password or code",
+          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or asks me to enter a password or access code",
           "next": "@ts_installer_guard",
           "hint": "Don’t change it.",
           "fact": "",
@@ -2748,7 +2838,7 @@
         },
         {
           "id": "installer_setting_came_up",
-          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or for a password or code",
+          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or asks me to enter a password or access code",
           "next": "@ts_installer_guard",
           "hint": "Don’t change it.",
           "fact": "",
@@ -2838,7 +2928,7 @@
         },
         {
           "id": "installer_setting_came_up",
-          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or for a password or code",
+          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or asks me to enter a password or access code",
           "next": "@ts_installer_guard",
           "hint": "Don’t change it.",
           "fact": "",
@@ -2928,7 +3018,7 @@
         },
         {
           "id": "installer_setting_came_up",
-          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or for a password or code",
+          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or asks me to enter a password or access code",
           "next": "@ts_installer_guard",
           "hint": "Don’t change it.",
           "fact": "",
@@ -2986,7 +3076,7 @@
         },
         {
           "id": "installer_setting_came_up",
-          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or for a password or code",
+          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or asks me to enter a password or access code",
           "next": "@ts_installer_guard",
           "hint": "Don’t change it.",
           "fact": "",
@@ -3068,7 +3158,7 @@
         },
         {
           "id": "installer_setting_came_up",
-          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or for a password or code",
+          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or asks me to enter a password or access code",
           "next": "@ts_installer_guard",
           "hint": "Don’t change it.",
           "fact": "",
@@ -3080,6 +3170,88 @@
           "next": "@ts_hazard_now",
           "hint": "Stop. Don’t keep checking.",
           "fact": "",
+          "gate": "ts_new_hazard"
+        }
+      ],
+      "caution": "",
+      "diyTier": "basic",
+      "safetyGate": false
+    },
+    "ts.settings.em_aux_check": {
+      "section": "Emergency heat",
+      "title": "Before you switch emergency heat off",
+      "body": "Emergency heat is sometimes left on for a reason. A technician may leave it on while the heat pump waits for a repair, or when the outdoor unit is iced over or not running. Switching back to Heat then can leave the house without enough heat. Answer from what you already know.",
+      "options": [
+        {
+          "id": "cold_home_risk",
+          "label": "The house is getting cold, and someone at home is at risk from the cold (an infant, an older adult, or someone who is ill or medically fragile)",
+          "next": "@ts_cold_home_urgent",
+          "hint": "Warmth first.",
+          "fact": "House getting cold with someone at risk reported.",
+          "gate": null
+        },
+        {
+          "id": "eh_tech_left_on",
+          "label": "A technician or installer left it on emergency heat, or told me to use it until a repair",
+          "next": "@ts_eheat_keep_pro",
+          "hint": "Leave it on.",
+          "fact": "Emergency heat was left on by a technician or on a pro’s advice.",
+          "gate": null
+        },
+        {
+          "id": "eh_outdoor_problem",
+          "label": "The outdoor unit is iced over, damaged, or hasn’t been running",
+          "next": "@ts_eheat_keep_pro",
+          "hint": "Leave it on. A pro checks the heat pump.",
+          "fact": "Outdoor unit reported iced over, damaged, or not running.",
+          "gate": null
+        },
+        {
+          "id": "not_sure",
+          "label": "I’m not sure why it’s on",
+          "next": "@ts_eheat_keep_pro",
+          "hint": "Leave it on. Ask your technician or installer why.",
+          "fact": "Not sure why emergency heat is on.",
+          "gate": null
+        },
+        {
+          "id": "eh_no_reason",
+          "label": "No one left it on for a repair, and the heat pump has been working",
+          "next": "ts.settings.em_aux_heat",
+          "hint": "Steps to switch back to Heat.",
+          "fact": "No known reason for emergency heat; heat pump reported working.",
+          "gate": null
+        },
+        {
+          "id": "eh_aux_only",
+          "label": "It isn’t on emergency heat. Backup heat (Aux) runs a lot in normal Heat",
+          "next": "@ts_aux_persistent",
+          "hint": "",
+          "fact": "",
+          "gate": null
+        },
+        {
+          "id": "screen_looks_different",
+          "label": "My screen looks different",
+          "next": "@ts_screen_different",
+          "hint": "Stop here. We’ll point you to the maker’s help.",
+          "fact": "Thermostat screen did not match the guide.",
+          "gate": null
+        },
+        {
+          "id": "installer_setting_came_up",
+          "label": "A step or screen is asking about a setting on the “Don’t change these” list, or asks me to enter a password or access code",
+          "next": "@ts_installer_guard",
+          "hint": "Don’t change it.",
+          "fact": "Locked installer setting came up.",
+          "gate": null
+        },
+        {
+          "id": "hazard_now",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
+          "next": "@ts_hazard_now",
+          "hint": "Stop. Don’t keep checking.",
+          "fact": "New hazard reported during the thermostat check.",
           "gate": "ts_new_hazard"
         }
       ],
@@ -3305,7 +3477,7 @@
       "tier": "Basic homeowner check",
       "urgency": "It started on its own",
       "title": "The wait was normal.",
-      "explanation": "Many systems wait about 5 minutes before starting again, to protect the equipment.",
+      "explanation": "Many systems wait a few minutes before starting again, to protect the equipment.",
       "actions": [
         "Change the setting once, then give it 5 minutes.",
         "If the wait lasts longer than 5 minutes or happens every time, call a licensed HVAC professional."
@@ -3391,7 +3563,7 @@
       "tier": "Professional guidance",
       "urgency": "Arrange HVAC service",
       "title": "The thermostat still isn’t getting steady power.",
-      "explanation": "When the batteries and switches check out, the usual causes are a loose or missing power wire or a problem at the furnace controls. A pro checks those.",
+      "explanation": "If the screen stays blank or keeps losing power after the floor checks, the usual causes are a loose or missing power wire or a problem at the furnace or air-handler controls. A pro checks those.",
       "actions": [
         "Call a licensed HVAC professional. Tell them your model and any code or light you saw.",
         "Nest owners: Google may offer a power adapter for some low-power codes. If it goes inside the furnace, let the pro fit it."
@@ -3424,7 +3596,7 @@
       "tier": "Professional guidance",
       "urgency": "Arrange HVAC service",
       "title": "The fan isn’t following the thermostat.",
-      "explanation": "If the fan runs with the thermostat on Auto and no heating or cooling, or won’t run at all, a relay or control board may be at fault, which a pro checks.",
+      "explanation": "If the fan keeps running long after heating or cooling stops with the thermostat on Auto, or won’t run at all, the cause is usually in the equipment or its controls, which a pro checks.",
       "actions": [
         "Call a licensed HVAC professional. Tell them the fan setting and what the fan does."
       ],
@@ -3611,7 +3783,7 @@
       "tier": "More information needed",
       "urgency": "Stop here",
       "title": "Your screen doesn’t match.",
-      "explanation": "Thanks. Stop here and don’t keep pressing through menus. Your device may have a newer layout. Check [Brand]’s official help page ([link]) or contact a licensed HVAC professional. We’ll review this step.",
+      "explanation": "Thanks. Stop here and don’t keep pressing through menus. Your device may have a newer layout. Check [Brand]’s official help page ([link]) or contact a licensed HVAC professional. Choosing this doesn’t send us anything. To tell us this step is wrong, use Give beta feedback at the bottom of this page, or email support@secondwrench.co with the page link and what your screen shows. Don’t include your address, phone number, or serial numbers. If you send a photo, show only the thermostat screen, with no faces, addresses, or other personal details.",
       "actions": [
         "Write down what your screen shows and your thermostat model.",
         "If heating or cooling isn’t working, call a licensed HVAC professional."
@@ -4096,38 +4268,75 @@
       "gate": null,
       "continueTo": null
     },
-    "ts_eheat_intentional_keep": {
+    "ts_eheat_keep_pro": {
       "tier": "Professional guidance",
-      "urgency": "Leave emergency heat on · call a pro",
-      "title": "Leave emergency heat on for now.",
-      "explanation": "Emergency heat is often set on purpose when the outdoor unit has a problem. Switching back could run a damaged or iced unit.",
+      "urgency": "Leave emergency heat on for now",
+      "title": "Leave emergency heat on until a pro checks the heat pump.",
+      "explanation": "Emergency heat may be on for a reason: a technician left it on, or the outdoor unit is iced over, damaged, or not running. If so, it may be what’s keeping the house warm, and switching back to Heat could leave you without enough heat. If you’re not sure why it’s on, leave it on until you know. Emergency heat costs more to run, so get the heat pump checked soon.",
       "actions": [
-        "Leave the thermostat on emergency heat. Higher bills for a few days are normal.",
-        "Call a licensed HVAC professional. Tell them emergency heat was set on purpose, or that you don’t know why, and whether the outdoor unit looks iced from a window.",
-        "If the house is getting cold and someone at home is at risk, get them somewhere warm. Never heat with an oven, stove, grill, or generator indoors."
+        "Leave the mode on emergency heat.",
+        "Call the technician or installer who last worked on your system, or a licensed HVAC professional. Ask whether emergency heat should stay on, and tell them what the thermostat shows and whether the outdoor unit runs.",
+        "If the house is getting cold, call a licensed HVAC professional. If it’s dangerously cold and anyone is at risk, get them somewhere warm first."
       ],
-      "avoid": "Don’t switch it back to test it, and don’t change backup-heat lockout, balance-point, or threshold settings.",
+      "avoid": "Don’t switch back to Heat until your technician or a licensed HVAC professional says it’s OK. Don’t change backup-heat settings or clear ice from the outdoor unit yourself.",
       "source": "maintenance",
       "outcome": "call_pro",
-      "reason": "ts_eheat_intentional_keep",
+      "reason": "ts_eheat_keep_pro",
       "diyTier": null,
       "gate": null,
       "continueTo": null
     },
     "ts_refrigerant_alarm": {
-      "tier": "Emergency",
+      "tier": "Stop / professional",
       "urgency": "Leave the affected area",
       "title": "Do not reset a refrigerant-leak alarm.",
-      "explanation": "Some systems run their own leak-mitigation controls. This check cannot name the alarm cause.",
+      "explanation": "Some systems use automatic leak-mitigation controls. This beta cannot identify the refrigerant, concentration, or alarm cause.",
       "actions": [
-        "If a refrigerant leak alarm is going off, move people out of the affected area to fresh air without operating switches or creating ignition sources. Don’t reset the alarm, cycle power, or turn off a blower that’s running. Call a licensed HVAC professional from outside the affected area, and for breathing trouble or immediate danger, call 911."
+        "Move people out of the affected area to fresh air without operating switches or creating ignition sources.",
+        "Call a licensed HVAC professional with EPA 608 capability from outside the affected area and follow the equipment’s alarm instructions. For breathing trouble or immediate danger, call 911.",
+        "Do not DIY-seal a leak or add refrigerant."
       ],
-      "avoid": "Do not turn off a mitigation blower, cycle power, defeat a sensor, use flames, or open sealed lines.",
+      "avoid": "Do not turn off a mitigation blower, cycle power, bypass a sensor, use flames, or open refrigerant lines.",
       "source": "maintenance",
       "outcome": "emergency_exit",
       "reason": "refrigerant_alarm",
       "diyTier": null,
       "gate": "ts_refrigerant_alarm",
+      "continueTo": null
+    },
+    "ts_cold_home_urgent": {
+      "tier": "Professional guidance",
+      "urgency": "Warmth first · call a pro today",
+      "title": "Get warm first, then call a pro.",
+      "explanation": "A house that’s losing heat with someone at risk from the cold needs a licensed HVAC professional today. This check stops here.",
+      "actions": [
+        "If the house is getting cold, call a licensed HVAC professional. If it’s dangerously cold and anyone is at risk, get them somewhere warm first.",
+        "Call a licensed HVAC professional and tell them someone at home is at risk from the cold.",
+        "If the thermostat is on Heat or emergency heat, leave it there. If it’s on Off or Cool and the screen works, you can set it to Heat. Don’t change any other settings."
+      ],
+      "avoid": "Don’t use an oven, stove, grill, or outdoor heater to warm the house.",
+      "source": "maintenance",
+      "outcome": "call_pro",
+      "reason": "ts_cold_home_urgent",
+      "diyTier": null,
+      "gate": null,
+      "continueTo": null
+    },
+    "ts_nest_unsupported": {
+      "tier": "Professional guidance",
+      "urgency": "No app support for this model",
+      "title": "Google ended app support for this Nest model.",
+      "explanation": "Since October 25, 2025, Nest Learning Thermostats (1st and 2nd gen) no longer connect to or work in the Google Home or Nest app. You can still change the mode, temperature, schedule, and other settings on the thermostat itself. We don’t have checked steps for this model. If you have a Nest Protect, it no longer connects to this thermostat, and its emergency shut-off no longer runs. If a smoke or CO alarm sounds, leave the home and call 911 from outside.",
+      "actions": [
+        "Use the thermostat’s own menu, or Google’s help page for this model: Google Nest Help, “End of support for Nest Learning Thermostats (1st & 2nd gen)” (https://support.google.com/googlenest/answer/16233096).",
+        "If heating or cooling isn’t working after you check the mode and temperature, call a licensed HVAC professional."
+      ],
+      "avoid": "Don’t follow app steps meant for newer Nest models, and don’t take the thermostat off the wall to check the model.",
+      "source": "maintenance",
+      "outcome": "call_pro",
+      "reason": "ts_nest_unsupported",
+      "diyTier": null,
+      "gate": null,
       "continueTo": null
     }
   },
@@ -4323,7 +4532,7 @@
       "manual": "F-NEST-MODES"
     },
     "NEST-LT3": {
-      "label": "Nest Learning Thermostat, 3rd gen or older",
+      "label": "Nest Learning Thermostat (3rd gen)",
       "legal_brand": "Google Nest",
       "help": "F-NEST-MODES",
       "manual": "F-NEST-MODES"
@@ -4341,7 +4550,7 @@
       "manual": "F-HW-T5"
     },
     "HW-T6": {
-      "label": "Honeywell Home T6 Pro",
+      "label": "Honeywell Home T6 Pro Smart (TH6320WF or TH6220WF)",
       "legal_brand": "Honeywell Home (Resideo)",
       "help": "F-HW-HELP",
       "manual": "F-HW-T6"
@@ -6054,15 +6263,16 @@
           "U"
         ],
         "mirrors": [],
-        "text": "Some T6 Pro models take AA batteries. If yours does, put in fresh alkaline AA batteries.",
+        "text": "This model has no batteries. It gets its power from the heating and cooling system.",
         "generic": false,
         "fallback": [
           {
-            "id": "F-HW-T6TS",
-            "section": "support page"
+            "id": "F-HW-T6",
+            "section": "p.29"
           }
         ],
-        "lc6_inline": false
+        "lc6_inline": false,
+        "kind": "text"
       },
       "ECB-PRM": {
         "step_ids": [
@@ -6350,15 +6560,16 @@
           "U"
         ],
         "mirrors": [],
-        "text": "Some T6 Pro models take AA batteries. If yours does, put in fresh alkaline AA batteries.",
+        "text": "This model has no batteries. It gets its power from the heating and cooling system.",
         "generic": false,
         "fallback": [
           {
-            "id": "F-HW-T6TS",
-            "section": "support page"
+            "id": "F-HW-T6",
+            "section": "p.29"
           }
         ],
-        "lc6_inline": false
+        "lc6_inline": false,
+        "kind": "text"
       },
       "HW-T5": {
         "step_ids": [
@@ -6386,7 +6597,7 @@
           "N"
         ],
         "mirrors": [],
-        "text": "This model has no batteries to replace.",
+        "text": "The thermostat itself has no batteries. It gets its power from the heating and cooling system. If you have wireless room sensors, they use AAA batteries. If the thermostat shows LOW SENSOR BATTERIES or asks you to change the batteries in a sensor, put 2 fresh AAA alkaline batteries in the sensor it names.",
         "generic": false,
         "fallback": [
           {
@@ -10696,7 +10907,8 @@
     "ts.step.sensors",
     "ts.step.stage_latch",
     "ts.guard.hp_source",
-    "ts.look.geo_lockouts"
+    "ts.look.geo_lockouts",
+    "ts.settings.em_aux_check"
   ],
   "v1Generic": [
     "MODE|HW-T6",
