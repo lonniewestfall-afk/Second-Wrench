@@ -15,7 +15,7 @@ Lockout must already be verified. Access the outdoor unit electrical compartment
 
 Covers off only when lockout verified. Contactor replacement is not on this path — capacitor identify/replace only.
 
-Support: lonnie@secondwrench.co
+Support: support@secondwrench.co
 
 ## choices
 | answer_id | label | help / subtext |

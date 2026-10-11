@@ -47,7 +47,7 @@ Choice-dependent: `gas_co` \| `smoke_fire_sparks_burn` \| `water_near_electrical
 ## notes
 - **LIVE ORDER (2026-09-22):** Session entry starts HERE (safety first), then consent, then system confirm, then landing picker. Priority-list numbering had consent as #1 for approval priority only — wire runtime to safety → consent.
 - Tone: plain mechanical, direct; no humor on hazards. Brand: never green.
-- Support contact in live UI: lonnie@secondwrench.co (do not invent other contacts).
+- Support contact in live UI: support@secondwrench.co (do not invent other contacts).
 - Mid-tree water paths still use dedicated `ac.gate.water_near_electrical`; cluster water answer is hard emergency_exit with no continue.
 - Refrigerant path: prefer emergency_exit over call_pro when alarm/release suspected; call_pro may appear on result copy as the follow-on action after evacuate, but terminal outcome remains emergency_exit / stop.
 - Node type: gate / intake cluster.

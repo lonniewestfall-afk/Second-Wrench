@@ -16,7 +16,7 @@ This links to the same observation language as `ac.start.outdoor_silent_vs_hum`.
 
 If the pattern is not confirmed, stop Advanced and call a pro (or return to Basic observation). If hazard signs appear now, emergency exit — never soft continue.
 
-Support: lonnie@secondwrench.co
+Support: support@secondwrench.co
 
 ## choices
 | answer_id | label | help / subtext |

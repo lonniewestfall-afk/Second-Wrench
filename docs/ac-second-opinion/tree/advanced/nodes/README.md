@@ -8,7 +8,7 @@
 **Tree:** `ac.cool.v0` Advanced submodule  
 **Date:** 2026-09-23  
 **Brand:** scarlet wrench + dark charcoal / grey / walnut — **never green**; never invent “2W”  
-**Support:** lonnie@secondwrench.co  
+**Support:** support@secondwrench.co  
 **Tagline:** Know what’s wrong. Know what’s safe. Know when to call.
 
 Specs only. No application code. No public flag flip in this package.

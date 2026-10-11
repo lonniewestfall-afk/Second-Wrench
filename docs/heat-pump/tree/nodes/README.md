@@ -5,7 +5,7 @@
 **Scope:** U.S. residential **air-source ducted** heat pumps (mode / defrost / RV awareness)  
 **Schema:** Extend AC conventions in `docs/ac-second-opinion/conventions/`. Runtime: `assets/flow.js`.  
 **Brand:** scarlet wrench + dark charcoal / grey / walnut — **never green**  
-**Support:** lonnie@secondwrench.co  
+**Support:** support@secondwrench.co  
 
 Paper specs for the live tree. HP Advanced electrical OFF → `call_pro`. Public `advancedRepairsEnabled` stays false.
 

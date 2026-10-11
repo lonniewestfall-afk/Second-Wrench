@@ -20,7 +20,7 @@
 
 Brief test only. This is not a full commissioning procedure.
 
-Support: lonnie@secondwrench.co
+Support: support@secondwrench.co
 
 ## choices
 | answer_id | label | help / subtext |

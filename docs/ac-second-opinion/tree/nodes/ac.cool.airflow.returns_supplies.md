@@ -27,7 +27,7 @@ Filter already looks clean (or was just replaced). Check simple airflow blockers
 
 If airflow is still weak after clearing furniture/rugs/closed vents → call a licensed HVAC pro. Do not invent duct sealing DIY.
 
-Support: lonnie@secondwrench.co
+Support: support@secondwrench.co
 
 ## choices
 | answer_id | label | help / subtext |

@@ -2,7 +2,7 @@
 
 **Tree version (LOCKED):** **ts.settings.v0**
 
-Content version `2026-10-10.3`. Product key `ts`. Basic only. No AI. `mirrorsEnabled` is false, so screen mirrors do not render. `aiThermostatEnabled` is false. `advancedRepairsEnabled` is false. `hvacContentReviewed` is false.
+Content version `2026-10-11.1`. Product key `ts`. Basic only. No AI. `mirrorsEnabled` is false, so screen mirrors do not render. `aiThermostatEnabled` is false. `advancedRepairsEnabled` is false. `hvacContentReviewed` is false.
 
 Rebuilt to spec v3.2 and Legal on-page copy rev 4. LC-15 (`ts_power_breaker_pro`) is new in rev 4. The legal pack stays with the operator. This folder does not invent a Legal directory.
 

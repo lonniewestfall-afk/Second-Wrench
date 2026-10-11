@@ -15,7 +15,7 @@ This hub does not open panels or pull fuses. If you cannot do either check safel
 
 Know what’s wrong. Know what’s safe. Know when to call.
 
-Support: lonnie@secondwrench.co
+Support: support@secondwrench.co
 
 ## choices
 | answer_id | label | help / subtext |

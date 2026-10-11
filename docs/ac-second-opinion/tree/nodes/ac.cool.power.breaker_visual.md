@@ -24,7 +24,7 @@ Look at the handle position:
 
 Optional homeowner reset: only if the floor and hands are dry, you are certain which breaker is the outdoor/AC circuit, and it is a standard toggle you already know how to reset. If unsure which breaker, wet, flooded, aluminum wiring uncertain, or panel looks damaged — do **not** reset; call a pro.
 
-Support: lonnie@secondwrench.co
+Support: support@secondwrench.co
 
 ## choices
 | answer_id | label | help / subtext |

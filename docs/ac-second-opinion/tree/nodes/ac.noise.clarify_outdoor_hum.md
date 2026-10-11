@@ -16,7 +16,7 @@ Hazard signs were ruled out. Which best matches?
 
 Any other noise (indoor screech, rattle, intermittent unknown, outdoor noise while fan spins, noise with no Cool call, etc.) → call a licensed pro. Do not soft-bypass the hazard screen. Do not invent a parts diagnosis here.
 
-Support: lonnie@secondwrench.co
+Support: support@secondwrench.co
 
 ## choices
 | answer_id | label | help / subtext |

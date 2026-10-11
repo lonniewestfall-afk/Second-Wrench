@@ -9,7 +9,7 @@
     "lc5": "Thanks. Stop here and don’t keep pressing through menus. Your device may have a newer layout. Check [Brand]’s official help page ([link]) or contact a licensed HVAC professional. We’ll review this step.",
     "lc6": "This setting is for installers. Changing it can damage your equipment or leave you without heat or cooling. Don’t change it. Note what it says and share it with your HVAC professional.",
     "lc7": "Stop. This isn’t something to troubleshoot here. If you smell gas, a CO alarm is sounding, or you smell burning or see smoke: leave the home and call 911 or your gas utility from outside. For wiring or electrical problems, turn the system off at the thermostat and call a licensed professional.",
-    "lc8": "**Corrections and rights concerns.** If a thermostat guide is wrong, out of date, or uses material you believe you own, email lonnie@secondwrench.co with the page link, what’s wrong, and how to reach you. We’ll acknowledge within 2 business days. We’ll pull or fix a guide within 5 business days for a rights concern, and right away for anything that could cause a safety problem."
+    "lc8": "**Corrections and rights concerns.** If a thermostat guide is wrong, out of date, or uses material you believe you own, email support@secondwrench.co with the page link, what’s wrong, and how to reach you. We’ll acknowledge within 2 business days. We’ll pull or fix a guide within 5 business days for a rights concern, and right away for anything that could cause a safety problem."
   },
   "nodes": {
     "ts.gate.safety_stops": {

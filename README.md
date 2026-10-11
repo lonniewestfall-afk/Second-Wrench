@@ -4,7 +4,7 @@
 
 Tagline: Know what’s wrong. Know what’s safe. Know when to call.
 
-Contact: [lonnie@secondwrench.co](mailto:lonnie@secondwrench.co)
+Contact: [support@secondwrench.co](mailto:support@secondwrench.co)
 
 ## Netlify
 
@@ -16,7 +16,7 @@ Public beta is indexable. The home page sends `index, follow`, a canonical URL, 
 
 ## Wave-1 and Wave-2
 
-**Implemented** for founder review. Cooling-only tree `ac.cool.v1`. Air-source ducted heat pump tree `hp.air_source.v1` (Wave-1 Basic; ice-stop split 2026-10-03). Water-source / geothermal tree `wshp.water_to_air.v0` (Wave-1 PR-1: safety screens, an equipment gate, an open-loop call-pro gate, and a service note). Gas and electric furnace tree `fn.furnace.v0` (Wave-1 Slice 1: combustion safety gate first, then look-only thermostat, filter, and vent checks). Ductless mini-split tree `ms.ductless.v1` (cooling and heating on one indoor unit: remote or app settings, filters you can reach from the floor, airflow, a look at water, ice, or an error code, and a look at the outdoor unit from a window or dry ground). Thermostat settings tree `ts.settings.v0` (look-only help for Nest, Honeywell Home, ecobee, and Amazon: mode, hold, fan, Wi-Fi, emergency heat, wait, batteries, a blank screen, and a code you write down). Content version `2026-10-10.3`.
+**Implemented** for founder review. Cooling-only tree `ac.cool.v1`. Air-source ducted heat pump tree `hp.air_source.v1` (Wave-1 Basic; ice-stop split 2026-10-03). Water-source / geothermal tree `wshp.water_to_air.v0` (Wave-1 PR-1: safety screens, an equipment gate, an open-loop call-pro gate, and a service note). Gas and electric furnace tree `fn.furnace.v0` (Wave-1 Slice 1: combustion safety gate first, then look-only thermostat, filter, and vent checks). Ductless mini-split tree `ms.ductless.v1` (cooling and heating on one indoor unit: remote or app settings, filters you can reach from the floor, airflow, a look at water, ice, or an error code, and a look at the outdoor unit from a window or dry ground). Thermostat settings tree `ts.settings.v0` (look-only help for Nest, Honeywell Home, ecobee, and Amazon: mode, hold, fan, Wi-Fi, emergency heat, wait, batteries, a blank screen, and a code you write down). Content version `2026-10-11.1`.
 
 Wave-1 is the original 12 nodes. Wave-2 Basic adds seven nodes: breaker-door visual, outdoor-disconnect visual (position only), the silent-path hub, returns and supplies, outdoor debris, the noise hazard screen, and outdoor-hum clarification. The capacitor Advanced chain (eight nodes) is in the tree and runs only when `advancedRepairsEnabled` is true.
 

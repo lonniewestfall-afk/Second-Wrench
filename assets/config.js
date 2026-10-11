@@ -1,9 +1,9 @@
 /* Public configuration. Never place passwords, tokens, or API keys in this file. */
 window.SW_CONFIG = Object.freeze({
   version: '0.1.0-beta',
-  contentVersion: '2026-10-10.3',
+  contentVersion: '2026-10-11.1',
   domain: 'secondwrench.co',
-  contactEmail: 'lonnie@secondwrench.co',
+  contactEmail: 'support@secondwrench.co',
   operatorName: 'Second Wrench',
   termsVersion: 'public-beta-2026-10-08',
   // Netlify detects beta-feedback and beta-session. liveFormsVerified stays false until a live test submission.

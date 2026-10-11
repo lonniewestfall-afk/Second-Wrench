@@ -19,7 +19,7 @@ If any of these are happening **now**:
 
 Plain mechanical tone — no soft “it might be fine” continue after a hazard answer.
 
-Support: lonnie@secondwrench.co · For immediate danger: get safe and call 911.
+Support: support@secondwrench.co · For immediate danger: get safe and call 911.
 
 ## choices
 | answer_id | label | help / subtext |
