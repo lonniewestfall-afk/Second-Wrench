@@ -27,7 +27,7 @@ What to do:
 2. Call a licensed HVAC tech (EPA 608 capability if sealed-system work may be needed).
 3. You may tell them: heat-pump mode/Emergency/ambient/defrost Basic checks only; outdoor iced without recover and/or mode-asymmetric leaving-air pattern; **no covers removed**; O vs B not assumed.
 
-Support: lonnie@secondwrench.co
+Support: support@secondwrench.co
 
 ## choices
 | answer_id | label | help / subtext |

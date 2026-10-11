@@ -23,7 +23,7 @@ From **safe dry ground**, look at the outdoor disconnect box near the condenser 
 
 If you need to **operate** the disconnect to proceed, or the only path is fused pull-out / open-door / internals, or you cannot safely confirm Off/On from dry ground → **call a licensed pro**. Do not invent a manufacturer procedure you do not have.
 
-Support: lonnie@secondwrench.co
+Support: support@secondwrench.co
 
 ## choices
 | answer_id | label | help / subtext |

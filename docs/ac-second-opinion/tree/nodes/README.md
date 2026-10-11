@@ -4,7 +4,7 @@
 **Product:** Second Wrench / AC Second Opinion  
 **Scope:** U.S. residential split central AC, cooling-only  
 **Brand:** scarlet wrench + dark charcoal / grey / walnut — **never green**; never invent “2W”  
-**Support (live):** lonnie@secondwrench.co  
+**Support (live):** support@secondwrench.co  
 **Tagline:** Know what’s wrong. Know what’s safe. Know when to call.
 
 Specs only. No application code. No public Advanced flag flip.

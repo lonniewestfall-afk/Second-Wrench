@@ -7,7 +7,7 @@
 **Date:** 2026-09-23  
 **Scope:** U.S. residential split central AC, cooling-only  
 **Brand:** dark walnut / charcoal / restrained scarlet — never green  
-**Support:** lonnie@secondwrench.co  
+**Support:** support@secondwrench.co  
 
 Plain mechanical tone. No humor on hazards. Do not invent µF, torque, or fake “safe enough” wait times.
 

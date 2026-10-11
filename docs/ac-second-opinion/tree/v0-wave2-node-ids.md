@@ -9,7 +9,7 @@
 **Scope:** U.S. residential split central AC, cooling-only  
 **Advanced DIY product flag:** `advancedRepairsEnabled` = **FALSE** until attorney/Terms OK + Commander flip.  
 **Brand:** scarlet wrench + dark charcoal / grey / walnut — never green; never invent “2W”  
-**Support:** lonnie@secondwrench.co  
+**Support:** support@secondwrench.co  
 **Wave-1:** PASSED (12 nodes) + Wave-2 edge patches applied.
 
 Specs only. No application code. No public flag flip. Capacitor Advanced deep-written under `tree/advanced/nodes/` for Commander **second** safety pass — not a coding PR / public enablement yet.

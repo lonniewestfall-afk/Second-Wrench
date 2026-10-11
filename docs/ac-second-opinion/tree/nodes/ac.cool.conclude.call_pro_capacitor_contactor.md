@@ -18,7 +18,7 @@ What to do:
 
 This is not a confirmed parts diagnosis — it is a ranked reason to stop DIY and get service.
 
-Support: lonnie@secondwrench.co
+Support: support@secondwrench.co
 
 ## choices
 | answer_id | label | help / subtext |

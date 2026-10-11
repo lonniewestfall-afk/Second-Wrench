@@ -25,7 +25,7 @@ If you **already touched** capacitor terminals or leads before completing discha
 
 If power uncertainty returns → back to lockout / call_pro. Do not continue.
 
-Support: lonnie@secondwrench.co
+Support: support@secondwrench.co
 
 ## choices
 | answer_id | label | help / subtext |

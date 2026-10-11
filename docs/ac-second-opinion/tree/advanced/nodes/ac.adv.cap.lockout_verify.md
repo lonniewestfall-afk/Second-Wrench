@@ -15,7 +15,7 @@ Before opening any outdoor electrical compartment:
 
 If you cannot kill power, still hear hum/spin after Off, are unsure about wait/discharge readiness, or conditions are wet/unsafe → **call_pro / emergency**. Do not open covers.
 
-Support: lonnie@secondwrench.co
+Support: support@secondwrench.co
 
 ## choices
 | answer_id | label | help / subtext |

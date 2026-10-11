@@ -160,7 +160,7 @@
   }
   const TERMS_HTML = `<p><strong>Version:</strong> <code>public-beta-2026-10-08</code></p>
 <p><strong>Effective:</strong> October 8, 2026</p>
-<p><strong>Operator:</strong> Second Wrench · <a href="mailto:lonnie@secondwrench.co">lonnie@secondwrench.co</a> · secondwrench.co</p>
+<p><strong>Operator:</strong> Second Wrench · <a href="mailto:support@secondwrench.co">support@secondwrench.co</a> · secondwrench.co</p>
 <p><strong>Product:</strong> AC Second Opinion (informational homeowner troubleshooting)</p>
 <h3>1. What this is</h3>
 <p>Second Wrench is a <strong>free public beta</strong> informational website. It helps adult homeowners notice symptoms, separate homeowner-safe checks from professional-only work, and prepare a short note for a service call.</p>
@@ -192,9 +192,9 @@
 <h3>11. Changes</h3>
 <p>We may update these Terms. The version label will change. Continuing to use the flow after a new version may require checking the box again.</p>
 <h3>12. Contact</h3>
-<p>Questions: <a href="mailto:lonnie@secondwrench.co">lonnie@secondwrench.co</a>. This email is <strong>not</strong> monitored for emergencies.</p>
+<p>Questions: <a href="mailto:support@secondwrench.co">support@secondwrench.co</a>. This email is <strong>not</strong> monitored for emergencies.</p>
 <h3 id="corrections">Corrections and rights concerns</h3>
-<p><strong>Corrections and rights concerns.</strong> If a thermostat guide is wrong, out of date, or uses material you believe you own, email lonnie@secondwrench.co with the page link, what’s wrong, and how to reach you. We’ll acknowledge within 2 business days. We’ll pull or fix a guide within 5 business days for a rights concern, and right away for anything that could cause a safety problem.</p>
+<p><strong>Corrections and rights concerns.</strong> If a thermostat guide is wrong, out of date, or uses material you believe you own, email support@secondwrench.co with the page link, what’s wrong, and how to reach you. We’ll acknowledge within 2 business days. We’ll pull or fix a guide within 5 business days for a rights concern, and right away for anything that could cause a safety problem.</p>
 <h3>Thermostat menu guides</h3>
 <p>Our thermostat guides show text recreations of menu labels so you can find a setting on your own device. They are written by Second Wrench, not by the manufacturer, and they are not images of the actual screen. Menus change with model and firmware updates, so a guide may not match your device. Verify each step on your own thermostat and stop if it doesn’t match.</p>
 <p>Our guides cover homeowner settings only. Don’t use them to change installer, equipment, or wiring settings. If a step would lead you into an installer menu, stop and call a licensed HVAC professional.</p>
@@ -216,7 +216,7 @@
 </ol>`;
   const PRIVACY_HTML = `<p><strong>Version:</strong> <code>privacy-public-beta-2026-10-08</code></p>
 <p><strong>Effective:</strong> October 8, 2026</p>
-<p><strong>Contact / privacy requests:</strong> <a href="mailto:lonnie@secondwrench.co">lonnie@secondwrench.co</a></p>
+<p><strong>Contact / privacy requests:</strong> <a href="mailto:support@secondwrench.co">support@secondwrench.co</a></p>
 <p>This notice describes this <strong>free public beta</strong>. It is shorter than a full commercial Privacy Policy and is meant for optional feedback and normal website hosting.</p>
 <h2>What we collect</h2>
 <h3>During a normal check (default)</h3>

@@ -24,7 +24,7 @@ If you are **unsure of the method** → **immediate call_pro**. Do not improvise
 
 If spark, shock, or smoke occurs during discharge → emergency exit — kill power if safe; get help.
 
-Support: lonnie@secondwrench.co
+Support: support@secondwrench.co
 
 ## choices
 | answer_id | label | help / subtext |

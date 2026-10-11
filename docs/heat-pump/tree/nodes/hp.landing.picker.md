@@ -50,5 +50,5 @@ If anything **new** appears now — gas smell, smoke, sparks, burning smell, sta
 - **Deviation from “most complaints → full trunk”:** `unusual_noise` under-diagnoses after hazard screen (Wave-1 robustness: no fake noise diagnosis). `short_cycle` still does mode/Emergency, then exits to call_pro at thermostat or emergency node when those clear — documented in those nodes’ maps.
 - Ice keep-running gate language lives on `hp.defrost.sanity` (inlined, same pattern as AC ice node) — not a standalone `hp.gate.ice_keep_running`.
 - Do not add will-not-start / blank-tstat landings in Wave-1 (blank soft-links `ac.tstat.blank.batteries` from thermostat_check; HP silent/hum electrical stays call_pro after power visuals / Slice 2).
-- Brand: never green. Support: lonnie@secondwrench.co.
+- Brand: never green. Support: support@secondwrench.co.
 - Wave-1 paper: deep-write DONE 2026-09-23; Commander must-fix pass 2026-09-23.

@@ -22,7 +22,7 @@ Power remains verified dead; capacitor discharged per prior stage. Replace **onl
 
 Mismatch or wrong terminals / uncertain → **call_pro — do not proceed.**
 
-Support: lonnie@secondwrench.co
+Support: support@secondwrench.co
 
 ## choices
 | answer_id | label | help / subtext |

@@ -23,7 +23,7 @@ Confirm:
 
 Residual charge can injure. Prefer Call-pro over risky DIY.
 
-Support: lonnie@secondwrench.co
+Support: support@secondwrench.co
 
 ## choices
 | answer_id | label | help / subtext |

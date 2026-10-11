@@ -26,7 +26,7 @@ Brand lock: dark walnut / charcoal / restrained scarlet; white wrench in scarlet
 - About: fixed decision rules (not AI); Basic on; Advanced DIY disabled / not exposed; Professional-only boundaries named
 - Footer pages: Safety, Terms, Privacy, Disclosures, Sources, Feedback
 - Emergency result can show “Call 911 from safety”
-- No account required; support email **lonnie@secondwrench.co**; feedback not for emergencies
+- No account required; support email **support@secondwrench.co**; feedback not for emergencies
 - Feedback form present; **online submit NOT connected** — local save / email draft only
 
 ## Gaps / stubs

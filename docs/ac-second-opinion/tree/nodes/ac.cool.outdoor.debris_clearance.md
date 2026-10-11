@@ -20,7 +20,7 @@ Outdoor fan is spinning (or you are clearing exterior before deeper cool checks)
 
 Wet weather, water near electrical, or damaged outdoor wiring → do not continue; use safety stop / call pro.
 
-Support: lonnie@secondwrench.co
+Support: support@secondwrench.co
 
 ## choices
 | answer_id | label | help / subtext |
