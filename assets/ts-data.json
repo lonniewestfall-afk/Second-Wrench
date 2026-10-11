@@ -1984,7 +1984,7 @@
           "label": "Only the backup heat limit, or Heat Pump Balance",
           "next": "ts.step.hp_lockouts",
           "hint": "",
-          "fact": "Backup heat limit only.",
+          "fact": "",
           "gate": null,
           "flag": "ts_rated_min=not_needed"
         },
@@ -1993,7 +1993,7 @@
           "label": "Raising the heat pump minimum, so backup heat takes over sooner",
           "next": "ts.step.hp_lockouts",
           "hint": "",
-          "fact": "Raising the heat pump minimum.",
+          "fact": "",
           "gate": null,
           "flag": "ts_rated_min=not_needed"
         },
@@ -2002,7 +2002,7 @@
           "label": "Lowering the heat pump minimum, and I found my outdoor unit’s rated minimum in its manual",
           "next": "ts.step.hp_lockouts",
           "hint": "",
-          "fact": "Rated minimum known.",
+          "fact": "",
           "gate": null,
           "flag": "ts_rated_min=known"
         },
@@ -2011,7 +2011,7 @@
           "label": "Lowering the heat pump minimum, but I don’t have the rating",
           "next": "@ts_rated_min_unknown",
           "hint": "",
-          "fact": "Rated minimum unknown.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2045,7 +2045,7 @@
     },
     "ts.diag.humidity": {
       "section": "What you noticed",
-      "title": "What do you notice about humidity?",
+      "title": "What do you notice?",
       "body": "",
       "options": [
         {
@@ -2061,7 +2061,7 @@
           "label": "I want the system to dry the air more",
           "next": "ts.step.dehumidify",
           "hint": "",
-          "fact": "Wants more drying.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2077,7 +2077,7 @@
           "label": "I see ice on the copper lines or the indoor unit",
           "next": "@ts_coil_ice_stop",
           "hint": "",
-          "fact": "Ice seen on the cooling system.",
+          "fact": "",
           "gate": "ts_coil_ice"
         },
         {
@@ -2085,7 +2085,7 @@
           "label": "It cools in short bursts and stays humid",
           "next": "ts.diag.cycling",
           "hint": "",
-          "fact": "Short cooling runs, still humid.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2119,8 +2119,8 @@
     },
     "ts.diag.stages": {
       "section": "What you noticed",
-      "title": "How does high and low sound?",
-      "body": "Two-stage systems usually run on low most of the time and use high when it’s very hot or cold. You can usually tell by sound and airflow: high is louder and blows harder. Some are set to Finish on high stage (some brands call this “latching”): once high starts, it keeps running until the room reaches the setting. Others drop back to low first. This can be set at the thermostat, in the wiring, or at the equipment, and most of that is pro work.",
+      "title": "What do you notice?",
+      "body": "Two-stage systems usually run on low most of the time and use high when it’s very hot or cold. You can usually tell by sound and airflow: high is louder and blows harder. Some are set to finish on high stage (some brands call this “latching”): once high starts, it keeps running until the room reaches the setting. Others drop back to low first. This can be set at the thermostat, in the wiring, or at the equipment, and most of that is pro work.",
       "options": [
         {
           "id": "holds_high",
@@ -2160,7 +2160,7 @@
           "label": "Show me the stage settings on my thermostat",
           "next": "ts.step.stage_latch",
           "hint": "",
-          "fact": "Stage settings requested.",
+          "fact": "",
           "gate": null,
           "requiresFlag": "stageLatchStepsEnabled"
         },
@@ -2195,7 +2195,7 @@
     },
     "ts.look.geo_lockouts": {
       "section": "Before backup-heat settings",
-      "title": "Look only: write down the lockout settings",
+      "title": "Look only: write down your lockout settings",
       "body": "{step panel: GEO}",
       "options": [
         {
@@ -2262,14 +2262,14 @@
     "ts.step.offset": {
       "section": "Comfort settings",
       "title": "Temperature offset",
-      "body": "These steps match the model you picked.\n\n{step panel: OFFSET}",
+      "body": "{step panel: OFFSET}",
       "options": [
         {
           "id": "wty_ask_installer",
           "label": "Ask my installer first",
           "next": "@ts_ask_installer_first",
           "hint": "",
-          "fact": "Asked the installer before changing a comfort setting.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2277,7 +2277,7 @@
           "label": "Not sure",
           "next": "@ts_ask_installer_first",
           "hint": "",
-          "fact": "Not sure about the installer warranty.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2285,7 +2285,7 @@
           "label": "Done, and it’s better after a day or so",
           "next": "@ts_offset_done_basic",
           "hint": "",
-          "fact": "Comfort change helped after a day or so.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2293,7 +2293,7 @@
           "label": "I changed it, and nothing’s better",
           "next": "@ts_comfort_not_fixed_pro",
           "hint": "",
-          "fact": "Comfort change did not help.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2301,7 +2301,7 @@
           "label": "It got worse, so I put the old value back",
           "next": "@ts_comfort_not_fixed_pro",
           "hint": "",
-          "fact": "Put the old comfort value back.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2309,7 +2309,7 @@
           "label": "My thermostat doesn’t have this setting",
           "next": "@ts_not_on_your_model",
           "hint": "",
-          "fact": "Setting not on this thermostat.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2317,7 +2317,7 @@
           "label": "My screen looks different",
           "next": "@ts_screen_different",
           "hint": "Stop here. We’ll point you to the maker’s help.",
-          "fact": "Thermostat screen did not match the guide.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2325,7 +2325,7 @@
           "label": "A step or screen is asking about a setting on the “Don’t change these” list, or for a password or code",
           "next": "@ts_installer_guard",
           "hint": "Don’t change it.",
-          "fact": "Locked installer setting came up.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2333,7 +2333,7 @@
           "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, or water at electrical parts)",
           "next": "@ts_hazard_now",
           "hint": "Stop. Don’t keep checking.",
-          "fact": "New hazard reported during the thermostat check.",
+          "fact": "",
           "gate": "ts_new_hazard"
         }
       ],
@@ -2344,14 +2344,14 @@
     "ts.step.differential": {
       "section": "Comfort settings",
       "title": "Temperature swing",
-      "body": "These steps match the model you picked.\n\n{step panel: DIFF}",
+      "body": "{step panel: DIFF}",
       "options": [
         {
           "id": "wty_ask_installer",
           "label": "Ask my installer first",
           "next": "@ts_ask_installer_first",
           "hint": "",
-          "fact": "Asked the installer before changing a comfort setting.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2359,7 +2359,7 @@
           "label": "Not sure",
           "next": "@ts_ask_installer_first",
           "hint": "",
-          "fact": "Not sure about the installer warranty.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2367,7 +2367,7 @@
           "label": "Done, and it’s better after a day or so",
           "next": "@ts_differential_done_basic",
           "hint": "",
-          "fact": "Comfort change helped after a day or so.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2375,7 +2375,7 @@
           "label": "I changed it, and nothing’s better",
           "next": "@ts_comfort_not_fixed_pro",
           "hint": "",
-          "fact": "Comfort change did not help.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2383,7 +2383,7 @@
           "label": "It got worse, so I put the old value back",
           "next": "@ts_comfort_not_fixed_pro",
           "hint": "",
-          "fact": "Put the old comfort value back.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2391,7 +2391,7 @@
           "label": "My thermostat doesn’t have this setting",
           "next": "@ts_not_on_your_model",
           "hint": "",
-          "fact": "Setting not on this thermostat.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2399,7 +2399,7 @@
           "label": "My thermostat uses cycle rate instead",
           "next": "ts.step.cph",
           "hint": "",
-          "fact": "Model uses cycle rate instead of swing.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2407,7 +2407,7 @@
           "label": "My screen looks different",
           "next": "@ts_screen_different",
           "hint": "Stop here. We’ll point you to the maker’s help.",
-          "fact": "Thermostat screen did not match the guide.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2415,7 +2415,7 @@
           "label": "A step or screen is asking about a setting on the “Don’t change these” list, or for a password or code",
           "next": "@ts_installer_guard",
           "hint": "Don’t change it.",
-          "fact": "Locked installer setting came up.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2423,7 +2423,7 @@
           "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, or water at electrical parts)",
           "next": "@ts_hazard_now",
           "hint": "Stop. Don’t keep checking.",
-          "fact": "New hazard reported during the thermostat check.",
+          "fact": "",
           "gate": "ts_new_hazard"
         }
       ],
@@ -2434,14 +2434,14 @@
     "ts.step.cph": {
       "section": "Comfort settings",
       "title": "Cycle rate",
-      "body": "These steps match the model you picked.\n\n{step panel: CPH}",
+      "body": "{step panel: CPH}",
       "options": [
         {
           "id": "wty_ask_installer",
           "label": "Ask my installer first",
           "next": "@ts_ask_installer_first",
           "hint": "",
-          "fact": "Asked the installer before changing a comfort setting.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2449,7 +2449,7 @@
           "label": "Not sure",
           "next": "@ts_ask_installer_first",
           "hint": "",
-          "fact": "Not sure about the installer warranty.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2457,7 +2457,7 @@
           "label": "Done, and it’s better after a day or so",
           "next": "@ts_cph_done_basic",
           "hint": "",
-          "fact": "Comfort change helped after a day or so.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2465,7 +2465,7 @@
           "label": "I changed it, and nothing’s better",
           "next": "@ts_comfort_not_fixed_pro",
           "hint": "",
-          "fact": "Comfort change did not help.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2473,7 +2473,7 @@
           "label": "It got worse, so I put the old value back",
           "next": "@ts_comfort_not_fixed_pro",
           "hint": "",
-          "fact": "Put the old comfort value back.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2481,7 +2481,7 @@
           "label": "My thermostat doesn’t have this setting",
           "next": "@ts_not_on_your_model",
           "hint": "",
-          "fact": "Setting not on this thermostat.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2489,7 +2489,7 @@
           "label": "I want to raise the cooling or heat pump cycle rate",
           "next": "@ts_installer_guard",
           "hint": "",
-          "fact": "Wants the compressor cycle rate raised.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2497,7 +2497,7 @@
           "label": "My screen looks different",
           "next": "@ts_screen_different",
           "hint": "Stop here. We’ll point you to the maker’s help.",
-          "fact": "Thermostat screen did not match the guide.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2505,7 +2505,7 @@
           "label": "A step or screen is asking about a setting on the “Don’t change these” list, or for a password or code",
           "next": "@ts_installer_guard",
           "hint": "Don’t change it.",
-          "fact": "Locked installer setting came up.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2513,7 +2513,7 @@
           "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, or water at electrical parts)",
           "next": "@ts_hazard_now",
           "hint": "Stop. Don’t keep checking.",
-          "fact": "New hazard reported during the thermostat check.",
+          "fact": "",
           "gate": "ts_new_hazard"
         }
       ],
@@ -2524,14 +2524,14 @@
     "ts.step.auto_deadband": {
       "section": "Comfort settings",
       "title": "Auto heat and cool",
-      "body": "These steps match the model you picked.\n\n{step panel: AUTO}",
+      "body": "{step panel: AUTO}",
       "options": [
         {
           "id": "wty_ask_installer",
           "label": "Ask my installer first",
           "next": "@ts_ask_installer_first",
           "hint": "",
-          "fact": "Asked the installer before changing a comfort setting.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2539,7 +2539,7 @@
           "label": "Not sure",
           "next": "@ts_ask_installer_first",
           "hint": "",
-          "fact": "Not sure about the installer warranty.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2547,7 +2547,7 @@
           "label": "Done, and it’s better after a day or so",
           "next": "@ts_auto_deadband_done_basic",
           "hint": "",
-          "fact": "Comfort change helped after a day or so.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2555,7 +2555,7 @@
           "label": "I changed it, and nothing’s better",
           "next": "@ts_comfort_not_fixed_pro",
           "hint": "",
-          "fact": "Comfort change did not help.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2563,7 +2563,7 @@
           "label": "It got worse, so I put the old value back",
           "next": "@ts_comfort_not_fixed_pro",
           "hint": "",
-          "fact": "Put the old comfort value back.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2571,7 +2571,7 @@
           "label": "My thermostat doesn’t have this setting",
           "next": "@ts_not_on_your_model",
           "hint": "",
-          "fact": "Setting not on this thermostat.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2579,7 +2579,7 @@
           "label": "My screen looks different",
           "next": "@ts_screen_different",
           "hint": "Stop here. We’ll point you to the maker’s help.",
-          "fact": "Thermostat screen did not match the guide.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2587,7 +2587,7 @@
           "label": "A step or screen is asking about a setting on the “Don’t change these” list, or for a password or code",
           "next": "@ts_installer_guard",
           "hint": "Don’t change it.",
-          "fact": "Locked installer setting came up.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2595,7 +2595,7 @@
           "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, or water at electrical parts)",
           "next": "@ts_hazard_now",
           "hint": "Stop. Don’t keep checking.",
-          "fact": "New hazard reported during the thermostat check.",
+          "fact": "",
           "gate": "ts_new_hazard"
         }
       ],
@@ -2606,14 +2606,14 @@
     "ts.step.recovery": {
       "section": "Comfort settings",
       "title": "Early start and recovery",
-      "body": "These steps match the model you picked.\n\n{step panel: RECOV}",
+      "body": "{step panel: RECOV}",
       "options": [
         {
           "id": "wty_ask_installer",
           "label": "Ask my installer first",
           "next": "@ts_ask_installer_first",
           "hint": "",
-          "fact": "Asked the installer before changing a comfort setting.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2621,7 +2621,7 @@
           "label": "Not sure",
           "next": "@ts_ask_installer_first",
           "hint": "",
-          "fact": "Not sure about the installer warranty.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2629,7 +2629,7 @@
           "label": "Done, and it’s better after a day or so",
           "next": "@ts_recovery_done_basic",
           "hint": "",
-          "fact": "Comfort change helped after a day or so.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2637,7 +2637,7 @@
           "label": "I changed it, and nothing’s better",
           "next": "@ts_comfort_not_fixed_pro",
           "hint": "",
-          "fact": "Comfort change did not help.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2645,7 +2645,7 @@
           "label": "It got worse, so I put the old value back",
           "next": "@ts_comfort_not_fixed_pro",
           "hint": "",
-          "fact": "Put the old comfort value back.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2653,7 +2653,7 @@
           "label": "My thermostat doesn’t have this setting",
           "next": "@ts_not_on_your_model",
           "hint": "",
-          "fact": "Setting not on this thermostat.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2661,7 +2661,7 @@
           "label": "My screen looks different",
           "next": "@ts_screen_different",
           "hint": "Stop here. We’ll point you to the maker’s help.",
-          "fact": "Thermostat screen did not match the guide.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2669,7 +2669,7 @@
           "label": "A step or screen is asking about a setting on the “Don’t change these” list, or for a password or code",
           "next": "@ts_installer_guard",
           "hint": "Don’t change it.",
-          "fact": "Locked installer setting came up.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2677,7 +2677,7 @@
           "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, or water at electrical parts)",
           "next": "@ts_hazard_now",
           "hint": "Stop. Don’t keep checking.",
-          "fact": "New hazard reported during the thermostat check.",
+          "fact": "",
           "gate": "ts_new_hazard"
         }
       ],
@@ -2688,14 +2688,14 @@
     "ts.step.setback": {
       "section": "Comfort settings",
       "title": "Schedule and away temperatures",
-      "body": "These steps match the model you picked.\n\n{step panel: SETBACK}",
+      "body": "{step panel: SETBACK}",
       "options": [
         {
           "id": "done_better",
           "label": "Done, and it’s better after a day or so",
           "next": "@ts_setback_done_basic",
           "hint": "",
-          "fact": "Comfort change helped after a day or so.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2703,7 +2703,7 @@
           "label": "I changed it, and nothing’s better",
           "next": "@ts_comfort_not_fixed_pro",
           "hint": "",
-          "fact": "Comfort change did not help.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2711,7 +2711,7 @@
           "label": "My thermostat doesn’t have this setting",
           "next": "@ts_not_on_your_model",
           "hint": "",
-          "fact": "Setting not on this thermostat.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2719,7 +2719,7 @@
           "label": "My screen looks different",
           "next": "@ts_screen_different",
           "hint": "Stop here. We’ll point you to the maker’s help.",
-          "fact": "Thermostat screen did not match the guide.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2727,7 +2727,7 @@
           "label": "A step or screen is asking about a setting on the “Don’t change these” list, or for a password or code",
           "next": "@ts_installer_guard",
           "hint": "Don’t change it.",
-          "fact": "Locked installer setting came up.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2735,7 +2735,7 @@
           "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, or water at electrical parts)",
           "next": "@ts_hazard_now",
           "hint": "Stop. Don’t keep checking.",
-          "fact": "New hazard reported during the thermostat check.",
+          "fact": "",
           "gate": "ts_new_hazard"
         }
       ],
@@ -2745,15 +2745,15 @@
     },
     "ts.step.hp_lockouts": {
       "section": "Comfort settings",
-      "title": "Backup heat outdoor limit",
-      "body": "These steps match the model you picked.\n\n{step panel: HPLOCK}",
+      "title": "Backup heat settings",
+      "body": "{step panel: HPLOCK}",
       "options": [
         {
           "id": "wty_ask_installer",
           "label": "Ask my installer first",
           "next": "@ts_ask_installer_first",
           "hint": "",
-          "fact": "Asked the installer before changing a comfort setting.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2761,7 +2761,7 @@
           "label": "Not sure",
           "next": "@ts_ask_installer_first",
           "hint": "",
-          "fact": "Not sure about the installer warranty.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2769,7 +2769,7 @@
           "label": "Done, and it’s better after a day or so",
           "next": "@ts_hp_lockouts_done_basic",
           "hint": "",
-          "fact": "Comfort change helped after a day or so.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2777,7 +2777,7 @@
           "label": "I changed it, and nothing’s better",
           "next": "@ts_comfort_not_fixed_pro",
           "hint": "",
-          "fact": "Comfort change did not help.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2785,7 +2785,7 @@
           "label": "It got worse, so I put the old value back",
           "next": "@ts_comfort_not_fixed_pro",
           "hint": "",
-          "fact": "Put the old comfort value back.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2793,7 +2793,7 @@
           "label": "My thermostat doesn’t have this setting",
           "next": "@ts_not_on_your_model",
           "hint": "",
-          "fact": "Setting not on this thermostat.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2801,7 +2801,7 @@
           "label": "The house got cold after the change",
           "next": "@ts_hp_not_keeping_up_pro",
           "hint": "",
-          "fact": "House got cold after the backup heat change.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2809,7 +2809,7 @@
           "label": "My screen looks different",
           "next": "@ts_screen_different",
           "hint": "Stop here. We’ll point you to the maker’s help.",
-          "fact": "Thermostat screen did not match the guide.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2817,7 +2817,7 @@
           "label": "A step or screen is asking about a setting on the “Don’t change these” list, or for a password or code",
           "next": "@ts_installer_guard",
           "hint": "Don’t change it.",
-          "fact": "Locked installer setting came up.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2825,7 +2825,7 @@
           "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, or water at electrical parts)",
           "next": "@ts_hazard_now",
           "hint": "Stop. Don’t keep checking.",
-          "fact": "New hazard reported during the thermostat check.",
+          "fact": "",
           "gate": "ts_new_hazard"
         }
       ],
@@ -2836,14 +2836,14 @@
     "ts.step.dehumidify": {
       "section": "Comfort settings",
       "title": "Dehumidify settings",
-      "body": "These steps match the model you picked.\n\n{step panel: DEHUM}",
+      "body": "{step panel: DEHUM}",
       "options": [
         {
           "id": "wty_ask_installer",
           "label": "Ask my installer first",
           "next": "@ts_ask_installer_first",
           "hint": "",
-          "fact": "Asked the installer before changing a comfort setting.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2851,7 +2851,7 @@
           "label": "Not sure",
           "next": "@ts_ask_installer_first",
           "hint": "",
-          "fact": "Not sure about the installer warranty.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2859,7 +2859,7 @@
           "label": "Done, and it’s better after a day or so",
           "next": "@ts_dehumidify_done_basic",
           "hint": "",
-          "fact": "Comfort change helped after a day or so.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2867,7 +2867,7 @@
           "label": "I changed it, and nothing’s better",
           "next": "@ts_comfort_not_fixed_pro",
           "hint": "",
-          "fact": "Comfort change did not help.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2875,7 +2875,7 @@
           "label": "It got worse, so I put the old value back",
           "next": "@ts_comfort_not_fixed_pro",
           "hint": "",
-          "fact": "Put the old comfort value back.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2883,7 +2883,7 @@
           "label": "My thermostat doesn’t have this setting",
           "next": "@ts_not_on_your_model",
           "hint": "",
-          "fact": "Setting not on this thermostat.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2891,7 +2891,7 @@
           "label": "I see ice on the copper lines or the indoor unit",
           "next": "@ts_coil_ice_stop",
           "hint": "",
-          "fact": "Ice seen on the cooling system.",
+          "fact": "",
           "gate": "ts_coil_ice"
         },
         {
@@ -2899,7 +2899,7 @@
           "label": "My screen looks different",
           "next": "@ts_screen_different",
           "hint": "Stop here. We’ll point you to the maker’s help.",
-          "fact": "Thermostat screen did not match the guide.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2907,7 +2907,7 @@
           "label": "A step or screen is asking about a setting on the “Don’t change these” list, or for a password or code",
           "next": "@ts_installer_guard",
           "hint": "Don’t change it.",
-          "fact": "Locked installer setting came up.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2915,7 +2915,7 @@
           "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, or water at electrical parts)",
           "next": "@ts_hazard_now",
           "hint": "Stop. Don’t keep checking.",
-          "fact": "New hazard reported during the thermostat check.",
+          "fact": "",
           "gate": "ts_new_hazard"
         }
       ],
@@ -2926,14 +2926,14 @@
     "ts.step.sensors": {
       "section": "Comfort settings",
       "title": "Sensors and sunlight",
-      "body": "These steps match the model you picked.\n\n{step panel: SENSORS}",
+      "body": "{step panel: SENSORS}",
       "options": [
         {
           "id": "done_better",
           "label": "Done, and it’s better after a day or so",
           "next": "@ts_sensors_done_basic",
           "hint": "",
-          "fact": "Comfort change helped after a day or so.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2941,7 +2941,7 @@
           "label": "I changed it, and nothing’s better",
           "next": "@ts_comfort_not_fixed_pro",
           "hint": "",
-          "fact": "Comfort change did not help.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2949,7 +2949,7 @@
           "label": "My thermostat doesn’t have this setting",
           "next": "@ts_not_on_your_model",
           "hint": "",
-          "fact": "Setting not on this thermostat.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2957,7 +2957,7 @@
           "label": "My screen looks different",
           "next": "@ts_screen_different",
           "hint": "Stop here. We’ll point you to the maker’s help.",
-          "fact": "Thermostat screen did not match the guide.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2965,7 +2965,7 @@
           "label": "A step or screen is asking about a setting on the “Don’t change these” list, or for a password or code",
           "next": "@ts_installer_guard",
           "hint": "Don’t change it.",
-          "fact": "Locked installer setting came up.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2973,7 +2973,7 @@
           "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, or water at electrical parts)",
           "next": "@ts_hazard_now",
           "hint": "Stop. Don’t keep checking.",
-          "fact": "New hazard reported during the thermostat check.",
+          "fact": "",
           "gate": "ts_new_hazard"
         }
       ],
@@ -2984,14 +2984,14 @@
     "ts.step.stage_latch": {
       "section": "Comfort settings",
       "title": "Finish on high stage",
-      "body": "These steps match the model you picked.\n\n{step panel: LATCH}",
+      "body": "{step panel: LATCH}",
       "options": [
         {
           "id": "wty_ask_installer",
           "label": "Ask my installer first",
           "next": "@ts_ask_installer_first",
           "hint": "",
-          "fact": "Asked the installer before changing a comfort setting.",
+          "fact": "",
           "gate": null
         },
         {
@@ -2999,7 +2999,7 @@
           "label": "Not sure",
           "next": "@ts_ask_installer_first",
           "hint": "",
-          "fact": "Not sure about the installer warranty.",
+          "fact": "",
           "gate": null
         },
         {
@@ -3007,7 +3007,7 @@
           "label": "Done, and it’s better after a day or so",
           "next": "@ts_latch_done_basic",
           "hint": "",
-          "fact": "Comfort change helped after a day or so.",
+          "fact": "",
           "gate": null
         },
         {
@@ -3015,7 +3015,7 @@
           "label": "I changed it, and nothing’s better",
           "next": "@ts_comfort_not_fixed_pro",
           "hint": "",
-          "fact": "Comfort change did not help.",
+          "fact": "",
           "gate": null
         },
         {
@@ -3023,7 +3023,7 @@
           "label": "It got worse, so I put the old value back",
           "next": "@ts_comfort_not_fixed_pro",
           "hint": "",
-          "fact": "Put the old comfort value back.",
+          "fact": "",
           "gate": null
         },
         {
@@ -3031,7 +3031,7 @@
           "label": "My thermostat doesn’t have this setting",
           "next": "@ts_not_on_your_model",
           "hint": "",
-          "fact": "Setting not on this thermostat.",
+          "fact": "",
           "gate": null
         },
         {
@@ -3039,7 +3039,7 @@
           "label": "My screen looks different",
           "next": "@ts_screen_different",
           "hint": "Stop here. We’ll point you to the maker’s help.",
-          "fact": "Thermostat screen did not match the guide.",
+          "fact": "",
           "gate": null
         },
         {
@@ -3047,7 +3047,7 @@
           "label": "A step or screen is asking about a setting on the “Don’t change these” list, or for a password or code",
           "next": "@ts_installer_guard",
           "hint": "Don’t change it.",
-          "fact": "Locked installer setting came up.",
+          "fact": "",
           "gate": null
         },
         {
@@ -3055,7 +3055,7 @@
           "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, or water at electrical parts)",
           "next": "@ts_hazard_now",
           "hint": "Stop. Don’t keep checking.",
-          "fact": "New hazard reported during the thermostat check.",
+          "fact": "",
           "gate": "ts_new_hazard"
         }
       ],
@@ -3636,12 +3636,9 @@
       "tier": "Basic homeowner check",
       "urgency": "Keep the note",
       "title": "Offset set",
-      "explanation": "Check the thermometer again in a few days, and in the next season. If the difference changes, put the offset back to what you wrote down and call a pro. An offset changes what the thermostat shows. It doesn’t fix a sensor problem. If the reading seems far off, or keeps drifting, call a professional. Keep the note with the values you changed and what they were before. If anything gets worse later, put the old values back.",
-      "actions": [
-        "Leave the note with the old number and the new number.",
-        "If the difference changes later, put the old number back."
-      ],
-      "avoid": "Don’t open equipment, change wiring, or reset a breaker.",
+      "explanation": "Check with your thermometer again in a few days, and again next season. If the difference changes, put the offset back to the value you wrote down and call a licensed HVAC professional. An offset changes what the thermostat shows. It doesn’t fix a sensor problem. If the reading seems far off, or keeps drifting, call a professional. Keep the note with the values you changed and what they were before. If anything gets worse later, put the old values back.",
+      "actions": [],
+      "avoid": "",
       "source": "maintenance",
       "outcome": "next_step",
       "reason": "ts_offset_done_basic",
@@ -3653,12 +3650,9 @@
       "tier": "Basic homeowner check",
       "urgency": "Keep the note",
       "title": "Swing setting changed",
-      "explanation": "A wider differential means fewer starts and bigger temperature changes in the room. A narrower one means more starts, which is harder on your equipment. Count starts again next week. Keep the note with the values you changed and what they were before. If anything gets worse later, put the old values back.",
-      "actions": [
-        "Leave the note with the old value and the new value.",
-        "If starts jump or the room swings more, put the old value back."
-      ],
-      "avoid": "Don’t open equipment, change wiring, or reset a breaker.",
+      "explanation": "Count how many times it starts in an hour again next week, at about the same time of day. Fewer starts and a comfortable room mean it worked. A wider differential means fewer starts and bigger temperature changes in the room. A narrower one means more starts, which is harder on your equipment. Keep the note with the values you changed and what they were before. If anything gets worse later, put the old values back.",
+      "actions": [],
+      "avoid": "",
       "source": "maintenance",
       "outcome": "next_step",
       "reason": "ts_differential_done_basic",
@@ -3670,12 +3664,9 @@
       "tier": "Basic homeowner check",
       "urgency": "Keep the note",
       "title": "Cycle rate changed",
-      "explanation": "A lower cycles-per-hour number means fewer starts. A higher number means more starts, which is harder on your equipment. Cooling or heat pump cycle rate only goes down. Keep the note with the values you changed and what they were before. If anything gets worse later, put the old values back.",
-      "actions": [
-        "Leave the note with the old number and the new number.",
-        "Don’t raise the cooling or heat pump cycle rate above where it was."
-      ],
-      "avoid": "Don’t open equipment, change wiring, or reset a breaker.",
+      "explanation": "Count how many times it starts in an hour again next week. Remember, the cooling or heat pump cycle rate only goes down from where it was set. A lower cycles-per-hour number means fewer starts. A higher number means more starts, which is harder on your equipment. Keep the note with the values you changed and what they were before. If anything gets worse later, put the old values back.",
+      "actions": [],
+      "avoid": "",
       "source": "maintenance",
       "outcome": "next_step",
       "reason": "ts_cph_done_basic",
@@ -3687,12 +3678,9 @@
       "tier": "Basic homeowner check",
       "urgency": "Keep the note",
       "title": "Auto settings changed",
-      "explanation": "Watch the next change of season. Keep the note with the values you changed and what they were before. If anything gets worse later, put the old values back.",
-      "actions": [
-        "Leave the note with the old Auto values.",
-        "If heat and cooling start running back to back, put the old value back."
-      ],
-      "avoid": "Don’t open equipment, change wiring, or reset a breaker.",
+      "explanation": "Watch how it switches between heating and cooling over the next change of season. Keep the note with the values you changed and what they were before. If anything gets worse later, put the old values back.",
+      "actions": [],
+      "avoid": "",
       "source": "maintenance",
       "outcome": "next_step",
       "reason": "ts_auto_deadband_done_basic",
@@ -3704,12 +3692,9 @@
       "tier": "Basic homeowner check",
       "urgency": "Keep the note",
       "title": "Recovery setting changed",
-      "explanation": "It can take a few days to learn. Keep the note with the values you changed and what they were before. If anything gets worse later, put the old values back.",
-      "actions": [
-        "Leave the note with On or Off, before and after.",
-        "If mornings stay cold, put the old setting back."
-      ],
-      "avoid": "Don’t open equipment, change wiring, or reset a breaker.",
+      "explanation": "It can take a few days to learn how long your home takes to warm up or cool down. Keep the note with the values you changed and what they were before. If anything gets worse later, put the old values back.",
+      "actions": [],
+      "avoid": "",
       "source": "maintenance",
       "outcome": "next_step",
       "reason": "ts_recovery_done_basic",
@@ -3721,12 +3706,9 @@
       "tier": "Basic homeowner check",
       "urgency": "Keep the note",
       "title": "Backup heat setting changed",
-      "explanation": "If your home isn’t keeping up with heat, put back the values you wrote down right away. If it still can’t keep up, call a licensed HVAC professional. If it’s dangerously cold and anyone is at risk, get them somewhere warm first. Check again before the first cold snap and put the old values back if a cold snap is coming. Keep the note with the values you changed and what they were before. If anything gets worse later, put the old values back.",
-      "actions": [
-        "Leave the note with both outdoor values, before and after.",
-        "Put the old values back if the house gets cold."
-      ],
-      "avoid": "Don’t open equipment, change wiring, or reset a breaker.",
+      "explanation": "Check this again before the first cold snap. If one is coming, put back the values you wrote down. If your home isn’t keeping up with heat, put back the values you wrote down right away. If it still can’t keep up, call a licensed HVAC professional. If it’s dangerously cold and anyone is at risk, get them somewhere warm first. Keep the note with the values you changed and what they were before. If anything gets worse later, put the old values back.",
+      "actions": [],
+      "avoid": "",
       "source": "maintenance",
       "outcome": "next_step",
       "reason": "ts_hp_lockouts_done_basic",
@@ -3738,12 +3720,9 @@
       "tier": "Basic homeowner check",
       "urgency": "Keep the note",
       "title": "Dehumidify setting changed",
-      "explanation": "These settings can help lower indoor humidity. If you see ice on the copper lines or the indoor unit, set cooling to Off, don’t chip the ice, and call a licensed HVAC professional. Keep the note with the values you changed and what they were before. If anything gets worse later, put the old values back.",
-      "actions": [
-        "Leave the note with the old humidity and overcool values.",
-        "If you see ice, set cooling to Off and call a pro."
-      ],
-      "avoid": "Don’t open equipment, change wiring, or reset a breaker.",
+      "explanation": "Watch how the house feels for a day. If you see ice on the copper lines or the indoor unit, set cooling to Off, don’t chip the ice, and call a licensed HVAC professional. Keep the note with the values you changed and what they were before. If anything gets worse later, put the old values back.",
+      "actions": [],
+      "avoid": "",
       "source": "maintenance",
       "outcome": "next_step",
       "reason": "ts_dehumidify_done_basic",
@@ -3755,12 +3734,9 @@
       "tier": "Basic homeowner check",
       "urgency": "Keep the note",
       "title": "Stage setting changed",
-      "explanation": "Keep the note with the values you changed and what they were before. If anything gets worse later, put the old values back.",
-      "actions": [
-        "Leave the note with the old stage setting.",
-        "This result stays held until the stage steps are turned on."
-      ],
-      "avoid": "Don’t open equipment, change wiring, or reset a breaker.",
+      "explanation": "Watch the next few times it heats or cools. If it runs worse, put back the value you wrote down. Keep the note with the values you changed and what they were before. If anything gets worse later, put the old values back.",
+      "actions": [],
+      "avoid": "",
       "source": "maintenance",
       "outcome": "next_step",
       "reason": "ts_latch_done_basic",
@@ -3772,12 +3748,9 @@
       "tier": "Basic homeowner check",
       "urgency": "Keep the note",
       "title": "Schedule changed",
-      "explanation": "On a heat pump, keep the change small and let recovery start early. Keep the note with the values you changed and what they were before. If anything gets worse later, put the old values back.",
-      "actions": [
-        "Leave the note with the old schedule temperatures.",
-        "If mornings get cold, put the old schedule back."
-      ],
-      "avoid": "Don’t open equipment, change wiring, or reset a breaker.",
+      "explanation": "If you have a heat pump, keep schedule changes small and let early start do the work. Watch a few mornings. Keep the note with the values you changed and what they were before. If anything gets worse later, put the old values back.",
+      "actions": [],
+      "avoid": "",
       "source": "maintenance",
       "outcome": "next_step",
       "reason": "ts_setback_done_basic",
@@ -3789,12 +3762,9 @@
       "tier": "Basic homeowner check",
       "urgency": "Keep the note",
       "title": "Sensor settings changed",
-      "explanation": "Learning features take a few days. Keep the note with the values you changed and what they were before. If anything gets worse later, put the old values back.",
-      "actions": [
-        "Leave the note with which rooms participate.",
-        "Don’t cover the thermostat."
-      ],
-      "avoid": "Don’t open equipment, change wiring, or reset a breaker.",
+      "explanation": "Learning features can take a few days. Keep the note with the values you changed and what they were before. If anything gets worse later, put the old values back.",
+      "actions": [],
+      "avoid": "",
       "source": "maintenance",
       "outcome": "next_step",
       "reason": "ts_sensors_done_basic",
@@ -3806,12 +3776,9 @@
       "tier": "Basic homeowner check",
       "urgency": "Keep the note",
       "title": "Move what’s near it, not the thermostat",
-      "explanation": "Move the lamp, TV, or device away. Close a blind at the sunny time. Point an adjustable vent away. Don’t take the thermostat off the wall. Check again tomorrow with the thermometer.",
-      "actions": [
-        "Move the lamp, screen, or vent, not the thermostat.",
-        "Check again tomorrow with the thermometer."
-      ],
-      "avoid": "Don’t open equipment, change wiring, or reset a breaker.",
+      "explanation": "Move the lamp, TV, or other device away from the thermostat. If sun hits it at one time of day, close a blind or curtain then. If an adjustable vent blows on it, point the vent away. Don’t take the thermostat off the wall. Check again tomorrow with your thermometer.",
+      "actions": [],
+      "avoid": "",
       "source": "maintenance",
       "outcome": "next_step",
       "reason": "ts_location_fix_basic",
@@ -3823,12 +3790,9 @@
       "tier": "Basic homeowner check",
       "urgency": "Keep the note",
       "title": "That wait is normal",
-      "explanation": "The thermostat keeps the compressor off for a few minutes after it stops, to protect it. Wait about 5 minutes. This setting is for installers.",
-      "actions": [
-        "Wait about 5 minutes.",
-        "Don’t change the compressor protection setting."
-      ],
-      "avoid": "Don’t change compressor protection or minimum off time.",
+      "explanation": "After your system stops, the thermostat keeps it off for a few minutes to protect the equipment. Wait about 5 minutes. This delay is set in the installer menu, so leave it as it is.",
+      "actions": [],
+      "avoid": "",
       "source": "maintenance",
       "outcome": "next_step",
       "reason": "ts_compressor_wait_normal",
@@ -3840,12 +3804,9 @@
       "tier": "Basic homeowner check",
       "urgency": "Keep the note",
       "title": "Give it a few days",
-      "explanation": "Early start and sun features learn over the first few days. Leave the setting as it is while it learns.",
-      "actions": [
-        "Wait a few days before judging early start.",
-        "Come back if it still never starts early after that."
-      ],
-      "avoid": "Don’t open equipment, change wiring, or reset a breaker.",
+      "explanation": "Early start and sun features learn over the first few days. Check again after that.",
+      "actions": [],
+      "avoid": "",
       "source": "maintenance",
       "outcome": "next_step",
       "reason": "ts_learning_period_wait",
@@ -3857,29 +3818,27 @@
       "tier": "Basic homeowner check",
       "urgency": "Keep the note",
       "title": "Starting early is on purpose",
-      "explanation": "It learned how long your home takes, so it starts early to be at your temperature on time. The screen may show Recovery or In Recovery. If you’d rather it start at the schedule time, you can turn it off from the recovery steps.",
-      "actions": [
-        "Leave it on if you want the house ready at the schedule time.",
-        "Open the recovery steps later if you want it to start at the schedule time."
-      ],
-      "avoid": "Don’t open equipment, change wiring, or reset a breaker.",
+      "explanation": "Your thermostat learned how long your home takes to warm up or cool down, so it starts early to reach your temperature at the schedule time. The screen may show Recovery or In Recovery. If you’d rather it start at the schedule time, you can turn this off.",
+      "actions": [],
+      "avoid": "",
       "source": "maintenance",
       "outcome": "next_step",
       "reason": "ts_recovery_explained_basic",
       "diyTier": "basic",
       "gate": null,
-      "continueTo": null
+      "continueTo": null,
+      "nextAction": {
+        "label": "Open the early start steps",
+        "next": "ts.step.recovery"
+      }
     },
     "ts_defrost_normal_basic": {
       "tier": "Basic homeowner check",
       "urgency": "Keep the note",
       "title": "Defrost is normal",
-      "explanation": "In cold, damp weather the outdoor unit melts frost off itself. It may steam, and backup heat may run for a few minutes. If it happens many times an hour, or ice builds up on the outdoor unit, call a pro.",
-      "actions": [
-        "Let the defrost finish.",
-        "Call a pro if ice stays on the outdoor unit or defrost repeats many times an hour."
-      ],
-      "avoid": "Don’t open equipment, change wiring, or reset a breaker.",
+      "explanation": "In cold, damp weather, the outdoor unit melts frost off itself. It may steam, and backup heat may run for a few minutes. If it happens many times an hour, or ice keeps building up on the outdoor unit, call a licensed HVAC professional.",
+      "actions": [],
+      "avoid": "",
       "source": "maintenance",
       "outcome": "next_step",
       "reason": "ts_defrost_normal_basic",
@@ -3891,12 +3850,9 @@
       "tier": "Professional guidance",
       "urgency": "Call a licensed HVAC professional",
       "title": "The reading needs a pro",
-      "explanation": "Big or drifting differences are not something to offset. An offset changes what the thermostat shows. It doesn’t fix a sensor problem. If the reading seems far off, or keeps drifting, call a professional.",
-      "actions": [
-        "Don’t enter an offset for a drifting reading.",
-        "Call a licensed HVAC professional."
-      ],
-      "avoid": "Don’t open equipment, change wiring, or reset a breaker.",
+      "explanation": "A big or drifting difference isn’t something to fix with an offset. A licensed HVAC professional can check the thermostat and its sensor.",
+      "actions": [],
+      "avoid": "",
       "source": "maintenance",
       "outcome": "call_pro",
       "reason": "ts_reading_fault_pro",
@@ -3908,12 +3864,9 @@
       "tier": "Professional guidance",
       "urgency": "Call a licensed HVAC professional",
       "title": "The thermostat’s spot needs a pro",
-      "explanation": "Moving a thermostat or sealing the wall opening means taking it off the wall.",
-      "actions": [
-        "Leave the thermostat on the wall.",
-        "Call a licensed HVAC professional."
-      ],
-      "avoid": "Don’t open equipment, change wiring, or reset a breaker.",
+      "explanation": "Moving a thermostat or sealing the opening behind it means taking it off the wall. That’s a job for a licensed HVAC professional.",
+      "actions": [],
+      "avoid": "",
       "source": "maintenance",
       "outcome": "call_pro",
       "reason": "ts_location_pro",
@@ -3925,12 +3878,9 @@
       "tier": "Professional guidance",
       "urgency": "Call a licensed HVAC professional",
       "title": "The equipment may be shutting itself off",
-      "explanation": "If it stops before the room reaches the setting, no thermostat setting fixes it. Causes include safety switches and airflow.",
-      "actions": [
-        "Don’t keep changing comfort settings for this pattern.",
-        "Call a licensed HVAC professional."
-      ],
-      "avoid": "Don’t open equipment, change wiring, or reset a breaker.",
+      "explanation": "If it stops before the room reaches your setting, a thermostat setting won’t fix it. The equipment may be stopping itself, for example because of a safety switch or airflow. Call a licensed HVAC professional.",
+      "actions": [],
+      "avoid": "",
       "source": "maintenance",
       "outcome": "call_pro",
       "reason": "ts_equipment_cycling_pro",
@@ -3942,12 +3892,9 @@
       "tier": "Professional guidance",
       "urgency": "Call a licensed HVAC professional",
       "title": "Ask a pro to check the setup",
-      "explanation": "Ask a licensed HVAC professional to check how the system is set up.",
-      "actions": [
-        "Call your installer or a licensed HVAC professional.",
-        "Write down what they say each setting is."
-      ],
-      "avoid": "Don’t open equipment, change wiring, or reset a breaker.",
+      "explanation": "Some of what you’re seeing can come from how the thermostat was set up. Ask a licensed HVAC professional to check these settings:",
+      "actions": [],
+      "avoid": "",
       "source": "maintenance",
       "outcome": "call_pro",
       "reason": "ts_setup_check_pro",
@@ -3960,11 +3907,8 @@
       "urgency": "Call a licensed HVAC professional",
       "title": "Call your installer first",
       "explanation": "A new system or thermostat may still be under your installer’s warranty. Ask them to check the setup, and ask what each of these settings is set to:",
-      "actions": [
-        "Call the installer who put the system in.",
-        "Ask what each listed setting is set to, and write the answers down."
-      ],
-      "avoid": "Don’t open equipment, change wiring, or reset a breaker.",
+      "actions": [],
+      "avoid": "",
       "source": "maintenance",
       "outcome": "call_pro",
       "reason": "ts_new_install_installer",
@@ -3977,11 +3921,8 @@
       "urgency": "Call a licensed HVAC professional",
       "title": "Ask your installer first",
       "explanation": "Good call. Ask your installer whether you can change [Setting], and what value they recommend. Come back anytime.",
-      "actions": [
-        "Ask your installer before changing that setting.",
-        "Come back after you have an answer."
-      ],
-      "avoid": "Don’t open equipment, change wiring, or reset a breaker.",
+      "actions": [],
+      "avoid": "",
       "source": "maintenance",
       "outcome": "call_pro",
       "reason": "ts_ask_installer_first",
@@ -3994,11 +3935,8 @@
       "urgency": "Call a licensed HVAC professional",
       "title": "Your heat pump isn’t keeping up",
       "explanation": "If your home isn’t keeping up with heat, put back the values you wrote down right away. If it still can’t keep up, call a licensed HVAC professional. If it’s dangerously cold and anyone is at risk, get them somewhere warm first.",
-      "actions": [
-        "Put back the values you wrote down.",
-        "Call a licensed HVAC professional if the house still can’t keep up."
-      ],
-      "avoid": "Don’t open equipment, change wiring, or reset a breaker.",
+      "actions": [],
+      "avoid": "",
       "source": "maintenance",
       "outcome": "call_pro",
       "reason": "ts_hp_not_keeping_up_pro",
@@ -4010,12 +3948,9 @@
       "tier": "Professional guidance",
       "urgency": "Call a licensed HVAC professional",
       "title": "Staging needs a pro",
-      "explanation": "A pro can check how your system moves between high and low, including settings at the thermostat, in the wiring, or at the equipment. One setting to ask about is Finish on high stage (some brands call this “latching”): once it steps up to high, it stays on high until it shuts off. That can be set on purpose. Mention it if the room overshoots or your bills went up, or if the fan keeps speeding up and slowing down during one run.",
-      "actions": [
-        "Tell the pro what you heard and whether the room overshoots.",
-        "Ask about Finish on high stage (some brands call this “latching”)."
-      ],
-      "avoid": "Don’t open equipment, change wiring, or reset a breaker.",
+      "explanation": "How your system moves between high and low can be set at the thermostat, in the wiring, or at the equipment. A pro can check it. One setting to ask about is Finish on high stage (some brands call this “latching”): once it steps up to high, it stays on high until it shuts off. That can be set on purpose. Mention it if the room overshoots or your bills went up, or if the fan keeps speeding up and slowing down during one run.",
+      "actions": [],
+      "avoid": "",
       "source": "maintenance",
       "outcome": "call_pro",
       "reason": "ts_stage_pro",
@@ -4028,11 +3963,8 @@
       "urgency": "Call a licensed HVAC professional",
       "title": "Leave backup heat settings for now",
       "explanation": "Second Wrench doesn’t guide these changes when it’s 40 °F (4 °C) or colder outside, or will be in the next few days. That’s our own cautious cutoff, not a rating for your equipment. If anyone at home is an infant, elderly, or medically fragile, leave these to a professional.\nIf your home isn’t keeping up with heat now, call a licensed HVAC professional. If it’s dangerously cold and anyone is at risk, get them somewhere warm first.",
-      "actions": [
-        "Leave the backup heat settings as they are.",
-        "Call a licensed HVAC professional if the home isn’t keeping up with heat now."
-      ],
-      "avoid": "Don’t open equipment, change wiring, or reset a breaker.",
+      "actions": [],
+      "avoid": "",
       "source": "maintenance",
       "outcome": "call_pro",
       "reason": "ts_cold_weather_stop",
@@ -4045,11 +3977,8 @@
       "urgency": "Call a licensed HVAC professional",
       "title": "It’s time for a pro",
       "explanation": "Put back the values you wrote down. To undo, go back to the same setting and enter the value you wrote down. If you can’t get back to how it was, or you think you changed something else by mistake, stop and call a licensed HVAC professional. Don’t use a factory reset to fix it. That can erase your system’s setup.",
-      "actions": [
-        "Put back the values you wrote down.",
-        "Call a licensed HVAC professional."
-      ],
-      "avoid": "Don’t open equipment, change wiring, or reset a breaker.",
+      "actions": [],
+      "avoid": "",
       "source": "maintenance",
       "outcome": "call_pro",
       "reason": "ts_comfort_not_fixed_pro",
@@ -4062,12 +3991,8 @@
       "urgency": "Call a licensed HVAC professional",
       "title": "Ice on the cooling system",
       "explanation": "If you see ice on the copper lines or the indoor unit, set cooling to Off, don’t chip the ice, and call a licensed HVAC professional.",
-      "actions": [
-        "Set cooling to Off.",
-        "Don’t chip the ice.",
-        "Call a licensed HVAC professional."
-      ],
-      "avoid": "Don’t chip the ice or keep running cooling.",
+      "actions": [],
+      "avoid": "",
       "source": "maintenance",
       "outcome": "emergency_exit",
       "reason": "ts_coil_ice_stop",
@@ -4080,11 +4005,8 @@
       "urgency": "Rating needed first",
       "title": "Find the rating first",
       "explanation": "Check your outdoor unit’s manual first. Find the lowest outdoor temperature it’s rated to run in. Don’t set this below that number. If you don’t have the manual or can’t find the rating, stop and leave this setting as it is.",
-      "actions": [
-        "Find the outdoor unit manual and the lowest outdoor temperature it is rated to run in.",
-        "Leave the heat pump minimum as it is until you have that number."
-      ],
-      "avoid": "Don’t open equipment, change wiring, or reset a breaker.",
+      "actions": [],
+      "avoid": "",
       "source": "maintenance",
       "outcome": "insufficient_info",
       "reason": "ts_rated_min_unknown",
@@ -4096,12 +4018,9 @@
       "tier": "More information needed",
       "urgency": "Different model path",
       "title": "Not on your model",
-      "explanation": "We don’t have checked steps for this on your model yet.",
-      "actions": [
-        "Stop on this setting.",
-        "Check the maker’s help for your model."
-      ],
-      "avoid": "Don’t open equipment, change wiring, or reset a breaker.",
+      "explanation": "We don’t have checked steps for this on your model yet. Check your manual: [source title], [page or section] ([link]).",
+      "actions": [],
+      "avoid": "",
       "source": "maintenance",
       "outcome": "insufficient_info",
       "reason": "ts_not_on_your_model",
@@ -4114,11 +4033,8 @@
       "urgency": "Call a licensed HVAC professional",
       "title": "Ask a pro to check your geothermal or water-source system",
       "explanation": "Tell them what you wrote down. Ask them to check the water side too.",
-      "actions": [
-        "Tell the pro the numbers you wrote down.",
-        "Ask them to check the water side too."
-      ],
-      "avoid": "Don’t open equipment, change wiring, or reset a breaker.",
+      "actions": [],
+      "avoid": "",
       "source": "maintenance",
       "outcome": "call_pro",
       "reason": "ts_geo_pro",
@@ -4131,11 +4047,8 @@
       "urgency": "Keep the note",
       "title": "Leave these as they are",
       "explanation": "On a geothermal or water-source system, these settings are for your installer. If backup heat starts running a lot, or the house isn’t comfortable, call a licensed HVAC professional and tell them what you wrote down.",
-      "actions": [
-        "Leave the settings as they are.",
-        "Call a pro if backup heat starts running a lot."
-      ],
-      "avoid": "Don’t open equipment, change wiring, or reset a breaker.",
+      "actions": [],
+      "avoid": "",
       "source": "maintenance",
       "outcome": "next_step",
       "reason": "ts_geo_noted_basic",
@@ -4147,12 +4060,9 @@
       "tier": "More information needed",
       "urgency": "Thermometer check first",
       "title": "Check with a thermometer first",
-      "explanation": "Any separate thermometer works. Come back when you’ve compared them.",
-      "actions": [
-        "Put a separate thermometer near the thermostat and compare twice.",
-        "Come back after you have both readings."
-      ],
-      "avoid": "Don’t open equipment, change wiring, or reset a breaker.",
+      "explanation": "Any separate thermometer works. Put it near the thermostat, wait 20 to 30 minutes, and compare. Then come back.",
+      "actions": [],
+      "avoid": "",
       "source": "maintenance",
       "outcome": "insufficient_info",
       "reason": "ts_reading_unchecked",
@@ -7310,7 +7220,7 @@
           "U"
         ],
         "mirrors": [],
-        "text": "1. Press and hold **Menu** for 5 seconds, then choose ISU. 2. Furnace or boiler: step to ISU **370 Heat 1 CPH** (and **371 Heat 2 CPH** for a second stage). Heat pump heating or cooling: ISU **365 Cool 1 CPH** (and **366**). Backup heat: **375 Aux Heat CPH**. Change nothing else. 3. Write down each number you’ll change. 4. Too many short cycles: lower the number by 1. Furnace or boiler only: if the room swings or overshoots, you can raise the heat number by 1. Never raise 365 or 366. 5. Save and go home. **Watch:** count starts for an hour in similar weather, before and after; give it a day. **Stop** if it starts more often, the room gets uncomfortable, or nothing changes after two days. Put back your numbers.",
+        "text": "1. Press and hold **Menu** for 5 seconds, then choose ISU. 2. Furnace or boiler: step to ISU **370 Heat 1 CPH** (and **371 Heat 2 CPH** for a second stage). Heat pump heating or cooling: ISU **365 Cool 1 CPH** (and **366**). Backup heat: **375 Aux Heat CPH**. Change nothing else. 3. Write down each number you’ll change. 4. Too many short cycles: lower it by 1. Furnace or boiler only: if the room swings or overshoots, you can raise the heat number by 1. Never raise 365 or 366. 5. Save and go home. **Watch:** count starts for an hour in similar weather, before and after; give it a day. **Stop** if it starts more often, the room gets uncomfortable, or nothing changes after two days. Put back your numbers.",
         "generic": false,
         "fallback": [
           {
@@ -7372,7 +7282,7 @@
           "U"
         ],
         "mirrors": [],
-        "text": "1. Press and hold **▲** and **FAN** until the display changes. 2. Press **NEXT** to Function **5** (Stage 1 heat cycle rate); 6 is stage 2 or aux, 8 is emergency heat; **9** and **10** are compressor. Skip Functions 1, 2, 3 and 15. 3. Write down the number. 4. Too many short cycles: lower the number by 1. Furnace or boiler only: if the room swings or overshoots, you can raise the heat number by 1. Never raise 365 or 366. 5. Press **DONE**. **Watch:** count starts for an hour in similar weather, before and after; give it a day. **Stop** if it starts more often, the room gets uncomfortable, or nothing changes after two days. Put back your numbers.",
+        "text": "1. Press and hold **▲** and **FAN** until the display changes. 2. Press **NEXT** to Function **5** (Stage 1 heat cycle rate); 6 is stage 2 or aux, 8 is emergency heat; **9** and **10** are compressor. Skip Functions 1, 2, 3 and 15. 3. Write down the number. 4. Too many short cycles: lower it by 1. Furnace or boiler only (Function 5, or Function 6 when it’s a second furnace or boiler stage, not heat pump backup heat): if the room swings or overshoots, you can raise that number by 1. Never raise Function 9 or 10. On a heat pump, leave Functions 6 and 8 alone. 5. Press **DONE**. **Watch:** count starts for an hour in similar weather, before and after; give it a day. **Stop** if it starts more often, the room gets uncomfortable, or nothing changes after two days. Put back your numbers.",
         "generic": false,
         "fallback": [
           {
@@ -7434,7 +7344,7 @@
           "U"
         ],
         "mirrors": [],
-        "text": "1. Press and hold **▲** and **▼** until the display changes. 2. Press ▲ to reach Function **5** (Heating cycle rate, TH4110D), **6** (Auxiliary heat, TH4210D), **8** (Emergency heat, TH4210D), or **9** (Compressor). Skip Functions 1 and 15. 3. Write down the number. 4. Too many short cycles: lower the number by 1. Furnace or boiler only: if the room swings or overshoots, you can raise the heat number by 1. Never raise 365 or 366. 5. Hold ▲ and ▼ to save and exit. **Watch:** count starts for an hour in similar weather, before and after; give it a day. **Stop** if it starts more often, the room gets uncomfortable, or nothing changes after two days. Put back your numbers.",
+        "text": "1. Press and hold **▲** and **▼** until the display changes. 2. Press ▲ to reach Function **5** (Heating cycle rate, TH4110D), **6** (Auxiliary heat, TH4210D), **8** (Emergency heat, TH4210D), or **9** (Compressor). Skip Functions 1 and 15. 3. Write down the number. 4. Too many short cycles: lower it by 1. Furnace or boiler only (Function 5 on a TH4110D): if the room swings or overshoots, you can raise that number by 1. Never raise Function 9. On a TH4210D, leave Functions 6 and 8 alone. 5. Hold ▲ and ▼ to save and exit. **Watch:** count starts for an hour in similar weather, before and after; give it a day. **Stop** if it starts more often, the room gets uncomfortable, or nothing changes after two days. Put back your numbers.",
         "generic": false,
         "fallback": [
           {
@@ -7834,7 +7744,7 @@
           "U"
         ],
         "mirrors": [],
-        "text": "Hold the bottom-left button and **↑** for 5 seconds; ISU **3000**: **1** enables Auto. Honeywell’s guide advises against Auto where winter outdoor temperatures often stay below 50 °F (10 °C).",
+        "text": "Hold bottom-left + **↑** 5 seconds; ISU **3000**: **1** enables Auto. Honeywell’s guide advises against Auto where winter outdoor temperatures often stay below 50 °F (10 °C).",
         "generic": false,
         "fallback": [
           {
@@ -8296,7 +8206,7 @@
           "U"
         ],
         "mirrors": [],
-        "text": "Hold the bottom-left button and **↑** for 5 seconds; ISU **4090 Smart Response**: 1 Yes, 0 No. Write down On or Off first. **Watch:** the next few mornings. On: the house should be at temperature at the schedule time, and the screen may show Recovery or In Recovery before it. Off: it should start at the schedule time. It may take a few days to learn. **Stop** if the house stays cold or the bill rises; put it back.",
+        "text": "Hold bottom-left + **↑** 5 seconds; ISU **4090 Smart Response**: 1 Yes, 0 No. Write down On or Off first. **Watch:** the next few mornings. On: the house should be at temperature at the schedule time, and the screen may show Recovery or In Recovery before it. Off: it should start at the schedule time. It may take a few days to learn. **Stop** if the house stays cold or the bill rises; put it back.",
         "generic": false,
         "fallback": [
           {
@@ -8397,7 +8307,7 @@
           "H"
         ],
         "mirrors": [],
-        "text": "On a heat pump, make the night or away temperature change smaller, one step at a time, and let recovery start early instead of setting the morning time earlier by hand. Watch a few mornings: does backup heat come on less, and is the house warm on time? Stop and put the old schedule back if mornings get cold. Comfort Settings are at **MAIN MENU** > **COMFORT SETTINGS**. Smart Home & Away is in eco+. Away adds 1 °F before it calls.",
+        "text": "If you have a heat pump, make the night or away change smaller, one step at a time. Let early start do the work instead of moving the morning time earlier. Watch a few mornings: backup heat should come on less, and the house should be warm on time. If mornings get cold, put your old schedule back. Change your Comfort Settings in **MAIN MENU** > **COMFORT SETTINGS**. Away and “I’m Usually Away” let the room drift 1 °F more before the system starts.",
         "generic": false,
         "fallback": [
           {
@@ -8427,7 +8337,7 @@
           "H"
         ],
         "mirrors": [],
-        "text": "On a heat pump, make the night or away temperature change smaller, one step at a time, and let recovery start early instead of setting the morning time earlier by hand. Watch a few mornings: does backup heat come on less, and is the house warm on time? Stop and put the old schedule back if mornings get cold. **Eco Temperatures** are in Settings > Nest Sense. Early-On waits until someone is home.",
+        "text": "If you have a heat pump, make the night or away change smaller, one step at a time. Let early start do the work instead of moving the morning time earlier. Watch a few mornings: backup heat should come on less, and the house should be warm on time. If mornings get cold, put your old schedule back. Change your **Eco Temperatures** in Settings > **Nest Sense**. Early-On waits until someone is home.",
         "generic": false,
         "fallback": [
           {
@@ -8457,7 +8367,7 @@
           "H"
         ],
         "mirrors": [],
-        "text": "On a heat pump, make the night or away temperature change smaller, one step at a time, and let recovery start early instead of setting the morning time earlier by hand. Watch a few mornings: does backup heat come on less, and is the house warm on time? Stop and put the old schedule back if mornings get cold. **Eco Temperatures** are in Settings > Nest Sense. Early-On waits until someone is home.",
+        "text": "If you have a heat pump, make the night or away change smaller, one step at a time. Let early start do the work instead of moving the morning time earlier. Watch a few mornings: backup heat should come on less, and the house should be warm on time. If mornings get cold, put your old schedule back. Change your **Eco Temperatures** in Settings > **Nest Sense**. Early-On waits until someone is home.",
         "generic": false,
         "fallback": [
           {
@@ -8487,7 +8397,7 @@
           "H"
         ],
         "mirrors": [],
-        "text": "On a heat pump, make the night or away temperature change smaller, one step at a time, and let recovery start early instead of setting the morning time earlier by hand. Watch a few mornings: does backup heat come on less, and is the house warm on time? Stop and put the old schedule back if mornings get cold. **Eco Temperatures** are in Settings > Nest Sense. Early-On waits until someone is home.",
+        "text": "If you have a heat pump, make the night or away change smaller, one step at a time. Let early start do the work instead of moving the morning time earlier. Watch a few mornings: backup heat should come on less, and the house should be warm on time. If mornings get cold, put your old schedule back. Change your **Eco Temperatures** in Settings > **Nest Sense**. Early-On waits until someone is home.",
         "generic": false,
         "fallback": [
           {
@@ -8517,7 +8427,7 @@
           "H"
         ],
         "mirrors": [],
-        "text": "On a heat pump, make the night or away temperature change smaller, one step at a time, and let recovery start early instead of setting the morning time earlier by hand. Watch a few mornings: does backup heat come on less, and is the house warm on time? Stop and put the old schedule back if mornings get cold. **Eco Temperatures** are in Settings > Nest Sense. Early-On waits until someone is home.",
+        "text": "If you have a heat pump, make the night or away change smaller, one step at a time. Let early start do the work instead of moving the morning time earlier. Watch a few mornings: backup heat should come on less, and the house should be warm on time. If mornings get cold, put your old schedule back. Change your **Eco Temperatures** in Settings > **Nest Sense**. Early-On waits until someone is home.",
         "generic": false,
         "fallback": [
           {
@@ -8547,7 +8457,7 @@
           "H"
         ],
         "mirrors": [],
-        "text": "On a heat pump, make the night or away temperature change smaller, one step at a time, and let recovery start early instead of setting the morning time earlier by hand. Watch a few mornings: does backup heat come on less, and is the house warm on time? Stop and put the old schedule back if mornings get cold. Open Menu > Schedule. Home and Away temperatures are in the app when geofencing is on.",
+        "text": "If you have a heat pump, make the night or away change smaller, one step at a time. Let early start do the work instead of moving the morning time earlier. Watch a few mornings: backup heat should come on less, and the house should be warm on time. If mornings get cold, put your old schedule back. Change your schedule in **Menu** > **Schedule**, or your Home and Away temperatures in the app.",
         "generic": false,
         "fallback": [
           {
@@ -8577,7 +8487,7 @@
           "H"
         ],
         "mirrors": [],
-        "text": "On a heat pump, make the night or away temperature change smaller, one step at a time, and let recovery start early instead of setting the morning time earlier by hand. Watch a few mornings: does backup heat come on less, and is the house warm on time? Stop and put the old schedule back if mornings get cold. Open Menu > Schedule. Home and Away temperatures are in the app when geofencing is on.",
+        "text": "If you have a heat pump, make the night or away change smaller, one step at a time. Let early start do the work instead of moving the morning time earlier. Watch a few mornings: backup heat should come on less, and the house should be warm on time. If mornings get cold, put your old schedule back. Change your schedule in **Menu** > **Schedule**, or your Home and Away temperatures in the app.",
         "generic": false,
         "fallback": [
           {
@@ -8607,7 +8517,7 @@
           "H"
         ],
         "mirrors": [],
-        "text": "On a heat pump, make the night or away temperature change smaller, one step at a time, and let recovery start early instead of setting the morning time earlier by hand. Watch a few mornings: does backup heat come on less, and is the house warm on time? Stop and put the old schedule back if mornings get cold. Open Menu > Schedule. Home and Away temperatures are in the app when geofencing is on.",
+        "text": "If you have a heat pump, make the night or away change smaller, one step at a time. Let early start do the work instead of moving the morning time earlier. Watch a few mornings: backup heat should come on less, and the house should be warm on time. If mornings get cold, put your old schedule back. Change your schedule in **Menu** > **Schedule**, or your Home and Away temperatures in the app.",
         "generic": false,
         "fallback": [
           {
@@ -8637,7 +8547,7 @@
           "H"
         ],
         "mirrors": [],
-        "text": "On a heat pump, make the night or away temperature change smaller, one step at a time, and let recovery start early instead of setting the morning time earlier by hand. Watch a few mornings: does backup heat come on less, and is the house warm on time? Stop and put the old schedule back if mornings get cold. Use the hold and schedule steps for this model. Make the heat-pump setback smaller, one step at a time.",
+        "text": "If you have a heat pump, make the night or away change smaller, one step at a time. Let early start do the work instead of moving the morning time earlier. Watch a few mornings: backup heat should come on less, and the house should be warm on time. If mornings get cold, put your old schedule back. Temporary on the display means a change made with the arrows. It ends at the next scheduled time. Hold means the temperature stays put until you cancel it. To go back to your schedule from either one, press Run Schedule.",
         "generic": false,
         "fallback": [
           {
@@ -8667,7 +8577,7 @@
           "H"
         ],
         "mirrors": [],
-        "text": "On a heat pump, make the night or away temperature change smaller, one step at a time, and let recovery start early instead of setting the morning time earlier by hand. Watch a few mornings: does backup heat come on less, and is the house warm on time? Stop and put the old schedule back if mornings get cold. Use the hold and schedule steps for this model. Make the heat-pump setback smaller, one step at a time.",
+        "text": "If you have a heat pump, make the night or away change smaller, one step at a time. Let early start do the work instead of moving the morning time earlier. Watch a few mornings: backup heat should come on less, and the house should be warm on time. If mornings get cold, put your old schedule back. Press RUN to go back to your schedule. HOLD keeps the current temperature until you press RUN. SET is for the clock and schedule. You don’t need it for this step.",
         "generic": false,
         "fallback": [
           {
@@ -8697,7 +8607,7 @@
           "H"
         ],
         "mirrors": [],
-        "text": "On a heat pump, make the night or away temperature change smaller, one step at a time, and let recovery start early instead of setting the morning time earlier by hand. Watch a few mornings: does backup heat come on less, and is the house warm on time? Stop and put the old schedule back if mornings get cold. Use the hold and schedule steps for this model. Make the heat-pump setback smaller, one step at a time.",
+        "text": "If you have a heat pump, make the night or away change smaller, one step at a time. Let early start do the work instead of moving the morning time earlier. Watch a few mornings: backup heat should come on less, and the house should be warm on time. If mornings get cold, put your old schedule back. Press the up or down arrow to change the temperature. That change lasts until the next scheduled time. To cancel it, press Use Schedule. To keep the new temperature, press Hold right after the arrow. The schedule stays off until you change the temperature or press Use Schedule.",
         "generic": false,
         "fallback": [
           {
@@ -8727,7 +8637,7 @@
           "H"
         ],
         "mirrors": [],
-        "text": "On a heat pump, make the night or away temperature change smaller, one step at a time, and let recovery start early instead of setting the morning time earlier by hand. Watch a few mornings: does backup heat come on less, and is the house warm on time? Stop and put the old schedule back if mornings get cold. Use the hold and schedule steps for this model. Make the heat-pump setback smaller, one step at a time.",
+        "text": "If you have a heat pump, make the night or away change smaller, one step at a time. Let early start do the work instead of moving the morning time earlier. Watch a few mornings: backup heat should come on less, and the house should be warm on time. If mornings get cold, put your old schedule back. Using the arrows alone holds the change until the next scheduled time. To end any hold, press the hold button until the cancel option shows.",
         "generic": false,
         "fallback": [
           {
@@ -8757,7 +8667,7 @@
           "H"
         ],
         "mirrors": [],
-        "text": "On a heat pump, make the night or away temperature change smaller, one step at a time, and let recovery start early instead of setting the morning time earlier by hand. Watch a few mornings: does backup heat come on less, and is the house warm on time? Stop and put the old schedule back if mornings get cold. Use the hold and schedule steps for this model. Make the heat-pump setback smaller, one step at a time.",
+        "text": "If you have a heat pump, make the night or away change smaller, one step at a time. Let early start do the work instead of moving the morning time earlier. Watch a few mornings: backup heat should come on less, and the house should be warm on time. If mornings get cold, put your old schedule back. A change made by hand lasts until the next scheduled change. To check the schedule, open the thermostat in the Alexa app, go to its device settings, then its schedules, and make sure the thermostat schedule is switched on.",
         "generic": false,
         "fallback": [
           {
@@ -8860,7 +8770,7 @@
           "U"
         ],
         "mirrors": [],
-        "text": "1. Hold **Menu** 5 seconds, then ISU. Look (don’t change) at ISU **130**: it must say Wired or Internet. If it says None, stop. 2. Step to ISU **356 Aux Heat Lock Out** and **355 Balance Point**. If they aren’t shown, your system isn’t set up for them; stop. 3. Write down both. The maker default for ISU **356** is Off. 4. Backup heat in mild weather: lower 356 by one step (5 °F). 356 must stay at or above 355. Off on 356 means backup heat isn’t limited by outdoor temperature. 5. Save. **Watch:** for the next few days above your new backup heat limit, backup heat shouldn’t run except briefly during defrost, and the house should keep up. **Stop** right away if the house gets cold. If your home isn’t keeping up with heat, put back the values you wrote down right away. If it still can’t keep up, call a licensed HVAC professional. If it’s dangerously cold and anyone is at risk, get them somewhere warm first. If the house is getting cold and neither the heat pump nor backup heat is running, put **ISU 356** back to the value you wrote down right away, then call a licensed HVAC professional. If it’s dangerously cold and anyone is at risk, get them somewhere warm first. Skip ISU 260 (dual fuel) and 340/350.",
+        "text": "1. Hold **Menu** 5 seconds, then ISU. 2. Look (don’t change) at ISU **130**: it must say Wired or Internet. If it says None, stop. 3. Step to ISU **356 Aux Heat Lock Out** and **355 Balance Point**. If they aren’t shown, your system isn’t set up for them; stop. 4. Write down both. 5. Backup heat in mild weather: lower 356 by one step (5 °F). 356 must stay at or above 355 (Off on 356 means backup heat isn’t limited by outdoor temperature). 6. Save. **Watch:** for the next few days above your new backup heat limit, backup heat shouldn’t run except briefly during defrost, and the house should keep up. **Stop** right away if the house gets cold. If your home isn’t keeping up with heat, put back the values you wrote down right away. If it still can’t keep up, call a licensed HVAC professional. If it’s dangerously cold and anyone is at risk, get them somewhere warm first. If the house is getting cold and neither the heat pump nor backup heat is running, put **ISU 356** back to the value you wrote down right away, then call a licensed HVAC professional. If it’s dangerously cold and anyone is at risk, get them somewhere warm first. Skip ISU 260 (dual fuel) and 340/350.",
         "generic": false,
         "fallback": [
           {
@@ -8919,7 +8829,7 @@
           "U"
         ],
         "mirrors": [],
-        "text": "1. Google Home app > your thermostat > **Settings** > **Temperature Preferences** > **Heat Pump Balance**. The thermostat must be connected to Wi-Fi. If it isn’t, stop. Write down the choice (Max Comfort is the maker default). Backup heat in mild weather: move one step toward **Max Savings**. House can’t keep up: one step toward **Max Comfort**. Don’t choose Off. **Watch:** for the next few days above your new backup heat limit, backup heat shouldn’t run except briefly during defrost, and the house should keep up. **Stop** right away if the house gets cold. If your home isn’t keeping up with heat, put back the values you wrote down right away. If it still can’t keep up, call a licensed HVAC professional. If it’s dangerously cold and anyone is at risk, get them somewhere warm first. If the house is getting cold and neither the heat pump nor backup heat is running, put **Heat Pump Balance** back to the value you wrote down right away, then call a licensed HVAC professional. If it’s dangerously cold and anyone is at risk, get them somewhere warm first. If Heat Pump Balance is off, we don’t guide the backup heat lockout temperature. Leave it as it is, or ask a licensed HVAC professional.",
+        "text": "1. Check that the thermostat is connected to Wi-Fi. Heat Pump Balance uses it to get your local weather. If it isn’t connected, stop. 2. Google Home app > your thermostat > **Settings** > **Temperature Preferences** > **Heat Pump Balance**. 3. Write down the choice (Max Comfort is the default). 4. Backup heat in mild weather: move one step toward **Max Savings**. House can’t keep up: one step toward **Max Comfort**. Don’t choose Off. **Watch:** for the next few days above your new backup heat limit, backup heat shouldn’t run except briefly during defrost, and the house should keep up. **Stop** right away if the house gets cold. If your home isn’t keeping up with heat, put back the values you wrote down right away. If it still can’t keep up, call a licensed HVAC professional. If it’s dangerously cold and anyone is at risk, get them somewhere warm first. If the house is getting cold and neither the heat pump nor backup heat is running, put **Heat Pump Balance** back to the value you wrote down right away, then call a licensed HVAC professional. If it’s dangerously cold and anyone is at risk, get them somewhere warm first. If Heat Pump Balance is off, we don’t guide the backup heat lockout temperature. Leave it as it is, or ask a licensed HVAC professional.",
         "generic": false,
         "fallback": [
           {
@@ -8951,7 +8861,7 @@
           "U"
         ],
         "mirrors": [],
-        "text": "1. Home app > thermostat > **Equipment** > **Heat pump** > **Use Heat Pump Balance**, then the level. The thermostat must be connected to Wi-Fi. If it isn’t, stop. Change only Heat Pump Balance. Don’t change anything else under Equipment. Don’t open **Advanced configuration**. Write down the choice (Max Comfort is the maker default). Backup heat in mild weather: move one step toward **Max Savings**. House can’t keep up: one step toward **Max Comfort**. Don’t choose Off. **Watch:** for the next few days above your new backup heat limit, backup heat shouldn’t run except briefly during defrost, and the house should keep up. **Stop** right away if the house gets cold. If your home isn’t keeping up with heat, put back the values you wrote down right away. If it still can’t keep up, call a licensed HVAC professional. If it’s dangerously cold and anyone is at risk, get them somewhere warm first. If the house is getting cold and neither the heat pump nor backup heat is running, put **Heat Pump Balance** back to the value you wrote down right away, then call a licensed HVAC professional. If it’s dangerously cold and anyone is at risk, get them somewhere warm first. If Heat Pump Balance is off, we don’t guide the backup heat lockout temperature. Leave it as it is, or ask a licensed HVAC professional.",
+        "text": "1. Check that the thermostat is connected to Wi-Fi. Heat Pump Balance uses it to get your local weather. If it isn’t connected, stop. 2. Home app > thermostat > **Equipment** > **Heat pump** > **Use Heat Pump Balance**. Change only Heat Pump Balance. Don’t change anything else under Equipment. Don’t open **Advanced configuration**. 3. Write down the choice (Max Comfort is the default). 4. Backup heat in mild weather: move one step toward **Max Savings**. House can’t keep up: one step toward **Max Comfort**. Don’t choose Off. **Watch:** for the next few days above your new backup heat limit, backup heat shouldn’t run except briefly during defrost, and the house should keep up. **Stop** right away if the house gets cold. If your home isn’t keeping up with heat, put back the values you wrote down right away. If it still can’t keep up, call a licensed HVAC professional. If it’s dangerously cold and anyone is at risk, get them somewhere warm first. If the house is getting cold and neither the heat pump nor backup heat is running, put **Heat Pump Balance** back to the value you wrote down right away, then call a licensed HVAC professional. If it’s dangerously cold and anyone is at risk, get them somewhere warm first. If Heat Pump Balance is off, we don’t guide the backup heat lockout temperature. Leave it as it is, or ask a licensed HVAC professional.",
         "generic": false,
         "fallback": [
           {
@@ -8983,7 +8893,7 @@
           "U"
         ],
         "mirrors": [],
-        "text": "1. Ring > **Settings** > **Nest Sense** > **Heat Pump Balance**. The thermostat must be connected to Wi-Fi. If it isn’t, stop. Write down the choice (Max Comfort is the maker default). Backup heat in mild weather: move one step toward **Max Savings**. House can’t keep up: one step toward **Max Comfort**. Don’t choose Off. **Watch:** for the next few days above your new backup heat limit, backup heat shouldn’t run except briefly during defrost, and the house should keep up. **Stop** right away if the house gets cold. If your home isn’t keeping up with heat, put back the values you wrote down right away. If it still can’t keep up, call a licensed HVAC professional. If it’s dangerously cold and anyone is at risk, get them somewhere warm first. If the house is getting cold and neither the heat pump nor backup heat is running, put **Heat Pump Balance** back to the value you wrote down right away, then call a licensed HVAC professional. If it’s dangerously cold and anyone is at risk, get them somewhere warm first. If Heat Pump Balance is off, we don’t guide the backup heat lockout temperature. Leave it as it is, or ask a licensed HVAC professional.",
+        "text": "1. Check that the thermostat is connected to Wi-Fi. Heat Pump Balance uses it to get your local weather. If it isn’t connected, stop. 2. Ring > **Settings** > **Nest Sense** > **Heat Pump Balance**. 3. Write down the choice (Max Comfort is the default). 4. Backup heat in mild weather: move one step toward **Max Savings**. House can’t keep up: one step toward **Max Comfort**. Don’t choose Off. **Watch:** for the next few days above your new backup heat limit, backup heat shouldn’t run except briefly during defrost, and the house should keep up. **Stop** right away if the house gets cold. If your home isn’t keeping up with heat, put back the values you wrote down right away. If it still can’t keep up, call a licensed HVAC professional. If it’s dangerously cold and anyone is at risk, get them somewhere warm first. If the house is getting cold and neither the heat pump nor backup heat is running, put **Heat Pump Balance** back to the value you wrote down right away, then call a licensed HVAC professional. If it’s dangerously cold and anyone is at risk, get them somewhere warm first. If Heat Pump Balance is off, we don’t guide the backup heat lockout temperature. Leave it as it is, or ask a licensed HVAC professional.",
         "generic": false,
         "fallback": [
           {
@@ -9015,7 +8925,7 @@
           "U"
         ],
         "mirrors": [],
-        "text": "1. Ring > **Settings** > **Nest Sense** > **Heat Pump Balance**. The thermostat must be connected to Wi-Fi. If it isn’t, stop. Write down the choice (Max Comfort is the maker default). Backup heat in mild weather: move one step toward **Max Savings**. House can’t keep up: one step toward **Max Comfort**. Don’t choose Off. **Watch:** for the next few days above your new backup heat limit, backup heat shouldn’t run except briefly during defrost, and the house should keep up. **Stop** right away if the house gets cold. If your home isn’t keeping up with heat, put back the values you wrote down right away. If it still can’t keep up, call a licensed HVAC professional. If it’s dangerously cold and anyone is at risk, get them somewhere warm first. If the house is getting cold and neither the heat pump nor backup heat is running, put **Heat Pump Balance** back to the value you wrote down right away, then call a licensed HVAC professional. If it’s dangerously cold and anyone is at risk, get them somewhere warm first. If Heat Pump Balance is off, we don’t guide the backup heat lockout temperature. Leave it as it is, or ask a licensed HVAC professional.",
+        "text": "1. Check that the thermostat is connected to Wi-Fi. Heat Pump Balance uses it to get your local weather. If it isn’t connected, stop. 2. Ring > **Settings** > **Nest Sense** > **Heat Pump Balance**. 3. Write down the choice (Max Comfort is the default). 4. Backup heat in mild weather: move one step toward **Max Savings**. House can’t keep up: one step toward **Max Comfort**. Don’t choose Off. **Watch:** for the next few days above your new backup heat limit, backup heat shouldn’t run except briefly during defrost, and the house should keep up. **Stop** right away if the house gets cold. If your home isn’t keeping up with heat, put back the values you wrote down right away. If it still can’t keep up, call a licensed HVAC professional. If it’s dangerously cold and anyone is at risk, get them somewhere warm first. If the house is getting cold and neither the heat pump nor backup heat is running, put **Heat Pump Balance** back to the value you wrote down right away, then call a licensed HVAC professional. If it’s dangerously cold and anyone is at risk, get them somewhere warm first. If Heat Pump Balance is off, we don’t guide the backup heat lockout temperature. Leave it as it is, or ask a licensed HVAC professional.",
         "generic": false,
         "fallback": [
           {
@@ -9185,7 +9095,7 @@
           "U"
         ],
         "mirrors": [],
-        "text": "These settings can help lower indoor humidity. 1. **MAIN MENU** > **SYSTEM** > **DEHUMIDIFY USING AC** > **Enable**, then pick a humidity level. Write down what it was. 2. For more drying, **INSTALLATION SETTINGS** > **THRESHOLDS** > **AC OVERCOOL MAX**: write down the value, then raise it one step. It stops at the overcool limit or the humidity level, whichever comes first. 3. Too cold: lower AC Overcool Max one step. **Watch:** the indoor humidity on the thermostat and how the house feels, for a day. **Stop** if rooms get too cold or it runs much longer; put back your values. Dehumidifier accessory setup stays with a pro.",
+        "text": "1. **MAIN MENU** > **SYSTEM** > **DEHUMIDIFY USING AC** > **Enable**, then pick a humidity level (homeowner menu). Write down what it was. 2. For more drying, **INSTALLATION SETTINGS** > **THRESHOLDS** > **AC OVERCOOL MAX**: write down the value, then raise it one step. It stops at the overcool limit or the humidity level, whichever comes first. 3. Too cold: lower AC Overcool Max one step. **Watch:** the indoor humidity on the thermostat and how the house feels, for a day. **Stop** if rooms get too cold or it runs much longer; put back your values. Dehumidifier accessory setup stays with a pro.",
         "generic": false,
         "fallback": [
           {
@@ -9215,7 +9125,7 @@
           "H"
         ],
         "mirrors": [],
-        "text": "These settings can help lower indoor humidity. **Cool to Dry** is in Nest Sense (Settings). Write down whether it was on. Humidity Helper and accessory setup are for a pro.",
+        "text": "**Cool to Dry** in Nest Sense (Settings). Write down whether it was on. Humidity Helper and accessory setup are pro-only.",
         "generic": false,
         "fallback": [
           {
@@ -9245,7 +9155,7 @@
           "H"
         ],
         "mirrors": [],
-        "text": "These settings can help lower indoor humidity. **Cool to Dry** is in Nest Sense (Settings). Write down whether it was on. Humidity Helper and accessory setup are for a pro.",
+        "text": "**Cool to Dry** in Nest Sense (Settings). Write down whether it was on. Humidity Helper and accessory setup are pro-only.",
         "generic": false,
         "fallback": [
           {
@@ -9275,7 +9185,7 @@
           "H"
         ],
         "mirrors": [],
-        "text": "These settings can help lower indoor humidity. **Cool to Dry** is in Nest Sense (Settings). Write down whether it was on. Humidity Helper and accessory setup are for a pro.",
+        "text": "**Cool to Dry** in Nest Sense (Settings). Write down whether it was on. Humidity Helper and accessory setup are pro-only.",
         "generic": false,
         "fallback": [
           {
@@ -9305,7 +9215,7 @@
           "H"
         ],
         "mirrors": [],
-        "text": "These settings can help lower indoor humidity. **Cool to Dry** is in Nest Sense (Settings). Write down whether it was on. Humidity Helper and accessory setup are for a pro.",
+        "text": "**Cool to Dry** in Nest Sense (Settings). Write down whether it was on. Humidity Helper and accessory setup are pro-only.",
         "generic": false,
         "fallback": [
           {
@@ -9538,7 +9448,7 @@
           "H"
         ],
         "mirrors": [],
-        "text": "Sensor participation is per Comfort Setting: **MAIN MENU** > **COMFORT SETTINGS** > tap the Comfort Setting > sensors. Compare readings in **MAIN MENU** > **SETTINGS** > **SENSORS**. **Follow Me** gives priority to occupied rooms. Put a sensor about four feet up, away from vents, fans, outside walls, windows, and sun. **Watch:** a day in the rooms you use. **Stop** if a room still doesn’t match, and call a pro before moving the thermostat.",
+        "text": "Sensor participation per Comfort Setting: **MAIN MENU** > **COMFORT SETTINGS** > tap the Comfort Setting > sensors; compare readings in **MAIN MENU** > **SETTINGS** > **SENSORS**. **Follow Me** gives priority to occupied rooms. Put a sensor about four feet up, away from vents, fans, outside walls, windows and sun. **Watch:** a day or two in the rooms you use most. **Stop** if a room still doesn’t match after that, and put the sensor settings back the way they were.",
         "generic": false,
         "fallback": [
           {
@@ -9568,7 +9478,7 @@
           "H"
         ],
         "mirrors": [],
-        "text": "**Set Sensor Priority** for each schedule period: active rooms (motion) or selected rooms. **Watch:** a day in those rooms. **Stop** if the priority room still doesn’t match the rest of the home.",
+        "text": "**Set Sensor Priority** for each schedule period: active (motion) rooms or selected rooms. **Watch:** a day or two in those rooms. **Stop** if the priority rooms still don’t match the rest of the home, and put the priority back the way it was.",
         "generic": false,
         "fallback": [
           {
@@ -9598,7 +9508,7 @@
           "H"
         ],
         "mirrors": [],
-        "text": "Sun: Home app > Settings > **Temperature Preferences** > Nest Sense > **Sunblock**. It needs a few days to learn. Temperature Sensor: change its schedule, or move it a couple of feet away from vents, windows, and outside doors, about chest height.",
+        "text": "Sun: Home app > Settings > **Temperature Preferences** > Nest Sense > **Sunblock**. It needs a few days to learn. Temperature Sensor: change its schedule, or move it a couple of feet away from vents, windows, and outside doors, about chest height. **Watch:** a few days, while it learns. **Stop** if the reading still jumps when sun hits the thermostat, or the sensor room still doesn’t match, and put the settings back the way they were.",
         "generic": false,
         "fallback": [
           {
@@ -9628,7 +9538,7 @@
           "H"
         ],
         "mirrors": [],
-        "text": "Sun: ring > Settings > **Nest Sense** > **Sunblock**. It needs a few days to learn. Temperature Sensor: change its schedule, or move it a couple of feet away from vents, windows, and outside doors, about chest height.",
+        "text": "Sun: ring > Settings > **Nest Sense** > **Sunblock**. It needs a few days to learn. Temperature Sensor: change its schedule, or move it a couple of feet away from vents, windows, and outside doors, about chest height. **Watch:** a few days, while it learns. **Stop** if the reading still jumps when sun hits the thermostat, or the sensor room still doesn’t match, and put the settings back the way they were.",
         "generic": false,
         "fallback": [
           {
@@ -9658,7 +9568,7 @@
           "H"
         ],
         "mirrors": [],
-        "text": "Sun: ring > Settings > **Nest Sense** > **Sunblock**. It needs a few days to learn. Temperature Sensor: change its schedule, or move it a couple of feet away from vents, windows, and outside doors, about chest height.",
+        "text": "Sun: ring > Settings > **Nest Sense** > **Sunblock**. It needs a few days to learn. Temperature Sensor: change its schedule, or move it a couple of feet away from vents, windows, and outside doors, about chest height. **Watch:** a few days, while it learns. **Stop** if the reading still jumps when sun hits the thermostat, or the sensor room still doesn’t match, and put the settings back the way they were.",
         "generic": false,
         "fallback": [
           {
@@ -9688,7 +9598,7 @@
           "H"
         ],
         "mirrors": [],
-        "text": "This model has no Sunblock. Temperature Sensor: change its schedule, or move it a couple of feet away from vents, windows, and outside doors, about chest height.",
+        "text": "No Sunblock on this model. Temperature Sensor: change its schedule, or move it a couple of feet away from vents, windows, and outside doors, about chest height. **Watch:** a day or two. **Stop** if the sensor room still doesn’t match, and put the sensor settings back the way they were.",
         "generic": false,
         "fallback": [
           {

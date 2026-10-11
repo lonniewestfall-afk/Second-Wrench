@@ -1,5 +1,5 @@
 /* Authoring source for ts.settings.v1. Run once on ts.settings.v0 data.
- * Legal copy is 02 rev 8. Stages copy is spec v2.1 (the withdrawn landing label is not used).
+ * Legal copy is 02 rev 8. User copy is spec v2.2, with Legal replacements E7, E13, E19, and E20.
  */
 'use strict';
 const fs = require('fs');
@@ -148,30 +148,36 @@ function node(id, section, title, body, options, safety) {
 function withTail(list) { return list.concat(TAIL); }
 
 const WTY = [
-  opt('wty_ask_installer', 'Ask my installer first', '@ts_ask_installer_first', '', 'Asked the installer before changing a comfort setting.'),
-  opt('wty_not_sure', 'Not sure', '@ts_ask_installer_first', '', 'Not sure about the installer warranty.')
+  opt('wty_ask_installer', 'Ask my installer first', '@ts_ask_installer_first', '', ''),
+  opt('wty_not_sure', 'Not sure', '@ts_ask_installer_first', '', '')
 ];
+function stepTail(list) {
+  return list.concat(TAIL.map(function (item) {
+    return Object.assign({}, item, { fact: '' });
+  }));
+}
 function doneOpts(resultId, extra) {
   const list = WTY.concat([
-    opt('done_better', 'Done, and it\u2019s better after a day or so', resultId, '', 'Comfort change helped after a day or so.'),
-    opt('no_change', 'I changed it, and nothing\u2019s better', '@ts_comfort_not_fixed_pro', '', 'Comfort change did not help.'),
-    opt('worse_put_back', 'It got worse, so I put the old value back', '@ts_comfort_not_fixed_pro', '', 'Put the old comfort value back.'),
-    opt('not_on_my_model', 'My thermostat doesn\u2019t have this setting', '@ts_not_on_your_model', '', 'Setting not on this thermostat.')
+    opt('done_better', 'Done, and it\u2019s better after a day or so', resultId, '', ''),
+    opt('no_change', 'I changed it, and nothing\u2019s better', '@ts_comfort_not_fixed_pro', '', ''),
+    opt('worse_put_back', 'It got worse, so I put the old value back', '@ts_comfort_not_fixed_pro', '', ''),
+    opt('not_on_my_model', 'My thermostat doesn\u2019t have this setting', '@ts_not_on_your_model', '', '')
   ]);
-  return withTail(list.concat(extra || []));
+  return stepTail(list.concat(extra || []));
 }
 function homeOpts(resultId) {
-  return withTail([
-    opt('done_better', 'Done, and it\u2019s better after a day or so', resultId, '', 'Comfort change helped after a day or so.'),
-    opt('no_change', 'I changed it, and nothing\u2019s better', '@ts_comfort_not_fixed_pro', '', 'Comfort change did not help.'),
-    opt('not_on_my_model', 'My thermostat doesn\u2019t have this setting', '@ts_not_on_your_model', '', 'Setting not on this thermostat.')
+  return stepTail([
+    opt('done_better', 'Done, and it\u2019s better after a day or so', resultId, '', ''),
+    opt('no_change', 'I changed it, and nothing\u2019s better', '@ts_comfort_not_fixed_pro', '', ''),
+    opt('not_on_my_model', 'My thermostat doesn\u2019t have this setting', '@ts_not_on_your_model', '', '')
   ]);
 }
 
 const RECOV_TAIL = ' Write down On or Off first. **Watch:** the next few mornings. On: the house should be at temperature at the schedule time, and the screen may show Recovery or In Recovery before it. Off: it should start at the schedule time. It may take a few days to learn. **Stop** if the house stays cold or the bill rises; put it back.';
-const SETBACK_LEAD = 'On a heat pump, make the night or away temperature change smaller, one step at a time, and let recovery start early instead of setting the morning time earlier by hand. Watch a few mornings: does backup heat come on less, and is the house warm on time? Stop and put the old schedule back if mornings get cold. ';
-const DEHUM_CLAIM = 'These settings can help lower indoor humidity. ';
-const CPH_RULES = '4. Too many short cycles: lower the number by 1. Furnace or boiler only: if the room swings or overshoots, you can raise the heat number by 1. Never raise 365 or 366. ';
+const SETBACK_LEAD = 'If you have a heat pump, make the night or away change smaller, one step at a time. Let early start do the work instead of moving the morning time earlier. Watch a few mornings: backup heat should come on less, and the house should be warm on time. If mornings get cold, put your old schedule back. ';
+const CPH_T6_RULES = '4. Too many short cycles: lower it by 1. Furnace or boiler only: if the room swings or overshoots, you can raise the heat number by 1. Never raise 365 or 366. ';
+const CPH_FP_RULES = '4. Too many short cycles: lower it by 1. Furnace or boiler only (Function 5, or Function 6 when it\u2019s a second furnace or boiler stage, not heat pump backup heat): if the room swings or overshoots, you can raise that number by 1. Never raise Function 9 or 10. On a heat pump, leave Functions 6 and 8 alone. ';
+const CPH_TH_RULES = '4. Too many short cycles: lower it by 1. Furnace or boiler only (Function 5 on a TH4110D): if the room swings or overshoots, you can raise that number by 1. Never raise Function 9. On a TH4210D, leave Functions 6 and 8 alone. ';
 const CPH_WATCH = '**Watch:** count starts for an hour in similar weather, before and after; give it a day. **Stop** if it starts more often, the room gets uncomfortable, or nothing changes after two days. Put back your numbers.';
 
 function blankCell(model, section) {
@@ -211,9 +217,9 @@ steps.DIFF['ECB-PRM'] = textCell('ECB-PRM', diffEcb, { installer_menu: true, fn:
 ['HW-T5', 'HW-T6', 'HW-FP6', 'HW-TH4', 'HW-RTH76'].forEach(function (model) { steps.DIFF[model] = pointerCell(model, diffPointer, 'manual'); });
 MODELS.forEach(function (model) { if (!steps.DIFF[model]) steps.DIFF[model] = blankCell(model, 'manual'); });
 
-const cphT6 = '1. Press and hold **Menu** for 5 seconds, then choose ISU. 2. Furnace or boiler: step to ISU **370 Heat 1 CPH** (and **371 Heat 2 CPH** for a second stage). Heat pump heating or cooling: ISU **365 Cool 1 CPH** (and **366**). Backup heat: **375 Aux Heat CPH**. Change nothing else. 3. Write down each number you\u2019ll change. ' + CPH_RULES + '5. Save and go home. ' + CPH_WATCH;
-const cphFp = '1. Press and hold **\u25B2** and **FAN** until the display changes. 2. Press **NEXT** to Function **5** (Stage 1 heat cycle rate); 6 is stage 2 or aux, 8 is emergency heat; **9** and **10** are compressor. Skip Functions 1, 2, 3 and 15. 3. Write down the number. ' + CPH_RULES + '5. Press **DONE**. ' + CPH_WATCH;
-const cphTh = '1. Press and hold **\u25B2** and **\u25BC** until the display changes. 2. Press \u25B2 to reach Function **5** (Heating cycle rate, TH4110D), **6** (Auxiliary heat, TH4210D), **8** (Emergency heat, TH4210D), or **9** (Compressor). Skip Functions 1 and 15. 3. Write down the number. ' + CPH_RULES + '5. Hold \u25B2 and \u25BC to save and exit. ' + CPH_WATCH;
+const cphT6 = '1. Press and hold **Menu** for 5 seconds, then choose ISU. 2. Furnace or boiler: step to ISU **370 Heat 1 CPH** (and **371 Heat 2 CPH** for a second stage). Heat pump heating or cooling: ISU **365 Cool 1 CPH** (and **366**). Backup heat: **375 Aux Heat CPH**. Change nothing else. 3. Write down each number you\u2019ll change. ' + CPH_T6_RULES + '5. Save and go home. ' + CPH_WATCH;
+const cphFp = '1. Press and hold **\u25B2** and **FAN** until the display changes. 2. Press **NEXT** to Function **5** (Stage 1 heat cycle rate); 6 is stage 2 or aux, 8 is emergency heat; **9** and **10** are compressor. Skip Functions 1, 2, 3 and 15. 3. Write down the number. ' + CPH_FP_RULES + '5. Press **DONE**. ' + CPH_WATCH;
+const cphTh = '1. Press and hold **\u25B2** and **\u25BC** until the display changes. 2. Press \u25B2 to reach Function **5** (Heating cycle rate, TH4110D), **6** (Auxiliary heat, TH4210D), **8** (Emergency heat, TH4210D), or **9** (Compressor). Skip Functions 1 and 15. 3. Write down the number. ' + CPH_TH_RULES + '5. Hold \u25B2 and \u25BC to save and exit. ' + CPH_WATCH;
 const cphCap = [cap26('1 CPH', '12 CPH (heat) and 1 CPH to 6 CPH (compressor)', 'T6 Pro Smart Professional Install Guide 33-00392EFS', 'PDF p.14', T6ISU), cap27('3 CPH for furnace heat', 'HVAC School, Cycle Rate Settings', TR1), cap27('1 CPH for heat pump compressor, only if your current number is higher', 'HVAC School, Cycle Rate Settings', TR1)];
 const cphNums = [{ label: 'MANUAL', item: 'heat CPH', low: 1, high: 12 }, { label: 'MANUAL', item: 'compressor CPH', low: 1, high: 6 }, { label: 'TRADE', item: 'furnace heat CPH', value: 3, low: 1, high: 12 }, { label: 'TRADE', item: 'heat pump compressor CPH', value: 1, low: 1, high: 6, lowerOnly: true }];
 steps.CPH['HW-T6'] = textCell('HW-T6', cphT6, { installer_menu: true, fn: 'CPH', settingName: 'the cycle rate', section: 'PDF p.14', entry: 'Menu', captions: cphCap, num_sources: cphNums });
@@ -227,7 +233,7 @@ steps.AUTO['ECB-PRM'] = textCell('ECB-PRM', '1. **MAIN MENU** > **SETTINGS** > *
 steps.AUTO['HW-T6'] = textCell('HW-T6', '1. Hold **Menu** 5 seconds, then ISU. 2. ISU **300 Auto Changeover**: On makes Auto available. 3. ISU **303 Auto Differential**: write down the value; it\u2019s how far the room must drift during an off cycle before it switches to the other mode. 4. Switches too soon: raise by one step. 5. Save. **Watch:** a day or two of mixed weather. **Stop** if heat and cooling start running back to back. Put back the value.', { installer_menu: true, fn: 'AUTO', settingName: 'the Auto deadband', section: 'PDF p.13', entry: 'Menu', captions: [cap26('0 °F', '5 °F (0.0 °C to 2.5 °C)', 'T6 Pro Smart Professional Install Guide 33-00392EFS', 'PDF p.13', T6ISU)], num_sources: [{ label: 'MANUAL', item: 'Auto Differential', low: 0, high: 5, unit: '°F' }] });
 steps.AUTO['HW-T9'] = textCell('HW-T9', 'Menu > **Advanced setup** > **modify configuration** > NEXT to ISU **3000 Changeover**: **Automatic** makes Auto available. No gap setting. Change nothing else.', { installer_menu: true, fn: 'AUTO', settingName: 'Auto changeover', section: 'p.22', entry: 'Advanced setup' });
 steps.AUTO['HW-FP6'] = textCell('HW-FP6', 'Hold **\u25B2** + **FAN**; NEXT to Function **12**: **1** adds Auto. Avoid 2 (Auto only), which locks out the other modes. The 3° gap is fixed.', { installer_menu: true, fn: 'AUTO', settingName: 'Auto changeover', section: 'PDF p.8', entry: 'FAN', num_sources: [{ label: 'MANUAL', item: 'Auto separation', value: '3 degrees, fixed' }] });
-steps.AUTO['HW-X2P'] = textCell('HW-X2P', 'Hold the bottom-left button and **\u2191** for 5 seconds; ISU **3000**: **1** enables Auto. Honeywell\u2019s guide advises against Auto where winter outdoor temperatures often stay below 50 °F (10 °C).', { installer_menu: true, fn: 'AUTO', settingName: 'Auto changeover', section: 'p.11', entry: 'bottom-left', num_sources: [{ label: 'MANUAL', item: 'Auto outdoor note', value: '50 °F' }] });
+steps.AUTO['HW-X2P'] = textCell('HW-X2P', 'Hold bottom-left + **\u2191** 5 seconds; ISU **3000**: **1** enables Auto. Honeywell\u2019s guide advises against Auto where winter outdoor temperatures often stay below 50 °F (10 °C).', { installer_menu: true, fn: 'AUTO', settingName: 'Auto changeover', section: 'p.11', entry: 'bottom-left', num_sources: [{ label: 'MANUAL', item: 'Auto outdoor note', value: '50 °F' }] });
 steps.AUTO['HW-RTH76'] = Object.assign(blankCell('HW-RTH76', 'PDF p.21'), { held_text: 'RTH7600 Auto entry: button labels to be confirmed on the mirror check.' });
 MODELS.forEach(function (model) { if (!steps.AUTO[model]) steps.AUTO[model] = blankCell(model, 'manual'); });
 
@@ -243,23 +249,35 @@ recov('HW-T6', '**Menu** > arrows to **RECOVERY** > **Select** > **RECOVERY ON**
 recov('HW-T9', 'Menu > **Advanced setup** > **modify configuration** > NEXT to ISU **4090 Adaptive Intelligent Recovery** > Yes or No > **Done**. Change nothing else.', { installer_menu: true, fn: 'RECOV', settingName: 'recovery', section: 'p.22', entry: 'Advanced setup' });
 recov('HW-FP6', 'Hold **\u25B2** + **FAN**; NEXT to Function **13**: 1 On, 0 Off; DONE.', { installer_menu: true, fn: 'RECOV', settingName: 'recovery', section: 'PDF p.8', entry: 'FAN' });
 recov('HW-TH4', 'Hold **\u25B2** + **\u25BC**; \u25B2 to Function **13**: 1 On, 0 Off; hold both to save.', { installer_menu: true, fn: 'RECOV', settingName: 'recovery', section: 'PDF p.12', entry: 'display changes' });
-recov('HW-X2P', 'Hold the bottom-left button and **\u2191** for 5 seconds; ISU **4090 Smart Response**: 1 Yes, 0 No.', { installer_menu: true, fn: 'RECOV', settingName: 'recovery', section: 'p.12', entry: 'bottom-left' });
+recov('HW-X2P', 'Hold bottom-left + **\u2191** 5 seconds; ISU **4090 Smart Response**: 1 Yes, 0 No.', { installer_menu: true, fn: 'RECOV', settingName: 'recovery', section: 'p.12', entry: 'bottom-left' });
 steps.RECOV['HW-RTH76'] = Object.assign(blankCell('HW-RTH76', 'PDF p.22'), { held_text: 'RTH7600 recovery entry: button labels to be confirmed on the mirror check.' });
 MODELS.forEach(function (model) { if (!steps.RECOV[model]) steps.RECOV[model] = blankCell(model, 'manual'); });
 
+function holdNote(model) {
+  const cell = data.steps.HOLD[model];
+  if (cell && cell.text) return cell.text;
+  const records = JSON.parse(fs.readFileSync(path.join(root, 'content/mirrors/compiled.json'), 'utf8'));
+  const lines = [];
+  records.forEach(function (rec) {
+    if (rec.step_id === model + '.HOLD.01') (rec.our_instruction_text || []).forEach(function (line) { lines.push(line); });
+  });
+  if (!lines.length) throw new Error('missing HOLD copy ' + model);
+  return lines.join(' ');
+}
 function setback(model, note, section, id) {
   steps.SETBACK[model] = textCell(model, SETBACK_LEAD + note, { installer_menu: false, fn: 'SETBACK', settingName: 'the schedule', section: section, fallback: fb(model, section, id) });
 }
-setback('ECB-PRM', 'Comfort Settings are at **MAIN MENU** > **COMFORT SETTINGS**. Smart Home & Away is in eco+. Away adds 1 °F before it calls.', 'p.60');
-NESTS.forEach(function (model) { setback(model, '**Eco Temperatures** are in Settings > Nest Sense. Early-On waits until someone is home.', 'Eco Temperatures', 'F-NEST-SENSE'); });
-['HW-T5', 'HW-T6', 'HW-T9'].forEach(function (model) { setback(model, 'Open Menu > Schedule. Home and Away temperatures are in the app when geofencing is on.', 'schedule'); });
-['HW-FP6', 'HW-TH4', 'HW-RTH76', 'HW-X2P', 'AMZ-AST'].forEach(function (model) { setback(model, 'Use the hold and schedule steps for this model. Make the heat-pump setback smaller, one step at a time.', 'schedule'); });
+setback('ECB-PRM', 'Change your Comfort Settings in **MAIN MENU** > **COMFORT SETTINGS**. Away and \u201CI\u2019m Usually Away\u201D let the room drift 1 °F more before the system starts.', 'p.60');
+NESTS.forEach(function (model) { setback(model, 'Change your **Eco Temperatures** in Settings > **Nest Sense**. Early-On waits until someone is home.', 'Eco Temperatures', 'F-NEST-SENSE'); });
+['HW-T5', 'HW-T6', 'HW-T9'].forEach(function (model) { setback(model, 'Change your schedule in **Menu** > **Schedule**, or your Home and Away temperatures in the app.', 'schedule'); });
+['HW-FP6', 'HW-TH4', 'HW-RTH76', 'HW-X2P', 'AMZ-AST'].forEach(function (model) { setback(model, holdNote(model), 'schedule'); });
 steps.SETBACK['ECB-ESS'] = blankCell('ECB-ESS', 'support page');
 
-const hplockEcb = '1. Check the thermostat is online (it uses outdoor weather). If not, stop. 2. **MAIN MENU** > **SETTINGS** > **INSTALLATION SETTINGS** > **THRESHOLDS**. 3. Write down **AUX HEAT MAX OUTDOOR TEMP** and **COMPRESSOR MIN OUTDOOR TEMP** (it may say Disabled). If you see **Aux Savings Optimization** instead (automatic staging), write down its level. 4. Backup heat runs in mild weather: lower **AUX HEAT MAX OUTDOOR TEMP** by one step, or move Aux Savings Optimization one level toward **Maximum**. Keep the aux maximum at or above the compressor minimum. 5. Go back to save. ' + WATCH_HP + ' ' + STOP_HP + ' ' + lc40('AUX HEAT MAX OUTDOOR TEMP') + ' ' + lc40('Aux Savings Optimization') + ' ' + LC32 + ' ' + LC30;
-const hplockT6 = '1. Hold **Menu** 5 seconds, then ISU. Look (don\u2019t change) at ISU **130**: it must say Wired or Internet. If it says None, stop. 2. Step to ISU **356 Aux Heat Lock Out** and **355 Balance Point**. If they aren\u2019t shown, your system isn\u2019t set up for them; stop. 3. Write down both. The maker default for ISU **356** is Off. 4. Backup heat in mild weather: lower 356 by one step (5 °F). 356 must stay at or above 355. Off on 356 means backup heat isn\u2019t limited by outdoor temperature. 5. Save. ' + WATCH_HP + ' ' + STOP_HP + ' ' + lc40('ISU 356') + ' Skip ISU 260 (dual fuel) and 340/350. ' + LC32 + ' ' + LC30;
+const hplockEcb = '1. Check the thermostat is online (it uses outdoor weather). If not, stop. 2. **MAIN MENU** > **SETTINGS** > **INSTALLATION SETTINGS** > **THRESHOLDS**. 3. Write down **AUX HEAT MAX OUTDOOR TEMP** and **COMPRESSOR MIN OUTDOOR TEMP** (it may say Disabled). If you see **Aux Savings Optimization** instead (automatic staging), write down its level. 4. Backup heat runs in mild weather: lower **AUX HEAT MAX OUTDOOR TEMP** by one step, or move Aux Savings Optimization one level toward **Maximum**. Keep the aux maximum at or above the compressor minimum. 5. Go back to save. ' + WATCH_HP + ' ' + STOP_HP + ' ' + lc40('AUX HEAT MAX OUTDOOR TEMP') + ' ' + lc40('Aux Savings Optimization');
+const hplockT6 = '1. Hold **Menu** 5 seconds, then ISU. 2. Look (don\u2019t change) at ISU **130**: it must say Wired or Internet. If it says None, stop. 3. Step to ISU **356 Aux Heat Lock Out** and **355 Balance Point**. If they aren\u2019t shown, your system isn\u2019t set up for them; stop. 4. Write down both. 5. Backup heat in mild weather: lower 356 by one step (5 °F). 356 must stay at or above 355 (Off on 356 means backup heat isn\u2019t limited by outdoor temperature). 6. Save. ' + WATCH_HP + ' ' + STOP_HP + ' ' + lc40('ISU 356') + ' Skip ISU 260 (dual fuel) and 340/350.';
 const nestOff = ' If Heat Pump Balance is off, we don\u2019t guide the backup heat lockout temperature. Leave it as it is, or ask a licensed HVAC professional.';
-const nestMove = ' Write down the choice (Max Comfort is the maker default). Backup heat in mild weather: move one step toward **Max Savings**. House can\u2019t keep up: one step toward **Max Comfort**. Don\u2019t choose Off. ' + WATCH_HP + ' ' + STOP_HP + ' ' + lc40('Heat Pump Balance') + nestOff + ' ' + LC32 + ' ' + LC30;
+const nestWifi = '1. Check that the thermostat is connected to Wi-Fi. Heat Pump Balance uses it to get your local weather. If it isn\u2019t connected, stop. ';
+const nestTail = ' 3. Write down the choice (Max Comfort is the default). 4. Backup heat in mild weather: move one step toward **Max Savings**. House can\u2019t keep up: one step toward **Max Comfort**. Don\u2019t choose Off. ' + WATCH_HP + ' ' + STOP_HP + ' ' + lc40('Heat Pump Balance') + nestOff;
 steps.HPLOCK['ECB-PRM'] = textCell('ECB-PRM', hplockEcb, {
   installer_menu: true, fn: 'HPLOCK', settingName: 'the backup heat outdoor limit', section: 'p.111', entry: 'online',
   lc40: ['AUX HEAT MAX OUTDOOR TEMP', 'Aux Savings Optimization'],
@@ -274,29 +292,29 @@ steps.HPLOCK['HW-T6'] = textCell('HW-T6', hplockT6, {
   num_sources: [{ label: 'MANUAL', item: 'ISU 356', low: 5, high: 65, unit: '°F' }, { label: 'MANUAL', item: 'ISU 355', low: 5, high: 60, unit: '°F', typical: false }, { label: 'TRADE', item: 'aux lockout', value: 35, low: 5, high: 65 }],
   ratedMinText: '5a. Heat pump locks out early: lower 355 one step, never below your outdoor unit\u2019s rating, and keep 356 at or above it.'
 });
-steps.HPLOCK['NEST-NT'] = textCell('NEST-NT', '1. Google Home app > your thermostat > **Settings** > **Temperature Preferences** > **Heat Pump Balance**. The thermostat must be connected to Wi-Fi. If it isn\u2019t, stop.' + nestMove, { installer_menu: true, fn: 'HPLOCK', settingName: 'Heat Pump Balance', section: 'Heat Pump Balance', entry: 'Wi-Fi', fallback: fb('NEST-NT', 'Heat Pump Balance', 'F-NEST-HPB'), lc40: ['Heat Pump Balance'] });
-steps.HPLOCK['NEST-LT4'] = textCell('NEST-LT4', '1. Home app > thermostat > **Equipment** > **Heat pump** > **Use Heat Pump Balance**, then the level. The thermostat must be connected to Wi-Fi. If it isn\u2019t, stop. Change only Heat Pump Balance. Don\u2019t change anything else under Equipment. Don\u2019t open **Advanced configuration**.' + nestMove, { installer_menu: true, fn: 'HPLOCK', settingName: 'Heat Pump Balance', section: 'Heat Pump Balance', entry: 'Wi-Fi', fallback: fb('NEST-LT4', 'Heat Pump Balance', 'F-NEST-HPB'), lc40: ['Heat Pump Balance'] });
+steps.HPLOCK['NEST-NT'] = textCell('NEST-NT', nestWifi + '2. Google Home app > your thermostat > **Settings** > **Temperature Preferences** > **Heat Pump Balance**.' + nestTail, { installer_menu: true, fn: 'HPLOCK', settingName: 'Heat Pump Balance', section: 'Heat Pump Balance', entry: 'Wi-Fi', fallback: fb('NEST-NT', 'Heat Pump Balance', 'F-NEST-HPB'), lc40: ['Heat Pump Balance'] });
+steps.HPLOCK['NEST-LT4'] = textCell('NEST-LT4', nestWifi + '2. Home app > thermostat > **Equipment** > **Heat pump** > **Use Heat Pump Balance**. Change only Heat Pump Balance. Don\u2019t change anything else under Equipment. Don\u2019t open **Advanced configuration**.' + nestTail, { installer_menu: true, fn: 'HPLOCK', settingName: 'Heat Pump Balance', section: 'Heat Pump Balance', entry: 'Wi-Fi', fallback: fb('NEST-LT4', 'Heat Pump Balance', 'F-NEST-HPB'), lc40: ['Heat Pump Balance'] });
 ['NEST-LT3', 'NEST-E'].forEach(function (model) {
-  steps.HPLOCK[model] = textCell(model, '1. Ring > **Settings** > **Nest Sense** > **Heat Pump Balance**. The thermostat must be connected to Wi-Fi. If it isn\u2019t, stop.' + nestMove, { installer_menu: true, fn: 'HPLOCK', settingName: 'Heat Pump Balance', section: 'Heat Pump Balance', entry: 'Wi-Fi', fallback: fb(model, 'Heat Pump Balance', 'F-NEST-HPB'), lc40: ['Heat Pump Balance'] });
+  steps.HPLOCK[model] = textCell(model, nestWifi + '2. Ring > **Settings** > **Nest Sense** > **Heat Pump Balance**.' + nestTail, { installer_menu: true, fn: 'HPLOCK', settingName: 'Heat Pump Balance', section: 'Heat Pump Balance', entry: 'Wi-Fi', fallback: fb(model, 'Heat Pump Balance', 'F-NEST-HPB'), lc40: ['Heat Pump Balance'] });
 });
 MODELS.forEach(function (model) { if (!steps.HPLOCK[model]) steps.HPLOCK[model] = blankCell(model, 'manual'); });
 
-steps.DEHUM['ECB-PRM'] = textCell('ECB-PRM', DEHUM_CLAIM + '1. **MAIN MENU** > **SYSTEM** > **DEHUMIDIFY USING AC** > **Enable**, then pick a humidity level. Write down what it was. 2. For more drying, **INSTALLATION SETTINGS** > **THRESHOLDS** > **AC OVERCOOL MAX**: write down the value, then raise it one step. It stops at the overcool limit or the humidity level, whichever comes first. 3. Too cold: lower AC Overcool Max one step. **Watch:** the indoor humidity on the thermostat and how the house feels, for a day. **Stop** if rooms get too cold or it runs much longer; put back your values. Dehumidifier accessory setup stays with a pro.', { installer_menu: true, fn: 'DEHUM', settingName: 'the dehumidify setting', section: 'p.105', entry: 'INSTALLATION SETTINGS' });
+steps.DEHUM['ECB-PRM'] = textCell('ECB-PRM', '1. **MAIN MENU** > **SYSTEM** > **DEHUMIDIFY USING AC** > **Enable**, then pick a humidity level (homeowner menu). Write down what it was. 2. For more drying, **INSTALLATION SETTINGS** > **THRESHOLDS** > **AC OVERCOOL MAX**: write down the value, then raise it one step. It stops at the overcool limit or the humidity level, whichever comes first. 3. Too cold: lower AC Overcool Max one step. **Watch:** the indoor humidity on the thermostat and how the house feels, for a day. **Stop** if rooms get too cold or it runs much longer; put back your values. Dehumidifier accessory setup stays with a pro.', { installer_menu: true, fn: 'DEHUM', settingName: 'the dehumidify setting', section: 'p.105', entry: 'INSTALLATION SETTINGS' });
 NESTS.forEach(function (model) {
-  steps.DEHUM[model] = textCell(model, DEHUM_CLAIM + '**Cool to Dry** is in Nest Sense (Settings). Write down whether it was on. Humidity Helper and accessory setup are for a pro.', { installer_menu: false, fn: 'DEHUM', settingName: 'Cool to Dry', section: 'Cool to Dry', fallback: fb(model, 'Cool to Dry', 'F-NEST-SENSE') });
+  steps.DEHUM[model] = textCell(model, '**Cool to Dry** in Nest Sense (Settings). Write down whether it was on. Humidity Helper and accessory setup are pro-only.', { installer_menu: false, fn: 'DEHUM', settingName: 'Cool to Dry', section: 'Cool to Dry', fallback: fb(model, 'Cool to Dry', 'F-NEST-SENSE') });
 });
 ['HW-T5', 'HW-T6', 'HW-T9', 'HW-FP6', 'HW-TH4', 'HW-RTH76', 'HW-X2P', 'AMZ-AST'].forEach(function (model) {
   steps.DEHUM[model] = pointerCell(model, 'Your thermostat has no dehumidify setting. Make sure the fan is on Auto, not On, while cooling.', 'manual');
 });
 steps.DEHUM['ECB-ESS'] = blankCell('ECB-ESS', 'support page');
 
-steps.SENSORS['ECB-PRM'] = textCell('ECB-PRM', 'Sensor participation is per Comfort Setting: **MAIN MENU** > **COMFORT SETTINGS** > tap the Comfort Setting > sensors. Compare readings in **MAIN MENU** > **SETTINGS** > **SENSORS**. **Follow Me** gives priority to occupied rooms. Put a sensor about four feet up, away from vents, fans, outside walls, windows, and sun. **Watch:** a day in the rooms you use. **Stop** if a room still doesn\u2019t match, and call a pro before moving the thermostat.', { installer_menu: false, fn: 'SENSORS', settingName: 'sensors', section: 'p.89' });
-steps.SENSORS['HW-T9'] = textCell('HW-T9', '**Set Sensor Priority** for each schedule period: active rooms (motion) or selected rooms. **Watch:** a day in those rooms. **Stop** if the priority room still doesn\u2019t match the rest of the home.', { installer_menu: false, fn: 'SENSORS', settingName: 'sensor priority', section: 'p.5' });
-steps.SENSORS['NEST-LT4'] = textCell('NEST-LT4', 'Sun: Home app > Settings > **Temperature Preferences** > Nest Sense > **Sunblock**. It needs a few days to learn. Temperature Sensor: change its schedule, or move it a couple of feet away from vents, windows, and outside doors, about chest height.', { installer_menu: false, fn: 'SENSORS', settingName: 'Sunblock', section: 'Sunblock', fallback: fb('NEST-LT4', 'Sunblock', 'F-NEST-SUN') });
+steps.SENSORS['ECB-PRM'] = textCell('ECB-PRM', 'Sensor participation per Comfort Setting: **MAIN MENU** > **COMFORT SETTINGS** > tap the Comfort Setting > sensors; compare readings in **MAIN MENU** > **SETTINGS** > **SENSORS**. **Follow Me** gives priority to occupied rooms. Put a sensor about four feet up, away from vents, fans, outside walls, windows and sun. **Watch:** a day or two in the rooms you use most. **Stop** if a room still doesn\u2019t match after that, and put the sensor settings back the way they were.', { installer_menu: false, fn: 'SENSORS', settingName: 'sensors', section: 'p.89' });
+steps.SENSORS['HW-T9'] = textCell('HW-T9', '**Set Sensor Priority** for each schedule period: active (motion) rooms or selected rooms. **Watch:** a day or two in those rooms. **Stop** if the priority rooms still don\u2019t match the rest of the home, and put the priority back the way it was.', { installer_menu: false, fn: 'SENSORS', settingName: 'sensor priority', section: 'p.5' });
+steps.SENSORS['NEST-LT4'] = textCell('NEST-LT4', 'Sun: Home app > Settings > **Temperature Preferences** > Nest Sense > **Sunblock**. It needs a few days to learn. Temperature Sensor: change its schedule, or move it a couple of feet away from vents, windows, and outside doors, about chest height. **Watch:** a few days, while it learns. **Stop** if the reading still jumps when sun hits the thermostat, or the sensor room still doesn\u2019t match, and put the settings back the way they were.', { installer_menu: false, fn: 'SENSORS', settingName: 'Sunblock', section: 'Sunblock', fallback: fb('NEST-LT4', 'Sunblock', 'F-NEST-SUN') });
 ['NEST-LT3', 'NEST-E'].forEach(function (model) {
-  steps.SENSORS[model] = textCell(model, 'Sun: ring > Settings > **Nest Sense** > **Sunblock**. It needs a few days to learn. Temperature Sensor: change its schedule, or move it a couple of feet away from vents, windows, and outside doors, about chest height.', { installer_menu: false, fn: 'SENSORS', settingName: 'Sunblock', section: 'Sunblock', fallback: fb(model, 'Sunblock', 'F-NEST-SUN') });
+  steps.SENSORS[model] = textCell(model, 'Sun: ring > Settings > **Nest Sense** > **Sunblock**. It needs a few days to learn. Temperature Sensor: change its schedule, or move it a couple of feet away from vents, windows, and outside doors, about chest height. **Watch:** a few days, while it learns. **Stop** if the reading still jumps when sun hits the thermostat, or the sensor room still doesn\u2019t match, and put the settings back the way they were.', { installer_menu: false, fn: 'SENSORS', settingName: 'Sunblock', section: 'Sunblock', fallback: fb(model, 'Sunblock', 'F-NEST-SUN') });
 });
-steps.SENSORS['NEST-NT'] = textCell('NEST-NT', 'This model has no Sunblock. Temperature Sensor: change its schedule, or move it a couple of feet away from vents, windows, and outside doors, about chest height.', { installer_menu: false, fn: 'SENSORS', settingName: 'Temperature Sensor', section: 'Temperature Sensor', fallback: fb('NEST-NT', 'Temperature Sensor', 'F-NEST-SENSOR') });
+steps.SENSORS['NEST-NT'] = textCell('NEST-NT', 'No Sunblock on this model. Temperature Sensor: change its schedule, or move it a couple of feet away from vents, windows, and outside doors, about chest height. **Watch:** a day or two. **Stop** if the sensor room still doesn\u2019t match, and put the sensor settings back the way they were.', { installer_menu: false, fn: 'SENSORS', settingName: 'Temperature Sensor', section: 'Temperature Sensor', fallback: fb('NEST-NT', 'Temperature Sensor', 'F-NEST-SENSOR') });
 ['HW-T5', 'HW-T6', 'HW-FP6', 'HW-TH4', 'HW-RTH76', 'HW-X2P', 'AMZ-AST'].forEach(function (model) {
   steps.SENSORS[model] = pointerCell(model, 'Your thermostat has no sun or room-sensor setting. Shade it at that time of day, like closing a blind. Don\u2019t cover the thermostat.', 'manual');
 });
@@ -466,29 +484,29 @@ node('ts.guard.cold_weather', 'Before backup-heat settings', 'Before any backup-
   ]), true);
 node('ts.guard.outdoor_rating', 'Before backup-heat settings', 'Which change are you making?', LC30,
   withTail([
-    opt('only_backup_heat', 'Only the backup heat limit, or Heat Pump Balance', 'ts.step.hp_lockouts', '', 'Backup heat limit only.', { flag: 'ts_rated_min=not_needed' }),
-    opt('raise_hp_min', 'Raising the heat pump minimum, so backup heat takes over sooner', 'ts.step.hp_lockouts', '', 'Raising the heat pump minimum.', { flag: 'ts_rated_min=not_needed' }),
-    opt('lower_hp_min_rating_known', 'Lowering the heat pump minimum, and I found my outdoor unit\u2019s rated minimum in its manual', 'ts.step.hp_lockouts', '', 'Rated minimum known.', { flag: 'ts_rated_min=known' }),
-    opt('lower_hp_min_rating_unknown', 'Lowering the heat pump minimum, but I don\u2019t have the rating', '@ts_rated_min_unknown', '', 'Rated minimum unknown.')
+    opt('only_backup_heat', 'Only the backup heat limit, or Heat Pump Balance', 'ts.step.hp_lockouts', '', '', { flag: 'ts_rated_min=not_needed' }),
+    opt('raise_hp_min', 'Raising the heat pump minimum, so backup heat takes over sooner', 'ts.step.hp_lockouts', '', '', { flag: 'ts_rated_min=not_needed' }),
+    opt('lower_hp_min_rating_known', 'Lowering the heat pump minimum, and I found my outdoor unit\u2019s rated minimum in its manual', 'ts.step.hp_lockouts', '', '', { flag: 'ts_rated_min=known' }),
+    opt('lower_hp_min_rating_unknown', 'Lowering the heat pump minimum, but I don\u2019t have the rating', '@ts_rated_min_unknown', '', '')
   ]));
-node('ts.diag.humidity', 'What you noticed', 'What do you notice about humidity?', '',
+node('ts.diag.humidity', 'What you noticed', 'What do you notice?', '',
   withTail([
     opt('fan_on', 'The fan is set to On all the time', 'ts.settings.fan', '', 'Fan On in cooling season.'),
-    opt('want_dehumidify', 'I want the system to dry the air more', 'ts.step.dehumidify', '', 'Wants more drying.'),
+    opt('want_dehumidify', 'I want the system to dry the air more', 'ts.step.dehumidify', '', ''),
     opt('overcool_cold', 'It gets too cold while it dries the air', 'ts.step.dehumidify', '', 'Overcool too cold.'),
-    opt('ice_seen', 'I see ice on the copper lines or the indoor unit', '@ts_coil_ice_stop', '', 'Ice seen on the cooling system.', { gate: 'ts_coil_ice' }),
-    opt('short_runs_humid', 'It cools in short bursts and stays humid', 'ts.diag.cycling', '', 'Short cooling runs, still humid.')
+    opt('ice_seen', 'I see ice on the copper lines or the indoor unit', '@ts_coil_ice_stop', '', '', { gate: 'ts_coil_ice' }),
+    opt('short_runs_humid', 'It cools in short bursts and stays humid', 'ts.diag.cycling', '', '')
   ]));
-node('ts.diag.stages', 'What you noticed', 'How does high and low sound?',
+node('ts.diag.stages', 'What you noticed', 'What do you notice?',
   'Two-stage systems usually run on low most of the time and use high when it\u2019s very hot or cold. You can usually tell by sound and airflow: high is louder and blows harder. Some are set to finish on high stage (some brands call this \u201Clatching\u201D): once high starts, it keeps running until the room reaches the setting. Others drop back to low first. This can be set at the thermostat, in the wiring, or at the equipment, and most of that is pro work.',
   withTail([
     opt('holds_high', 'It starts quieter, then gets louder and blows harder and stays that way until it shuts off, and the room overshoots or the bills went up', '@ts_stage_pro', '', 'Holds high stage until satisfied (sound/airflow).'),
     opt('bounces', 'During one run, the fan keeps speeding up and slowing down, again and again, or the room never quite reaches the setting', '@ts_stage_pro', '', 'Blower speed up and down within one call, or never satisfies.'),
     opt('geo_system', 'It\u2019s a geothermal or water-source system', '@ts_stage_pro', '', 'Geothermal system.', { flag: 'ts_geo' }),
     opt('after_big_change', 'It only runs on high after a big temperature change', 'ts.step.setback', '', 'High stage after big change.'),
-    opt('check_stage_settings', 'Show me the stage settings on my thermostat', 'ts.step.stage_latch', '', 'Stage settings requested.', { requiresFlag: 'stageLatchStepsEnabled' })
+    opt('check_stage_settings', 'Show me the stage settings on my thermostat', 'ts.step.stage_latch', '', '', { requiresFlag: 'stageLatchStepsEnabled' })
   ]));
-node('ts.look.geo_lockouts', 'Before backup-heat settings', 'Look only: write down the lockout settings', '{step panel: GEO}',
+node('ts.look.geo_lockouts', 'Before backup-heat settings', 'Look only: write down your lockout settings', '{step panel: GEO}',
   withTail([
     opt('geo_lock_temp', 'The heat pump or compressor lockout shows a temperature, not Off or Disabled', '@ts_geo_pro', '', 'Geo compressor lockout set to a temperature.'),
     opt('geo_aux_mild', 'Backup heat runs a lot when it\u2019s mild outside', '@ts_geo_pro', '', 'Geo backup heat runs in mild weather.'),
@@ -496,61 +514,61 @@ node('ts.look.geo_lockouts', 'Before backup-heat settings', 'Look only: write do
     opt('not_on_my_model', 'My thermostat doesn\u2019t show these', '@ts_geo_noted_basic', '', '')
   ]));
 
-function stepBody(token) { return 'These steps match the model you picked.\n\n{step panel: ' + token + '}'; }
+function stepBody(token) { return '{step panel: ' + token + '}'; }
 node('ts.step.offset', 'Comfort settings', 'Temperature offset', stepBody('OFFSET'), doneOpts('@ts_offset_done_basic'));
-node('ts.step.differential', 'Comfort settings', 'Temperature swing', stepBody('DIFF'), doneOpts('@ts_differential_done_basic', [opt('use_cph_instead', 'My thermostat uses cycle rate instead', 'ts.step.cph', '', 'Model uses cycle rate instead of swing.')]));
-node('ts.step.cph', 'Comfort settings', 'Cycle rate', stepBody('CPH'), doneOpts('@ts_cph_done_basic', [opt('want_raise_compressor', 'I want to raise the cooling or heat pump cycle rate', '@ts_installer_guard', '', 'Wants the compressor cycle rate raised.')]));
+node('ts.step.differential', 'Comfort settings', 'Temperature swing', stepBody('DIFF'), doneOpts('@ts_differential_done_basic', [opt('use_cph_instead', 'My thermostat uses cycle rate instead', 'ts.step.cph', '', '')]));
+node('ts.step.cph', 'Comfort settings', 'Cycle rate', stepBody('CPH'), doneOpts('@ts_cph_done_basic', [opt('want_raise_compressor', 'I want to raise the cooling or heat pump cycle rate', '@ts_installer_guard', '', '')]));
 node('ts.step.auto_deadband', 'Comfort settings', 'Auto heat and cool', stepBody('AUTO'), doneOpts('@ts_auto_deadband_done_basic'));
 node('ts.step.recovery', 'Comfort settings', 'Early start and recovery', stepBody('RECOV'), doneOpts('@ts_recovery_done_basic'));
 node('ts.step.setback', 'Comfort settings', 'Schedule and away temperatures', stepBody('SETBACK'), homeOpts('@ts_setback_done_basic'));
-node('ts.step.hp_lockouts', 'Comfort settings', 'Backup heat outdoor limit', stepBody('HPLOCK'), doneOpts('@ts_hp_lockouts_done_basic', [opt('house_cold_after', 'The house got cold after the change', '@ts_hp_not_keeping_up_pro', '', 'House got cold after the backup heat change.')]));
-node('ts.step.dehumidify', 'Comfort settings', 'Dehumidify settings', stepBody('DEHUM'), doneOpts('@ts_dehumidify_done_basic', [opt('ice_seen', 'I see ice on the copper lines or the indoor unit', '@ts_coil_ice_stop', '', 'Ice seen on the cooling system.', { gate: 'ts_coil_ice' })]));
+node('ts.step.hp_lockouts', 'Comfort settings', 'Backup heat settings', stepBody('HPLOCK'), doneOpts('@ts_hp_lockouts_done_basic', [opt('house_cold_after', 'The house got cold after the change', '@ts_hp_not_keeping_up_pro', '', '')]));
+node('ts.step.dehumidify', 'Comfort settings', 'Dehumidify settings', stepBody('DEHUM'), doneOpts('@ts_dehumidify_done_basic', [opt('ice_seen', 'I see ice on the copper lines or the indoor unit', '@ts_coil_ice_stop', '', '', { gate: 'ts_coil_ice' })]));
 node('ts.step.sensors', 'Comfort settings', 'Sensors and sunlight', stepBody('SENSORS'), homeOpts('@ts_sensors_done_basic'));
 node('ts.step.stage_latch', 'Comfort settings', 'Finish on high stage', stepBody('LATCH'), doneOpts('@ts_latch_done_basic'));
 
-function res(id, outcome, title, explanation, actions, extra) {
+function res(id, outcome, title, explanation, extra) {
   extra = extra || {};
   const tier = extra.tier || (outcome === 'emergency_exit' ? 'Emergency' : outcome === 'next_step' ? 'Basic homeowner check' : outcome === 'insufficient_info' ? 'More information needed' : 'Professional guidance');
-  data.results[id] = {
+  const row = {
     tier: tier, urgency: extra.urgency || (outcome === 'next_step' ? 'Keep the note' : 'Call a licensed HVAC professional'),
-    title: u(title), explanation: u(explanation), actions: actions.map(u),
-    avoid: u(extra.avoid || 'Don\u2019t open equipment, change wiring, or reset a breaker.'),
+    title: u(title), explanation: u(explanation), actions: [], avoid: '',
     source: extra.source || 'maintenance', outcome: outcome, reason: id,
     diyTier: outcome === 'next_step' ? 'basic' : null, gate: extra.gate || null, continueTo: null
   };
+  if (extra.nextAction) row.nextAction = { label: u(extra.nextAction.label), next: extra.nextAction.next };
+  data.results[id] = row;
 }
-const doneLine = KEEP;
-res('ts_offset_done_basic', 'next_step', 'Offset set', 'Check the thermometer again in a few days, and in the next season. If the difference changes, put the offset back to what you wrote down and call a pro. ' + data.lc.lc21 + ' ' + doneLine, ['Leave the note with the old number and the new number.', 'If the difference changes later, put the old number back.']);
-res('ts_differential_done_basic', 'next_step', 'Swing setting changed', data.lc.lc20.replace('[Setting]', 'differential') + ' Count starts again next week. ' + doneLine, ['Leave the note with the old value and the new value.', 'If starts jump or the room swings more, put the old value back.']);
-res('ts_cph_done_basic', 'next_step', 'Cycle rate changed', data.lc.lc20c + ' Cooling or heat pump cycle rate only goes down. ' + doneLine, ['Leave the note with the old number and the new number.', 'Don\u2019t raise the cooling or heat pump cycle rate above where it was.']);
-res('ts_auto_deadband_done_basic', 'next_step', 'Auto settings changed', 'Watch the next change of season. ' + doneLine, ['Leave the note with the old Auto values.', 'If heat and cooling start running back to back, put the old value back.']);
-res('ts_recovery_done_basic', 'next_step', 'Recovery setting changed', 'It can take a few days to learn. ' + doneLine, ['Leave the note with On or Off, before and after.', 'If mornings stay cold, put the old setting back.']);
-res('ts_hp_lockouts_done_basic', 'next_step', 'Backup heat setting changed', LC33 + ' Check again before the first cold snap and put the old values back if a cold snap is coming. ' + doneLine, ['Leave the note with both outdoor values, before and after.', 'Put the old values back if the house gets cold.']);
-res('ts_dehumidify_done_basic', 'next_step', 'Dehumidify setting changed', 'These settings can help lower indoor humidity. ' + data.lc.lc36.split('. ').slice(1).join('. ') + ' ' + doneLine, ['Leave the note with the old humidity and overcool values.', 'If you see ice, set cooling to Off and call a pro.']);
-res('ts_latch_done_basic', 'next_step', 'Stage setting changed', doneLine, ['Leave the note with the old stage setting.', 'This result stays held until the stage steps are turned on.']);
-res('ts_setback_done_basic', 'next_step', 'Schedule changed', 'On a heat pump, keep the change small and let recovery start early. ' + doneLine, ['Leave the note with the old schedule temperatures.', 'If mornings get cold, put the old schedule back.']);
-res('ts_sensors_done_basic', 'next_step', 'Sensor settings changed', 'Learning features take a few days. ' + doneLine, ['Leave the note with which rooms participate.', 'Don\u2019t cover the thermostat.']);
-res('ts_location_fix_basic', 'next_step', 'Move what\u2019s near it, not the thermostat', 'Move the lamp, TV, or device away. Close a blind at the sunny time. Point an adjustable vent away. Don\u2019t take the thermostat off the wall. Check again tomorrow with the thermometer.', ['Move the lamp, screen, or vent, not the thermostat.', 'Check again tomorrow with the thermometer.']);
-res('ts_compressor_wait_normal', 'next_step', 'That wait is normal', 'The thermostat keeps the compressor off for a few minutes after it stops, to protect it. Wait about 5 minutes. This setting is for installers.', ['Wait about 5 minutes.', 'Don\u2019t change the compressor protection setting.'], { avoid: 'Don\u2019t change compressor protection or minimum off time.' });
-res('ts_learning_period_wait', 'next_step', 'Give it a few days', 'Early start and sun features learn over the first few days. Leave the setting as it is while it learns.', ['Wait a few days before judging early start.', 'Come back if it still never starts early after that.']);
-res('ts_recovery_explained_basic', 'next_step', 'Starting early is on purpose', 'It learned how long your home takes, so it starts early to be at your temperature on time. The screen may show Recovery or In Recovery. If you\u2019d rather it start at the schedule time, you can turn it off from the recovery steps.', ['Leave it on if you want the house ready at the schedule time.', 'Open the recovery steps later if you want it to start at the schedule time.']);
-res('ts_defrost_normal_basic', 'next_step', 'Defrost is normal', 'In cold, damp weather the outdoor unit melts frost off itself. It may steam, and backup heat may run for a few minutes. If it happens many times an hour, or ice builds up on the outdoor unit, call a pro.', ['Let the defrost finish.', 'Call a pro if ice stays on the outdoor unit or defrost repeats many times an hour.']);
-res('ts_reading_fault_pro', 'call_pro', 'The reading needs a pro', 'Big or drifting differences are not something to offset. ' + data.lc.lc21, ['Don\u2019t enter an offset for a drifting reading.', 'Call a licensed HVAC professional.']);
-res('ts_location_pro', 'call_pro', 'The thermostat\u2019s spot needs a pro', 'Moving a thermostat or sealing the wall opening means taking it off the wall.', ['Leave the thermostat on the wall.', 'Call a licensed HVAC professional.']);
-res('ts_equipment_cycling_pro', 'call_pro', 'The equipment may be shutting itself off', 'If it stops before the room reaches the setting, no thermostat setting fixes it. Causes include safety switches and airflow.', ['Don\u2019t keep changing comfort settings for this pattern.', 'Call a licensed HVAC professional.']);
-res('ts_setup_check_pro', 'call_pro', 'Ask a pro to check the setup', 'Ask a licensed HVAC professional to check how the system is set up.', ['Call your installer or a licensed HVAC professional.', 'Write down what they say each setting is.']);
-res('ts_new_install_installer', 'call_pro', 'Call your installer first', 'A new system or thermostat may still be under your installer\u2019s warranty. Ask them to check the setup, and ask what each of these settings is set to:', ['Call the installer who put the system in.', 'Ask what each listed setting is set to, and write the answers down.']);
-res('ts_ask_installer_first', 'call_pro', 'Ask your installer first', data.lc.lc17, ['Ask your installer before changing that setting.', 'Come back after you have an answer.']);
-res('ts_hp_not_keeping_up_pro', 'call_pro', 'Your heat pump isn\u2019t keeping up', LC33, ['Put back the values you wrote down.', 'Call a licensed HVAC professional if the house still can\u2019t keep up.']);
-res('ts_stage_pro', 'call_pro', 'Staging needs a pro', 'How your system moves between high and low can be set at the thermostat, in the wiring, or at the equipment. A pro can check it. One setting to ask about is ' + LATCH + ': once it steps up to high, it stays on high until it shuts off. That can be set on purpose. Mention it if the room overshoots or your bills went up, or if the fan keeps speeding up and slowing down during one run.', ['Tell the pro what you heard and whether the room overshoots.', 'Ask about ' + LATCH + '.']);
-res('ts_cold_weather_stop', 'call_pro', 'Leave backup heat settings for now', data.lc.lc39, ['Leave the backup heat settings as they are.', 'Call a licensed HVAC professional if the home isn\u2019t keeping up with heat now.']);
-res('ts_comfort_not_fixed_pro', 'call_pro', 'It\u2019s time for a pro', 'Put back the values you wrote down. ' + data.lc.lc22, ['Put back the values you wrote down.', 'Call a licensed HVAC professional.']);
-res('ts_coil_ice_stop', 'emergency_exit', 'Ice on the cooling system', 'If you see ice on the copper lines or the indoor unit, set cooling to Off, don\u2019t chip the ice, and call a licensed HVAC professional.', ['Set cooling to Off.', 'Don\u2019t chip the ice.', 'Call a licensed HVAC professional.'], { gate: 'ts_coil_ice', avoid: 'Don\u2019t chip the ice or keep running cooling.' });
-res('ts_rated_min_unknown', 'insufficient_info', 'Find the rating first', LC30, ['Find the outdoor unit manual and the lowest outdoor temperature it is rated to run in.', 'Leave the heat pump minimum as it is until you have that number.'], { urgency: 'Rating needed first' });
-res('ts_not_on_your_model', 'insufficient_info', 'Not on your model', data.lc.lc10, ['Stop on this setting.', 'Check the maker\u2019s help for your model.'], { urgency: 'Different model path' });
-res('ts_geo_pro', 'call_pro', 'Ask a pro to check your geothermal or water-source system', 'Tell them what you wrote down. Ask them to check the water side too.', ['Tell the pro the numbers you wrote down.', 'Ask them to check the water side too.']);
-res('ts_geo_noted_basic', 'next_step', 'Leave these as they are', 'On a geothermal or water-source system, these settings are for your installer. If backup heat starts running a lot, or the house isn\u2019t comfortable, call a licensed HVAC professional and tell them what you wrote down.', ['Leave the settings as they are.', 'Call a pro if backup heat starts running a lot.']);
-res('ts_reading_unchecked', 'insufficient_info', 'Check with a thermometer first', 'Any separate thermometer works. Come back when you\u2019ve compared them.', ['Put a separate thermometer near the thermostat and compare twice.', 'Come back after you have both readings.'], { urgency: 'Thermometer check first' });
+res('ts_offset_done_basic', 'next_step', 'Offset set', 'Check with your thermometer again in a few days, and again next season. If the difference changes, put the offset back to the value you wrote down and call a licensed HVAC professional. ' + data.lc.lc21 + ' ' + KEEP);
+res('ts_differential_done_basic', 'next_step', 'Swing setting changed', 'Count how many times it starts in an hour again next week, at about the same time of day. Fewer starts and a comfortable room mean it worked. ' + data.lc.lc20.replace('[Setting]', 'differential') + ' ' + KEEP);
+res('ts_cph_done_basic', 'next_step', 'Cycle rate changed', 'Count how many times it starts in an hour again next week. Remember, the cooling or heat pump cycle rate only goes down from where it was set. ' + data.lc.lc20c + ' ' + KEEP);
+res('ts_auto_deadband_done_basic', 'next_step', 'Auto settings changed', 'Watch how it switches between heating and cooling over the next change of season. ' + KEEP);
+res('ts_recovery_done_basic', 'next_step', 'Recovery setting changed', 'It can take a few days to learn how long your home takes to warm up or cool down. ' + KEEP);
+res('ts_hp_lockouts_done_basic', 'next_step', 'Backup heat setting changed', 'Check this again before the first cold snap. If one is coming, put back the values you wrote down. ' + LC33 + ' ' + KEEP);
+res('ts_dehumidify_done_basic', 'next_step', 'Dehumidify setting changed', 'Watch how the house feels for a day. If you see ice on the copper lines or the indoor unit, set cooling to Off, don\u2019t chip the ice, and call a licensed HVAC professional. ' + KEEP);
+res('ts_latch_done_basic', 'next_step', 'Stage setting changed', 'Watch the next few times it heats or cools. If it runs worse, put back the value you wrote down. ' + KEEP);
+res('ts_setback_done_basic', 'next_step', 'Schedule changed', 'If you have a heat pump, keep schedule changes small and let early start do the work. Watch a few mornings. ' + KEEP);
+res('ts_sensors_done_basic', 'next_step', 'Sensor settings changed', 'Learning features can take a few days. ' + KEEP);
+res('ts_location_fix_basic', 'next_step', 'Move what\u2019s near it, not the thermostat', 'Move the lamp, TV, or other device away from the thermostat. If sun hits it at one time of day, close a blind or curtain then. If an adjustable vent blows on it, point the vent away. Don\u2019t take the thermostat off the wall. Check again tomorrow with your thermometer.');
+res('ts_compressor_wait_normal', 'next_step', 'That wait is normal', 'After your system stops, the thermostat keeps it off for a few minutes to protect the equipment. Wait about 5 minutes. This delay is set in the installer menu, so leave it as it is.');
+res('ts_learning_period_wait', 'next_step', 'Give it a few days', 'Early start and sun features learn over the first few days. Check again after that.');
+res('ts_recovery_explained_basic', 'next_step', 'Starting early is on purpose', 'Your thermostat learned how long your home takes to warm up or cool down, so it starts early to reach your temperature at the schedule time. The screen may show Recovery or In Recovery. If you\u2019d rather it start at the schedule time, you can turn this off.', { nextAction: { label: 'Open the early start steps', next: 'ts.step.recovery' } });
+res('ts_defrost_normal_basic', 'next_step', 'Defrost is normal', 'In cold, damp weather, the outdoor unit melts frost off itself. It may steam, and backup heat may run for a few minutes. If it happens many times an hour, or ice keeps building up on the outdoor unit, call a licensed HVAC professional.');
+res('ts_reading_fault_pro', 'call_pro', 'The reading needs a pro', 'A big or drifting difference isn\u2019t something to fix with an offset. A licensed HVAC professional can check the thermostat and its sensor.');
+res('ts_location_pro', 'call_pro', 'The thermostat\u2019s spot needs a pro', 'Moving a thermostat or sealing the opening behind it means taking it off the wall. That\u2019s a job for a licensed HVAC professional.');
+res('ts_equipment_cycling_pro', 'call_pro', 'The equipment may be shutting itself off', 'If it stops before the room reaches your setting, a thermostat setting won\u2019t fix it. The equipment may be stopping itself, for example because of a safety switch or airflow. Call a licensed HVAC professional.');
+res('ts_setup_check_pro', 'call_pro', 'Ask a pro to check the setup', 'Some of what you\u2019re seeing can come from how the thermostat was set up. Ask a licensed HVAC professional to check these settings:');
+res('ts_new_install_installer', 'call_pro', 'Call your installer first', 'A new system or thermostat may still be under your installer\u2019s warranty. Ask them to check the setup, and ask what each of these settings is set to:');
+res('ts_ask_installer_first', 'call_pro', 'Ask your installer first', data.lc.lc17);
+res('ts_hp_not_keeping_up_pro', 'call_pro', 'Your heat pump isn\u2019t keeping up', LC33);
+res('ts_stage_pro', 'call_pro', 'Staging needs a pro', 'How your system moves between high and low can be set at the thermostat, in the wiring, or at the equipment. A pro can check it. One setting to ask about is ' + LATCH + ': once it steps up to high, it stays on high until it shuts off. That can be set on purpose. Mention it if the room overshoots or your bills went up, or if the fan keeps speeding up and slowing down during one run.');
+res('ts_cold_weather_stop', 'call_pro', 'Leave backup heat settings for now', data.lc.lc39);
+res('ts_comfort_not_fixed_pro', 'call_pro', 'It\u2019s time for a pro', 'Put back the values you wrote down. ' + data.lc.lc22);
+res('ts_coil_ice_stop', 'emergency_exit', 'Ice on the cooling system', 'If you see ice on the copper lines or the indoor unit, set cooling to Off, don\u2019t chip the ice, and call a licensed HVAC professional.', { gate: 'ts_coil_ice' });
+res('ts_rated_min_unknown', 'insufficient_info', 'Find the rating first', LC30, { urgency: 'Rating needed first' });
+res('ts_not_on_your_model', 'insufficient_info', 'Not on your model', data.lc.lc10 + ' ' + data.lc.lc9, { urgency: 'Different model path' });
+res('ts_geo_pro', 'call_pro', 'Ask a pro to check your geothermal or water-source system', 'Tell them what you wrote down. Ask them to check the water side too.');
+res('ts_geo_noted_basic', 'next_step', 'Leave these as they are', 'On a geothermal or water-source system, these settings are for your installer. If backup heat starts running a lot, or the house isn\u2019t comfortable, call a licensed HVAC professional and tell them what you wrote down.');
+res('ts_reading_unchecked', 'insufficient_info', 'Check with a thermometer first', 'Any separate thermometer works. Put it near the thermostat, wait 20 to 30 minutes, and compare. Then come back.', { urgency: 'Thermometer check first' });
 
 Object.keys(data.v1Fns).forEach(function (fn) { data.fnOf[data.v1Fns[fn]] = fn; });
 ['landing_short_cycling', 'landing_swings', 'landing_never_catches_up', 'landing_wrong_reading', 'landing_auto_mode', 'landing_backup_heat_cost', 'landing_humid', 'landing_stages'].forEach(function (id) {

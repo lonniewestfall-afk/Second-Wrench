@@ -93,7 +93,8 @@
     'C wire, power adapter, or furnace kit suggested.': 1,
     'Capacitor, contactor, and board work are not offered in the thermostat check.': 1,
     'For wiring or electrical problems, turn the system off at the thermostat and call a licensed professional.': 1,
-    'Leave the panel alone.': 1
+    'Leave the panel alone.': 1,
+    'How your system moves between high and low can be set at the thermostat, in the wiring, or at the equipment.': 1
   };
   /* Spec G12 treats the common noun "equipment" like an installer menu name.
    * These approved sentences stay verbatim. The allowlist is the adaptation. */
@@ -106,7 +107,7 @@
     'Wait on the display means the thermostat is holding off for about 5 minutes to protect the equipment.': 1,
     'Waiting For Equipment means the thermostat is holding off to protect the equipment.': 1,
     '**Second Wrench doesn’t guide these changes when it’s 40 °F (4 °C) or colder outside, or will be in the next few days.** That’s our own cautious cutoff, not a rating for your equipment.': 1,
-    'Look only: write down the lockout settings': 1
+    'Look only: write down your lockout settings': 1
   };
   var byId = {};
   records.forEach(function (record) { byId[record.id] = record; });
@@ -214,6 +215,20 @@
   function lc40Text(label) {
     return data.lc.lc40.split('[label]').join(label);
   }
+  function warrantyChoiceHtml() {
+    return '<div class="ts-acks"><button type="button" class="option" data-ts-ack="warranty"><span><strong>Not under warranty, or my installer said it\u2019s OK</strong></span></button></div>';
+  }
+  function lc18CheckHtml(checked) {
+    return '<label class="check-label"><input type="checkbox" data-ts-ack="lc18"' + (checked ? ' checked' : '') + '><span>' + esc(data.lc.lc18check) + '</span></label>';
+  }
+  function insertAfterClass(html, cls, extra) {
+    var token = 'class="' + cls + '">';
+    var at = html.indexOf(token);
+    if (at < 0) return html + extra;
+    var end = html.indexOf('</p>', at);
+    if (end < 0) return html + extra;
+    return html.slice(0, end + 4) + extra + html.slice(end + 4);
+  }
   function panelPush(bag, cls, text) {
     if (!text) return;
     bag.parts.push({ cls: cls, text: text });
@@ -299,7 +314,10 @@
     }
     if (installer && !reveal) {
       panelPush(bag, 'ts-lc16', data.lc.lc16);
-      return finishPanel(fn, modelKey, cell, bag, {});
+      if (ack) panelPush(bag, 'ts-lc18', lc18Text(cell));
+      var closedPanel = finishPanel(fn, modelKey, cell, bag, {});
+      closedPanel.html += ack ? lc18CheckHtml(false) : warrantyChoiceHtml();
+      return closedPanel;
     }
     if (installer) {
       panelPush(bag, 'ts-lc16', data.lc.lc16);
@@ -346,7 +364,9 @@
     if (fn === 'HPLOCK' && ratedKnown && cell.ratedMinText) bag.steps.push(cell.ratedMinText);
     if (installer || cell.undo) panelAfter(bag, 'ts-lc22', data.lc.lc22);
     fallbacks.forEach(function (item) { panelAfter(bag, 'ts-lc9', item.line); });
-    return finishPanel(fn, modelKey, cell, bag, { lc3: data.lc.lc3, fallbacks: fallbacks });
+    var openPanel = finishPanel(fn, modelKey, cell, bag, { lc3: data.lc.lc3, fallbacks: fallbacks });
+    if (installer) openPanel.html = insertAfterClass(openPanel.html, 'ts-lc18', lc18CheckHtml(checked));
+    return openPanel;
   }
   function optionVisible(option, state) {
     state = state || {};
@@ -431,12 +451,30 @@
     var help = data.fallbacks[model.help] || { url: '' };
     return data.lc.lc5.replace('[Brand]', model.legal_brand || '').replace('[link]', help.url || '');
   }
+  function lastStepCell(state) {
+    var answers = (state && state.answers) || [];
+    var i;
+    for (i = answers.length - 1; i >= 0; i--) {
+      var fn = data.fnOf[answers[i].node];
+      if (fn && state.tsModel && data.steps[fn] && data.steps[fn][state.tsModel]) return data.steps[fn][state.tsModel];
+    }
+    return null;
+  }
   function presentResult(state, results) {
     var res = results[state.result];
     if (!res) return null;
     var explanation = res.explanation;
     if (state.result === 'ts_screen_different') explanation = fillLc5(state.tsModel);
-    if (state.result === 'ts_ask_installer_first') explanation = fillSetting(explanation, 'this setting');
+    if (state.result === 'ts_ask_installer_first') {
+      var askCell = lastStepCell(state);
+      explanation = fillSetting(explanation, (askCell && askCell.settingName) || 'this setting');
+    }
+    if (state.result === 'ts_not_on_your_model' && explanation.indexOf('[source title]') !== -1) {
+      var miss = lastStepCell(state);
+      var entry = miss && miss.fallback && miss.fallback[0];
+      var src = entry && data.fallbacks[entry.id];
+      if (src) explanation = explanation.replace('[source title]', src.title).replace('[page or section]', entry.section).replace('[link]', src.url);
+    }
     if (state.result === 'ts_stage_pro' && state.tsGeo && explanation.indexOf('Ask them to check the water side too.') === -1) {
       explanation += ' Ask them to check the water side too.';
     }
@@ -894,6 +932,10 @@
         var open = revealed(model, data.v1Fns[fn]);
         if (ui.stepsBeforeCheckbox) fail('TS-G29', 'steps before checkbox');
         if (cell.text && closed.text.indexOf(cell.text.slice(0, 24)) !== -1) fail('TS-G29', fn + ' ' + model + ' open early');
+        var mid = renderV1Panel(model, data.v1Fns[fn], { state: { tsWarrantyAck: true } });
+        if (cell.text && mid.text.indexOf(plainLc3(cell.text).slice(0, 24)) !== -1) fail('TS-G29', fn + ' ' + model + ' before check');
+        if (mid.text.indexOf('These are comfort settings.') === -1) fail('TS-G29', fn + ' ' + model + ' lc18');
+        if (closed.text.indexOf('These are comfort settings.') !== -1) fail('TS-G29', fn + ' ' + model + ' lc18 early');
         if (open.text.indexOf('These are comfort settings.') === -1) fail('TS-G29', fn + ' ' + model + ' notice');
         var markers = [plainLc3(data.lc.lc16).slice(0, 24), plainLc3(data.lc.lc38).slice(0, 24), 'These are comfort settings.', plainLc3(data.lc.lc3).slice(0, 16)];
         if (cell.text) markers.push(plainLc3(cell.text).slice(0, 24));
@@ -922,6 +964,14 @@
       });
     });
     if (data.cphUnknown !== 'compressor') fail('TS-G32', 'unknown stage');
+    if ((data.steps.CPH['HW-FP6'].text || '').indexOf('Never raise Function 9 or 10.') === -1) fail('TS-G32', 'FP6');
+    if ((data.steps.CPH['HW-TH4'].text || '').indexOf('Never raise Function 9.') === -1) fail('TS-G32', 'TH4');
+    Object.keys(data.steps).forEach(function (fn) {
+      Object.keys(data.steps[fn]).forEach(function (key) {
+        if (key === 'HW-T5' || key === 'HW-T6') return;
+        if (/365|366/.test(data.steps[fn][key].text || '')) fail('TS-G32', fn + ' ' + key);
+      });
+    });
     var g33 = /\b(safe|safely|safest|recommended|ideal|best)\b|correct setting|right for your system/i;
     collectCopy(nodes, results).forEach(function (pair) {
       var id = String(pair[0]);
@@ -1028,6 +1078,7 @@
       emails.forEach(function (email) { if (email !== 'support@secondwrench.co') fail('TS-G46', email); });
     }
     var latchPhrase = 'Finish on high stage (some brands call this \u201Clatching\u201D)';
+    var latchMid = latchPhrase.charAt(0).toLowerCase() + latchPhrase.slice(1);
     var userBits = [];
     (data.v1 || []).filter(function (id) { return data.v0.indexOf(id) === -1; }).forEach(function (id) {
       var node = nodes[id];
@@ -1043,7 +1094,7 @@
       });
     });
     var latchBlob = userBits.join('\n');
-    var stripped = latchBlob.split(latchPhrase).join('');
+    var stripped = latchBlob.split(latchPhrase).join('').split(latchMid).join('');
     if (/latching/i.test(stripped)) fail('TS-G47', 'bare latching');
     ['starts on high', 'always starts', 'start on stage 2', 'straight to', 'every call', 'whole call', 'never on low', 'always_high'].forEach(function (phrase) {
       if (latchBlob.toLowerCase().indexOf(phrase) !== -1) fail('TS-G47', phrase);
@@ -1081,6 +1132,25 @@
         var text = data.steps[fn][model].text || '';
         changeNames.forEach(function (name) { if (text.indexOf(name) !== -1) fail('TS-G49', fn + ' ' + model + ' ' + name); });
       });
+    });
+    Object.keys(data.v1Fns).forEach(function (fn) {
+      var id = data.v1Fns[fn];
+      if (id.indexOf('ts.step.') !== 0) return;
+      var node = nodes[id];
+      if (!node || node.body !== '{step panel: ' + fn + '}') fail('TS-G52', id + ' body');
+      if (node) node.options.forEach(function (option) {
+        if (option.fact) fail('TS-G52', id + '/' + option.id);
+      });
+    });
+    var v1ResultIds = ['ts_offset_done_basic', 'ts_differential_done_basic', 'ts_cph_done_basic', 'ts_auto_deadband_done_basic', 'ts_recovery_done_basic', 'ts_hp_lockouts_done_basic', 'ts_dehumidify_done_basic', 'ts_latch_done_basic', 'ts_setback_done_basic', 'ts_sensors_done_basic', 'ts_location_fix_basic', 'ts_compressor_wait_normal', 'ts_learning_period_wait', 'ts_recovery_explained_basic', 'ts_defrost_normal_basic', 'ts_reading_fault_pro', 'ts_location_pro', 'ts_equipment_cycling_pro', 'ts_setup_check_pro', 'ts_new_install_installer', 'ts_ask_installer_first', 'ts_hp_not_keeping_up_pro', 'ts_stage_pro', 'ts_cold_weather_stop', 'ts_comfort_not_fixed_pro', 'ts_coil_ice_stop', 'ts_rated_min_unknown', 'ts_not_on_your_model', 'ts_geo_pro', 'ts_geo_noted_basic', 'ts_reading_unchecked'];
+    v1ResultIds.forEach(function (id) {
+      var res = results[id];
+      if (!res) { fail('TS-G52', id); return; }
+      var actions = res.actions || [];
+      if (id === 'ts_recovery_explained_basic') {
+        if (actions.length || res.avoid) fail('TS-G52', id);
+        if (!res.nextAction || res.nextAction.label !== 'Open the early start steps' || res.nextAction.next !== 'ts.step.recovery') fail('TS-G52', 'next action');
+      } else if (actions.length || res.avoid || res.nextAction) fail('TS-G52', id);
     });
   }
 

@@ -1738,7 +1738,7 @@ globalThis.SW_CONFIG.stageLatchStepsEnabled = false;
 const tsTextRows = [];
 Object.keys(F.tsSteps).forEach(fn => Object.keys(F.tsSteps[fn]).forEach(key => { const cell = F.tsSteps[fn][key]; if (!cell.generic) tsTextRows.push([fn + '|' + key, cell.text || '']); }));
 tsTextRows.sort((a, b) => a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0);
-assert(tsTextRows.length === 177 && require('crypto').createHash('sha256').update(JSON.stringify(tsTextRows)).digest('hex') === 'b5981f7c33def0f900c3052e3dde6d4b8b789d413e0421692cb7319771bc488b', 'TS-G20 non-generic step text equals spec §3.17');
+assert(tsTextRows.length === 177 && require('crypto').createHash('sha256').update(JSON.stringify(tsTextRows)).digest('hex') === '1feb3a93ed92bff20572bc5440da759d6f6b531eb9dca6e09437f4478a405c73', 'TS-G20 non-generic step text equals spec §3.17');
 const tsModelPaths = [
   ['NEST-LT4', ['brand_nest', 'nest_lt4']], ['NEST-NT', ['brand_nest', 'nest_nt']], ['NEST-LT3', ['brand_nest', 'nest_lt3']], ['NEST-E', ['brand_nest', 'nest_e']],
   ['HW-T5', ['brand_honeywell_smart', 'hw_t5']], ['HW-T6', ['brand_honeywell_smart', 'hw_t6']], ['HW-T9', ['brand_honeywell_smart', 'hw_t9']],
@@ -1762,7 +1762,7 @@ F.tsV0.forEach(id => {
 });
 Object.keys(F.results).filter(id => id.indexOf('ts_') === 0).forEach(id => {
   const res = F.results[id];
-  [res.title, res.urgency, res.explanation, res.avoid].concat(res.actions || []).forEach((text, index) => {
+  [res.title, res.urgency, res.explanation, res.avoid].concat(res.actions || []).concat(res.nextAction ? [res.nextAction.label] : []).forEach((text, index) => {
     const hits = F.tsForbiddenScan(text, id + ' field ' + index);
     assert(!hits.length, hits[0] || id);
   });
@@ -1964,7 +1964,7 @@ function expectTs(label, fn) {
     }));
     scratchRows.sort((a, b) => a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0);
     const scratchHash = require('crypto').createHash('sha256').update(JSON.stringify(scratchRows)).digest('hex');
-    const pin = 'b5981f7c33def0f900c3052e3dde6d4b8b789d413e0421692cb7319771bc488b';
+    const pin = '1feb3a93ed92bff20572bc5440da759d6f6b531eb9dca6e09437f4478a405c73';
     assert(scratchRows.length === 177 && scratchHash !== pin, 'M17c pin still matches ' + scratchHash);
     console.log('TS-MUT M17c PIN_MISMATCH');
   } finally {
@@ -2083,6 +2083,56 @@ function expectTs(label, fn) {
   const lc40Saved = t6Lock.lc40.slice();
   const lc40Sentence = F.tsLc.lc40.split('[label]').join('ISU 356').replace(/\*\*/g, '');
   mut('M51', () => { t6Lock.lc40 = []; t6Lock.text = t6LockText.split(lc40Sentence).join(''); }, () => { t6Lock.lc40 = lc40Saved; t6Lock.text = t6LockText; }, 'TS-G51');
+  const reproRoot = path.join(__dirname, '..');
+  const shippedDataPath = path.join(reproRoot, 'assets/ts-data.json');
+  const shippedRuntimePath = path.join(reproRoot, 'assets/ts-runtime.js');
+  let reproCache = null;
+  function rebuildTsBytes() {
+    if (reproCache) return reproCache;
+    const os = require('os');
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'ts-a34-'));
+    fs.mkdirSync(path.join(root, 'scripts'), { recursive: true });
+    fs.mkdirSync(path.join(root, 'assets'), { recursive: true });
+    fs.mkdirSync(path.join(root, 'content/mirrors'), { recursive: true });
+    const v0 = execFileSync('git', ['show', 'origin/main:assets/ts-data.json'], { cwd: reproRoot });
+    fs.writeFileSync(path.join(root, 'assets/ts-data.json'), v0);
+    fs.copyFileSync(path.join(__dirname, 'compose-ts-wave2.js'), path.join(root, 'scripts/compose-ts-wave2.js'));
+    fs.copyFileSync(path.join(reproRoot, 'content/mirrors/compiled.json'), path.join(root, 'content/mirrors/compiled.json'));
+    fs.copyFileSync(path.join(reproRoot, 'content/mirrors/serve-v0.json'), path.join(root, 'content/mirrors/serve-v0.json'));
+    execFileSync(process.execPath, [path.join(root, 'scripts/compose-ts-wave2.js')], { cwd: root, stdio: 'pipe' });
+    reproCache = {
+      data: fs.readFileSync(path.join(root, 'assets/ts-data.json')),
+      runtime: fs.readFileSync(path.join(root, 'assets/ts-runtime.js'))
+    };
+    fs.rmSync(root, { recursive: true, force: true });
+    return reproCache;
+  }
+  function assertTsA34(dataFile, runtimeFile) {
+    const built = rebuildTsBytes();
+    const dataOk = built.data.equals(fs.readFileSync(dataFile));
+    const runtimeOk = built.runtime.equals(fs.readFileSync(runtimeFile));
+    if (!dataOk || !runtimeOk) throw new Error('TS-A34 rebuild is not byte-identical');
+  }
+  try {
+    assertTsA34(shippedDataPath, shippedRuntimePath);
+    console.log('TS-A34 reproducible');
+  } catch (err) {
+    assert(false, 'TS-A34 ' + String(err && err.message || err).slice(0, 180));
+  }
+  const m52Path = path.join(reproRoot, '.ts-data-m52.json');
+  const m52At = shippedText.indexOf('Backup heat settings');
+  fs.writeFileSync(m52Path, shippedText.slice(0, m52At) + 'X' + shippedText.slice(m52At + 1));
+  let m52 = '';
+  try { assertTsA34(m52Path, shippedRuntimePath); } catch (err) { m52 = String(err && err.message || err); }
+  finally { fs.unlinkSync(m52Path); }
+  assert(m52.indexOf('TS-A34') !== -1 && m52.indexOf('TS-G') === -1, 'M52 ' + m52.slice(0, 180));
+  console.log('TS-MUT M52 TS-A34');
+  mut('M53', () => { F.results.ts_location_pro.actions.push('Call your installer.'); }, () => { F.results.ts_location_pro.actions.pop(); }, 'TS-G52');
+  const fp6Cph = F.tsSteps.CPH['HW-FP6'];
+  const fp6CphText = fp6Cph.text;
+  mut('M54', () => { fp6Cph.text = fp6CphText + ' Never raise 365 or 366.'; }, () => { fp6Cph.text = fp6CphText; }, 'TS-G32');
+  const offsetBody = F.nodes['ts.step.offset'].body;
+  mut('M55', () => { F.nodes['ts.step.offset'].body = 'These steps match the model you picked.\n\n' + offsetBody; }, () => { F.nodes['ts.step.offset'].body = offsetBody; }, 'TS-G52');
   F.assertTs(F.nodes, F.results);
 })();
 
@@ -2414,16 +2464,54 @@ function pageChecks() {
     await acceptAndContinue();
     await clickPath(['other_heat_or_ductless', 'thermostat_settings', 'ts_none_of_these', 'brand_ecobee', 'ecb_premium', 'landing_backup_heat_cost', 'aux_mild_weather', 'hp_air', 'guard_ok', 'only_backup_heat']);
     assert(rendered().indexOf('If the house is getting cold and neither the heat pump nor backup heat is running') === -1, 'lockout steps stay hidden before the notices');
-    for (const ack of ['warranty', 'lc18']) {
-      const box = doc.querySelector('[data-ts-ack="' + ack + '"]');
-      assert(box && !box.checked, 'ack starts unchecked ' + ack);
-      box.checked = true;
-      box.dispatchEvent(new window.Event('change', { bubbles: true }));
-      await flush();
-    }
+    assert(!doc.querySelector('[data-ts-ack="lc18"]'), 'LC-18 checkbox waits for the warranty choice');
+    const warranty = doc.querySelector('[data-ts-ack="warranty"]');
+    assert(warranty && warranty.textContent.indexOf('Not under warranty, or my installer said it’s OK') !== -1, 'warranty choice uses the LC-16 label');
+    click(warranty);
+    await flush();
+    const lc18 = doc.querySelector('[data-ts-ack="lc18"]');
+    assert(lc18 && lc18.checked === false && lc18.parentElement.textContent.indexOf('I wrote down my current settings, and I’ll change only the setting named here.') !== -1, 'LC-18 checkbox uses lc18check');
+    assert(rendered().indexOf('If the house is getting cold and neither the heat pump nor backup heat is running') === -1, 'lockout steps stay hidden until the checkbox');
+    lc18.checked = true;
+    lc18.dispatchEvent(new window.Event('change', { bubbles: true }));
+    await flush();
     assert(rendered().indexOf('AUX HEAT MAX OUTDOOR TEMP') !== -1, 'revealed lockout steps name the ecobee setting');
     assert(rendered().indexOf('If the house is getting cold and neither the heat pump nor backup heat is running, put AUX HEAT MAX OUTDOOR TEMP back') !== -1, 'LC-40 is next to the lockout steps');
     assert(rendered().toLowerCase().indexOf('emergency heat mode') === -1, 'lockout steps have no emergency-heat blocking note');
+    await home();
+    click(doc.querySelector('[data-answer="none_of_these"]'));
+    await flush();
+    await acceptAndContinue();
+    await clickPath(['other_heat_or_ductless', 'thermostat_settings', 'ts_none_of_these', 'brand_ecobee', 'ecb_premium', 'landing_humid', 'ice_seen']);
+    assert(doc.querySelector('h1').textContent === 'Ice on the cooling system', 'TS-A35 ice title');
+    assert(![...doc.querySelectorAll('h2')].some(el => el.textContent === 'What to do now'), 'TS-A35 ice omits empty actions');
+    assert(rendered().indexOf('What not to do') === -1, 'TS-A35 ice omits empty avoid');
+    await home();
+    click(doc.querySelector('[data-answer="none_of_these"]'));
+    await flush();
+    await acceptAndContinue();
+    await clickPath(['other_heat_or_ductless', 'thermostat_settings', 'ts_none_of_these', 'brand_honeywell_smart', 'hw_t6', 'landing_wrong_reading', 'reading_off_steady', 'location_ok_steady_difference']);
+    click(doc.querySelector('[data-ts-ack="warranty"]'));
+    await flush();
+    const offsetBox = doc.querySelector('[data-ts-ack="lc18"]');
+    offsetBox.checked = true;
+    offsetBox.dispatchEvent(new window.Event('change', { bubbles: true }));
+    await flush();
+    answer('done_better');
+    await flush();
+    assert(doc.querySelector('h1').textContent === 'Offset set', 'TS-A35 offset title');
+    assert(![...doc.querySelectorAll('h2')].some(el => el.textContent === 'What to do now'), 'TS-A35 offset omits empty actions');
+    assert(rendered().indexOf('What not to do') === -1, 'TS-A35 offset omits empty avoid');
+    await home();
+    click(doc.querySelector('[data-answer="none_of_these"]'));
+    await flush();
+    await acceptAndContinue();
+    await clickPath(['other_heat_or_ductless', 'thermostat_settings', 'ts_none_of_these', 'brand_honeywell_smart', 'hw_t6', 'landing_never_catches_up', 'early_start_ok']);
+    const early = [...doc.querySelectorAll('[data-action="ts-next"]')].find(el => el.textContent === 'Open the early start steps');
+    assert(early, 'recovery result offers the early start steps');
+    click(early);
+    await flush();
+    assert(doc.querySelector('h1').textContent === 'Early start and recovery', 'next action opens the recovery steps');
     window.location.hash = '#/sources';
     await flush();
     assert(norm(doc.querySelector('main')).indexOf('Thermostat guides') !== -1, 'sources list thermostat guides');
