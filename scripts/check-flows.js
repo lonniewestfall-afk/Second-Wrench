@@ -1,6 +1,6 @@
 /* Local sanity for AC Wave-2 and HP Wave-1. No network. */
 'use strict';
-globalThis.SW_CONFIG = { advancedRepairsEnabled: false, aiThermostatEnabled: false, mirrorsEnabled: false, contentVersion: '2026-10-11.1' };
+globalThis.SW_CONFIG = { advancedRepairsEnabled: false, aiThermostatEnabled: false, mirrorsEnabled: false, stageLatchStepsEnabled: false, contentVersion: '2026-10-11.2' };
 const fs = require('fs');
 const path = require('path');
 const F = require('../assets/flow.js');
@@ -72,7 +72,7 @@ function assertNoCap(state, msg) {
 const gate = ['none_of_these', 'agree_18_terms'];
 
 assert(/advancedRepairsEnabled:\s*false/.test(configText), 'public advanced flag must stay false');
-const SHIP = '2026-10-11.1';
+const SHIP = '2026-10-11.2';
 assert(configText.includes("contentVersion: '" + SHIP + "'"), 'content version must be ' + SHIP);
 assert(['config', 'flow', 'app'].every(f => indexText.includes(f + '.js?v=' + SHIP)), 'script cache-bust must match content version');
 assert(indexText.includes('HOME HVAC CHECKS') && !indexText.includes('AC + HEAT PUMP'), 'header lockup is HOME HVAC CHECKS');
@@ -427,7 +427,7 @@ assert(!JSON.stringify(F.nodes).includes('2W'), 'no 2W brand');
 const joined = JSON.stringify(F.hpWave1.map(id => F.nodes[id]));
 assert(!/replace the capacitor/i.test(joined), 'HP nodes do not instruct capacitor replacement');
 
-assert(/termsVersion:\s*'public-beta-2026-10-08'/.test(configText), 'termsVersion is public-beta-2026-10-08');
+assert(/termsVersion:\s*'public-beta-2026-10-11'/.test(configText), 'termsVersion is public-beta-2026-10-11');
 assert(/advancedRepairsEnabled:\s*false/.test(configText) && !/advancedRepairsEnabled:\s*true/.test(configText), 'public advanced flag must stay false');
 assert(appText.includes("'/terms'") && appText.includes("'/privacy'"), 'terms and privacy routes exist');
 const termsRoute = appText.slice(appText.indexOf("'/terms':"), appText.indexOf("'/privacy':"));
@@ -554,8 +554,8 @@ const HAZARDS = [
   ['hazard_refrigerant_alarm', 'Do not reset a refrigerant-leak alarm.'],
   ['hazard_unsure', 'Uncertainty is a good reason to stop.']
 ];
-const TERMS_BODY_SHA256 = '2a775f7fd15812a722811a4000f4890e82a176b8fbb0234861435425221f73da';
-const PRIVACY_BODY_SHA256 = '6582a65315f89b42c07f803ea33053e8044afd3af958131a74bf6b655b4db899';
+const TERMS_BODY_SHA256 = '8ff7e3f0817d83ce82c69e7b4d8afc5c6b2fc010d455732e7bc5758c62587bff';
+const PRIVACY_BODY_SHA256 = '58f963ab7e545106de93893385495db6a52531a626534b346acd6dca4dca1532';
 
 // ---- WSHP Wave-1 PR-1 (A-1..A-28, T-1..T-26) ----
 const WSHP_IDS = ['wshp.hazard.flood_electrical', 'wshp.entry.equipment_gate', 'wshp.openloop.chemistry_gate', 'wshp.handback.call_pro'];
@@ -1165,8 +1165,8 @@ assert(/yellow or orange flame already seen/.test(d012) && /bang at ignition/.te
 assert(F.treeVersionMs === 'ms.ductless.v1', 'MS-A1 mini-split tree version');
 assert(Array.isArray(F.msPr1) && F.msPr1.length === 10, 'MS-G1 ten original mini-split nodes exported');
 assert(Array.isArray(F.msV1) && F.msV1.join('|') === 'ms.heat.mode_setpoint|ms.heat.force_heat|ms.heat.defrost_sanity|ms.outdoor.safe_observe', 'MS-G1 heat and outdoor nodes');
-assert(Object.keys(F.nodes).length === 84, 'node count is 84');
-assert(Object.keys(F.results).length === 203, 'result count is 203');
+assert(Object.keys(F.nodes).length === 108, 'node count is 108');
+assert(Object.keys(F.results).length === 234, 'result count is 234');
 const ms1 = ['none_of_these', 'agree_18_terms', 'other_heat_or_ductless', 'ductless_mini_split', 'ductless_single_zone'];
 const msGate = ms1.slice(0, 4);
 const msAt = walk('ask', msGate);
@@ -1437,7 +1437,7 @@ assert(require('crypto').createHash('sha256').update(hpDigestLines.join('\n')).d
 assert(hpDigestLines.length === 65, 'HP edge digest line count');
 
 // ---- Thermostat ts.settings.v0 (TS-A1–TS-A21, mutations M1–M17) ----
-assert(F.treeVersionTs === 'ts.settings.v0' && Array.isArray(F.tsV0) && F.tsV0.length === 16, 'TS-A1 tree and TS_V0');
+assert(F.treeVersionTs === 'ts.settings.v1' && Array.isArray(F.tsV0) && F.tsV0.length === 16 && Array.isArray(F.tsV1) && F.tsV1.length === 40, 'TS-A1 tree and TS_V1');
 assert(F.treeVersion === 'ac.cool.v1' && F.treeVersionHp === 'hp.air_source.v1' && F.treeVersionMs === 'ms.ductless.v1', 'TS-A1 AC HP ms versions');
 const tsGate = ['none_of_these', 'agree_18_terms', 'other_heat_or_ductless', 'thermostat_settings'];
 const ts0 = tsGate.concat(['ts_none_of_these']);
@@ -1446,12 +1446,12 @@ assert(tsStart.node === 'ts.gate.safety_stops' && tsStart.product === 'ts', 'TS-
 assert(tsStart.answers.map(a => a.node).join(',') === 'ac.gate.cluster_entry,ac.session.consent,sw.intake.system_type,sw.intake.other_system', 'TS-A2 answered nodes');
 assert(tsStart.audit.filter(e => e.event === 'product_lane:ts').length === 1, 'TS-A1 product_lane:ts once');
 const tsLaneAt = tsStart.audit.findIndex(e => e.event === 'product_lane:ts');
-assert(tsLaneAt >= 0 && tsStart.audit.slice(tsLaneAt).every(e => e.tree === 'ts.settings.v0'), 'TS-A1 tree field from product_lane:ts');
+assert(tsLaneAt >= 0 && tsStart.audit.slice(tsLaneAt).every(e => e.tree === 'ts.settings.v1'), 'TS-A1 tree field from product_lane:ts');
 assert(Object.keys(F.nodes).filter(id => F.nodes[id].options.some(op => op.id === 'agree_18_terms')).length === 1, 'TS-A3 one consent option');
 assert(F.nodes['ts.gate.safety_stops'].body.indexOf('Don’t take the thermostat off the wall or open any equipment to check.') !== -1, 'TS-C1');
 assert(F.nodes['ts.power.blank_screen'].body.indexOf('Don’t reset breakers in this check.') !== -1, 'TS-C2');
 assert(F.nodes['ts.power.blank_screen'].caution === 'Look only at the furnace door and power switch. Don’t remove the door, don’t flip the switch, and don’t touch thermostat wires.', 'TS-C3');
-assert(F.tsV0.reduce((n, id) => n + F.nodes[id].options.length, 0) === 120, 'ts options');
+assert(F.tsV1.reduce((n, id) => n + F.nodes[id].options.length, 0) === 326, 'ts options');
 assert(F.nodes['ts.power.blank_screen'].options.length === 11, 'blank screen options');
 assert(F.nodes['ts.power.battery'].body.indexOf('If you’d have to disconnect any wires to reach them, stop.') !== -1, 'TS-C4');
 assert(F.nodes['ts.status.wait_delay'].body.indexOf('Changing the setting during the wait can start it over.') !== -1, 'TS-C5');
@@ -1555,16 +1555,28 @@ F.tsV0.forEach(id => {
   const state = walk('ask', tsGate.concat([choice.id]));
   assert(state.result === id && state.answers.length === 5, 'TS-A7 ' + id + ' answers ' + state.answers.length);
 });
+const tsWave = { a22: [], a23: [], a24: [], a30: [], a31: [] };
 function tsLeaves() {
   const out = [];
   const start = walk('ask', tsGate);
-  const stack = [[start, 0]];
+  const stack = [[start, 0, []]];
   let maxDepth = 0;
   while (stack.length) {
-    const [state, depth] = stack.pop();
+    const [state, depth, path] = stack.pop();
+    if (path.indexOf(state.node) !== -1) {
+      tsWave.a30.push(state.node);
+      continue;
+    }
+    const choices = state.answers.map(a => a.choice);
+    const answeredNodes = state.answers.map(a => a.node);
+    if (state.node === 'ts.step.hp_lockouts' && (choices.indexOf('hp_air') === -1 || choices.indexOf('guard_ok') === -1)) tsWave.a22.push(choices.join('>'));
+    if (state.node === 'ts.step.offset' && (answeredNodes.indexOf('ts.diag.reading_check') === -1 || answeredNodes.indexOf('ts.diag.location') === -1)) tsWave.a23.push(choices.join('>'));
+    if (state.node === 'ts.step.stage_latch') tsWave.a24.push(state.node);
+    if ((state.node === 'ts.step.hp_lockouts' || state.result === 'ts_hp_lockouts_done_basic') && (state.tsGeo || state.product === 'wshp')) tsWave.a31.push(state.node || state.result);
     if (state.result) {
       out.push(state.result);
       if (depth > maxDepth) maxDepth = depth;
+      if (state.result === 'ts_latch_done_basic') tsWave.a24.push(state.result);
       const res = F.results[state.result];
       assert(res.diyTier !== 'advanced' && state.result !== 'next_step_advanced' && state.result !== 'ts_advanced_off', 'TS-A4 ' + state.result);
       assert(['next_step', 'call_pro', 'emergency_exit', 'insufficient_info'].indexOf(res.outcome) !== -1 && !res.continueTo, 'TS-A5 ' + state.result);
@@ -1582,13 +1594,14 @@ function tsLeaves() {
       });
       continue;
     }
-    if (depth > 6) throw new Error('TS-A5 depth at ' + state.node);
+    if (depth > 12) throw new Error('TS-A5 depth at ' + state.node);
     const firstTs = visited(state).concat(state.node).find(id => String(id).indexOf('ts.') === 0);
     assert(firstTs === 'ts.gate.safety_stops', 'TS-A7 gate first');
+    const nextPath = path.concat(state.node);
     F.viewNode(state.node, state).options.forEach(op => {
       const copy = JSON.parse(JSON.stringify(state));
       F.answer(copy, op.id, META);
-      stack.push([copy, depth + 1]);
+      stack.push([copy, depth + 1, nextPath]);
     });
   }
   return { out: out.sort(), maxDepth };
@@ -1597,13 +1610,135 @@ const tsOff = tsLeaves();
 globalThis.SW_CONFIG.advancedRepairsEnabled = true;
 const tsOn = tsLeaves();
 globalThis.SW_CONFIG.advancedRepairsEnabled = false;
-const TS_LEAF_COUNT = 1212;
+const TS_LEAF_COUNT = 12482;
 assert(tsOff.out.length === TS_LEAF_COUNT && tsOff.out.join('|') === tsOn.out.join('|'), 'TS-A4/A5 leaf count ' + tsOff.out.length);
-assert(tsOff.maxDepth <= 6 && tsOn.maxDepth <= 6, 'TS-A5 depth ' + tsOff.maxDepth);
+assert(tsOff.maxDepth <= 12 && tsOn.maxDepth <= 12, 'TS-A5 depth ' + tsOff.maxDepth);
+assert(!tsWave.a22.length, 'TS-A22 lockouts stay behind hp_air and guard_ok ' + tsWave.a22.slice(0, 2).join(' | '));
+assert(!tsWave.a23.length, 'TS-A23 offset stays behind the reading and location checks');
+assert(!tsWave.a24.length, 'TS-A24 stage latch stays off the shipped graph');
+assert(!tsWave.a30.length, 'TS-A30 no cycle ' + tsWave.a30.join(','));
+assert(!tsWave.a31.length, 'TS-A31 geo sessions do not reach a lockout change');
+assert(!F.nodes['ts.step.cph'].options.some(op => op.next === 'ts.step.differential'), 'TS-A30 DIFF to CPH is one-way');
+const wshpSource = tsWalk(['brand_ecobee', 'ecb_premium', 'landing_backup_heat_cost', 'aux_mild_weather']);
+wshpSource.product = 'wshp';
+const wshpOpts = F.viewNode(wshpSource.node, wshpSource).options.map(op => op.id);
+assert(wshpSource.node === 'ts.guard.hp_source' && wshpOpts.indexOf('hp_air') === -1 && wshpOpts.indexOf('hp_geo') !== -1, 'TS-A31 wshp hides air-source ' + wshpOpts.join(','));
+['guard_near_freezing', 'guard_fragile', 'guard_not_sure'].forEach(id => {
+  const stopped = tsWalk(['brand_ecobee', 'ecb_premium', 'landing_backup_heat_cost', 'aux_mild_weather', 'hp_air', id]);
+  assert(stopped.result === 'ts_cold_weather_stop', 'TS-A26 ' + id + ' ' + stopped.result);
+});
+const dualFuel = tsWalk(['brand_ecobee', 'ecb_premium', 'landing_backup_heat_cost', 'aux_mild_weather', 'hp_air', 'guard_dual_fuel']);
+assert(dualFuel.result === 'ts_installer_guard', 'TS-A26 dual fuel ' + dualFuel.result);
+['landing_humid', 'want_dehumidify'].forEach(extra => {
+  const ice = tsWalk(['brand_ecobee', 'ecb_premium'].concat(extra === 'landing_humid' ? ['landing_humid', 'ice_seen'] : ['landing_humid', 'want_dehumidify', 'ice_seen']));
+  assert(ice.result === 'ts_coil_ice_stop' && F.results[ice.result].outcome === 'emergency_exit' && tsEvents(ice).indexOf('gate_fired:ts_coil_ice') !== -1, 'TS-A27 ' + ice.result);
+});
+const lc40Exact = 'If the house is getting cold and neither the heat pump nor backup heat is running, put **[label]** back to the value you wrote down right away, then call a licensed HVAC professional. If it’s dangerously cold and anyone is at risk, get them somewhere warm first.';
+assert(F.tsLc.lc40 === lc40Exact, 'LC-40 rev 8');
+const stagesLabel = F.nodes['ts.landing.picker'].options.find(op => op.id === 'landing_stages').label;
+assert(stagesLabel === 'Once it gets louder and blows harder, it stays that way until it shuts off, or the fan keeps speeding up and slowing down during one run', 'landing_stages v2.1');
+const userBlob = JSON.stringify({ lc: F.tsLc, nodes: F.nodes, results: F.results, steps: F.tsSteps });
+assert(userBlob.toLowerCase().indexOf('emergency heat mode') === -1 && userBlob.toLowerCase().indexOf('block emergency heat') === -1, 'emergency-heat blocking note stays out of user copy');
+const v1NodeOf = {};
+Object.keys(F.tsFnOf).forEach(id => { v1NodeOf[F.tsFnOf[id]] = id; });
+const waveModels = Object.keys(F.tsSteps.OFFSET);
+const kindCounts = { text: 0, held: 0, pointer: 0, not_on_model: 0 };
+['OFFSET', 'DIFF', 'CPH', 'AUTO', 'RECOV', 'SETBACK', 'HPLOCK', 'DEHUM', 'SENSORS', 'LATCH'].forEach(fn => {
+  waveModels.forEach(model => {
+    const cell = F.tsSteps[fn][model];
+    kindCounts[cell.kind] += 1;
+    const panel = F.renderTsPanel(model, v1NodeOf[fn], { reveal: true, state: { tsWarrantyAck: true, tsLc18: true, tsRatedMin: 'known' } });
+    assert(panel && panel.text, 'TS-A25 render ' + fn + ' ' + model);
+    if (cell.installer_menu && cell.kind === 'text') {
+      assert(panel.text.indexOf('These are comfort settings.') !== -1 && panel.text.indexOf(F.tsLc.lc22) !== -1, 'TS-A25 order ' + fn + ' ' + model);
+    }
+    if (cell.kind === 'not_on_model' || cell.kind === 'held') assert(panel.text.indexOf(F.tsLc.lc10) !== -1, 'TS-A25 held or missing ' + fn + ' ' + model);
+  });
+});
+assert(kindCounts.text === 52 && kindCounts.held === 2 && kindCounts.pointer === 21 && kindCounts.not_on_model === 65, 'TS-A25 kinds ' + JSON.stringify(kindCounts));
+const geoKinds = { text: 0, not_on_model: 0 };
+waveModels.forEach(model => {
+  const cell = F.tsSteps.GEO[model];
+  geoKinds[cell.kind] += 1;
+  const panel = F.renderTsPanel(model, 'ts.look.geo_lockouts', { reveal: true });
+  assert(panel.text.indexOf('You can look, but') !== -1 || panel.text.indexOf(F.tsLc.lc10) !== -1, 'TS-A25 geo ' + model);
+});
+assert(geoKinds.text === 2 && geoKinds.not_on_model === 12, 'TS-A25 geo kinds');
+['ECB-PRM', 'HW-T6'].forEach(model => {
+  const locked = F.renderTsPanel(model, 'ts.step.hp_lockouts', { state: { tsGeo: true }, reveal: true });
+  const look = F.renderTsPanel(model, 'ts.look.geo_lockouts', { reveal: true });
+  assert(locked.text === look.text, 'TS-A32 ' + model + ' look-only body');
+  assert(locked.text.indexOf(String(F.tsSteps.HPLOCK[model].text).slice(0, 24)) === -1, 'TS-A32 ' + model + ' hides change steps');
+});
+const holdsHigh = tsWalk(['brand_honeywell_smart', 'hw_t6', 'landing_stages', 'holds_high']);
+const bounces = tsWalk(['brand_ecobee', 'ecb_premium', 'landing_stages', 'bounces']);
+assert(holdsHigh.result === 'ts_stage_pro' && bounces.result === 'ts_stage_pro', 'TS-A33 stage results');
+const geoStages = tsWalk(['brand_honeywell_smart', 'hw_t6', 'landing_stages', 'geo_system']);
+assert(geoStages.result === 'ts_stage_pro' && geoStages.tsGeo && F.presentResult(geoStages).explanation.indexOf('Ask them to check the water side too.') !== -1, 'TS-A33 water side');
+assert(F.presentResult(geoStages).explanation.indexOf('Finish on high stage (some brands call this \u201Clatching\u201D)') !== -1, 'TS-A33 label');
+assert(!F.viewNode('ts.diag.stages', geoStages).options.some(op => op.id === 'check_stage_settings'), 'TS-A33 check hidden');
+const hiddenLatch = F.renderTsPanel('HW-T6', 'ts.step.stage_latch', {});
+assert(hiddenLatch.text.indexOf('ISU') === -1 && hiddenLatch.text.indexOf(F.tsLc.lc10) !== -1, 'TS-A33 latch steps hidden');
+const waveWalks = [
+  ['W12', ['brand_honeywell_buttons', 'hw_focuspro', 'landing_short_cycling', 'short_cycles_reaches_target', 'use_cph_instead', 'done_better'], 'ts_cph_done_basic'],
+  ['W13', ['brand_ecobee', 'ecb_premium', 'landing_swings', 'big_swings', 'done_better'], 'ts_differential_done_basic'],
+  ['W14', ['brand_honeywell_smart', 'hw_t9', 'landing_never_catches_up', 'not_caught_up_hp', 'big_setback', 'done_better'], 'ts_setback_done_basic'],
+  ['W16', ['brand_honeywell_smart', 'hw_t6', 'landing_never_catches_up', 'early_start_ok'], 'ts_recovery_explained_basic'],
+  ['W17', ['brand_honeywell_buttons', 'hw_rth7600d', 'landing_short_cycling', 'waits_then_starts'], 'ts_compressor_wait_normal'],
+  ['W18', ['brand_ecobee', 'ecb_premium', 'landing_wrong_reading', 'reading_off_changes', 'sun_on_it', 'done_better'], 'ts_sensors_done_basic'],
+  ['W19', ['brand_honeywell_smart', 'hw_t6', 'landing_short_cycling', 'short_cycles_reaches_target', 'use_cph_instead', 'want_raise_compressor'], 'ts_installer_guard'],
+  ['W20', ['brand_ecobee', 'ecb_premium', 'landing_swings', 'big_swings', 'wty_ask_installer'], 'ts_ask_installer_first'],
+  ['W21', ['brand_ecobee', 'ecb_premium', 'landing_auto_mode', 'auto_pushes_other', 'done_better'], 'ts_auto_deadband_done_basic'],
+  ['W22', ['brand_nest', 'nest_lt3', 'landing_never_catches_up', 'not_caught_up_hp', 'aux_during_recovery', 'done_better'], 'ts_setback_done_basic'],
+  ['W23', ['brand_honeywell_smart', 'hw_t6', 'landing_short_cycling', 'stops_before_target'], 'ts_equipment_cycling_pro'],
+  ['TayA', ['brand_honeywell_smart', 'hw_t6', 'landing_swings', 'needs_big_setpoint', 'new_yes'], 'ts_new_install_installer'],
+  ['TayB', ['brand_honeywell_smart', 'hw_t6', 'landing_wrong_reading', 'reading_off_steady', 'location_ok_steady_difference', 'done_better'], 'ts_offset_done_basic'],
+  ['TayBoff', ['brand_honeywell_smart', 'hw_t6', 'landing_wrong_reading', 'reading_way_off'], 'ts_reading_fault_pro'],
+  ['TayC', ['brand_honeywell_smart', 'hw_t6', 'landing_wrong_reading', 'reading_matches', 'needs_big_setpoint', 'old_setup_suspect'], 'ts_setup_check_pro'],
+  ['TayCcph', ['brand_honeywell_smart', 'hw_t6', 'landing_swings', 'needs_big_setpoint', 'old_check_comfort', 'use_cph_instead', 'done_better'], 'ts_cph_done_basic'],
+  ['TayCauto', ['brand_honeywell_smart', 'hw_t6', 'landing_auto_mode', 'auto_switches_too_soon', 'done_better'], 'ts_auto_deadband_done_basic'],
+  ['Cold', ['brand_ecobee', 'ecb_premium', 'landing_backup_heat_cost', 'aux_mild_weather', 'hp_air', 'guard_ok', 'only_backup_heat', 'done_better'], 'ts_hp_lockouts_done_basic'],
+  ['R1', ['brand_ecobee', 'ecb_premium', 'landing_backup_heat_cost', 'aux_mild_weather', 'hp_air', 'guard_near_freezing'], 'ts_cold_weather_stop'],
+  ['R2', ['brand_ecobee', 'ecb_premium', 'landing_backup_heat_cost', 'aux_mild_weather', 'hp_air', 'guard_fragile'], 'ts_cold_weather_stop'],
+  ['R3', ['brand_ecobee', 'ecb_premium', 'landing_backup_heat_cost', 'aux_mild_weather', 'hp_air', 'guard_ok', 'lower_hp_min_rating_unknown'], 'ts_rated_min_unknown'],
+  ['R4', ['brand_ecobee', 'ecb_premium', 'landing_backup_heat_cost', 'aux_mild_weather', 'hp_air', 'guard_dual_fuel'], 'ts_installer_guard'],
+  ['R5', ['brand_ecobee', 'ecb_premium', 'landing_backup_heat_cost', 'aux_mild_weather', 'hp_air', 'guard_ok', 'only_backup_heat', 'house_cold_after'], 'ts_hp_not_keeping_up_pro'],
+  ['R6', ['brand_ecobee', 'ecb_premium', 'landing_backup_heat_cost', 'aux_mild_weather', 'hp_air', 'guard_ok', 'lower_hp_min_rating_known', 'done_better'], 'ts_hp_lockouts_done_basic'],
+  ['R7', ['brand_ecobee', 'ecb_premium', 'landing_backup_heat_cost', 'aux_mild_weather', 'hp_not_sure'], 'ts_setup_check_pro'],
+  ['Humid', ['brand_ecobee', 'ecb_premium', 'landing_humid', 'want_dehumidify', 'done_better'], 'ts_dehumidify_done_basic'],
+  ['HumidNest', ['brand_nest', 'nest_lt4', 'landing_humid', 'want_dehumidify', 'done_better'], 'ts_dehumidify_done_basic'],
+  ['HumidT6', ['brand_honeywell_smart', 'hw_t6', 'landing_humid', 'want_dehumidify', 'not_on_my_model'], 'ts_not_on_your_model'],
+  ['GeoLock', ['brand_honeywell_smart', 'hw_t6', 'landing_backup_heat_cost', 'aux_mild_weather', 'hp_geo', 'geo_lock_temp'], 'ts_geo_pro'],
+  ['GeoOff', ['brand_ecobee', 'ecb_premium', 'landing_backup_heat_cost', 'aux_mild_weather', 'hp_geo', 'geo_all_off'], 'ts_geo_noted_basic']
+];
+waveWalks.forEach(([name, path, result]) => {
+  const state = tsWalk(path);
+  assert(state.result === result, 'TS-A28 ' + name + ' ' + (state.result || state.node));
+});
+const w15 = tsWalk(['brand_amazon', 'landing_wrong_reading', 'reading_matches', 'feels_humid', 'fan_on']);
+assert(w15.node === 'ts.settings.fan' && !w15.result, 'TS-A28 W15 ' + (w15.result || w15.node));
+const tayCard = F.presentResult(tsWalk(['brand_honeywell_smart', 'hw_t6', 'landing_swings', 'needs_big_setpoint', 'new_yes']));
+assert(tayCard.explanation.indexOf('ISU 200') !== -1 && tayCard.explanation.indexOf('1420') !== -1, 'TS-A28 Tayyycat card');
+const coldPanel = F.renderTsPanel('ECB-PRM', 'ts.step.hp_lockouts', { reveal: true, state: { tsWarrantyAck: true, tsLc18: true, tsRatedMin: 'known' } });
+assert(coldPanel.text.indexOf('AUX HEAT MAX OUTDOOR TEMP') !== -1 && coldPanel.text.indexOf('Aux Savings Optimization') !== -1, 'TS-A28 Cold LC-40 labels');
+assert(coldPanel.text.indexOf(lc40Exact.split('[label]').join('AUX HEAT MAX OUTDOOR TEMP').replace(/\*\*/g, '')) !== -1, 'TS-A28 LC-40 sentence');
+const ratedPanel = F.renderTsPanel('ECB-PRM', 'ts.step.hp_lockouts', { reveal: true, state: { tsWarrantyAck: true, tsLc18: true, tsRatedMin: 'known' } });
+assert(ratedPanel.text.indexOf('never below your outdoor unit') !== -1, 'TS-A28 R6 rated block');
+assert(F.renderTsPanel('NEST-LT4', 'ts.step.dehumidify', { reveal: true }).text.indexOf('Cool to Dry') !== -1, 'TS-A28 Nest dehumidify');
+const geoShown = F.presentResult(tsWalk(['brand_honeywell_smart', 'hw_t6', 'landing_backup_heat_cost', 'aux_mild_weather', 'hp_geo', 'geo_lock_temp']));
+assert(geoShown.explanation.indexOf('Ask them to check the water side too.') !== -1, 'TS-A28 geo pro');
+globalThis.SW_CONFIG.stageLatchStepsEnabled = true;
+const latchOn = tsWalk(['brand_honeywell_smart', 'hw_t6', 'landing_stages', 'check_stage_settings']);
+assert(latchOn.node === 'ts.step.stage_latch', 'TS-A28 flag-on latch ' + (latchOn.node || latchOn.result));
+const t6Latch = F.renderTsPanel('HW-T6', 'ts.step.stage_latch', { reveal: true, state: { tsWarrantyAck: true, tsLc18: true } });
+const ecbLatch = F.renderTsPanel('ECB-PRM', 'ts.step.stage_latch', { reveal: true, state: { tsWarrantyAck: true, tsLc18: true } });
+assert(t6Latch.text.indexOf('Finish on high stage (some brands call this \u201Clatching\u201D)') !== -1, 'TS-A28 T6 latch block');
+assert(ecbLatch.text.indexOf('Finish on high stage (some brands call this \u201Clatching\u201D)') === -1, 'TS-A28 ecobee has no latching setting');
+globalThis.SW_CONFIG.stageLatchStepsEnabled = false;
 const tsTextRows = [];
 Object.keys(F.tsSteps).forEach(fn => Object.keys(F.tsSteps[fn]).forEach(key => { const cell = F.tsSteps[fn][key]; if (!cell.generic) tsTextRows.push([fn + '|' + key, cell.text || '']); }));
 tsTextRows.sort((a, b) => a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0);
-assert(tsTextRows.length === 100 && require('crypto').createHash('sha256').update(JSON.stringify(tsTextRows)).digest('hex') === '7231e4c51c76a1c50fd695c5f70b96e1ded1ccfec303fd56019996f496325843', 'TS-G20 non-generic step text equals spec §3.17');
+assert(tsTextRows.length === 177 && require('crypto').createHash('sha256').update(JSON.stringify(tsTextRows)).digest('hex') === 'b5981f7c33def0f900c3052e3dde6d4b8b789d413e0421692cb7319771bc488b', 'TS-G20 non-generic step text equals spec §3.17');
 const tsModelPaths = [
   ['NEST-LT4', ['brand_nest', 'nest_lt4']], ['NEST-NT', ['brand_nest', 'nest_nt']], ['NEST-LT3', ['brand_nest', 'nest_lt3']], ['NEST-E', ['brand_nest', 'nest_e']],
   ['HW-T5', ['brand_honeywell_smart', 'hw_t5']], ['HW-T6', ['brand_honeywell_smart', 'hw_t6']], ['HW-T9', ['brand_honeywell_smart', 'hw_t9']],
@@ -1635,7 +1770,7 @@ Object.keys(F.results).filter(id => id.indexOf('ts_') === 0).forEach(id => {
 tsModelPaths.forEach(([key, path]) => {
   const state = tsWalk(path.concat(['landing_no_heat_cool']));
   assert(state.tsModel === key, 'model key ' + key);
-  Object.keys(F.tsFnOf).forEach(nodeId => {
+  Object.keys(F.tsFnOf).filter(nodeId => F.tsV0.indexOf(nodeId) !== -1).forEach(nodeId => {
     const panel = F.renderTsPanel(key, nodeId);
     scanPanel(panel, key + ' ' + nodeId);
     assert(!panel.html || panel.html.indexOf('class="ts-screen"') === -1, 'TS-A18 no mirror ' + key + ' ' + nodeId);
@@ -1650,7 +1785,7 @@ function withMirrors(extra) {
 }
 const mirrorOn = withMirrors({ today: '2026-10-10' });
 tsModelPaths.forEach(([key]) => {
-  Object.keys(F.tsFnOf).forEach(nodeId => {
+  Object.keys(F.tsFnOf).filter(nodeId => F.tsV0.indexOf(nodeId) !== -1).forEach(nodeId => {
     const panel = F.renderTsPanel(key, nodeId, mirrorOn);
     panel.served.forEach(block => {
       assert(F.tsMirrors.serve.indexOf(block.id) !== -1, 'TS-A8 serve ' + block.id);
@@ -1662,7 +1797,7 @@ tsModelPaths.forEach(([key]) => {
   });
 });
 tsModelPaths.forEach(([key]) => {
-  Object.keys(F.tsFnOf).forEach(nodeId => {
+  Object.keys(F.tsFnOf).filter(nodeId => F.tsV0.indexOf(nodeId) !== -1).forEach(nodeId => {
     const panel = F.renderTsPanel(key, nodeId, withMirrors({ today: '2026-10-10', serve: [] }));
     assert(!panel.served.length && (panel.steps.length || panel.lc10) && panel.fallbacks.length, 'TS-A8 empty serve still has text ' + key + ' ' + nodeId);
   });
@@ -1829,13 +1964,125 @@ function expectTs(label, fn) {
     }));
     scratchRows.sort((a, b) => a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0);
     const scratchHash = require('crypto').createHash('sha256').update(JSON.stringify(scratchRows)).digest('hex');
-    const pin = '7231e4c51c76a1c50fd695c5f70b96e1ded1ccfec303fd56019996f496325843';
-    assert(scratchRows.length === 100 && scratchHash !== pin, 'M17c pin still matches ' + scratchHash);
+    const pin = 'b5981f7c33def0f900c3052e3dde6d4b8b789d413e0421692cb7319771bc488b';
+    assert(scratchRows.length === 177 && scratchHash !== pin, 'M17c pin still matches ' + scratchHash);
     console.log('TS-MUT M17c PIN_MISMATCH');
   } finally {
     fs.unlinkSync(scratchPath);
   }
   assert(fs.readFileSync(shippedPath, 'utf8') === shippedText, 'M17c left shipped copy');
+  function mut(label, apply, revert, code) {
+    apply();
+    try {
+      const message = expectTs(label, () => F.assertTs(F.nodes, F.results));
+      if (code) assert(message.indexOf(code) !== -1, label + ' missing ' + code);
+    } finally {
+      revert();
+    }
+  }
+  const auxMild = F.nodes['ts.diag.heat_pump_aux'].options.find(op => op.id === 'aux_mild_weather');
+  const auxNext = auxMild.next;
+  mut('M18', () => { auxMild.next = 'ts.step.hp_lockouts'; }, () => { auxMild.next = auxNext; }, 'TS-G25');
+  auxMild.next = 'ts.step.hp_lockouts';
+  const m18path = tsWalk(['brand_ecobee', 'ecb_premium', 'landing_backup_heat_cost', 'aux_mild_weather']);
+  assert(m18path.node === 'ts.step.hp_lockouts' && m18path.answers.every(row => row.choice !== 'hp_air' && row.choice !== 'guard_ok'), 'M18 A22');
+  auxMild.next = auxNext;
+  const coldNode = F.nodes['ts.guard.cold_weather'];
+  mut('M19', () => { coldNode.safetyGate = false; }, () => { coldNode.safetyGate = true; }, 'TS-G24');
+  const diffCell = F.tsSteps.DIFF['ECB-PRM'];
+  const diffText = diffCell.text;
+  mut('M20', () => { diffCell.text = diffText + ' Aux Heat Max Outdoor'; }, () => { diffCell.text = diffText; }, 'TS-G27');
+  mut('M21', () => { F.tsWave2.forceRatedMin = true; }, () => { F.tsWave2.forceRatedMin = false; }, 'TS-G28');
+  const cphCell = F.tsSteps.CPH['HW-T6'];
+  const cphText = cphCell.text;
+  mut('M22', () => { cphCell.text = cphText + ' Raise ISU 365 by 1.'; }, () => { cphCell.text = cphText; }, 'TS-G32');
+  const readingMatch = F.nodes['ts.diag.reading_check'].options.find(op => op.id === 'reading_matches');
+  const readingNext = readingMatch.next;
+  mut('M23', () => { readingMatch.next = 'ts.step.offset'; }, () => { readingMatch.next = readingNext; }, 'TS-G31');
+  readingMatch.next = 'ts.step.offset';
+  const m23path = tsWalk(['brand_honeywell_smart', 'hw_t6', 'landing_wrong_reading', 'reading_matches']);
+  assert(m23path.node === 'ts.step.offset' && !m23path.answers.some(row => row.node === 'ts.diag.location'), 'M23 A23');
+  readingMatch.next = readingNext;
+  mut('M24', () => { diffCell.text = diffText + ' A safe value is 3.'; }, () => { diffCell.text = diffText; }, 'TS-G33');
+  const lockSources = F.tsSteps.HPLOCK['ECB-PRM'].num_sources;
+  mut('M25', () => { lockSources.push({ label: 'TRADE', item: 'compressor min outdoor', typical: '25 °F', value: 25, low: 0, high: 10 }); }, () => { lockSources.pop(); }, 'TS-G34');
+  const t6Lock = F.tsSteps.HPLOCK['HW-T6'];
+  mut('M26', () => { t6Lock.omitLc32 = true; }, () => { t6Lock.omitLc32 = false; }, 'TS-G34');
+  mut('M27', () => { globalThis.SW_CONFIG.stageLatchStepsEnabled = true; }, () => { globalThis.SW_CONFIG.stageLatchStepsEnabled = false; }, 'TS-G37');
+  const eheatCell = F.tsSteps.EHEAT['ECB-PRM'];
+  const eheatSaved = eheatCell.text;
+  mut('M28', () => { eheatCell.text = eheatSaved + ' Don’t tap either.'; }, () => { eheatCell.text = eheatSaved; }, 'TS-G38');
+  const swingNode = F.nodes['ts.diag.swing'];
+  mut('M29', () => { swingNode.advancedNote = 'advancedRepairsEnabled'; }, () => { delete swingNode.advancedNote; }, 'TS-G35');
+  mut('M30', () => { F.tsWave2.stepsBeforeCheckbox = true; }, () => { F.tsWave2.stepsBeforeCheckbox = false; }, 'TS-G29');
+  const t6Neighbors = cphCell.neighbors;
+  mut('M31', () => { cphCell.neighbors = ''; }, () => { cphCell.neighbors = t6Neighbors; }, 'TS-G30');
+  const t5Offset = F.tsSteps.OFFSET['HW-T5'];
+  const t5Kind = t5Offset.kind;
+  mut('M32', () => { t5Offset.kind = 'text'; }, () => { t5Offset.kind = t5Kind; }, 'TS-G40');
+  const t6LockText = t6Lock.text;
+  mut('M33', () => { t6Lock.text = t6LockText.replace('ISU **130**', 'the outdoor source'); }, () => { t6Lock.text = t6LockText; }, 'TS-G39');
+  const nearFreeze = coldNode.options.find(op => op.id === 'guard_near_freezing');
+  const nearLabel = nearFreeze.label;
+  mut('M34', () => { nearFreeze.label = 'Below 40 °F (4 °C) the heat pump can’t run efficiently'; }, () => { nearFreeze.label = nearLabel; }, 'TS-G33');
+  const hpGeo = F.nodes['ts.guard.hp_source'].options.find(op => op.id === 'hp_geo');
+  const hpGeoNext = hpGeo.next;
+  mut('M35', () => { hpGeo.next = 'ts.guard.cold_weather'; }, () => { hpGeo.next = hpGeoNext; }, 'TS-G43');
+  hpGeo.next = 'ts.guard.cold_weather';
+  const m35path = tsWalk(['brand_ecobee', 'ecb_premium', 'landing_backup_heat_cost', 'aux_mild_weather', 'hp_geo', 'guard_ok', 'only_backup_heat']);
+  assert(m35path.node === 'ts.step.hp_lockouts' && m35path.tsGeo, 'M35 A31');
+  hpGeo.next = hpGeoNext;
+  const geoTemp = F.nodes['ts.look.geo_lockouts'].options.find(op => op.id === 'geo_lock_temp');
+  const geoTempNext = geoTemp.next;
+  mut('M36', () => { geoTemp.next = 'ts.step.hp_lockouts'; }, () => { geoTemp.next = geoTempNext; }, 'TS-G43');
+  geoTemp.next = 'ts.step.hp_lockouts';
+  const m36path = tsWalk(['brand_honeywell_smart', 'hw_t6', 'landing_backup_heat_cost', 'aux_mild_weather', 'hp_geo', 'geo_lock_temp']);
+  assert(m36path.node === 'ts.step.hp_lockouts' && m36path.tsGeo, 'M36 A31');
+  geoTemp.next = geoTempNext;
+  mut('M37', () => { F.tsWave2.geoRenderGuard = false; }, () => { F.tsWave2.geoRenderGuard = true; }, 'TS-G43');
+  F.tsWave2.geoRenderGuard = false;
+  const m37panel = F.renderTsPanel('ECB-PRM', 'ts.step.hp_lockouts', { state: { tsGeo: true }, reveal: true });
+  assert(m37panel.text.indexOf('AUX HEAT MAX OUTDOOR TEMP') !== -1, 'M37 A32');
+  F.tsWave2.geoRenderGuard = true;
+  const hpAir = F.nodes['ts.guard.hp_source'].options.find(op => op.id === 'hp_air');
+  mut('M38', () => { F.tsWave2.showHpAirInWshp = true; }, () => { F.tsWave2.showHpAirInWshp = false; }, 'TS-G43');
+  F.tsWave2.showHpAirInWshp = true;
+  assert(F.tsOptionVisible(hpAir, { product: 'wshp' }), 'M38 A31');
+  F.tsWave2.showHpAirInWshp = false;
+  const offsetText = F.tsSteps.OFFSET['ECB-PRM'].text;
+  mut('M39', () => { F.tsSteps.OFFSET['ECB-PRM'].text = offsetText.replace('Don’t go past 3 °F (1.5 °C) either way in total. A bigger difference is a job for a professional.', ''); }, () => { F.tsSteps.OFFSET['ECB-PRM'].text = offsetText; }, 'TS-G41');
+  mut('M40', () => { F.tsWave2.renderHeldText = true; }, () => { F.tsWave2.renderHeldText = false; }, 'TS-G45');
+  mut('M41', () => { cphCell.omitLc38 = true; }, () => { cphCell.omitLc38 = false; }, 'TS-G44');
+  const stageBlock = F.tsLatchBlocks.find(block => block.id === 'ecb-cs2');
+  mut('M42', () => { stageBlock.live = true; }, () => { stageBlock.live = false; }, 'TS-G42');
+  const stagePro = F.results.ts_stage_pro;
+  const stageProText = stagePro.explanation;
+  mut('M43', () => { stagePro.explanation = stageProText + ' lonnie@secondwrench.co'; }, () => { stagePro.explanation = stageProText; }, 'TS-G46');
+  mut('M44', () => { stagePro.explanation = stageProText + ' If it always starts on high'; }, () => { stagePro.explanation = stageProText; }, 'TS-G47');
+  const stageOpts = F.nodes['ts.diag.stages'].options;
+  mut('M45', () => { stageOpts.splice(2, 0, { id: 'always_high', label: 'It always runs on high and never on low', next: '@ts_stage_pro', hint: '', fact: '' }); }, () => { stageOpts.splice(2, 1); }, 'TS-G47');
+  stageOpts.splice(2, 0, { id: 'always_high', label: 'It always runs on high and never on low', next: '@ts_stage_pro', hint: '', fact: '' });
+  let m45clean = true;
+  try { if (stageOpts.some(op => op.id === 'always_high')) throw new Error('TS-A33 always_high'); } catch (err) { m45clean = false; }
+  assert(!m45clean, 'M45 A33');
+  stageOpts.splice(2, 1);
+  const t9Latch = F.tsSteps.LATCH['HW-T9'];
+  const t9Kind = t9Latch.kind;
+  mut('M46', () => { t9Latch.kind = 'text'; }, () => { t9Latch.kind = t9Kind; }, 'TS-G48');
+  const geoT6 = F.tsSteps.GEO['HW-T6'];
+  const geoNeighbors = geoT6.neighbors;
+  mut('M47', () => { geoT6.neighbors = ''; }, () => { geoT6.neighbors = geoNeighbors; }, 'TS-G43');
+  const dehumText = F.tsSteps.DEHUM['ECB-PRM'].text;
+  mut('M48', () => { F.tsSteps.DEHUM['ECB-PRM'].text = dehumText + ' Lower Aux Heat Max Outdoor Temp by one step.'; }, () => { F.tsSteps.DEHUM['ECB-PRM'].text = dehumText; }, 'TS-G49');
+  const bounceOpt = stageOpts.find(op => op.id === 'bounces');
+  const bounceLabel = bounceOpt.label;
+  mut('M49', () => { bounceOpt.label = 'Your thermostat shows stage 2 turning on and off'; }, () => { bounceOpt.label = bounceLabel; }, 'TS-G50');
+  const t6Block = F.tsLatchBlocks.find(block => block.id === 't6-finish');
+  const t6BlockLabel = t6Block.label;
+  mut('M50', () => { t6Block.label = 'Latching'; }, () => { t6Block.label = t6BlockLabel; }, 'TS-G47');
+  const lc40Saved = t6Lock.lc40.slice();
+  const lc40Sentence = F.tsLc.lc40.split('[label]').join('ISU 356').replace(/\*\*/g, '');
+  mut('M51', () => { t6Lock.lc40 = []; t6Lock.text = t6LockText.split(lc40Sentence).join(''); }, () => { t6Lock.lc40 = lc40Saved; t6Lock.text = t6LockText; }, 'TS-G51');
   F.assertTs(F.nodes, F.results);
 })();
 
@@ -1844,7 +2091,7 @@ function finish() {
     console.error(failed + ' failed');
     process.exit(1);
   }
-  console.log('AC Wave-2, HP Wave-1, WSHP Wave-1 PR-1, furnace Wave-1, mini-split heat v1, and thermostat v0 sanity passed');
+  console.log('AC Wave-2, HP Wave-1, WSHP Wave-1 PR-1, furnace Wave-1, mini-split heat v1, and thermostat v1 sanity passed');
 }
 
 function bootPage() {
@@ -2135,7 +2382,7 @@ function pageChecks() {
     await clickPath(['other_heat_or_ductless', 'thermostat_settings', 'ts_none_of_these', 'brand_honeywell_smart', 'hw_t9', 'landing_no_heat_cool']);
     assert(doc.querySelector('h1').textContent === 'Check the mode and temperature', 'thermostat mode question is on screen');
     assert(doc.title.indexOf('Guided thermostat check') === 0, 'thermostat route title');
-    assert(norm(doc.querySelector('.sidebar')).indexOf('Settings only. No wires, no covers, no installer menus. Low-voltage thermostats only.') !== -1, 'thermostat sidebar limit');
+    assert(norm(doc.querySelector('.sidebar')).indexOf('Settings only. No wires, no covers. Some installer settings have steps; the ones that protect your equipment don’t. Low-voltage thermostats only.') !== -1, 'thermostat sidebar limit');
     assert(norm(doc.querySelector('.ts-lc3')).indexOf('Menus vary by model and firmware.') !== -1, 'thermostat panel shows menus vary');
     assert(!doc.querySelector('.ts-screen'), 'shipped config does not render a mirror box');
     const affiliation = [...doc.querySelectorAll('.ts-affiliation')].map(el => el.textContent);
@@ -2148,6 +2395,35 @@ function pageChecks() {
     assert(doc.querySelector('.tell-pro'), 'thermostat result lists what to tell the pro');
     assert([...doc.querySelectorAll('.ts-affiliation')].length === 1, 'LC-1 appears once on the thermostat result');
     assert(!doc.getElementById('flow-error'), 'thermostat basic result has no error');
+    await home();
+    click(doc.querySelector('[data-answer="none_of_these"]'));
+    await flush();
+    await acceptAndContinue();
+    await clickPath(['other_heat_or_ductless', 'thermostat_settings', 'ts_none_of_these', 'brand_ecobee', 'ecb_premium']);
+    assert(rendered().indexOf('Once it gets louder and blows harder, it stays that way until it shuts off') !== -1, 'stages landing label is on screen');
+    answer('landing_stages');
+    await flush();
+    answer('holds_high');
+    await flush();
+    assert(doc.querySelector('h1').textContent === 'Staging needs a pro', 'stages path reaches the pro result');
+    assert(rendered().indexOf('Finish on high stage (some brands call this “latching”)') !== -1, 'stages result uses the approved label');
+    assert(rendered().toLowerCase().indexOf('emergency heat mode') === -1, 'stages result has no emergency-heat blocking note');
+    await home();
+    click(doc.querySelector('[data-answer="none_of_these"]'));
+    await flush();
+    await acceptAndContinue();
+    await clickPath(['other_heat_or_ductless', 'thermostat_settings', 'ts_none_of_these', 'brand_ecobee', 'ecb_premium', 'landing_backup_heat_cost', 'aux_mild_weather', 'hp_air', 'guard_ok', 'only_backup_heat']);
+    assert(rendered().indexOf('If the house is getting cold and neither the heat pump nor backup heat is running') === -1, 'lockout steps stay hidden before the notices');
+    for (const ack of ['warranty', 'lc18']) {
+      const box = doc.querySelector('[data-ts-ack="' + ack + '"]');
+      assert(box && !box.checked, 'ack starts unchecked ' + ack);
+      box.checked = true;
+      box.dispatchEvent(new window.Event('change', { bubbles: true }));
+      await flush();
+    }
+    assert(rendered().indexOf('AUX HEAT MAX OUTDOOR TEMP') !== -1, 'revealed lockout steps name the ecobee setting');
+    assert(rendered().indexOf('If the house is getting cold and neither the heat pump nor backup heat is running, put AUX HEAT MAX OUTDOOR TEMP back') !== -1, 'LC-40 is next to the lockout steps');
+    assert(rendered().toLowerCase().indexOf('emergency heat mode') === -1, 'lockout steps have no emergency-heat blocking note');
     window.location.hash = '#/sources';
     await flush();
     assert(norm(doc.querySelector('main')).indexOf('Thermostat guides') !== -1, 'sources list thermostat guides');
@@ -2160,7 +2436,8 @@ function pageChecks() {
     window.location.hash = '#/privacy';
     await flush();
     const privacyBody = norm(doc.querySelector('.document-panel'));
-    assert(crypto.createHash('sha256').update(privacyBody).digest('hex') === PRIVACY_BODY_SHA256, 'privacy body matches the approved text');
+    const privacyHash = crypto.createHash('sha256').update(privacyBody).digest('hex');
+    assert(privacyHash === PRIVACY_BODY_SHA256, 'privacy body matches the approved text ' + privacyHash);
     window.close();
     finish();
   })().catch(error => {

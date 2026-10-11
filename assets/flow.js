@@ -1,4 +1,4 @@
-// Thermostat lane: ts.settings.v0 (settings help, P1 brands, Basic only, no AI). Start → Something else: mini-split, geothermal, thermostat, other → Thermostat or settings problem.
+// Thermostat lane: ts.settings.v1 (settings help, P1 brands, Basic only, no AI). Start → Something else: mini-split, geothermal, thermostat, other → Thermostat or settings problem.
 /* Deterministic decision engine. No model calls and no free-text diagnosis routing.
  * Browser or Node. Every action comes from the current node's choices.
  *
@@ -72,8 +72,9 @@
     ? require('./ts-lane.js')
     : globalThis.SW_TS_LANE;
   if (!TS) throw new Error('Thermostat lane failed to load');
-  const TREE_TS = 'ts.settings.v0';
+  const TREE_TS = 'ts.settings.v1';
   const TS_V0 = TS.v0;
+  const TS_V1 = TS.v1;
   const TREE_VERSION = 'ac.cool.v1';
   const TREE_HP = 'hp.air_source.v1';
   const TREE_WSHP = 'wshp.water_to_air.v0';
@@ -2477,7 +2478,7 @@
       idWinter: null, idEm: null, wshpLoop: null,
       fnFuel: null, fnLanding: null, fnReason: null, hpGasFurnace: null,
       msLanding: null, msSingleZone: false,
-      tsModel: null, tsLanding: null
+      tsModel: null, tsLanding: null, tsGeo: false, tsHpAir: false, tsRatedMin: null, tsWarrantyAck: false, tsLc18: false
     };
     pushAudit(state, 'node_entered:' + ENTRY);
     pushAudit(state, 'product_lane:ask');
@@ -2640,6 +2641,10 @@
     if (state && state.product === 'fn' && FN_REUSED.indexOf(id) !== -1) {
       view = Object.assign({}, view, { options: view.options.concat([FN_HAZARD]) });
     }
+    if (state && String(id).indexOf('ts.') === 0 && TS.optionVisible) {
+      const options = view.options.filter(op => TS.optionVisible(op, state));
+      if (options.length !== view.options.length) view = Object.assign({}, view, { options: options });
+    }
     if (state && state.msLanding === 'weak_airflow' && id === 'ms.controls.mode_setpoint') {
       view = Object.assign({}, view, {
         options: view.options.map(op => {
@@ -2734,6 +2739,21 @@
     if (TS.landingOf[choice]) {
       state.tsLanding = TS.landingOf[choice];
       pushAudit(state, 'flag:ts_landing=' + state.tsLanding);
+    }
+    if (option.flag === 'ts_geo') {
+      state.tsGeo = true;
+      pushAudit(state, 'flag:ts_geo');
+    }
+    if (option.flag === 'ts_hp_air') {
+      state.tsHpAir = true;
+      pushAudit(state, 'flag:ts_hp_air');
+    }
+    if (option.flag && String(option.flag).indexOf('ts_rated_min=') === 0) {
+      state.tsRatedMin = String(option.flag).split('=')[1];
+      pushAudit(state, 'flag:ts_rated_min=' + state.tsRatedMin);
+    }
+    if (option.requiresFlag === 'stageLatchStepsEnabled' && !(typeof globalThis !== 'undefined' && globalThis.SW_CONFIG && globalThis.SW_CONFIG.stageLatchStepsEnabled === true)) {
+      pushAudit(state, 'flag:stage_latch_hidden');
     }
     if (choice === 'screen_looks_different' && TS.fnOf[nodeId]) {
       pushAudit(state, 'flag:ts_mirror_mismatch=' + TS.fnOf[nodeId] + ':' + (state.tsModel || ''));
@@ -3007,10 +3027,11 @@
   }
   return {
     nodes, results, create, answer, stop, resume, summary, activity, viewNode, presentResult, advancedEnabled,
-    treeVersion: TREE_VERSION, treeVersionHp: TREE_HP, treeVersionWshp: TREE_WSHP, treeVersionMs: TREE_MS, treeVersionTs: TREE_TS, tsV0: TS_V0, msPr1: MS_PR1, msV1: MS_V1, wave1: WAVE1, wave2: WAVE2, advanced: ADVANCED,
+    treeVersion: TREE_VERSION, treeVersionHp: TREE_HP, treeVersionWshp: TREE_WSHP, treeVersionMs: TREE_MS, treeVersionTs: TREE_TS, tsV0: TS_V0, tsV1: TS_V1, msPr1: MS_PR1, msV1: MS_V1, wave1: WAVE1, wave2: WAVE2, advanced: ADVANCED,
     tsSteps: TS.steps, tsModels: TS.models, tsLc: TS.lc, tsFallbacks: TS.fallbacks, tsMirrors: { records: TS.records, byId: TS.byId, serve: TS.serve, hold: TS.hold },
     tsMirrorRenderable: TS.tsMirrorRenderable, renderTsPanel: TS.renderTsPanel, assertTs: TS.assertTs, assertGraph: assertGraph,
     tsFnOf: TS.fnOf, tsModelOf: TS.modelOf, tsLandingOf: TS.landingOf, tsU1: TS.u1, tsU2: TS.u2, tsTellPro: TS.tellPro, tsForbiddenScan: TS.forbiddenScan,
+    tsWave2: TS.wave2ui, tsLatchBlocks: TS.latchBlocks, tsOptionVisible: TS.optionVisible, tsCards: TS.cards,
     hpWave1: HP_WAVE1, wshpWave1: WSHP_WAVE1, treeVersionFn: TREE_FN, fnWave1: FN_WAVE1, fnReused: FN_REUSED, fnForbidden: FN_FORBIDDEN,
     fnCoLine: FN_CO_LINE, fnReasonCopy: FN_REASON_COPY, fnEdge: FN_EDGE
   };

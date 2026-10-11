@@ -59,6 +59,9 @@
     'BATT|AMZ-AST': 1, 'BATT|ECB-PRM': 1, 'BATT|ECB-ESS': 1,
     'ALERT|HW-T5': 1, 'ALERT|HW-T6': 1, 'ALERT|HW-FP6': 1, 'ALERT|HW-RTH76': 1, 'ALERT|HW-TH4': 1, 'ALERT|ECB-ESS': 1
   };
+  (data.v1Generic || []).forEach(function (id) { GENERIC_CELLS[id] = 1; });
+  var V1_FN = { OFFSET: 1, DIFF: 1, CPH: 1, AUTO: 1, RECOV: 1, SETBACK: 1, HPLOCK: 1, DEHUM: 1, SENSORS: 1, LATCH: 1, GEO: 1 };
+  var V1_MODELS = (data.modelKeys || Object.keys(data.models || {})).slice();
   var TEXT_EXPECTED = {};
   var NODE_OF = {};
   Object.keys(data.fnOf).forEach(function (nodeId) { NODE_OF[data.fnOf[nodeId]] = nodeId; });
@@ -74,7 +77,8 @@
     'AI answer',
     'Live help isn'
   ];
-  var HARD_FAIL = /\bgreen\b|guarantee|\bcertified\b|\bwarranty\b|\bcure\b|you should be fine|safe to (keep|continue)|\bscrewdriver\b|multimeter|voltmeter|\bjumper\b|\bbypass\b|ladder|!|lawyer|attorney-reviewed/;
+  var HARD_FAIL = /\bgreen\b|guarantee|\bcertified\b|\bcure\b|you should be fine|safe to (keep|continue)|\bscrewdriver\b|multimeter|voltmeter|\bjumper\b|\bbypass\b|ladder|!|lawyer|attorney-reviewed/;
+  var WARRANTY_OK = /installer/i;
   var PROHIB = /\b(breaker|capacitor|contactor|board|compressor|wiring|rewire|panel|fuse|float|refrigerant)\b|C wire|\bPEK\b|\bslider\b/i;
   var PROHIB_OK = /^(Don’t|Do not|No |Never)|stop|\bpro\b|professional|electrician|installer/i;
   var PROHIB_ALLOW = {
@@ -100,7 +104,9 @@
     '4. Notice whether other equipment has power: the furnace or air-handler light, the outdoor unit, or lights on the same part of the house. Just look.': 1,
     'Cool On flashing (or Heat On on a heat pump) means the thermostat is waiting a few minutes to protect the equipment.': 1,
     'Wait on the display means the thermostat is holding off for about 5 minutes to protect the equipment.': 1,
-    'Waiting For Equipment means the thermostat is holding off to protect the equipment.': 1
+    'Waiting For Equipment means the thermostat is holding off to protect the equipment.': 1,
+    '**Second Wrench doesn’t guide these changes when it’s 40 °F (4 °C) or colder outside, or will be in the next few days.** That’s our own cautious cutoff, not a rating for your equipment.': 1,
+    'Look only: write down the lockout settings': 1
   };
   var byId = {};
   records.forEach(function (record) { byId[record.id] = record; });
@@ -194,9 +200,170 @@
     }).join('');
     return '<figure class="ts-screen"><ol class="ts-lines">' + lines + '</ol><div class="ts-buttons">' + buttons + '</div></figure>';
   }
+  function fillSetting(template, name) {
+    return String(template || '').split('[Setting]').join(name || 'this setting');
+  }
+  function lc18Text(cell) {
+    var body = data.lc.lc18;
+    if (cell && cell.omitLc38) return body;
+    var needle = 'These are comfort settings.';
+    var at = body.indexOf(needle);
+    if (at < 0) return data.lc.lc38 + '\n' + body;
+    return body.slice(0, at) + data.lc.lc38 + '\n' + body.slice(at);
+  }
+  function lc40Text(label) {
+    return data.lc.lc40.split('[label]').join(label);
+  }
+  function panelPush(bag, cls, text) {
+    if (!text) return;
+    bag.parts.push({ cls: cls, text: text });
+  }
+  function panelAfter(bag, cls, text) {
+    if (!text) return;
+    bag.after.push({ cls: cls, text: text });
+  }
+  function finishPanel(fn, modelKey, cell, bag, extra) {
+    extra = extra || {};
+    bag.after = bag.after || [];
+    function blocks(list) {
+      return list.map(function (part) {
+        return '<p class="' + part.cls + '">' + htmlLc3(part.text) + '</p>';
+      }).join('');
+    }
+    var html = blocks(bag.parts);
+    if (bag.steps.length) {
+      html += '<ol class="ts-steps">' + bag.steps.map(function (step) { return '<li>' + htmlLc3(step) + '</li>'; }).join('') + '</ol>';
+    }
+    html += blocks(bag.after);
+    var text = bag.parts.map(function (part) { return plainLc3(part.text); }).concat(bag.steps.map(plainLc3), bag.after.map(function (part) { return plainLc3(part.text); })).join('\n');
+    return {
+      fn: fn, modelKey: modelKey, cell: cell, served: [], steps: bag.steps,
+      lc3: extra.lc3 || '', lc3Plain: plainLc3(extra.lc3 || ''),
+      lc10: extra.lc10 || '', fallbacks: extra.fallbacks || [], lc6: extra.lc6 || '',
+      generic: !!(cell && cell.generic) || !!extra.asGeneric, html: html, text: text
+    };
+  }
+  function fallbacksFor(cell) {
+    var fallbacks = [];
+    if (!cell) return fallbacks;
+    (cell.fallback || []).forEach(function (entry) {
+      var line = fallbackLine(entry);
+      if (line) fallbacks.push({ id: entry.id, section: entry.section, line: line, url: data.fallbacks[entry.id] ? data.fallbacks[entry.id].url : '' });
+    });
+    return fallbacks;
+  }
+  function renderV1Panel(modelKey, nodeId, opts) {
+    opts = opts || {};
+    var fn = data.fnOf[nodeId];
+    var ui = data.wave2ui || {};
+    var st = opts.state || {};
+    var geo = !!(st.tsGeo || opts.tsGeo || st.product === 'wshp' || opts.lane === 'wshp');
+    if (fn === 'HPLOCK' && ui.geoRenderGuard !== false && geo) {
+      return renderV1Panel(modelKey, 'ts.look.geo_lockouts', opts);
+    }
+    var cell = fn && data.steps[fn] ? data.steps[fn][modelKey] : null;
+    var installer = !!(cell && cell.installer_menu);
+    var ack = !!(st.tsWarrantyAck || opts.tsWarrantyAck);
+    var checked = !!(st.tsLc18 || opts.tsLc18);
+    var reveal = opts.reveal === true || (ack && checked) || ui.stepsBeforeCheckbox === true;
+    var held = !!(cell && (cell.kind === 'held' || cell.held));
+    var latchOff = config().stageLatchStepsEnabled !== true;
+    var asGeneric = !!(cell && cell.generic) || (held && latchOff && ui.renderHeldText !== true);
+    var bag = { parts: [], steps: [], after: [] };
+    var fallbacks = fallbacksFor(cell);
+    if (!cell) return finishPanel(fn, modelKey, cell, bag, {});
+    if (fn === 'GEO' || cell.geoLook) {
+      if (cell.kind === 'text' && cell.text) {
+        panelPush(bag, 'ts-lc29geo', data.lc.lc29geo);
+        panelPush(bag, 'ts-p26', data.lc.p26);
+        panelPush(bag, 'ts-lc23', data.lc.lc23);
+        if (cell.neighbors) panelPush(bag, 'ts-neighbors', cell.neighbors);
+        bag.steps.push(cell.text);
+        panelAfter(bag, 'ts-lc22', data.lc.lc22);
+        fallbacks.forEach(function (item) { panelAfter(bag, 'ts-lc9', item.line); });
+        return finishPanel(fn, modelKey, cell, bag, { fallbacks: fallbacks });
+      }
+      asGeneric = true;
+    }
+    if (asGeneric) {
+      panelPush(bag, 'ts-lc3', data.lc.lc3);
+      if (fn === 'CPH') {
+        panelPush(bag, 'ts-lc24', data.lc.lc24);
+        panelPush(bag, 'ts-lc25', data.lc.lc25);
+      }
+      panelPush(bag, 'ts-lc10', data.lc.lc10);
+      fallbacks.forEach(function (item) { panelPush(bag, 'ts-lc9', item.line); });
+      if (cell.lc6_inline) panelPush(bag, 'ts-lc6', data.lc.lc6);
+      if (ui.renderHeldText && cell.held_text) panelPush(bag, 'ts-held', cell.held_text);
+      return finishPanel(fn, modelKey, cell, bag, { lc3: data.lc.lc3, lc10: data.lc.lc10, lc6: cell.lc6_inline ? data.lc.lc6 : '', fallbacks: fallbacks, asGeneric: true });
+    }
+    if (installer && !reveal) {
+      panelPush(bag, 'ts-lc16', data.lc.lc16);
+      return finishPanel(fn, modelKey, cell, bag, {});
+    }
+    if (installer) {
+      panelPush(bag, 'ts-lc16', data.lc.lc16);
+      panelPush(bag, 'ts-lc18', lc18Text(cell));
+    }
+    panelPush(bag, 'ts-lc3', data.lc.lc3);
+    if (installer) panelPush(bag, 'ts-lc19', fillSetting(data.lc.lc19, cell.settingName));
+    if (fn === 'DIFF') panelPush(bag, 'ts-lc20', fillSetting(data.lc.lc20, 'differential'));
+    if (fn === 'CPH') {
+      panelPush(bag, 'ts-lc20c', data.lc.lc20c);
+      panelPush(bag, 'ts-lc24', data.lc.lc24);
+      panelPush(bag, 'ts-lc25', data.lc.lc25);
+    }
+    if (fn === 'OFFSET') panelPush(bag, 'ts-lc21', data.lc.lc21);
+    if (fn === 'HPLOCK' && cell.kind === 'text') {
+      panelPush(bag, 'ts-lc29', data.lc.lc29);
+      panelPush(bag, 'ts-lc29b', data.lc.lc29b);
+      panelPush(bag, 'ts-lc29c', data.lc.lc29c);
+      panelPush(bag, 'ts-lc29d', data.lc.lc29d);
+      panelPush(bag, 'ts-lc29geo', data.lc.lc29geo);
+      panelPush(bag, 'ts-lc29check', data.lc.lc29check);
+      panelPush(bag, 'ts-lc31', data.lc.lc31);
+      panelPush(bag, 'ts-lc30', data.lc.lc30);
+      if (!cell.omitLc32) panelPush(bag, 'ts-lc32', data.lc.lc32);
+      panelPush(bag, 'ts-lc33', data.lc.lc33);
+    }
+    if (fn === 'DEHUM') {
+      panelPush(bag, 'ts-lc35', data.lc.lc35);
+      panelPush(bag, 'ts-lc36', data.lc.lc36);
+    }
+    (cell.captions || []).forEach(function (line) { panelPush(bag, 'ts-caption', line); });
+    if (installer) {
+      panelPush(bag, 'ts-lc23', data.lc.lc23);
+      if (cell.neighbors) panelPush(bag, 'ts-neighbors', cell.neighbors);
+    }
+    var ratedKnown = st.tsRatedMin === 'known' || opts.tsRatedMin === 'known' || ui.forceRatedMin === true;
+    if (cell.text) bag.steps.push(cell.text);
+    if (fn === 'LATCH' && !latchOff) {
+      (data.latchBlocks || []).forEach(function (block) {
+        if (block.model !== modelKey) return;
+        bag.steps.push([block.label, block.does, block.undo].join('\n'));
+      });
+    }
+    if (fn === 'HPLOCK' && ratedKnown && cell.ratedMinText) bag.steps.push(cell.ratedMinText);
+    if (installer || cell.undo) panelAfter(bag, 'ts-lc22', data.lc.lc22);
+    fallbacks.forEach(function (item) { panelAfter(bag, 'ts-lc9', item.line); });
+    return finishPanel(fn, modelKey, cell, bag, { lc3: data.lc.lc3, fallbacks: fallbacks });
+  }
+  function optionVisible(option, state) {
+    state = state || {};
+    var ui = data.wave2ui || {};
+    if (!option) return false;
+    if (option.requiresFlag === 'stageLatchStepsEnabled' && config().stageLatchStepsEnabled !== true) return false;
+    if (option.hiddenIf && option.hiddenIf.length) {
+      if (ui.showHpAirInWshp && option.id === 'hp_air') return true;
+      if (option.hiddenIf.indexOf('ts_geo') !== -1 && state.tsGeo) return false;
+      if (option.hiddenIf.indexOf('wshp') !== -1 && (state.product === 'wshp' || state.tsLane === 'wshp')) return false;
+    }
+    return true;
+  }
   function renderTsPanel(modelKey, nodeId, opts) {
     opts = opts || {};
     var fn = data.fnOf[nodeId];
+    if (fn && V1_FN[fn]) return renderV1Panel(modelKey, nodeId, opts);
     var cell = fn && data.steps[fn] ? data.steps[fn][modelKey] : null;
     var model = data.models[modelKey] || null;
     var serve = opts.serve || serveDoc.TS_MIRROR_SERVE;
@@ -267,10 +434,18 @@
   function presentResult(state, results) {
     var res = results[state.result];
     if (!res) return null;
-    if (state.result === 'ts_screen_different') {
-      return Object.assign({}, res, { explanation: fillLc5(state.tsModel) });
+    var explanation = res.explanation;
+    if (state.result === 'ts_screen_different') explanation = fillLc5(state.tsModel);
+    if (state.result === 'ts_ask_installer_first') explanation = fillSetting(explanation, 'this setting');
+    if (state.result === 'ts_stage_pro' && state.tsGeo && explanation.indexOf('Ask them to check the water side too.') === -1) {
+      explanation += ' Ask them to check the water side too.';
     }
-    return res;
+    var cardResults = { ts_new_install_installer: 1, ts_setup_check_pro: 1, ts_stage_pro: 1, ts_geo_pro: 1 };
+    if (cardResults[state.result] && state.tsModel && data.cards && data.cards[state.tsModel]) {
+      explanation += '\n' + data.cardIntro + ' ' + data.cards[state.tsModel];
+    }
+    if (explanation === res.explanation) return res;
+    return Object.assign({}, res, { explanation: explanation });
   }
   function summary(state, extra, contentVersion) {
     var facts = (state.answers || []).map(function (row) { return row.fact; }).filter(Boolean);
@@ -295,7 +470,7 @@
       'Codes or messages on the thermostat: ______________________ (write the exact text)',
       stopFired ? '' : 'Safety check at start: no CO alarm, gas smell, burning smell, repeat breaker trip, water at the indoor unit, or high-voltage thermostat reported.',
       'This guide did not ask you to open equipment, touch wires, or change installer settings.',
-      'Guide: Second Wrench thermostat check ts.settings.v0, ' + (contentVersion || '') + ', step panels: ' + (fns.join(', ') || 'none') + '.'
+      'Guide: Second Wrench thermostat check ts.settings.v1, ' + (contentVersion || '') + ', step panels: ' + (fns.join(', ') || 'none') + '.'
     ];
     return lines.filter(Boolean).join('\n');
   }
@@ -329,7 +504,7 @@
   }
   function collectCopy(nodes, results) {
     var out = [];
-    data.v0.forEach(function (id) {
+    (data.v1 || data.v0).forEach(function (id) {
       var node = nodes[id];
       if (!node) return;
       ['title', 'body', 'caution'].forEach(function (key) { out.push([id + ' ' + key, node[key]]); });
@@ -376,11 +551,27 @@
       }
     });
   }
+  function lcSentences() {
+    var bag = {};
+    Object.keys(data.lc || {}).forEach(function (key) {
+      sentences(String(data.lc[key] || '').replace(/\*\*/g, '')).forEach(function (sentence) { bag[sentence] = 1; });
+    });
+    return bag;
+  }
+  var LC_SENTENCES = lcSentences();
+  function inCard(sentence) {
+    if (!data.cards) return false;
+    var blob = (data.cardIntro || '') + '\n' + Object.keys(data.cards).map(function (key) { return data.cards[key]; }).join('\n');
+    return blob.indexOf(sentence) !== -1;
+  }
   function forbiddenScan(text, where) {
     var failures = [];
-    var raw = String(text || '').replace(/\{step panel:[^}]+\}/g, ' ');
+    var raw = String(text || '').replace(/\{step panel:[^}]+\}/g, ' ').replace(/\*\*/g, '');
     if (HARD_FAIL.test(raw)) failures.push('TS-A10: ' + where + ' hard fail');
     sentences(raw).forEach(function (sentence) {
+      if (/\bwarranty\b/i.test(sentence) && !WARRANTY_OK.test(sentence)) failures.push('TS-A10: ' + where + ' warranty');
+      if (LC_SENTENCES[sentence]) return;
+      if (inCard(sentence)) return;
       if (PROHIB.test(sentence) && !PROHIB_OK.test(sentence) && !PROHIB_ALLOW[sentence]) {
         failures.push('TS-A10: ' + where + ': ' + sentence);
       }
@@ -391,17 +582,18 @@
   function assertTs(nodes, results) {
     var failures = [];
     var fail = function (code, msg) { failures.push(code + ': ' + msg); };
-    if (data.v0.join('|') !== Object.keys(data.nodes).join('|')) fail('TS-G1', 'TS_V0 drifted');
-    data.v0.forEach(function (id) {
+    var nodeKeys = Object.keys(data.nodes);
+    if (!data.v1 || data.v1.length !== nodeKeys.length || data.v1.slice().sort().join('|') !== nodeKeys.slice().sort().join('|')) fail('TS-G1', 'TS_V1 drifted');
+    (data.v1 || data.v0).forEach(function (id) {
       if (!nodes[id]) fail('TS-G1', 'missing ' + id);
       else if (nodes[id].diyTier !== 'basic') fail('TS-G1', id + ' diyTier');
     });
-    var gates = { 'ts.gate.safety_stops': 1, 'ts.power.blank_screen': 1, 'ts.alert.capture': 1 };
-    data.v0.forEach(function (id) {
+    var gates = { 'ts.gate.safety_stops': 1, 'ts.power.blank_screen': 1, 'ts.alert.capture': 1, 'ts.guard.cold_weather': 1 };
+    (data.v1 || data.v0).forEach(function (id) {
       var on = !!(nodes[id] && nodes[id].safetyGate);
       if (on !== !!gates[id]) fail('TS-G2', id);
     });
-    data.v0.forEach(function (id) {
+    (data.v1 || data.v0).forEach(function (id) {
       var node = nodes[id];
       if (!node) return;
       var last = node.options[node.options.length - 1];
@@ -416,7 +608,7 @@
       });
     });
     var seen = tsReachable(nodes);
-    data.v0.forEach(function (id) { if (!seen[id]) fail('TS-G5', 'unreachable ' + id); });
+    (data.v1 || data.v0).forEach(function (id) { if (!seen[id]) fail('TS-G5', 'unreachable ' + id); });
     Object.keys(seen).forEach(function (id) {
       if (/^(ac|hp|sw|fn|wshp|ms)\./.test(id)) fail('TS-G5', id);
       if (id === '@next_step_advanced' || id === '@ts_advanced_off') fail('TS-G5', id);
@@ -429,7 +621,7 @@
       if (res.continueTo != null) fail('TS-G6', id + ' continueTo');
       if (res.outcome === 'next_step' && res.diyTier !== 'basic') fail('TS-G6', id + ' tier');
     });
-    data.v0.forEach(function (id) {
+    (data.v1 || data.v0).forEach(function (id) {
       nodes[id].options.forEach(function (option) {
         var res = typeof option.next === 'string' && option.next.charAt(0) === '@' ? results[option.next.slice(1)] : null;
         if (option.gate && (!res || res.outcome !== 'emergency_exit')) fail('TS-G7', id + '/' + option.id);
@@ -499,8 +691,9 @@
         }
       });
     });
-    data.v0.forEach(function (id) { scanInstaller(nodes[id].body, id, failures); });
+    (data.v1 || data.v0).forEach(function (id) { scanInstaller(nodes[id].body, id, failures); scanInstaller(nodes[id].title, id + ' title', failures); });
     Object.keys(data.steps).forEach(function (fn) {
+      if (V1_FN[fn]) return;
       Object.keys(data.steps[fn]).forEach(function (key) { scanInstaller(data.steps[fn][key].text, fn + ' ' + key, failures); });
     });
     records.forEach(function (record) {
@@ -609,7 +802,286 @@
     Object.keys(GENERIC_CELLS).forEach(function (id) {
       if (!genericSeen[id]) fail('TS-G20', 'missing ' + id);
     });
+    assertV1(nodes, results, fail);
     if (failures.length) throw new Error(failures.join('\n'));
+  }
+  function predsOf(nodes, target) {
+    var found = [];
+    Object.keys(nodes).forEach(function (id) {
+      if (id.indexOf('ts.') !== 0 || !nodes[id]) return;
+      nodes[id].options.forEach(function (option) {
+        if (option.next === target) found.push(id + '/' + option.id);
+      });
+    });
+    return found;
+  }
+  function revealed(model, nodeId, state) {
+    return renderV1Panel(model, nodeId, { reveal: true, state: state || { tsWarrantyAck: true, tsLc18: true } });
+  }
+  function assertV1(nodes, results, fail) {
+    var ui = data.wave2ui || {};
+    var fresh = ['landing_short_cycling', 'landing_swings', 'landing_never_catches_up', 'landing_wrong_reading', 'landing_auto_mode', 'landing_backup_heat_cost', 'landing_humid', 'landing_stages'];
+    var landing = nodes['ts.landing.picker'];
+    if (!landing || landing.options.length !== 19) fail('TS-G23', 'landing count');
+    else {
+      var ids = landing.options.map(function (option) { return option.id; });
+      var something = ids.indexOf('landing_something_else');
+      fresh.forEach(function (id) { if (ids.indexOf(id) === -1 || ids.indexOf(id) > something) fail('TS-G23', id); });
+      if (ids[ids.length - 1] !== 'hazard_now' || ids[something + 1] !== 'hazard_now') fail('TS-G23', 'tail');
+    }
+    var newIds = (data.v1 || []).filter(function (id) { return data.v0.indexOf(id) === -1; });
+    if (newIds.length !== 24) fail('TS-G21', 'count ' + newIds.length);
+    newIds.forEach(function (id) {
+      if (!/^ts\.(diag|guard|step|look)\./.test(id)) fail('TS-G21', id);
+      var node = nodes[id];
+      if (!node) { fail('TS-G21', 'missing ' + id); return; }
+      var tail = node.options.slice(-3).map(function (option) { return option.id; }).join('|');
+      if (tail !== 'screen_looks_different|installer_setting_came_up|hazard_now') fail('TS-G21', id + ' tail');
+    });
+    Object.keys(nodes).forEach(function (id) {
+      if (id.indexOf('ts.') !== 0) return;
+      nodes[id].options.forEach(function (option) {
+        if (typeof option.next === 'string' && option.next.charAt(0) === '@' && option.next.indexOf('@ts_') === 0) {
+          if (!results[option.next.slice(1)]) fail('TS-G22', option.next);
+        }
+      });
+    });
+    var cold = nodes['ts.guard.cold_weather'];
+    if (!cold || !cold.safetyGate) fail('TS-G24', 'safety_gate');
+    if (cold) {
+      cold.options.forEach(function (option) {
+        if (option.next.charAt(0) !== '@' && !(option.id === 'guard_ok' && option.next === 'ts.guard.outdoor_rating')) fail('TS-G24', option.id);
+      });
+    }
+    var coldPred = predsOf(nodes, 'ts.guard.cold_weather');
+    var ratePred = predsOf(nodes, 'ts.guard.outdoor_rating');
+    var lockPred = predsOf(nodes, 'ts.step.hp_lockouts');
+    if (coldPred.join('|') !== 'ts.guard.hp_source/hp_air') fail('TS-G25', coldPred.join('|'));
+    if (ratePred.join('|') !== 'ts.guard.cold_weather/guard_ok') fail('TS-G25', ratePred.join('|'));
+    if (lockPred.join('|') !== 'ts.guard.outdoor_rating/only_backup_heat|ts.guard.outdoor_rating/raise_hp_min|ts.guard.outdoor_rating/lower_hp_min_rating_known') fail('TS-G25', lockPred.join('|'));
+    var raise = nodes['ts.step.cph'] && nodes['ts.step.cph'].options.filter(function (option) { return option.id === 'want_raise_compressor'; })[0];
+    if (!raise || raise.next !== '@ts_installer_guard') fail('TS-G26', 'raise');
+    var lockTerms = ['Aux Heat Max Outdoor', 'Compressor Min Outdoor', 'Balance Point', 'Aux Heat Lock', 'ISU 355', 'ISU 356', 'Heat Pump Balance', 'AUX lockout', 'Aux Savings Optimization', 'Override For 2 Hours', 'Modify'];
+    function termHit(text) {
+      var raw = String(text || '');
+      return lockTerms.filter(function (term) { return raw.indexOf(term) !== -1; });
+    }
+    Object.keys(data.steps).forEach(function (fn) {
+      Object.keys(data.steps[fn]).forEach(function (key) {
+        var cell = data.steps[fn][key];
+        var allowed = fn === 'HPLOCK' || fn === 'GEO' || (fn === 'EHEAT' && key === 'ECB-PRM');
+        if (allowed) return;
+        var hits = termHit(cell.text);
+        if (hits.length) fail('TS-G27', fn + ' ' + key + ' ' + hits[0]);
+      });
+    });
+    V1_MODELS.forEach(function (model) {
+      var cell = data.steps.HPLOCK[model];
+      if (!cell || cell.kind !== 'text') return;
+      var hidden = revealed(model, 'ts.step.hp_lockouts', { tsWarrantyAck: true, tsLc18: true });
+      var shown = revealed(model, 'ts.step.hp_lockouts', { tsWarrantyAck: true, tsLc18: true, tsRatedMin: 'known' });
+      if (hidden.text.indexOf(data.lc.lc30) === -1 || shown.text.indexOf(data.lc.lc30) === -1) fail('TS-G28', model + ' LC-30');
+      var ratedBit = plainLc3(cell.ratedMinText || '').slice(0, 20);
+      if (ratedBit && hidden.text.indexOf(ratedBit) !== -1) fail('TS-G28', model + ' rated hidden');
+      if (ratedBit && shown.text.indexOf(ratedBit) === -1) fail('TS-G28', model + ' rated shown');
+      if (ui.forceRatedMin) fail('TS-G28', 'forceRatedMin');
+    });
+    V1_MODELS.forEach(function (model) {
+      Object.keys(V1_FN).forEach(function (fn) {
+        var cell = data.steps[fn][model];
+        if (!cell || !cell.installer_menu || cell.kind === 'held' || cell.generic) return;
+        var closed = renderV1Panel(model, data.v1Fns[fn], {});
+        var open = revealed(model, data.v1Fns[fn]);
+        if (ui.stepsBeforeCheckbox) fail('TS-G29', 'steps before checkbox');
+        if (cell.text && closed.text.indexOf(cell.text.slice(0, 24)) !== -1) fail('TS-G29', fn + ' ' + model + ' open early');
+        if (open.text.indexOf('These are comfort settings.') === -1) fail('TS-G29', fn + ' ' + model + ' notice');
+        var markers = [plainLc3(data.lc.lc16).slice(0, 24), plainLc3(data.lc.lc38).slice(0, 24), 'These are comfort settings.', plainLc3(data.lc.lc3).slice(0, 16)];
+        if (cell.text) markers.push(plainLc3(cell.text).slice(0, 24));
+        markers.push(plainLc3(data.lc.lc22).slice(0, 16));
+        var at = -1;
+        markers.forEach(function (marker) {
+          var next = open.text.indexOf(marker);
+          if (cell.omitLc38 && marker === plainLc3(data.lc.lc38).slice(0, 24)) return;
+          if (next === -1 || next < at) fail('TS-G29', fn + ' ' + model + ' order ' + marker);
+          if (next !== -1) at = next;
+        });
+        if (!cell.omitLc38 && open.text.indexOf(data.lc.lc38) === -1) fail('TS-G44', fn + ' ' + model);
+        if (cell.omitLc38) fail('TS-G44', fn + ' ' + model + ' dropped');
+        if (!cell.record_original || open.text.indexOf(data.lc.lc22) === -1) fail('TS-G30', fn + ' ' + model + ' undo');
+        if (!cell.neighbors || open.text.indexOf(plainLc3(data.lc.lc23).slice(0, 20)) === -1 || open.text.indexOf(plainLc3(cell.neighbors).slice(0, 24)) === -1) fail('TS-G30', fn + ' ' + model + ' neighbors');
+        if (!cell.entry) fail('TS-G40', fn + ' ' + model + ' entry');
+      });
+    });
+    var offsetIn = predsOf(nodes, 'ts.step.offset');
+    if (offsetIn.join('|') !== 'ts.diag.location/location_ok_steady_difference') fail('TS-G31', offsetIn.join('|'));
+    V1_MODELS.forEach(function (model) {
+      var panel = revealed(model, 'ts.step.cph');
+      if (panel.text.indexOf(data.lc.lc24) === -1 || panel.text.indexOf(data.lc.lc25) === -1) fail('TS-G32', model);
+      sentences(data.steps.CPH[model].text).forEach(function (sentence) {
+        if (/raise|higher/i.test(sentence) && /365|366|Fn 9|Fn 10|\bCool\b|compressor/i.test(sentence) && !/^(Never|Don|Don’t)/.test(sentence)) fail('TS-G32', model + ' ' + sentence);
+      });
+    });
+    if (data.cphUnknown !== 'compressor') fail('TS-G32', 'unknown stage');
+    var g33 = /\b(safe|safely|safest|recommended|ideal|best)\b|correct setting|right for your system/i;
+    collectCopy(nodes, results).forEach(function (pair) {
+      var id = String(pair[0]);
+      var v1copy = id.indexOf('ts.diag.') === 0 || id.indexOf('ts.guard.') === 0 || id.indexOf('ts.step.') === 0 || id.indexOf('ts.look.') === 0 || /^(OFFSET|DIFF|CPH|AUTO|RECOV|SETBACK|HPLOCK|DEHUM|SENSORS|LATCH|GEO) /.test(id);
+      if (!v1copy && id.indexOf('ts_') !== 0) return;
+      if (g33.test(String(pair[1] || ''))) fail('TS-G33', id);
+    });
+    ['ts_offset_done_basic', 'ts_differential_done_basic', 'ts_cph_done_basic', 'ts_hp_lockouts_done_basic', 'ts_stage_pro', 'ts_cold_weather_stop', 'ts_geo_pro'].forEach(function (id) {
+      if (results[id] && g33.test(JSON.stringify(results[id]))) fail('TS-G33', id);
+    });
+    var policy = '40 °F (4 °C)';
+    var policyBad = /freez|frost|compressor|rated|damage|can’t run|won’t run|stops working|efficien|threshold/i;
+    ['guard_ok', 'guard_near_freezing'].forEach(function (id) {
+      var option = cold && cold.options.filter(function (item) { return item.id === id; })[0];
+      if (!option || option.label.indexOf(policy) === -1) fail('TS-G33', id + ' label');
+      [option && option.label, option && option.fact].forEach(function (text) {
+        var at = String(text || '').indexOf(policy);
+        if (at !== -1 && policyBad.test(String(text).slice(Math.max(0, at - 120), at + 120 + policy.length))) fail('TS-G33', id + ' near policy');
+      });
+    });
+    Object.keys(data.steps).forEach(function (fn) {
+      if (!V1_FN[fn]) return;
+      Object.keys(data.steps[fn]).forEach(function (key) {
+        var cell = data.steps[fn][key];
+        (cell.num_sources || []).forEach(function (src) {
+          if (src.label !== 'MANUAL' && src.label !== 'TRADE' && src.label !== 'POLICY') fail('TS-G33', fn + ' ' + key + ' label');
+          if (src.label === 'ESTIMATE') fail('TS-G33', 'estimate');
+          if (src.label === 'TRADE' && typeof src.low === 'number' && typeof src.high === 'number' && typeof src.value === 'number') {
+            if (src.value < src.low || src.value > src.high) fail('TS-G33', fn + ' ' + key + ' trade range');
+          }
+          if (src.typical && /compressor min/i.test(src.item || '')) fail('TS-G34', 'typical compressor min');
+        });
+      });
+    });
+    V1_MODELS.forEach(function (model) {
+      var cell = data.steps.HPLOCK[model];
+      if (!cell || cell.kind !== 'text') return;
+      var panel = revealed(model, 'ts.step.hp_lockouts');
+      if (panel.text.indexOf(data.lc.lc32) === -1) fail('TS-G34', model);
+      if (panel.text.indexOf(data.lc.lc33) === -1) fail('TS-G49', model + ' LC-33');
+      (cell.num_sources || []).forEach(function (src) {
+        if (/compressor min/i.test(src.item || '') && src.label === 'TRADE') fail('TS-G34', model);
+      });
+      if (!/Wi-Fi|ISU 130|1060|online/.test(plainLc3(cell.text || ''))) fail('TS-G39', model);
+      (cell.lc40 || []).forEach(function (label) {
+        if ((cell.text || '').indexOf(lc40Text(label).replace(/\*\*/g, '')) === -1 && panel.text.indexOf(label) === -1) fail('TS-G51', model + ' ' + label);
+        if (panel.text.indexOf(lc40Text(label).replace(/\*\*/g, '')) === -1) fail('TS-G51', model + ' ' + label);
+      });
+      if (!(cell.lc40 && cell.lc40.length)) fail('TS-G51', model + ' missing LC-40');
+    });
+    var advancedBlob = JSON.stringify({ nodes: newIds.map(function (id) { return nodes[id]; }), results: results });
+    if (advancedBlob.indexOf('advancedRepairsEnabled') !== -1) fail('TS-G35', 'flag read');
+    (data.v1 || []).forEach(function (id) { if (nodes[id] && nodes[id].diyTier === 'advanced') fail('TS-G35', id); });
+    collectCopy(nodes, results).forEach(function (pair) {
+      if (String(pair[1] || '').indexOf('\u0027') !== -1 && String(pair[0]).indexOf('ts.') === 0) fail('TS-G36', pair[0]);
+    });
+    if (config().stageLatchStepsEnabled !== false) fail('TS-G37', 'flag');
+    if (ui.renderHeldText) fail('TS-G45', 'held text rendered');
+    var latchNode = nodes['ts.diag.stages'];
+    var latchOpt = latchNode && latchNode.options.filter(function (option) { return option.id === 'check_stage_settings'; })[0];
+    if (!latchOpt || latchOpt.requiresFlag !== 'stageLatchStepsEnabled') fail('TS-G37', 'requires flag');
+    if (!data.latchBlocks || !data.latchBlocks.length) fail('TS-G37', 'blocks');
+    (data.latchBlocks || []).forEach(function (block) {
+      if (!block.held) fail('TS-G37', block.id + ' held');
+      if (!block.source || !block.page || !block.label || !block.does || !block.undo || !block.tier) fail('TS-G48', block.id);
+      if (block.model === 'HW-T6' && !block.latching) fail('TS-G48', 't6');
+      if (block.model === 'ECB-PRM' && block.latching) fail('TS-G48', 'ecobee latch');
+      if (block.live) fail('TS-G42', block.id);
+    });
+    V1_MODELS.forEach(function (model) {
+      var cell = data.steps.LATCH[model];
+      if (model !== 'HW-T6' && model !== 'ECB-PRM' && cell.kind !== 'not_on_model') fail('TS-G48', model);
+    });
+    var eheat = data.steps.EHEAT['ECB-PRM'].text || '';
+    var oldLine = /don.?t tap either/i.test(eheat);
+    var lc34 = eheat.indexOf(data.lc.lc34.replace(/\*\*/g, '')) !== -1 || eheat.indexOf('Override For 2 Hours') !== -1;
+    if (oldLine === lc34) fail('TS-G38', 'both or neither');
+    if (lc34 && data.steps.HPLOCK['ECB-PRM'].kind !== 'text') fail('TS-G38', 'hplock');
+    V1_MODELS.forEach(function (model) {
+      if (model !== 'HW-T5') return;
+      Object.keys(V1_FN).forEach(function (fn) {
+        var t5 = data.steps[fn][model];
+        if (t5.installer_menu) fail('TS-G40', 'T5 installer');
+        if (t5.kind === 'text' && fn !== 'SETBACK') fail('TS-G40', 'T5 text');
+      });
+    });
+    V1_MODELS.forEach(function (model) {
+      var cell = data.steps.OFFSET[model];
+      if (!cell || cell.kind !== 'text') return;
+      if (cell.text.indexOf('Don’t go past 3 °F (1.5 °C) either way in total. A bigger difference is a job for a professional.') === -1) fail('TS-G41', model);
+    });
+    ['HW-RTH76'].forEach(function (model) {
+      ['CPH', 'AUTO', 'RECOV'].forEach(function (fn) {
+        var cell = data.steps[fn][model];
+        if (cell.kind !== 'not_on_model' || !cell.held_text) fail('TS-G45', fn);
+        var panel = renderV1Panel(model, data.v1Fns[fn], {});
+        if (/to be confirmed|labels to be confirmed/i.test(panel.text)) fail('TS-G45', fn + ' rendered');
+      });
+    });
+    var emailBlob = JSON.stringify({ nodes: nodes, results: results, steps: data.steps, lc: data.lc });
+    if (emailBlob.indexOf('lonnie@secondwrench.co') !== -1) fail('TS-G46', 'lonnie');
+    if (/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i.test(emailBlob)) {
+      var emails = emailBlob.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi) || [];
+      emails.forEach(function (email) { if (email !== 'support@secondwrench.co') fail('TS-G46', email); });
+    }
+    var latchPhrase = 'Finish on high stage (some brands call this \u201Clatching\u201D)';
+    var userBits = [];
+    (data.v1 || []).filter(function (id) { return data.v0.indexOf(id) === -1; }).forEach(function (id) {
+      var node = nodes[id];
+      userBits.push(node.title, node.body);
+      node.options.forEach(function (option) { userBits.push(option.label, option.hint, option.fact, option.id); });
+    });
+    Object.keys(results).forEach(function (id) { if (id.indexOf('ts_') === 0) userBits.push(JSON.stringify(results[id])); });
+    (data.latchBlocks || []).forEach(function (block) { userBits.push(block.label, block.does, block.undo); });
+    Object.keys(V1_FN).forEach(function (fn) {
+      V1_MODELS.forEach(function (model) {
+        var cell = data.steps[fn][model];
+        userBits.push(cell.text, cell.held_text, (cell.captions || []).join('\n'));
+      });
+    });
+    var latchBlob = userBits.join('\n');
+    var stripped = latchBlob.split(latchPhrase).join('');
+    if (/latching/i.test(stripped)) fail('TS-G47', 'bare latching');
+    ['starts on high', 'always starts', 'start on stage 2', 'straight to', 'every call', 'whole call', 'never on low', 'always_high'].forEach(function (phrase) {
+      if (latchBlob.toLowerCase().indexOf(phrase) !== -1) fail('TS-G47', phrase);
+    });
+    var stageBlob = latchBlob;
+    ['shows stage', 'stage indicator', 'display says stage', 'Stage 2 on the screen', 'screen shows high'].forEach(function (phrase) {
+      if (stageBlob.toLowerCase().indexOf(phrase.toLowerCase()) !== -1) fail('TS-G50', phrase);
+    });
+    var geo = nodes['ts.look.geo_lockouts'];
+    if (!geo || geo.options.some(function (option) { return String(option.next).indexOf('ts.step.') === 0; })) fail('TS-G43', 'geo edge');
+    var hpGeo = nodes['ts.guard.hp_source'].options.filter(function (option) { return option.id === 'hp_geo'; })[0];
+    var hpAir = nodes['ts.guard.hp_source'].options.filter(function (option) { return option.id === 'hp_air'; })[0];
+    if (!hpGeo || hpGeo.next !== 'ts.look.geo_lockouts') fail('TS-G43', 'hp_geo');
+    if (!hpAir || !hpAir.hiddenIf || hpAir.hiddenIf.join('|') !== 'ts_geo|wshp') fail('TS-G43', 'hidden');
+    if (ui.showHpAirInWshp || optionVisible(hpAir, { product: 'wshp' }) || optionVisible(hpAir, { tsGeo: true })) fail('TS-G43', 'air visible');
+    if (ui.geoRenderGuard === false) fail('TS-G43', 'render guard off');
+    var geoPanel = renderV1Panel('HW-T6', 'ts.step.hp_lockouts', { state: { tsGeo: true } });
+    if (geoPanel.text.indexOf(data.lc.p26) === -1 || geoPanel.text.indexOf('lower 356') !== -1) fail('TS-G43', 'render');
+    ['HW-T6', 'ECB-PRM'].forEach(function (model) {
+      var cell = data.steps.GEO[model];
+      var panel = renderV1Panel(model, 'ts.look.geo_lockouts', {});
+      var order = [plainLc3(data.lc.lc29geo).slice(0, 20), plainLc3(data.lc.p26).slice(0, 20), plainLc3(data.lc.lc23).slice(0, 12), plainLc3(cell.neighbors).slice(0, 16), plainLc3(cell.text).slice(0, 16), plainLc3(data.lc.lc22).slice(0, 12)];
+      var at = -1;
+      order.forEach(function (marker) {
+        var next = panel.text.indexOf(marker);
+        if (next === -1 || next < at) fail('TS-G43', model + ' order');
+        if (next !== -1) at = next;
+      });
+      if (/\b(lower|raise|set|change it to|move)\b/i.test(cell.text) && !/Don.t change/.test(cell.text)) fail('TS-G43', model + ' verb');
+    });
+    var changeNames = ['ISU 356', 'Aux Heat Max Outdoor Temp', 'Heat Pump Balance', 'AUX lockout', 'ISU 355', 'Compressor Min Outdoor Temp'];
+    Object.keys(V1_FN).forEach(function (fn) {
+      if (fn === 'HPLOCK' || fn === 'GEO') return;
+      V1_MODELS.forEach(function (model) {
+        var text = data.steps[fn][model].text || '';
+        changeNames.forEach(function (name) { if (text.indexOf(name) !== -1) fail('TS-G49', fn + ' ' + model + ' ' + name); });
+      });
+    });
   }
 
   return {
@@ -620,6 +1092,11 @@
     models: data.models,
     fallbacks: data.fallbacks,
     v0: data.v0,
+    v1: data.v1,
+    wave2ui: data.wave2ui,
+    latchBlocks: data.latchBlocks,
+    cards: data.cards,
+    cardIntro: data.cardIntro,
     fnOf: data.fnOf,
     modelOf: data.modelOf,
     landingOf: data.landingOf,
@@ -636,6 +1113,7 @@
     openReports: openReports,
     tsMirrorRenderable: recordRenderable,
     renderTsPanel: renderTsPanel,
+    optionVisible: optionVisible,
     presentResult: presentResult,
     summary: summary,
     fillLc5: fillLc5,
