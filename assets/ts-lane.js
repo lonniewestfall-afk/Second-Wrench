@@ -94,7 +94,13 @@
     'Capacitor, contactor, and board work are not offered in the thermostat check.': 1,
     'For wiring or electrical problems, turn the system off at the thermostat and call a licensed professional.': 1,
     'Leave the panel alone.': 1,
-    'How your system moves between high and low can be set at the thermostat, in the wiring, or at the equipment.': 1
+    'How your system moves between high and low can be set at the thermostat, in the wiring, or at the equipment.': 1,
+    'New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)': 1,
+    'A refrigerant-leak alarm is sounding, or the thermostat shows a refrigerant leak warning': 1,
+    'Refrigerant leak / refrigerant sensor alarm': 1,
+    'Refrigerant leak alarm or warning reported.': 1,
+    'Refrigerant leak alarm or sensor message recorded.': 1,
+    'If a refrigerant leak alarm is going off, move people out of the affected area to fresh air without operating switches or creating ignition sources.': 1
   };
   /* Spec G12 treats the common noun "equipment" like an installer menu name.
    * These approved sentences stay verbatim. The allowlist is the adaptation. */
@@ -500,6 +506,11 @@
       var fn = data.fnOf[row.node];
       if (fn && fns.indexOf(fn) === -1) fns.push(fn);
     });
+    var shown = state.result && data.results[state.result];
+    var earlier = (state.priorResults || []).map(function (id) {
+      var row = data.results[id];
+      return row ? 'Earlier result: ' + row.title + ' (' + row.tier + ')' : '';
+    }).filter(Boolean);
     var lines = [
       'HOMEOWNER SERVICE NOTE — thermostat observations, not a diagnosis',
       'Thermostat: ' + (model ? model.label : 'unconfirmed model') + ' (homeowner reported).',
@@ -508,7 +519,12 @@
       'Codes or messages on the thermostat: ______________________ (write the exact text)',
       stopFired ? '' : 'Safety check at start: no CO alarm, gas smell, burning smell, repeat breaker trip, water at the indoor unit, or high-voltage thermostat reported.',
       'This guide did not ask you to open equipment, touch wires, or change installer settings.',
-      'Guide: Second Wrench thermostat check ts.settings.v1, ' + (contentVersion || '') + ', step panels: ' + (fns.join(', ') || 'none') + '.'
+      'Guide: Second Wrench thermostat check ts.settings.v1, ' + (contentVersion || '') + ', step panels: ' + (fns.join(', ') || 'none') + '.',
+      state.mode === 'test' ? 'TEST SCENARIO — not an actual equipment report.' : '',
+      earlier.join('\n'),
+      shown ? 'Result: ' + shown.title + ' (' + shown.tier + ')' : '',
+      shown && (shown.outcome === 'call_pro' || shown.tier === 'Emergency' || shown.tier === 'Stop / professional') ? 'Stop reason: ' + (shown.reason || '') : '',
+      'Version: ' + (contentVersion || '')
     ];
     return lines.filter(Boolean).join('\n');
   }

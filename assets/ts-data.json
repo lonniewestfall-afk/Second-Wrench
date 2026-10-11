@@ -106,6 +106,14 @@
           "gate": "ts_open_cabinet"
         },
         {
+          "id": "hazard_refrigerant_alarm",
+          "label": "A refrigerant-leak alarm is sounding, or the thermostat shows a refrigerant leak warning",
+          "next": "@ts_refrigerant_alarm",
+          "hint": "Leave the area.",
+          "fact": "Refrigerant leak alarm or warning reported.",
+          "gate": "ts_refrigerant_alarm"
+        },
+        {
           "id": "ts_none_of_these",
           "label": "None of these",
           "next": "ts.intake.brand_picker",
@@ -115,7 +123,7 @@
         },
         {
           "id": "hazard_now",
-          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, or water at electrical parts)",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
           "next": "@ts_hazard_now",
           "hint": "Stop. Don’t keep checking.",
           "fact": "New hazard reported during the thermostat check.",
@@ -189,7 +197,7 @@
         },
         {
           "id": "hazard_now",
-          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, or water at electrical parts)",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
           "next": "@ts_hazard_now",
           "hint": "Stop. Don’t keep checking.",
           "fact": "New hazard reported during the thermostat check.",
@@ -247,7 +255,7 @@
         },
         {
           "id": "hazard_now",
-          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, or water at electrical parts)",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
           "next": "@ts_hazard_now",
           "hint": "Stop. Don’t keep checking.",
           "fact": "New hazard reported during the thermostat check.",
@@ -305,7 +313,7 @@
         },
         {
           "id": "hazard_now",
-          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, or water at electrical parts)",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
           "next": "@ts_hazard_now",
           "hint": "Stop. Don’t keep checking.",
           "fact": "New hazard reported during the thermostat check.",
@@ -355,7 +363,7 @@
         },
         {
           "id": "hazard_now",
-          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, or water at electrical parts)",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
           "next": "@ts_hazard_now",
           "hint": "Stop. Don’t keep checking.",
           "fact": "New hazard reported during the thermostat check.",
@@ -421,7 +429,7 @@
         },
         {
           "id": "hazard_now",
-          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, or water at electrical parts)",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
           "next": "@ts_hazard_now",
           "hint": "Stop. Don’t keep checking.",
           "fact": "New hazard reported during the thermostat check.",
@@ -583,7 +591,7 @@
         },
         {
           "id": "hazard_now",
-          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, or water at electrical parts)",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
           "next": "@ts_hazard_now",
           "hint": "Stop. Don’t keep checking.",
           "fact": "New hazard reported during the thermostat check.",
@@ -665,7 +673,7 @@
         },
         {
           "id": "hazard_now",
-          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, or water at electrical parts)",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
           "next": "@ts_hazard_now",
           "hint": "Stop. Don’t keep checking.",
           "fact": "New hazard reported during the thermostat check.",
@@ -723,7 +731,7 @@
         },
         {
           "id": "hazard_now",
-          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, or water at electrical parts)",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
           "next": "@ts_hazard_now",
           "hint": "Stop. Don’t keep checking.",
           "fact": "New hazard reported during the thermostat check.",
@@ -789,7 +797,7 @@
         },
         {
           "id": "hazard_now",
-          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, or water at electrical parts)",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
           "next": "@ts_hazard_now",
           "hint": "Stop. Don’t keep checking.",
           "fact": "New hazard reported during the thermostat check.",
@@ -847,7 +855,7 @@
         },
         {
           "id": "hazard_now",
-          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, or water at electrical parts)",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
           "next": "@ts_hazard_now",
           "hint": "Stop. Don’t keep checking.",
           "fact": "New hazard reported during the thermostat check.",
@@ -861,8 +869,16 @@
     "ts.settings.em_aux_heat": {
       "section": "Thermostat settings",
       "title": "Check emergency and backup heat",
-      "body": "Emergency heat runs only the backup heat, and it costs more to run. It stays on until someone switches it off.\n\n1. Switch the mode from emergency heat back to Heat.\n2. Avoid big jumps in the temperature setting. They can bring on the backup heat.\n\n{step panel: EHEAT}",
+      "body": "Emergency heat runs only the backup heat, and it costs more to run. It stays on until someone switches it off.\n\nFirst: did someone set it on purpose? A technician, or someone at home, may have chosen emergency heat because the outdoor unit has a problem. If so, or if you’re not sure, leave it on and pick that answer.\n\nIf it was left on by accident, switch the mode from emergency heat back to Heat. Then avoid big jumps in the temperature setting. They can bring on the backup heat. Within about 15 minutes, check from a window that the outdoor unit is running. If it isn’t, or it’s covered in ice, pick that answer.\n\nAn AUX light that comes on by itself in Heat is different. It’s the thermostat adding backup heat, and that’s often normal in cold weather.\n\n{step panel: EHEAT}",
       "options": [
+        {
+          "id": "eheat_set_on_purpose",
+          "label": "Someone set emergency heat on purpose, or I’m not sure why it’s on",
+          "next": "@ts_eheat_intentional_keep",
+          "hint": "Leave it on. A pro checks the heat pump.",
+          "fact": "Emergency heat was set on purpose, or the reason is unknown. Left on.",
+          "gate": null
+        },
         {
           "id": "eheat_off_fixed",
           "label": "It was on emergency heat. It’s back on Heat now",
@@ -881,7 +897,7 @@
         },
         {
           "id": "heat_pump_failure",
-          "label": "It shows HEAT PUMP FAILURE, or the outdoor unit isn’t running",
+          "label": "It shows HEAT PUMP FAILURE, or after switching to Heat the outdoor unit isn’t running or is iced",
           "next": "@ts_aux_persistent",
           "hint": "A pro checks the heat pump.",
           "fact": "Heat pump failure message or outdoor unit not running.",
@@ -921,7 +937,7 @@
         },
         {
           "id": "hazard_now",
-          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, or water at electrical parts)",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
           "next": "@ts_hazard_now",
           "hint": "Stop. Don’t keep checking.",
           "fact": "New hazard reported during the thermostat check.",
@@ -979,7 +995,7 @@
         },
         {
           "id": "hazard_now",
-          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, or water at electrical parts)",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
           "next": "@ts_hazard_now",
           "hint": "Stop. Don’t keep checking.",
           "fact": "New hazard reported during the thermostat check.",
@@ -1000,7 +1016,7 @@
           "label": "The screen is back on",
           "next": "@ts_power_restored_basic",
           "hint": "",
-          "fact": "User checked batteries and the furnace door, and saw the furnace switch on. The screen came back.",
+          "fact": "The screen came back on during the floor checks.",
           "gate": null
         },
         {
@@ -1077,7 +1093,7 @@
         },
         {
           "id": "hazard_now",
-          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, or water at electrical parts)",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
           "next": "@ts_hazard_now",
           "hint": "Stop. Don’t keep checking.",
           "fact": "New hazard reported during the thermostat check.",
@@ -1135,7 +1151,7 @@
         },
         {
           "id": "hazard_now",
-          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, or water at electrical parts)",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
           "next": "@ts_hazard_now",
           "hint": "Stop. Don’t keep checking.",
           "fact": "New hazard reported during the thermostat check.",
@@ -1184,6 +1200,14 @@
           "gate": "ts_water_indoor_unit"
         },
         {
+          "id": "code_refrigerant_alarm",
+          "label": "Refrigerant leak / refrigerant sensor alarm",
+          "next": "@ts_refrigerant_alarm",
+          "hint": "Leave the area.",
+          "fact": "Refrigerant leak alarm or sensor message recorded.",
+          "gate": "ts_refrigerant_alarm"
+        },
+        {
           "id": "code_recorded",
           "label": "Another code or alert, and I wrote it down",
           "next": "@ts_code_to_pro",
@@ -1217,7 +1241,7 @@
         },
         {
           "id": "hazard_now",
-          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, or water at electrical parts)",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
           "next": "@ts_hazard_now",
           "hint": "Stop. Don’t keep checking.",
           "fact": "New hazard reported during the thermostat check.",
@@ -1291,7 +1315,7 @@
         },
         {
           "id": "hazard_now",
-          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, or water at electrical parts)",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
           "next": "@ts_hazard_now",
           "hint": "Stop. Don’t keep checking.",
           "fact": "New hazard reported during the thermostat check.",
@@ -1373,7 +1397,7 @@
         },
         {
           "id": "hazard_now",
-          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, or water at electrical parts)",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
           "next": "@ts_hazard_now",
           "hint": "Stop. Don’t keep checking.",
           "fact": "New hazard reported during the thermostat check.",
@@ -1447,7 +1471,7 @@
         },
         {
           "id": "hazard_now",
-          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, or water at electrical parts)",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
           "next": "@ts_hazard_now",
           "hint": "Stop. Don’t keep checking.",
           "fact": "New hazard reported during the thermostat check.",
@@ -1529,7 +1553,7 @@
         },
         {
           "id": "hazard_now",
-          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, or water at electrical parts)",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
           "next": "@ts_hazard_now",
           "hint": "Stop. Don’t keep checking.",
           "fact": "New hazard reported during the thermostat check.",
@@ -1595,7 +1619,7 @@
         },
         {
           "id": "hazard_now",
-          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, or water at electrical parts)",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
           "next": "@ts_hazard_now",
           "hint": "Stop. Don’t keep checking.",
           "fact": "New hazard reported during the thermostat check.",
@@ -1677,7 +1701,7 @@
         },
         {
           "id": "hazard_now",
-          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, or water at electrical parts)",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
           "next": "@ts_hazard_now",
           "hint": "Stop. Don’t keep checking.",
           "fact": "New hazard reported during the thermostat check.",
@@ -1735,7 +1759,7 @@
         },
         {
           "id": "hazard_now",
-          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, or water at electrical parts)",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
           "next": "@ts_hazard_now",
           "hint": "Stop. Don’t keep checking.",
           "fact": "New hazard reported during the thermostat check.",
@@ -1825,7 +1849,7 @@
         },
         {
           "id": "hazard_now",
-          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, or water at electrical parts)",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
           "next": "@ts_hazard_now",
           "hint": "Stop. Don’t keep checking.",
           "fact": "New hazard reported during the thermostat check.",
@@ -1889,7 +1913,7 @@
         },
         {
           "id": "hazard_now",
-          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, or water at electrical parts)",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
           "next": "@ts_hazard_now",
           "hint": "Stop. Don’t keep checking.",
           "fact": "New hazard reported during the thermostat check.",
@@ -1963,7 +1987,7 @@
         },
         {
           "id": "hazard_now",
-          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, or water at electrical parts)",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
           "next": "@ts_hazard_now",
           "hint": "Stop. Don’t keep checking.",
           "fact": "New hazard reported during the thermostat check.",
@@ -2032,7 +2056,7 @@
         },
         {
           "id": "hazard_now",
-          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, or water at electrical parts)",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
           "next": "@ts_hazard_now",
           "hint": "Stop. Don’t keep checking.",
           "fact": "New hazard reported during the thermostat check.",
@@ -2106,7 +2130,7 @@
         },
         {
           "id": "hazard_now",
-          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, or water at electrical parts)",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
           "next": "@ts_hazard_now",
           "hint": "Stop. Don’t keep checking.",
           "fact": "New hazard reported during the thermostat check.",
@@ -2182,7 +2206,7 @@
         },
         {
           "id": "hazard_now",
-          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, or water at electrical parts)",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
           "next": "@ts_hazard_now",
           "hint": "Stop. Don’t keep checking.",
           "fact": "New hazard reported during the thermostat check.",
@@ -2248,7 +2272,7 @@
         },
         {
           "id": "hazard_now",
-          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, or water at electrical parts)",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
           "next": "@ts_hazard_now",
           "hint": "Stop. Don’t keep checking.",
           "fact": "New hazard reported during the thermostat check.",
@@ -2330,7 +2354,7 @@
         },
         {
           "id": "hazard_now",
-          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, or water at electrical parts)",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
           "next": "@ts_hazard_now",
           "hint": "Stop. Don’t keep checking.",
           "fact": "",
@@ -2420,7 +2444,7 @@
         },
         {
           "id": "hazard_now",
-          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, or water at electrical parts)",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
           "next": "@ts_hazard_now",
           "hint": "Stop. Don’t keep checking.",
           "fact": "",
@@ -2510,7 +2534,7 @@
         },
         {
           "id": "hazard_now",
-          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, or water at electrical parts)",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
           "next": "@ts_hazard_now",
           "hint": "Stop. Don’t keep checking.",
           "fact": "",
@@ -2592,7 +2616,7 @@
         },
         {
           "id": "hazard_now",
-          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, or water at electrical parts)",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
           "next": "@ts_hazard_now",
           "hint": "Stop. Don’t keep checking.",
           "fact": "",
@@ -2674,7 +2698,7 @@
         },
         {
           "id": "hazard_now",
-          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, or water at electrical parts)",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
           "next": "@ts_hazard_now",
           "hint": "Stop. Don’t keep checking.",
           "fact": "",
@@ -2732,7 +2756,7 @@
         },
         {
           "id": "hazard_now",
-          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, or water at electrical parts)",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
           "next": "@ts_hazard_now",
           "hint": "Stop. Don’t keep checking.",
           "fact": "",
@@ -2822,7 +2846,7 @@
         },
         {
           "id": "hazard_now",
-          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, or water at electrical parts)",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
           "next": "@ts_hazard_now",
           "hint": "Stop. Don’t keep checking.",
           "fact": "",
@@ -2912,7 +2936,7 @@
         },
         {
           "id": "hazard_now",
-          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, or water at electrical parts)",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
           "next": "@ts_hazard_now",
           "hint": "Stop. Don’t keep checking.",
           "fact": "",
@@ -2970,7 +2994,7 @@
         },
         {
           "id": "hazard_now",
-          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, or water at electrical parts)",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
           "next": "@ts_hazard_now",
           "hint": "Stop. Don’t keep checking.",
           "fact": "",
@@ -3052,7 +3076,7 @@
         },
         {
           "id": "hazard_now",
-          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, or water at electrical parts)",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
           "next": "@ts_hazard_now",
           "hint": "Stop. Don’t keep checking.",
           "fact": "",
@@ -3179,6 +3203,7 @@
         "If you smell gas or a carbon monoxide alarm is sounding, leave the building and call for help from outside. Do not operate switches inside.",
         "If there is smoke, fire, or sparks, get people away and call 911 from safety.",
         "If water is at electrical equipment, stay clear. Shut power only from a dry place you already know.",
+        "If a refrigerant leak alarm is going off, move people out of the affected area to fresh air without operating switches or creating ignition sources. Don’t reset the alarm, cycle power, or turn off a blower that’s running. Call a licensed HVAC professional from outside the affected area, and for breathing trouble or immediate danger, call 911.",
         "Do not return to troubleshooting until the hazard has been handled."
       ],
       "avoid": "Do not keep diagnosing, open covers, or touch wet equipment.",
@@ -3265,7 +3290,8 @@
       "explanation": "Emergency heat runs only the backup heat and costs more. It stays on until someone switches it off.",
       "actions": [
         "Leave the mode on Heat.",
-        "Use emergency heat only when the heat pump can’t run. If you need it often, call a licensed HVAC professional."
+        "Use emergency heat only when the heat pump can’t run. If you need it often, call a licensed HVAC professional.",
+        "If the outdoor unit doesn’t run in Heat, or it ices up, switch back to emergency heat and call a licensed HVAC professional."
       ],
       "avoid": "Don’t change backup-heat lockout, balance point, or threshold settings.",
       "source": "maintenance",
@@ -4068,6 +4094,40 @@
       "reason": "ts_reading_unchecked",
       "diyTier": null,
       "gate": null,
+      "continueTo": null
+    },
+    "ts_eheat_intentional_keep": {
+      "tier": "Professional guidance",
+      "urgency": "Leave emergency heat on · call a pro",
+      "title": "Leave emergency heat on for now.",
+      "explanation": "Emergency heat is often set on purpose when the outdoor unit has a problem. Switching back could run a damaged or iced unit.",
+      "actions": [
+        "Leave the thermostat on emergency heat. Higher bills for a few days are normal.",
+        "Call a licensed HVAC professional. Tell them emergency heat was set on purpose, or that you don’t know why, and whether the outdoor unit looks iced from a window.",
+        "If the house is getting cold and someone at home is at risk, get them somewhere warm. Never heat with an oven, stove, grill, or generator indoors."
+      ],
+      "avoid": "Don’t switch it back to test it, and don’t change backup-heat lockout, balance-point, or threshold settings.",
+      "source": "maintenance",
+      "outcome": "call_pro",
+      "reason": "ts_eheat_intentional_keep",
+      "diyTier": null,
+      "gate": null,
+      "continueTo": null
+    },
+    "ts_refrigerant_alarm": {
+      "tier": "Emergency",
+      "urgency": "Leave the affected area",
+      "title": "Do not reset a refrigerant-leak alarm.",
+      "explanation": "Some systems run their own leak-mitigation controls. This check cannot name the alarm cause.",
+      "actions": [
+        "If a refrigerant leak alarm is going off, move people out of the affected area to fresh air without operating switches or creating ignition sources. Don’t reset the alarm, cycle power, or turn off a blower that’s running. Call a licensed HVAC professional from outside the affected area, and for breathing trouble or immediate danger, call 911."
+      ],
+      "avoid": "Do not turn off a mitigation blower, cycle power, defeat a sensor, use flames, or open sealed lines.",
+      "source": "maintenance",
+      "outcome": "emergency_exit",
+      "reason": "refrigerant_alarm",
+      "diyTier": null,
+      "gate": "ts_refrigerant_alarm",
       "continueTo": null
     }
   },

@@ -614,6 +614,48 @@ const expectKinds = {
 Object.keys(expectKinds).forEach(function (fn) {
   if (JSON.stringify(kinds[fn]) !== JSON.stringify(expectKinds[fn])) throw new Error(fn + ' ' + JSON.stringify(kinds[fn]));
 });
+const HAZARD_LABEL = 'New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)';
+HAZARD.label = HAZARD_LABEL;
+Object.keys(data.nodes).forEach(function (id) {
+  data.nodes[id].options.forEach(function (op) {
+    if (op.id === 'hazard_now') op.label = HAZARD_LABEL;
+  });
+});
+const emNode = data.nodes['ts.settings.em_aux_heat'];
+emNode.body = u('Emergency heat runs only the backup heat, and it costs more to run. It stays on until someone switches it off.\n\nFirst: did someone set it on purpose? A technician, or someone at home, may have chosen emergency heat because the outdoor unit has a problem. If so, or if you\u2019re not sure, leave it on and pick that answer.\n\nIf it was left on by accident, switch the mode from emergency heat back to Heat. Then avoid big jumps in the temperature setting. They can bring on the backup heat. Within about 15 minutes, check from a window that the outdoor unit is running. If it isn\u2019t, or it\u2019s covered in ice, pick that answer.\n\nAn AUX light that comes on by itself in Heat is different. It\u2019s the thermostat adding backup heat, and that\u2019s often normal in cold weather.\n\n{step panel: EHEAT}');
+emNode.options.unshift(opt('eheat_set_on_purpose', 'Someone set emergency heat on purpose, or I\u2019m not sure why it\u2019s on', '@ts_eheat_intentional_keep', 'Leave it on. A pro checks the heat pump.', 'Emergency heat was set on purpose, or the reason is unknown. Left on.'));
+const heatFail = emNode.options.filter(function (op) { return op.id === 'heat_pump_failure'; })[0];
+if (heatFail) heatFail.label = u('It shows HEAT PUMP FAILURE, or after switching to Heat the outdoor unit isn\u2019t running or is iced');
+const stops = data.nodes['ts.gate.safety_stops'];
+const noneAt = stops.options.findIndex(function (op) { return op.id === 'ts_none_of_these'; });
+stops.options.splice(noneAt, 0, opt('hazard_refrigerant_alarm', 'A refrigerant-leak alarm is sounding, or the thermostat shows a refrigerant leak warning', '@ts_refrigerant_alarm', 'Leave the area.', 'Refrigerant leak alarm or warning reported.', { gate: 'ts_refrigerant_alarm' }));
+const alertNode = data.nodes['ts.alert.capture'];
+const recordedAt = alertNode.options.findIndex(function (op) { return op.id === 'code_recorded'; });
+alertNode.options.splice(recordedAt, 0, opt('code_refrigerant_alarm', 'Refrigerant leak / refrigerant sensor alarm', '@ts_refrigerant_alarm', 'Leave the area.', 'Refrigerant leak alarm or sensor message recorded.', { gate: 'ts_refrigerant_alarm' }));
+const powerBack = data.nodes['ts.power.blank_screen'].options.filter(function (op) { return op.id === 'power_back'; })[0];
+powerBack.fact = 'The screen came back on during the floor checks.';
+const LEAK_ACTION = 'If a refrigerant leak alarm is going off, move people out of the affected area to fresh air without operating switches or creating ignition sources. Don\u2019t reset the alarm, cycle power, or turn off a blower that\u2019s running. Call a licensed HVAC professional from outside the affected area, and for breathing trouble or immediate danger, call 911.';
+res('ts_eheat_intentional_keep', 'call_pro', 'Leave emergency heat on for now.', 'Emergency heat is often set on purpose when the outdoor unit has a problem. Switching back could run a damaged or iced unit.');
+data.results.ts_eheat_intentional_keep.urgency = 'Leave emergency heat on \u00b7 call a pro';
+data.results.ts_eheat_intentional_keep.actions = [
+  'Leave the thermostat on emergency heat. Higher bills for a few days are normal.',
+  'Call a licensed HVAC professional. Tell them emergency heat was set on purpose, or that you don\u2019t know why, and whether the outdoor unit looks iced from a window.',
+  'If the house is getting cold and someone at home is at risk, get them somewhere warm. Never heat with an oven, stove, grill, or generator indoors.'
+].map(u);
+data.results.ts_eheat_intentional_keep.avoid = u('Don\u2019t switch it back to test it, and don\u2019t change backup-heat lockout, balance-point, or threshold settings.');
+res('ts_refrigerant_alarm', 'emergency_exit', 'Do not reset a refrigerant-leak alarm.', 'Some systems run their own leak-mitigation controls. This check cannot name the alarm cause.', { tier: 'Emergency', urgency: 'Leave the affected area', gate: 'ts_refrigerant_alarm' });
+data.results.ts_refrigerant_alarm.reason = 'refrigerant_alarm';
+data.results.ts_refrigerant_alarm.actions = [u(LEAK_ACTION)];
+data.results.ts_refrigerant_alarm.avoid = u('Do not turn off a mitigation blower, cycle power, defeat a sensor, use flames, or open sealed lines.');
+data.results.ts_hazard_now.actions = [
+  'If you smell gas or a carbon monoxide alarm is sounding, leave the building and call for help from outside. Do not operate switches inside.',
+  'If there is smoke, fire, or sparks, get people away and call 911 from safety.',
+  'If water is at electrical equipment, stay clear. Shut power only from a dry place you already know.',
+  LEAK_ACTION,
+  'Do not return to troubleshooting until the hazard has been handled.'
+].map(u);
+data.results.ts_eheat_off_basic.actions.push(u('If the outdoor unit doesn\u2019t run in Heat, or it ices up, switch back to emergency heat and call a licensed HVAC professional.'));
+
 const banned = ['emergency heat mode', 'loop to rest', 'Installer Code', 'Installer Access', 'Once it switches to high, it stays on high until the room reaches the setting'];
 const blob = JSON.stringify({ nodes: data.nodes, results: data.results, steps: data.steps, lc: data.lc, u1: data.u1 });
 banned.forEach(function (phrase) { if (blob.indexOf(phrase) !== -1) throw new Error('banned phrase ' + phrase); });
