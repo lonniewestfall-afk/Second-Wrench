@@ -1436,7 +1436,7 @@ hpDigestLines.sort();
 assert(require('crypto').createHash('sha256').update(hpDigestLines.join('\n')).digest('hex').slice(0, 16) === '0a90560104be1a12', 'HP edge digest re-baselined to a3c2f60');
 assert(hpDigestLines.length === 65, 'HP edge digest line count');
 
-// ---- Thermostat ts.settings.v0 (TS-A1–TS-A21, mutations M1–M16) ----
+// ---- Thermostat ts.settings.v0 (TS-A1–TS-A21, mutations M1–M17) ----
 assert(F.treeVersionTs === 'ts.settings.v0' && Array.isArray(F.tsV0) && F.tsV0.length === 16, 'TS-A1 tree and TS_V0');
 assert(F.treeVersion === 'ac.cool.v1' && F.treeVersionHp === 'hp.air_source.v1' && F.treeVersionMs === 'ms.ductless.v1', 'TS-A1 AC HP ms versions');
 const tsGate = ['none_of_these', 'agree_18_terms', 'other_heat_or_ductless', 'thermostat_settings'];
@@ -1450,7 +1450,9 @@ assert(tsLaneAt >= 0 && tsStart.audit.slice(tsLaneAt).every(e => e.tree === 'ts.
 assert(Object.keys(F.nodes).filter(id => F.nodes[id].options.some(op => op.id === 'agree_18_terms')).length === 1, 'TS-A3 one consent option');
 assert(F.nodes['ts.gate.safety_stops'].body.indexOf('Don’t take the thermostat off the wall or open any equipment to check.') !== -1, 'TS-C1');
 assert(F.nodes['ts.power.blank_screen'].body.indexOf('Don’t reset breakers in this check.') !== -1, 'TS-C2');
-assert(F.nodes['ts.power.blank_screen'].caution === 'Look only at the furnace door. Don’t remove it, and don’t touch thermostat wires.', 'TS-C3');
+assert(F.nodes['ts.power.blank_screen'].caution === 'Look only at the furnace door and power switch. Don’t remove the door, don’t flip the switch, and don’t touch thermostat wires.', 'TS-C3');
+assert(F.tsV0.reduce((n, id) => n + F.nodes[id].options.length, 0) === 120, 'ts options');
+assert(F.nodes['ts.power.blank_screen'].options.length === 11, 'blank screen options');
 assert(F.nodes['ts.power.battery'].body.indexOf('If you’d have to disconnect any wires to reach them, stop.') !== -1, 'TS-C4');
 assert(F.nodes['ts.status.wait_delay'].body.indexOf('Changing the setting during the wait can start it over.') !== -1, 'TS-C5');
 assert(JSON.stringify(F.results.ts_hazard_now.actions) === JSON.stringify(F.results.hp_hazard_now.actions), 'TS-C6');
@@ -1504,9 +1506,17 @@ const ttw10a = tsWalk(['brand_honeywell_buttons', 'hw_rth7600d', 'landing_low_ba
 const ttw10b = tsWalk(['brand_honeywell_buttons', 'hw_x2p', 'landing_wait_delay', 'wait_persists']);
 const ttw10c = tsWalk(['brand_honeywell_buttons', 'hw_th4000', 'landing_schedule_hold', 'hold_fixed']);
 assert(ttw10a.result === 'ts_battery_fixed_basic' && ttw10b.result === 'ts_wait_persists' && ttw10c.result === 'ts_hold_fixed_basic', 'W10 results');
+const tw11 = tsWalk(['brand_honeywell_smart', 'hw_t9', 'landing_blank_screen', 'furnace_switch_off']);
+assert(tw11.result === 'ts_power_breaker_pro' && F.results[tw11.result].outcome === 'call_pro', 'W11 result');
+assert(!tsEvents(tw11).some(e => e.indexOf('gate_fired:') === 0 || e.indexOf('diy_tier_shown') === 0), 'W11 no gate and no diy tier');
+assert(tw11.answers.some(a => a.fact === 'Furnace power switch was off. User did not switch it on.'), 'W11 fact');
+assert(F.results.ts_power_breaker_pro.title === 'A tripped breaker, a furnace switch that’s off, or missing power is a job for a pro.', 'W11 LC-15 title');
+assert(F.results.ts_power_breaker_pro.explanation.indexOf('This check doesn’t include resetting breakers or turning switches on') === 0, 'W11 LC-15 explanation');
+assert(F.results.ts_power_breaker_pro.actions[0] === 'Leave the breaker and the furnace switch as they are, and call a licensed HVAC professional or electrician.', 'W11 LC-15 action');
+assert(F.results.ts_power_breaker_pro.avoid === 'Don’t reset breakers, turn the furnace switch on, open the electrical panel, or open the furnace or outdoor unit.', 'W11 LC-15 avoid');
 const wVisited = new Set();
-[tw1, tw2, tw3, tw4, tw5, tw6, tw7, tw8, tw9, ttw10a, ttw10b, ttw10c].forEach(state => visited(state).forEach(id => { if (id.indexOf('ts.') === 0) wVisited.add(id); }));
-F.tsV0.forEach(id => assert(wVisited.has(id), 'W1–W10 visit ' + id));
+[tw1, tw2, tw3, tw4, tw5, tw6, tw7, tw8, tw9, ttw10a, ttw10b, ttw10c, tw11].forEach(state => visited(state).forEach(id => { if (id.indexOf('ts.') === 0) wVisited.add(id); }));
+F.tsV0.forEach(id => assert(wVisited.has(id), 'W1–W11 visit ' + id));
 const ttw2Note = F.summary(tw2);
 assert(ttw2Note.indexOf('HOMEOWNER SERVICE NOTE — thermostat observations, not a diagnosis') === 0, 'TS-A14 line 1');
 assert(ttw2Note.indexOf('Thermostat: Honeywell Home T9 (homeowner reported).') !== -1 && ttw2Note.indexOf('Tried:') !== -1, 'TS-A14 thermostat and tried');
@@ -1587,7 +1597,7 @@ const tsOff = tsLeaves();
 globalThis.SW_CONFIG.advancedRepairsEnabled = true;
 const tsOn = tsLeaves();
 globalThis.SW_CONFIG.advancedRepairsEnabled = false;
-const TS_LEAF_COUNT = 1198;
+const TS_LEAF_COUNT = 1212;
 assert(tsOff.out.length === TS_LEAF_COUNT && tsOff.out.join('|') === tsOn.out.join('|'), 'TS-A4/A5 leaf count ' + tsOff.out.length);
 assert(tsOff.maxDepth <= 6 && tsOn.maxDepth <= 6, 'TS-A5 depth ' + tsOff.maxDepth);
 const tsModelPaths = [
@@ -1786,6 +1796,18 @@ function expectTs(label, fn) {
   th4.verified_on = '2026-10-09';
   expectTs('M16b', () => F.assertTs(F.nodes, F.results));
   th4.verified_on = th4On;
+  const alertT5 = F.tsSteps.ALERT['HW-T5'];
+  const alertText = alertT5.text;
+  alertT5.text = 'Write down the exact code or message. This check doesn’t interpret it.';
+  const m17a = expectTs('M17a', () => F.assertTs(F.nodes, F.results));
+  assert(m17a.indexOf('TS-G20') !== -1, 'M17a G20');
+  alertT5.text = alertText;
+  const modeNest = F.tsSteps.MODE['NEST-LT4'];
+  const modeText = modeNest.text;
+  modeNest.text = modeText + ' Extra sentence.';
+  const m17b = expectTs('M17b', () => F.assertTs(F.nodes, F.results));
+  assert(m17b.indexOf('TS-G20') !== -1, 'M17b G20');
+  modeNest.text = modeText;
   F.assertTs(F.nodes, F.results);
 })();
 

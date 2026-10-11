@@ -1,7 +1,6 @@
 /* Thermostat lane helpers for ts.settings.v0.
  * Look-only settings help. No AI. Mirrors stay off until Commander flips the flag.
- * Legal strings are 02-on-page-copy.md rev 3 (curly apostrophes). Spec citations that
- * still say "rev 2" mean this same text, plus the rev 3 breaker approval.
+ * Legal strings are 02-on-page-copy.md rev 4. LC-15 (`ts_power_breaker_pro`) is new in rev 4.
  */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) {
@@ -37,6 +36,38 @@
   var BREAKER_WORD = /breaker/i;
   var BREAKER_ACT = /\breset\b|\bflip\b|switch (it )?back|turn (it )?(back )?on/i;
   var BREAKER_OK = /^(Don’t|Do not|Never)|This check doesn’t include/;
+  var FURNACE_WORD = /furnace (power )?switch/i;
+  var FURNACE_ON = /\b(switch|turn) (it|the (furnace )?(power )?switch) (back )?on\b|\bflip/i;
+  var FURNACE_OK = /^(Don’t|Do not|Never)|If it’s off, don’t|This check doesn’t include/;
+  var LC15 = {
+    title: 'A tripped breaker, a furnace switch that’s off, or missing power is a job for a pro.',
+    explanation: 'This check doesn’t include resetting breakers or turning switches on, so a pro takes it from here. A tripped breaker, a furnace power switch that’s off, or no power to the heating and cooling equipment can have a cause that a licensed HVAC professional or electrician should find. A switch may have been turned off on purpose, for service or because of a problem, so ask a pro before it goes back on.',
+    actions: [
+      'Leave the breaker and the furnace switch as they are, and call a licensed HVAC professional or electrician.',
+      'Tell the pro what you saw: which breaker looked tripped, that the furnace switch was off, or which equipment and lights had no power.',
+      'If you smell burning or see smoke, get people away and call 911 from safety.'
+    ],
+    avoid: 'Don’t reset breakers, turn the furnace switch on, open the electrical panel, or open the furnace or outdoor unit.'
+  };
+  var GENERIC_CELLS = {
+    'MODE|HW-T6': 1, 'MODE|ECB-ESS': 1,
+    'HOLD|ECB-ESS': 1,
+    'FAN|HW-T6': 1, 'FAN|ECB-ESS': 1, 'FAN|HW-RTH76': 1,
+    'EHEAT|HW-T6': 1, 'EHEAT|ECB-ESS': 1,
+    'WAIT|NEST-LT4': 1, 'WAIT|NEST-NT': 1, 'WAIT|NEST-LT3': 1, 'WAIT|NEST-E': 1,
+    'WAIT|HW-T5': 1, 'WAIT|HW-T9': 1, 'WAIT|HW-TH4': 1, 'WAIT|ECB-PRM': 1, 'WAIT|ECB-ESS': 1,
+    'BATT|AMZ-AST': 1, 'BATT|ECB-PRM': 1, 'BATT|ECB-ESS': 1,
+    'ALERT|HW-T5': 1, 'ALERT|HW-T6': 1, 'ALERT|HW-FP6': 1, 'ALERT|HW-RTH76': 1, 'ALERT|HW-TH4': 1, 'ALERT|ECB-ESS': 1
+  };
+  var TEXT_EXPECTED = {};
+  var NODE_OF = {};
+  Object.keys(data.fnOf).forEach(function (nodeId) { NODE_OF[data.fnOf[nodeId]] = nodeId; });
+  Object.keys(data.steps).forEach(function (fn) {
+    Object.keys(data.steps[fn]).forEach(function (key) {
+      var cell = data.steps[fn][key];
+      if (!cell.generic) TEXT_EXPECTED[fn + '|' + key] = cell.text || '';
+    });
+  });
   var AI_BAN = [
     'I understand the AI helper is automated',
     'AI-generated. Can be wrong.',
@@ -53,7 +84,7 @@
     'A breaker for the HVAC looked tripped.': 1,
     'If a breaker for the heating or cooling looks tripped, choose that option.': 1,
     'If a breaker for the heating or cooling trips, leave it as it is and call a licensed professional.': 1,
-    'This check doesn’t include resetting breakers.': 1,
+    'This check doesn’t include resetting breakers or turning switches on, so a pro takes it from here.': 1,
     'I was told I need a C wire, a power adapter, or a kit inside the furnace': 1,
     'C wire, power adapter, or furnace kit suggested.': 1,
     'Capacitor, contactor, and board work are not offered in the thermostat check.': 1,
@@ -340,6 +371,9 @@
       if (BREAKER_WORD.test(sentence) && BREAKER_ACT.test(sentence) && !BREAKER_OK.test(sentence)) {
         failures.push('TS-G15: ' + where + ': ' + sentence);
       }
+      if (FURNACE_WORD.test(sentence) && FURNACE_ON.test(sentence) && !FURNACE_OK.test(sentence)) {
+        failures.push('TS-G15: ' + where + ': ' + sentence);
+      }
     });
   }
   function forbiddenScan(text, where) {
@@ -507,7 +541,9 @@
       (record.our_instruction_text || []).forEach(function (line) { scanBreaker(line, record.id, failures); });
     });
     var powerTargets = nodes['ts.power.blank_screen'].options.filter(function (option) { return option.next === '@ts_power_breaker_pro'; }).map(function (option) { return option.id; });
-    if (powerTargets.join('|') !== 'breaker_looks_tripped|other_power_off') fail('TS-G15', powerTargets.join('|'));
+    if (powerTargets.join('|') !== 'breaker_looks_tripped|furnace_switch_off|other_power_off') fail('TS-G15', powerTargets.join('|'));
+    var powerPro = results.ts_power_breaker_pro;
+    if (!powerPro || powerPro.title !== LC15.title || powerPro.explanation !== LC15.explanation || powerPro.avoid !== LC15.avoid || JSON.stringify(powerPro.actions) !== JSON.stringify(LC15.actions)) fail('TS-G15', 'LC-15');
     if (typeof config().mirrorsEnabled !== 'boolean' || config().mirrorsEnabled !== false) fail('TS-G16', 'mirrorsEnabled');
     records.forEach(function (record) {
       if (recordRenderable(record, { mirrorsEnabled: config().mirrorsEnabled === true })) fail('TS-G16', record.id);
@@ -545,8 +581,33 @@
       Object.keys(data.steps).forEach(function (fn) {
         var cell = data.steps[fn][key];
         if (cell.mirrors && cell.mirrors.length) fail('TS-G19', fn + ' ' + key);
-        if (!cell.text || !(cell.fallback && cell.fallback.length)) fail('TS-G19', 'text ' + fn + ' ' + key);
+        if (!((cell.text || cell.generic === true) && cell.fallback && cell.fallback.length)) fail('TS-G19', 'text ' + fn + ' ' + key);
       });
+    });
+    var genericSeen = {};
+    Object.keys(data.steps).forEach(function (fn) {
+      Object.keys(data.steps[fn]).forEach(function (key) {
+        var id = fn + '|' + key;
+        var cell = data.steps[fn][key];
+        if (cell.generic === true) {
+          genericSeen[id] = 1;
+          if (!GENERIC_CELLS[id]) fail('TS-G20', 'extra generic ' + id);
+          if (cell.text) fail('TS-G20', 'text ' + id);
+          if (cell.mirrors && cell.mirrors.length) fail('TS-G20', 'mirrors ' + id);
+          if (!(cell.fallback && cell.fallback.length)) fail('TS-G20', 'fallback ' + id);
+          var panel = renderTsPanel(key, NODE_OF[fn]);
+          if (panel.html.indexOf('ts-lc3') === -1 || panel.html.indexOf('ts-lc10') === -1 || panel.html.indexOf('ts-lc9') === -1) fail('TS-G20', 'panel ' + id);
+          if (cell.lc6_inline && panel.html.indexOf('ts-lc6') === -1) fail('TS-G20', 'lc6 ' + id);
+          if (panel.html.indexOf('<li>') !== -1 || panel.steps.length) fail('TS-G20', 'step ' + id);
+        } else if (GENERIC_CELLS[id]) {
+          fail('TS-G20', 'missing generic ' + id);
+        } else if ((cell.text || '') !== TEXT_EXPECTED[id]) {
+          fail('TS-G20', 'spec text ' + id);
+        }
+      });
+    });
+    Object.keys(GENERIC_CELLS).forEach(function (id) {
+      if (!genericSeen[id]) fail('TS-G20', 'missing ' + id);
     });
     if (failures.length) throw new Error(failures.join('\n'));
   }

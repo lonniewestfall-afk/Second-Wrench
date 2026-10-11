@@ -4,11 +4,11 @@
 
 Content version `2026-10-10.3`. Product key `ts`. Basic only. No AI. `mirrorsEnabled` is false, so screen mirrors do not render. `aiThermostatEnabled` is false. `advancedRepairsEnabled` is false. `hvacContentReviewed` is false.
 
-Rebuilt to spec v3.1 and Legal on-page copy rev 3. The legal pack stays with the operator. This folder does not invent a Legal directory.
+Rebuilt to spec v3.2 and Legal on-page copy rev 4. LC-15 (`ts_power_breaker_pro`) is new in rev 4. The legal pack stays with the operator. This folder does not invent a Legal directory.
 
 Entry: Start → Something else: mini-split, geothermal, thermostat, other → Thermostat or settings problem → `ts.gate.safety_stops`.
 
-16 nodes, 119 options, 33 results. Unsure and other-brand answers end at a result. Every settings screen offers “My screen looks different”, an installer-setting stop, and a hazard exit. The check never tells anyone to reset a breaker.
+16 nodes, 120 options, 33 results. Unsure and other-brand answers end at a result. Every settings screen offers “My screen looks different”, an installer-setting stop, and a hazard exit. The check never tells anyone to reset a breaker.
 
 | Node | Title |
 |---|---|

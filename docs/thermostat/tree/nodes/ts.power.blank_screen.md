@@ -6,13 +6,13 @@
 - Title: Blank screen: checks from the floor
 - DIY tier: basic
 - Safety gate: yes
-- Caution: Look only at the furnace door. Don’t remove it, and don’t touch thermostat wires.
+- Caution: Look only at the furnace door and power switch. Don’t remove the door, don’t flip the switch, and don’t touch thermostat wires.
 
 First: any burning smell, smoke, or scorched wires? Choose the last option.
 
 1. If your thermostat takes batteries, put in fresh ones (steps below).
 2. Check that the furnace or air-handler door is fully closed. Look only. Some systems shut off when the door isn’t seated.
-3. Check that the furnace power switch is on. It often looks like a light switch on or near the furnace.
+3. Look at the furnace power switch. It often looks like a light switch on or near the furnace. Just look. If it’s off, don’t switch it on. Choose that option.
 4. Notice whether other equipment has power: the furnace or air-handler light, the outdoor unit, or lights on the same part of the house. Just look. Don’t touch anything.
 5. Don’t reset breakers in this check. If a breaker for the heating or cooling looks tripped, choose that option.
 
@@ -22,6 +22,7 @@ First: any burning smell, smoke, or scorched wires? Choose the last option.
 |---|---|---|
 | `power_back` The screen is back on | `@ts_power_restored_basic` |  |
 | `breaker_looks_tripped` A breaker for the heating or cooling looks tripped | `@ts_power_breaker_pro` |  |
+| `furnace_switch_off` The furnace power switch is off | `@ts_power_breaker_pro` |  |
 | `other_power_off` Other equipment or lights seem to have no power too | `@ts_power_breaker_pro` |  |
 | `still_blank` Still blank after these checks | `@ts_blank_after_basics` |  |
 | `power_code_or_restarting` It shows a power or wire code, a low-power warning, or keeps restarting | `@ts_blank_after_basics` |  |

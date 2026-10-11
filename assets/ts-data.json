@@ -897,14 +897,14 @@
     "ts.power.blank_screen": {
       "section": "Power",
       "title": "Blank screen: checks from the floor",
-      "body": "First: any burning smell, smoke, or scorched wires? Choose the last option.\n\n1. If your thermostat takes batteries, put in fresh ones (steps below).\n2. Check that the furnace or air-handler door is fully closed. Look only. Some systems shut off when the door isn’t seated.\n3. Check that the furnace power switch is on. It often looks like a light switch on or near the furnace.\n4. Notice whether other equipment has power: the furnace or air-handler light, the outdoor unit, or lights on the same part of the house. Just look. Don’t touch anything.\n5. Don’t reset breakers in this check. If a breaker for the heating or cooling looks tripped, choose that option.\n\n{step panel: POWER}",
+      "body": "First: any burning smell, smoke, or scorched wires? Choose the last option.\n\n1. If your thermostat takes batteries, put in fresh ones (steps below).\n2. Check that the furnace or air-handler door is fully closed. Look only. Some systems shut off when the door isn’t seated.\n3. Look at the furnace power switch. It often looks like a light switch on or near the furnace. Just look. If it’s off, don’t switch it on. Choose that option.\n4. Notice whether other equipment has power: the furnace or air-handler light, the outdoor unit, or lights on the same part of the house. Just look. Don’t touch anything.\n5. Don’t reset breakers in this check. If a breaker for the heating or cooling looks tripped, choose that option.\n\n{step panel: POWER}",
       "options": [
         {
           "id": "power_back",
           "label": "The screen is back on",
           "next": "@ts_power_restored_basic",
           "hint": "",
-          "fact": "User checked batteries and the furnace door and switch. The screen came back.",
+          "fact": "User checked batteries and the furnace door, and saw the furnace switch on. The screen came back.",
           "gate": null
         },
         {
@@ -913,6 +913,14 @@
           "next": "@ts_power_breaker_pro",
           "hint": "Leave it as it is. A pro finds the cause.",
           "fact": "A breaker for the HVAC looked tripped. User did not reset it.",
+          "gate": null
+        },
+        {
+          "id": "furnace_switch_off",
+          "label": "The furnace power switch is off",
+          "next": "@ts_power_breaker_pro",
+          "hint": "Leave it as it is. A pro finds out why.",
+          "fact": "Furnace power switch was off. User did not switch it on.",
           "gate": null
         },
         {
@@ -928,7 +936,7 @@
           "label": "Still blank after these checks",
           "next": "@ts_blank_after_basics",
           "hint": "A pro checks power to the thermostat.",
-          "fact": "User checked batteries and the furnace door and switch. Other equipment seemed to have power. The screen stayed blank.",
+          "fact": "User checked batteries and the furnace door, and saw the furnace switch on. Other equipment seemed to have power. The screen stayed blank.",
           "gate": null
         },
         {
@@ -980,7 +988,7 @@
           "gate": "ts_new_hazard"
         }
       ],
-      "caution": "Look only at the furnace door. Don’t remove it, and don’t touch thermostat wires.",
+      "caution": "Look only at the furnace door and power switch. Don’t remove the door, don’t flip the switch, and don’t touch thermostat wires.",
       "diyTier": "basic",
       "safetyGate": true
     },
@@ -1374,7 +1382,7 @@
       "tier": "Basic homeowner check",
       "urgency": "Power is back",
       "title": "The screen is on again.",
-      "explanation": "Dead batteries, a furnace power switch left off, or a furnace door that isn’t fully closed can blank the screen.",
+      "explanation": "Dead batteries or a furnace door that isn’t fully closed can blank the screen.",
       "actions": [
         "If the screen goes blank again, start a new check.",
         "If a breaker for the heating or cooling trips, leave it as it is and call a licensed professional."
@@ -1407,14 +1415,14 @@
     "ts_power_breaker_pro": {
       "tier": "Professional guidance",
       "urgency": "Arrange HVAC service",
-      "title": "A tripped breaker or missing power is a job for a pro.",
-      "explanation": "This check doesn’t include resetting breakers. A tripped breaker, or no power to the heating and cooling equipment, can have an electrical cause that a licensed HVAC professional or electrician should find.",
+      "title": "A tripped breaker, a furnace switch that’s off, or missing power is a job for a pro.",
+      "explanation": "This check doesn’t include resetting breakers or turning switches on, so a pro takes it from here. A tripped breaker, a furnace power switch that’s off, or no power to the heating and cooling equipment can have a cause that a licensed HVAC professional or electrician should find. A switch may have been turned off on purpose, for service or because of a problem, so ask a pro before it goes back on.",
       "actions": [
-        "Leave the breaker as it is and call a licensed HVAC professional or electrician.",
-        "Tell the pro what you saw: which breaker looked tripped, or which equipment and lights had no power.",
+        "Leave the breaker and the furnace switch as they are, and call a licensed HVAC professional or electrician.",
+        "Tell the pro what you saw: which breaker looked tripped, that the furnace switch was off, or which equipment and lights had no power.",
         "If you smell burning or see smoke, get people away and call 911 from safety."
       ],
-      "avoid": "Don’t reset breakers, open the electrical panel, or open the furnace or outdoor unit.",
+      "avoid": "Don’t reset breakers, turn the furnace switch on, open the electrical panel, or open the furnace or outdoor unit.",
       "source": "electrical",
       "outcome": "call_pro",
       "reason": "ts_power_breaker_pro",
@@ -2056,7 +2064,7 @@
         "step_ids": [],
         "status": [],
         "mirrors": [],
-        "text": "Set the mode to Heat or Cool, set the temperature at least 3°F past the room temperature, and wait 5 minutes.",
+        "text": "",
         "generic": true,
         "fallback": [
           {
@@ -2320,7 +2328,7 @@
         "step_ids": [],
         "status": [],
         "mirrors": [],
-        "text": "Look for a hold or a schedule on the thermostat or in its app, and cancel a hold you don’t want.",
+        "text": "",
         "generic": true,
         "fallback": [
           {
@@ -2580,7 +2588,7 @@
         "step_ids": [],
         "status": [],
         "mirrors": [],
-        "text": "Set the fan to Auto unless you want it to run more, and clear any fan timer.",
+        "text": "",
         "generic": true,
         "fallback": [
           {
@@ -2947,7 +2955,7 @@
           "U"
         ],
         "mirrors": [],
-        "text": "Restart: gently pull the faceplate off, wait a moment, and push it back on. Then, in the Alexa app, open the thermostat’s device settings, then its configuration, then Wi-Fi. Use only the Wi-Fi item there. It needs a 2.4 GHz network. Code 3:16:0:1 means a weak signal; 3:5:0:1 means the router has no internet.",
+        "text": "Restart: gently pull the faceplate off, wait a moment, and push it back on. Don’t touch the wires behind it. Then, in the Alexa app, open the thermostat’s device settings, then its configuration, then Wi-Fi. Use only the Wi-Fi item there. It needs a 2.4 GHz network. Code 3:16:0:1 means a weak signal; 3:5:0:1 means the router has no internet.",
         "generic": false,
         "fallback": [
           {
@@ -3093,9 +3101,13 @@
           "U"
         ],
         "mirrors": [],
-        "text": "Switch the system mode from Aux to Heat. If a pop-up offers to change outdoor-temperature settings, don’t change them. Taking the short override it offers is fine.",
+        "text": "Switch the system mode from Aux to Heat. If the thermostat later shows a flame icon with an exclamation mark, don’t tap Override or Modify. Leave backup-heat settings as they are.",
         "generic": false,
         "fallback": [
+          {
+            "id": "F-ECB-MAN",
+            "section": "p.108"
+          },
           {
             "id": "F-ECB-MODE",
             "section": "support page"
@@ -3107,7 +3119,7 @@
         "step_ids": [],
         "status": [],
         "mirrors": [],
-        "text": "If emergency heat is on, switch the mode back to Heat. Don’t change installer settings.",
+        "text": "",
         "generic": true,
         "fallback": [
           {
@@ -3371,7 +3383,7 @@
         "step_ids": [],
         "status": [],
         "mirrors": [],
-        "text": "Make one change, then wait 5 minutes. A wait of about 5 minutes is normal.",
+        "text": "",
         "generic": true,
         "fallback": [
           {
@@ -3427,7 +3439,7 @@
         "step_ids": [],
         "status": [],
         "mirrors": [],
-        "text": "Make one change, then wait 5 minutes. A wait of about 5 minutes is normal.",
+        "text": "",
         "generic": true,
         "fallback": [
           {
@@ -3449,7 +3461,7 @@
           "N"
         ],
         "mirrors": [],
-        "text": "This model runs on two AAA batteries. Pull the display straight off its base, put in fresh alkaline AAA batteries, and press it back on.",
+        "text": "This model runs on two AAA batteries. Pull the display straight off its base, put in fresh alkaline AAA batteries, and press it back on. The wires stay on the base; don’t touch them.",
         "generic": false,
         "fallback": [
           {
@@ -3785,7 +3797,7 @@
           "U"
         ],
         "mirrors": [],
-        "text": "This model uses two AAA batteries. Pull the display straight off its base, put in fresh alkaline AAA batteries, and press it back on.",
+        "text": "This model uses two AAA batteries. Pull the display straight off its base, put in fresh alkaline AAA batteries, and press it back on. The wires stay on the base; don’t touch them.",
         "generic": false,
         "fallback": [
           {
@@ -3935,7 +3947,7 @@
         "step_ids": [],
         "status": [],
         "mirrors": [],
-        "text": "If the model has batteries you can reach without disconnecting wires, put in fresh alkaline batteries. If it has none, a pro checks power.",
+        "text": "",
         "generic": true,
         "fallback": [
           {
@@ -4099,7 +4111,7 @@
         "step_ids": [],
         "status": [],
         "mirrors": [],
-        "text": "Write down the exact code or message. This check doesn’t interpret it.",
+        "text": "",
         "generic": true,
         "fallback": [
           {
@@ -4127,7 +4139,7 @@
         "step_ids": [],
         "status": [],
         "mirrors": [],
-        "text": "Write down the exact code or message. This check doesn’t interpret it.",
+        "text": "",
         "generic": true,
         "fallback": [
           {
@@ -4169,7 +4181,7 @@
         "step_ids": [],
         "status": [],
         "mirrors": [],
-        "text": "Write down the exact code or message. This check doesn’t interpret it.",
+        "text": "",
         "generic": true,
         "fallback": [
           {
