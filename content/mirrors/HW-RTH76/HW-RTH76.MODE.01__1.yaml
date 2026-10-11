@@ -1,0 +1,31 @@
+id: "HW-RTH76.MODE.01/1"
+brand: "Honeywell Home (Resideo)"
+model: "RTH7600D"
+gen: "unspecified"
+firmware_range: {min: null, max: null, fw_sensitive: false, basis: "Non-Wi-Fi model; firmware not stated."}
+step_id: "HW-RTH76.MODE.01"
+screen: 1
+menu_path: ["Home screen", "System & Fan", "System", "Done"]
+lines:
+  - {label: "[mode name shows on the display: not mirrored]", type: "placeholder", selected: false, verified: "text", condition: null, note: "only the button name is verified"}
+buttons:
+  - {label: "System & Fan", on_screen_text: "System & Fan", kind: "text", verified: "figure", note: "touchscreen key (M27527)"}
+  - {label: "System", on_screen_text: "System", kind: "text", verified: "figure", note: "touchscreen key (M27529)"}
+  - {label: "Done", on_screen_text: "Done", kind: "text", verified: "figure", note: "touchscreen key (M27529)"}
+source_url: "https://customer.resideo.com/resources/Techlit/TechLitDocuments/69-0000s/69-2207ES.pdf"
+source_pages: "p.8 (system setting; figures M27527, M27529)"
+source_version: "Honeywell RTH7600 operating manual, doc. 69-2207ES-05 (Resideo-hosted; printed page numbers; retrieved 2026-10-10)"
+source_host: "official"
+verified_status: "verified"
+verified_basis: "source_text"
+verified_by: "Second Wrench research worker (AI-assisted, single pass)"
+verified_on: "2026-10-10"
+second_check_by: "Tree Lead"
+second_check_on: "2026-10-10"
+recheck_cadence: "12m"
+recheck_due: "2027-10-10"
+verification_notes: ["Matrix status: verified (button name). Mode names are not mirrored.", "2026-10-10 Tree Lead blind second check: FAIL (mirror-second-check.md #8). Fixed against the primary source, not the matrix: Path is now System & Fan > System > Done, with the screen case of the keys (69-2207ES-05 p.8, M27527/M27529). Re-cited to the Resideo -05 copy. Held until Tree Lead re-checks it.", "2026-10-10 Tree Lead re-check: PASS. verified_on reset to the check date (shown in the LC-4 caption). Un-held in v3.1."]
+our_instruction_text:
+  - "Press System & Fan."
+  - "Press System until the display shows Heat or Cool. On a heat pump, pick Heat rather than emergency heat."
+  - "Press Done to save."

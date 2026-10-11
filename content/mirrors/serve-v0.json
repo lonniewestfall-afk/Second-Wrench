@@ -1,0 +1,71 @@
+{
+  "TS_MIRROR_SERVE": [
+    "HW-T9.HOLD.01/1",
+    "HW-T9.WIFI.01/1",
+    "HW-T9.WIFI.01/2",
+    "ECB-PRM.FAN.02/1",
+    "HW-TH4.EHEAT.01/1",
+    "HW-TH4.FAN.01/1",
+    "HW-RTH76.BATT.01/1",
+    "HW-RTH76.ALERT.01/1",
+    "HW-X2P.ALERT.02/1",
+    "HW-T6.HOLD.01/1",
+    "ECB-PRM.FAN.01/2",
+    "HW-RTH76.MODE.01/1",
+    "HW-TH4.MODE.01/1",
+    "HW-RTH76.HOLD.01/1",
+    "HW-TH4.HOLD.01/1",
+    "HW-TH4.BATT.01/1",
+    "HW-X2P.ALERT.01/1"
+  ],
+  "TS_MIRROR_HOLD": [
+    {
+      "id": "HW-T5.MODE.01/1",
+      "reason": "label_case"
+    },
+    {
+      "id": "HW-T5.EHEAT.01/1",
+      "reason": "label_case"
+    },
+    {
+      "id": "HW-T5.FAN.01/1",
+      "reason": "label_case"
+    },
+    {
+      "id": "HW-X2P.MODE.01/1",
+      "reason": "label_case"
+    },
+    {
+      "id": "HW-X2P.FAN.01/1",
+      "reason": "label_case"
+    },
+    {
+      "id": "HW-X2P.HOLD.01/1",
+      "reason": "label_case"
+    },
+    {
+      "id": "HW-FP6.MODE.01/1",
+      "reason": "unofficial_host"
+    },
+    {
+      "id": "HW-FP6.HOLD.01/1",
+      "reason": "unofficial_host"
+    },
+    {
+      "id": "HW-FP6.EHEAT.01/1",
+      "reason": "unofficial_host"
+    },
+    {
+      "id": "HW-FP6.FAN.01/1",
+      "reason": "unofficial_host"
+    },
+    {
+      "id": "HW-FP6.BATT.01/1",
+      "reason": "unofficial_host"
+    },
+    {
+      "id": "HW-FP6.ALERT.01/1",
+      "reason": "unofficial_host"
+    }
+  ]
+}

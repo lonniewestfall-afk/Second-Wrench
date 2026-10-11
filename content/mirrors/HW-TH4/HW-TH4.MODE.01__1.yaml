@@ -1,0 +1,31 @@
+id: "HW-TH4.MODE.01/1"
+brand: "Honeywell Home (Resideo)"
+model: "PRO TH4000 series"
+gen: "unspecified"
+firmware_range: {min: null, max: null, fw_sensitive: false, basis: "Non-Wi-Fi model; firmware not stated."}
+step_id: "HW-TH4.MODE.01"
+screen: 1
+menu_path: ["Front", "System switch (positions left to right: Cool, Off, Heat, Em.Heat)"]
+lines:
+  - {label: "Cool", type: "option", selected: false, verified: "figure", condition: null, note: "switch position (p.1 device figure)"}
+  - {label: "Off", type: "option", selected: false, verified: "figure", condition: null, note: "switch position (p.1 device figure)"}
+  - {label: "Heat", type: "option", selected: false, verified: "figure", condition: null, note: "switch position (p.1 device figure)"}
+  - {label: "Em.Heat", type: "option", selected: false, verified: "figure", condition: "Heat pumps with backup heat only", note: "switch position, rightmost (p.1 device figure)"}
+buttons:
+  - {label: "System", on_screen_text: "System", kind: "physical", verified: "text", note: "slide switch"}
+source_url: "https://customer.resideo.com/resources/Techlit/TechLitDocuments/69-0000s/69-1760EFS.pdf"
+source_pages: "p.1 (device photo and controls callouts)"
+source_version: "Honeywell PRO TH4000 series guide, doc. 69-1760EFS-10 (PDF date not recorded; retrieved 2026-10-10)"
+source_host: "official"
+verified_status: "verified"
+verified_basis: "source_text"
+verified_by: "Second Wrench research worker (AI-assisted, single pass)"
+verified_on: "2026-10-10"
+second_check_by: "Tree Lead"
+second_check_on: "2026-10-10"
+recheck_cadence: "12m"
+recheck_due: "2027-10-10"
+verification_notes: ["Matrix status: verified (switch name). Position labels not confirmed, so tagged unverified and hidden.", "2026-10-10 Tree Lead blind second check: FAIL (mirror-second-check.md #9). Fixed against the primary source, not the matrix: Em Heat → Em.Heat, as printed on the switch (p.1 device photo); that line is un-hidden. Cool/Off/Heat are confirmable from the same photo but stay hidden until the re-check. Held until Tree Lead re-checks it.", "2026-10-10 Tree Lead re-check: PASS. verified_on reset to the check date (shown in the LC-4 caption). Un-held in v3.1."]
+our_instruction_text:
+  - "Slide the System switch to Heat for heat or Cool for cooling."
+  - "Use the Em.Heat position only if a pro told you to."

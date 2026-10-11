@@ -1,0 +1,35 @@
+id: "HW-T9.WIFI.01/2"
+brand: "Honeywell Home (Resideo)"
+model: "T9 Smart Thermostat (RCHT9510WF / RCHT9610WF families, per guide cover)"
+gen: "unspecified (guide covers one T9 generation)"
+firmware_range: {min: null, max: null, fw_sensitive: true, basis: "Not stated in source. Mirror reflects the screens in guide 33-00478-04."}
+step_id: "HW-T9.WIFI.01"
+screen: 2
+menu_path: ["Home screen", "Menu", "CONFIGURATION: Wi-Fi", "Wi-Fi"]
+lines:
+  - {label: "Wi-Fi", type: "title", selected: false, verified: "figure", condition: null, note: null}
+  - {label: "Enable Wi-Fi", type: "toggle", selected: true, verified: "figure", condition: null, note: "shown switched on"}
+  - {label: "WI-FI NETWORK", type: "section_header", selected: false, verified: "figure", condition: null, note: null}
+  - {label: "Not connected", type: "status", selected: false, verified: "figure", condition: null, note: "example state; shows your network name or status"}
+buttons:
+  - {label: "Back", on_screen_text: null, kind: "icon", verified: "figure", note: "left-arrow icon, no text"}
+  - {label: "Info", on_screen_text: null, kind: "icon", verified: "figure", note: "'i' icon, top right"}
+  - {label: "Choose Network...", on_screen_text: "Choose Network...", kind: "text", verified: "figure"}
+source_url: "https://digitalassets.resideo.com/damroot/Original/10015/33-00478.pdf"
+source_pages: "p.12 (Connect to Wi-Fi steps), p.13 (Wi-Fi screen figure; CONFIGURATION menu figure)"
+source_version: "Honeywell Home T9 Smart Thermostat User Guide, doc. 33-00478-04 (PDF dated 2022-06-23)"
+source_host: "official"
+verified_status: "verified"
+verified_basis: "source_figure"
+verified_by: "Second Wrench research worker (AI-assisted, single pass)"
+verified_on: "2026-10-10"
+second_check_by: "Tree Lead"
+second_check_on: "2026-10-10"
+recheck_cadence: "90d"
+recheck_due: "2027-01-08"
+verification_notes: ["Every line and button matches the p.13 Wi-Fi screen figure. The button reads 'Choose Network...' with trailing dots; the body text writes 'Choose network'. The mirror follows the figure.", "2026-10-10 Tree Lead blind second check: PASS (mirror-second-check.md #4). verified_on is reset to that check date (unchanged, 2026-10-10)."]
+our_instruction_text:
+  - "Make sure Enable Wi-Fi is switched on."
+  - "Tap Choose Network..., pick your home network from the list, and type its password."
+  - "Moving to a new router or password? Come back to this screen and tap Choose Network... again."
+  - "Still won’t connect? Restart your router. Don’t change any setting marked for installers."

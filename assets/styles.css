@@ -102,6 +102,12 @@ input::placeholder,textarea::placeholder{color:#aaaab4;opacity:1}
 @media print{html{color-scheme:light}body{background:#fff!important;color:#000!important}.result-heading,.result-box,.result-heading.emergency,.note-pre{background:#fff!important;color:#000!important;border-color:#888!important}.result-heading h1,.result-heading .urgency,.result-heading .explanation,.result-heading.emergency h1,.result-heading.emergency .urgency,.result-heading.emergency .explanation,.result-heading .pill{background:#fff!important;color:#000!important}.hero:after,.brand-mark,.footer-mark{display:none!important}a{color:#000!important}}
 
 .flow-card .lead{white-space:pre-line}
+.ts-screen{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:#2a2c31;color:#e7e7ea;border:1px solid #6a6d74;border-radius:2px;padding:12px 14px;margin:0 0 12px}
+.ts-lines{margin:0 0 8px;padding-left:1.2rem}
+.ts-btn{display:inline-block;border:1px solid #8d9096;background:#3a3d44;color:#eee;padding:2px 8px;margin:0 6px 6px 0}
+.ts-selected{font-size:.85em}
+.ts-lc3,.ts-lc9,.ts-lc10,.ts-lc6,.ts-lc2,.ts-lc4{margin:.4rem 0 .8rem}
+@media(forced-colors:active){.ts-screen,.ts-btn{background:Canvas;color:CanvasText;border:1px solid ButtonText}}
 .option.preselected{border-color:var(--scarlet);box-shadow:inset 3px 0 0 var(--scarlet)}
 .start-steps{list-style:none;margin:0 0 4px;padding:0;display:grid;gap:14px}
 .start-steps li{margin:0;padding:0 0 0 14px;border-left:3px solid var(--scarlet);color:#d5d5db;font-size:.9rem;line-height:1.45}

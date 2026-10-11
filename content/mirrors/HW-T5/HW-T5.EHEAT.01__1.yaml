@@ -1,0 +1,28 @@
+id: "HW-T5.EHEAT.01/1"
+brand: "Honeywell Home (Resideo)"
+model: "T5 / T5+ Smart Thermostat"
+gen: "unspecified"
+firmware_range: {min: null, max: null, fw_sensitive: true, basis: "Not stated in source. Wi-Fi model."}
+step_id: "HW-T5.EHEAT.01"
+screen: 1
+menu_path: ["Home screen", "Mode"]
+lines:
+  - {label: "EM Heat", type: "option", selected: false, verified: "text", condition: "Heat pumps with backup heat only", note: null}
+buttons:
+  - {label: "Mode", on_screen_text: "Mode", kind: "text", verified: "text"}
+source_url: "https://images.thdstatic.com/catalog/pdfImages/69/6945cb70-2440-45f8-805c-155a2d7126bb.pdf"
+source_pages: "p.17"
+source_version: "Honeywell Home T5 Smart Thermostat guide, doc. 33-00498EF-03 (PDF date not recorded; retrieved 2026-10-10)"
+source_host: "unofficial"
+verified_status: "verified"
+verified_basis: "source_text"
+verified_by: "Second Wrench research worker (AI-assisted, single pass)"
+verified_on: "2026-10-10"
+second_check_by: null
+second_check_on: null
+recheck_cadence: "90d"
+recheck_due: "2027-01-08"
+verification_notes: ["HELD: same Mode/MODE case conflict as HW-T5.MODE.01/1."]
+our_instruction_text:
+  - "EM Heat runs only the backup heat, and it costs more."
+  - "Press the mode button and pick Heat to go back to normal heat."

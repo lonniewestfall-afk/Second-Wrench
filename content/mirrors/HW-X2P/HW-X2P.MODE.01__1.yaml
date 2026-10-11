@@ -1,0 +1,32 @@
+id: "HW-X2P.MODE.01/1"
+brand: "Honeywell Home (Resideo)"
+model: "X2P (RTH20B / RTH21B / RTH22B)"
+gen: "unspecified"
+firmware_range: {min: null, max: null, fw_sensitive: false, basis: "Non-Wi-Fi model; firmware not stated."}
+step_id: "HW-X2P.MODE.01"
+screen: 1
+menu_path: ["Home screen", "MODE"]
+lines:
+  - {label: "AUTO", type: "option", selected: false, verified: "text", condition: "Varies by model and setup", note: null}
+  - {label: "HEAT", type: "option", selected: false, verified: "text", condition: null, note: null}
+  - {label: "COOL", type: "option", selected: false, verified: "text", condition: null, note: null}
+  - {label: "EM HEAT", type: "option", selected: false, verified: "text", condition: "Heat pumps with backup heat only", note: null}
+  - {label: "OFF", type: "option", selected: false, verified: "text", condition: null, note: null}
+buttons:
+  - {label: "MODE", on_screen_text: "MODE", kind: "physical", verified: "text"}
+source_url: "https://customer.resideo.com/resources/Techlit/TechLitDocuments/33-00000s/33-00688EFS.pdf"
+source_pages: "p.12"
+source_version: "Honeywell Home X2P guide, doc. 33-00688EFS-03 (Resideo-hosted; byte-identical to the honeywellstore.com copy; retrieved 2026-10-10)"
+source_host: "official"
+verified_status: "verified"
+verified_basis: "source_text"
+verified_by: "Second Wrench research worker (AI-assisted, single pass)"
+verified_on: "2026-10-10"
+second_check_by: null
+second_check_on: null
+recheck_cadence: "12m"
+recheck_due: "2027-10-10"
+verification_notes: ["HELD: the p.12 figure shows the display reading 'Heat' and 'Auto' in mixed case, while the text list is in capitals. On-screen case unresolved."]
+our_instruction_text:
+  - "Press the mode button. Each press moves to the next mode."
+  - "Stop when Heat or Cool shows. The modes you see depend on how it was set up."

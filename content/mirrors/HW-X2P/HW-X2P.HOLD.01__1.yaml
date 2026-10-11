@@ -1,0 +1,30 @@
+id: "HW-X2P.HOLD.01/1"
+brand: "Honeywell Home (Resideo)"
+model: "X2P (RTH20B / RTH21B / RTH22B)"
+gen: "unspecified"
+firmware_range: {min: null, max: null, fw_sensitive: false, basis: "Non-Wi-Fi model; firmware not stated."}
+step_id: "HW-X2P.HOLD.01"
+screen: 1
+menu_path: ["Home screen", "HOLD"]
+lines:
+  - {label: "CANCEL HOLD", type: "option", selected: false, verified: "text", condition: null, note: null}
+  - {label: "HOLD PERMANANTLY", type: "option", selected: false, verified: "text", condition: null, note: "the guide's spelling; confirm on a device"}
+buttons:
+  - {label: "HOLD", on_screen_text: "HOLD", kind: "physical", verified: "text"}
+source_url: "https://customer.resideo.com/resources/Techlit/TechLitDocuments/33-00000s/33-00688EFS.pdf"
+source_pages: "p.15"
+source_version: "Honeywell Home X2P guide, doc. 33-00688EFS-03 (Resideo-hosted; byte-identical to the honeywellstore.com copy; retrieved 2026-10-10)"
+source_host: "official"
+verified_status: "verified"
+verified_basis: "source_text"
+verified_by: "Second Wrench research worker (AI-assisted, single pass)"
+verified_on: "2026-10-10"
+second_check_by: null
+second_check_on: null
+recheck_cadence: "12m"
+recheck_due: "2027-10-10"
+verification_notes: ["HELD: the p.12–13 figures label the button 'Hold' in mixed case; the text says HOLD. The 'PERMANANTLY' spelling also needs a device check."]
+our_instruction_text:
+  - "Using the arrows alone holds the change until the next scheduled time."
+  - "To keep it until you cancel it, press the hold button until the permanent option shows."
+  - "To end any hold, press the hold button until the cancel option shows."

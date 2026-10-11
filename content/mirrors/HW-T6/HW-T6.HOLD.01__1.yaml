@@ -1,0 +1,32 @@
+id: "HW-T6.HOLD.01/1"
+brand: "Honeywell Home (Resideo)"
+model: "T6 Pro Smart Thermostat"
+gen: "unspecified"
+firmware_range: {min: null, max: null, fw_sensitive: true, basis: "Not stated in source. Wi-Fi model."}
+step_id: "HW-T6.HOLD.01"
+screen: 1
+menu_path: ["Home screen", "Hold Until"]
+lines:
+  - {label: "Permanent Hold", type: "option", selected: false, verified: "figure", condition: null, note: "top left (p.6 figure)"}
+  - {label: "Hold Until", type: "status", selected: false, verified: "figure", condition: null, note: "top right, with the end time"}
+  - {label: "Run Schedule", type: "option", selected: false, verified: "figure", condition: null, note: "centre"}
+buttons:
+  - {label: "Back", on_screen_text: "Back", kind: "text", verified: "figure", note: "bottom left (p.6 figure)"}
+source_url: "https://customer.resideo.com/resources/Techlit/TechLitDocuments/33-00000s/33-00410EFS.pdf"
+source_pages: "p.6 (hold screen figures in both hold procedures), p.7 (vacation hold text)"
+source_version: "T6 Pro Smart Thermostat guide, doc. 33-00410EFS-03 (PDF date not recorded; retrieved 2026-10-10)"
+source_host: "official"
+verified_status: "verified"
+verified_basis: "source_text"
+verified_by: "Second Wrench research worker (AI-assisted, single pass)"
+verified_on: "2026-10-10"
+second_check_by: "Tree Lead"
+second_check_on: "2026-10-10"
+recheck_cadence: "90d"
+recheck_due: "2027-01-08"
+verification_notes: ["Labels match settings-matrix.md HW-T6.HOLD.01. Order of the two choices is from the guide text, not a figure.", "2026-10-10 Tree Lead blind second check: FAIL (mirror-second-check.md #1). Fixed against the primary source, not the matrix: Hold screen reordered to the p.6 figure (Permanent Hold, Hold Until, Run Schedule) and the Back key added. Held until Tree Lead re-checks it.", "2026-10-10 Tree Lead re-check: PASS. verified_on reset to the check date (shown in the LC-4 caption). Un-held in v3.1."]
+our_instruction_text:
+  - "After you change the temperature, the home screen shows Hold Until with an end time."
+  - "To go back to your schedule, touch Hold Until, then Run Schedule."
+  - "To keep this temperature until you change it, touch Hold Until, then Permanent Hold. To end it later, touch Permanent Hold, then Run Schedule."
+  - "A vacation hold set in the app also ends when you choose Run Schedule here."

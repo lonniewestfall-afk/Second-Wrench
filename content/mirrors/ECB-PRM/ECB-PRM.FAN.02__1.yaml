@@ -1,0 +1,35 @@
+id: "ECB-PRM.FAN.02/1"
+brand: "ecobee"
+model: "Smart Thermostat Premium"
+gen: "Premium (manual v1, 2022)"
+firmware_range: {min: null, max: null, fw_sensitive: true, basis: "Not stated in source."}
+step_id: "ECB-PRM.FAN.02"
+screen: 1
+menu_path: ["Home screen", "Menu", "Main Menu (System tab)", "Fan icon", "Fan Mode"]
+lines:
+  - {label: "Main Menu", type: "title", selected: false, verified: "figure", condition: null, note: null}
+  - {label: "Fan Mode", type: "subtitle", selected: false, verified: "figure", condition: null, note: null}
+  - {label: "Auto", type: "toggle_option", selected: true, verified: "figure", condition: null, note: null}
+  - {label: "On", type: "toggle_option", selected: false, verified: "figure", condition: null, note: null}
+  - {label: "[fan run-time message: not copied]", type: "placeholder", selected: false, verified: "figure", condition: null, note: null}
+  - {label: "15 min / hour", type: "dropdown_value", selected: false, verified: "figure", condition: null, note: "example value; this is the minimum fan time"}
+buttons:
+  - {label: "Close", on_screen_text: null, kind: "icon", verified: "figure", note: "'x' icon, top left"}
+source_url: "https://downloads.ctfassets.net/a3qyhfznts9y/55gpc6jhRTJ7KjXDjxDRzu/ad17b04461596be3b00b9c65d6e3a895/ecobee_Premium_install-setup-user_manual_v1.pdf"
+source_pages: "p.72 (figure); behaviour p.71"
+source_version: "ecobee Smart Thermostat Premium Installation, Setup and User Guide, v1 (PDF dated 2022-07-11)"
+source_host: "official"
+verified_status: "verified"
+verified_basis: "source_figure"
+verified_by: "Second Wrench research worker (AI-assisted, single pass)"
+verified_on: "2026-10-10"
+second_check_by: "Tree Lead"
+second_check_on: "2026-10-10"
+recheck_cadence: "90d"
+recheck_due: "2027-01-08"
+verification_notes: ["Matches settings-matrix.md ECB-PRM.FAN.02 (verified, manual figure p.72). Same screen as ECB-PRM.FAN.01/2 without the Fan Hold line.", "2026-10-10 Tree Lead blind second check: PASS (mirror-second-check.md #6). verified_on is reset to that check date (unchanged, 2026-10-10)."]
+our_instruction_text:
+  - "On the main screen, tap the menu icon (three short lines), then the fan symbol along the bottom."
+  - "Set the fan to Auto."
+  - "The min / hour setting makes the fan run that many minutes every hour, even when the system is idle. If the fan seems to run all the time, tap it and turn it down to zero."
+  - "Tap the X at the top left to leave."

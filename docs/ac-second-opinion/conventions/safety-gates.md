@@ -26,6 +26,13 @@ Hard gates. Affirmative / failed check → tree **halts**. No soft continue. Pre
 | `ms.gate.new_hazard` | `hazard_now` on any `ms.` node | A new hazard ends this check. | `emergency_exit` | `gate_fired:ms_new_hazard` |
 | `cold_exposure_911` | Someone at risk from the cold (a baby, an older adult, or a medical need) and no safe heat | Get the person warm first. Call 911 if they are confused or drowsy. | `emergency_exit` | `gate_fired:cold_exposure_911` |
 | `ms.heat.ice_keep_running` | Ice on a mini-split outdoor unit in heat, and the user wants to keep it running | Stop. Turn the mini-split Off. Use safe backup heat per its manufacturer. Never run a space heater near water or the indoor unit. | `emergency_exit` (`ms_ice_heat_keep_running`). Same gate id as `ice_keep_running`. No Emergency/Aux line. | `gate_fired:ice_keep_running` |
+| `ts_co_or_gas` | CO alarm, or gas smell or hissing, on the thermostat safety gate | Leave first. Gas or carbon monoxide ends this check. | `emergency_exit` (`ts_co_gas_now`) | `gate_fired:ts_co_or_gas` |
+| `ts_burning_electrical` | Burning or electrical smell, smoke, or scorched or melted wires at the thermostat | Don’t touch the thermostat or its wires. | `emergency_exit` (`ts_burning_electrical`) | `gate_fired:ts_burning_electrical` |
+| `ts_breaker_retrip` | A breaker for the heating or cooling keeps tripping | Don’t reset that breaker. | `emergency_exit` (`ts_breaker_retrip`). This check never tells anyone to reset a breaker. | `gate_fired:ts_breaker_retrip` |
+| `ts_water_indoor_unit` | Water at the furnace or indoor unit, including a summer cooling code with water | Don’t open the unit or clear the drain. | `emergency_exit` (`ts_water_indoor_unit`) | `gate_fired:ts_water_indoor_unit` |
+| `ts_line_voltage` | Baseboard or wall heaters, or a thermostat marked 120 V or 240 V | High-voltage thermostats aren’t covered. No manufacturer is named. | `emergency_exit` (`ts_line_voltage_stop`) | `gate_fired:ts_line_voltage` |
+| `ts_open_cabinet` | The fix would open the furnace, air handler, or outdoor unit, or change thermostat wires, including a suggested C wire or kit | Leave every cover on. | `emergency_exit` (`ts_open_cabinet_stop`) | `gate_fired:ts_open_cabinet` |
+| `ts_new_hazard` | `hazard_now` on any `ts.` node | A new hazard ends this check. | `emergency_exit` (`ts_hazard_now`) | `gate_fired:ts_new_hazard` |
 
 ## Ordering
 

@@ -1,0 +1,34 @@
+id: "HW-T9.HOLD.01/1"
+brand: "Honeywell Home (Resideo)"
+model: "T9 Smart Thermostat (RCHT9510WF / RCHT9610WF families)"
+gen: "unspecified"
+firmware_range: {min: null, max: null, fw_sensitive: true, basis: "Not stated in source. Wi-Fi model."}
+step_id: "HW-T9.HOLD.01"
+screen: 1
+menu_path: ["Home screen", "Hold until"]
+lines:
+  - {label: "Hold until", type: "status", selected: false, verified: "text", condition: "Shows only when a schedule is running", note: "shown with a time"}
+  - {label: "Next Period", type: "option", selected: false, verified: "text", condition: null, note: null}
+  - {label: "A Specific Time", type: "option", selected: false, verified: "text", condition: null, note: null}
+  - {label: "Permanently", type: "option", selected: false, verified: "text", condition: null, note: null}
+  - {label: "Remove hold", type: "option", selected: false, verified: "text", condition: null, note: "cancels the hold"}
+buttons:
+  - {label: "Done", on_screen_text: "Done", kind: "text", verified: "text"}
+source_url: "https://digitalassets.resideo.com/damroot/Original/10015/33-00478.pdf"
+source_pages: "p.17"
+source_version: "Honeywell Home T9 Smart Thermostat User Guide, doc. 33-00478-04 (PDF dated 2022-06-23)"
+source_host: "official"
+verified_status: "verified"
+verified_basis: "source_text"
+verified_by: "Second Wrench research worker (AI-assisted, single pass)"
+verified_on: "2026-10-10"
+second_check_by: "Tree Lead"
+second_check_on: "2026-10-10"
+recheck_cadence: "90d"
+recheck_due: "2027-01-08"
+verification_notes: ["Option order follows the guide's bullet list on p.17. In Auto, the guide has you pick the heat or cool side first.", "2026-10-10 Tree Lead blind second check: PASS (mirror-second-check.md #2). verified_on is reset to that check date (unchanged, 2026-10-10)."]
+our_instruction_text:
+  - "After you change the temperature, Hold until and a time appear on the home screen."
+  - "Touch it. Pick Remove hold to go back to your schedule."
+  - "Or pick how long to keep the change: until the next scheduled time, until a time you choose, or permanently."
+  - "Tap Done to return to the home screen."

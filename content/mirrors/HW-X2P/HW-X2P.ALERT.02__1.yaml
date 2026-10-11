@@ -1,0 +1,27 @@
+id: "HW-X2P.ALERT.02/1"
+brand: "Honeywell Home (Resideo)"
+model: "X2P (RTH20B / RTH21B / RTH22B)"
+gen: "unspecified"
+firmware_range: {min: null, max: null, fw_sensitive: false, basis: "Non-Wi-Fi model; firmware not stated."}
+step_id: "HW-X2P.ALERT.02"
+screen: 1
+menu_path: ["Home screen"]
+lines:
+  - {label: "Waiting For Equipment", type: "status", selected: false, verified: "text", condition: null, note: "under the room temperature"}
+buttons: []
+source_url: "https://customer.resideo.com/resources/Techlit/TechLitDocuments/33-00000s/33-00688EFS.pdf"
+source_pages: "p.17, p.19"
+source_version: "Honeywell Home X2P guide, doc. 33-00688EFS-03 (Resideo-hosted; byte-identical to the honeywellstore.com copy; retrieved 2026-10-10)"
+source_host: "official"
+verified_status: "verified"
+verified_basis: "source_text"
+verified_by: "Second Wrench research worker (AI-assisted, single pass)"
+verified_on: "2026-10-10"
+second_check_by: "Tree Lead"
+second_check_on: "2026-10-10"
+recheck_cadence: "12m"
+recheck_due: "2027-10-10"
+verification_notes: ["Per settings-matrix.md HW-X2P.ALERT.02.", "2026-10-10 Tree Lead blind second check: PASS (mirror-second-check.md #23). verified_on is reset to that check date (unchanged, 2026-10-10)."]
+our_instruction_text:
+  - "Waiting For Equipment means the thermostat is holding off to protect the equipment."
+  - "Give it about 5 minutes and don’t keep changing the setting."

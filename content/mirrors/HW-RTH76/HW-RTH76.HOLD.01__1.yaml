@@ -1,0 +1,30 @@
+id: "HW-RTH76.HOLD.01/1"
+brand: "Honeywell Home (Resideo)"
+model: "RTH7600D"
+gen: "unspecified"
+firmware_range: {min: null, max: null, fw_sensitive: false, basis: "Non-Wi-Fi model; firmware not stated."}
+step_id: "HW-RTH76.HOLD.01"
+screen: 1
+menu_path: ["Home screen", "▲ or ▼ (adjust temperature)", "Hold"]
+lines:
+  - {label: "Permanent Hold", type: "status", selected: false, verified: "figure", condition: null, note: "shown in the p.13 figure next to the Hold and Cancel keys while you set a hold (M27533); no screen after pressing Hold is shown"}
+buttons:
+  - {label: "Hold", on_screen_text: "Hold", kind: "text", verified: "figure", note: "touchscreen key (p.13)"}
+  - {label: "Cancel", on_screen_text: "Cancel", kind: "text", verified: "figure", note: "touchscreen key (p.13); its use isn’t described, so it isn’t instructed"}
+  - {label: "Use Schedule", on_screen_text: "Use Schedule", kind: "text", verified: "figure", condition: "temporary-override screen only (p.12, M27532)", note: "not on the hold screen"}
+source_url: "https://customer.resideo.com/resources/Techlit/TechLitDocuments/69-0000s/69-2207ES.pdf"
+source_pages: "p.12 (temporary override, Use Schedule), p.13 (permanent hold: Hold / Cancel)"
+source_version: "Honeywell RTH7600 operating manual, doc. 69-2207ES-05 (Resideo-hosted; printed page numbers; retrieved 2026-10-10)"
+source_host: "official"
+verified_status: "verified"
+verified_basis: "source_text"
+verified_by: "Second Wrench research worker (AI-assisted, single pass)"
+verified_on: "2026-10-10"
+second_check_by: "Tree Lead"
+second_check_on: "2026-10-10"
+recheck_cadence: "12m"
+recheck_due: "2027-10-10"
+verification_notes: ["Per settings-matrix.md HW-RTH76.HOLD.01 (p.12).", "2026-10-10 Tree Lead blind second check: FAIL (mirror-second-check.md #11). Fixed against the primary source, not the matrix: Screen case Hold / Use Schedule; Cancel key added; Use Schedule placed on the temporary-override screen (-05 p.12), Hold / Cancel on the hold screen (p.13). Re-cited to -05. Held until Tree Lead re-checks it.", "2026-10-10 Tree Lead re-check: PASS. verified_on reset to the check date (shown in the LC-4 caption). Un-held in v3.1."]
+our_instruction_text:
+  - "Press the up or down arrow to change the temperature. That change lasts until the next scheduled time. To cancel it, press Use Schedule."
+  - "To keep the new temperature, press Hold right after the arrow. The schedule stays off until you change the temperature or press Use Schedule."

@@ -1,6 +1,6 @@
 /* Local sanity for AC Wave-2 and HP Wave-1. No network. */
 'use strict';
-globalThis.SW_CONFIG = { advancedRepairsEnabled: false };
+globalThis.SW_CONFIG = { advancedRepairsEnabled: false, aiThermostatEnabled: false, mirrorsEnabled: false, contentVersion: '2026-10-10.3' };
 const fs = require('fs');
 const path = require('path');
 const F = require('../assets/flow.js');
@@ -72,7 +72,7 @@ function assertNoCap(state, msg) {
 const gate = ['none_of_these', 'agree_18_terms'];
 
 assert(/advancedRepairsEnabled:\s*false/.test(configText), 'public advanced flag must stay false');
-const SHIP = '2026-10-10.2';
+const SHIP = '2026-10-10.3';
 assert(configText.includes("contentVersion: '" + SHIP + "'"), 'content version must be ' + SHIP);
 assert(['config', 'flow', 'app'].every(f => indexText.includes(f + '.js?v=' + SHIP)), 'script cache-bust must match content version');
 assert(indexText.includes('HOME HVAC CHECKS') && !indexText.includes('AC + HEAT PUMP'), 'header lockup is HOME HVAC CHECKS');
@@ -554,7 +554,7 @@ const HAZARDS = [
   ['hazard_refrigerant_alarm', 'Do not reset a refrigerant-leak alarm.'],
   ['hazard_unsure', 'Uncertainty is a good reason to stop.']
 ];
-const TERMS_BODY_SHA256 = '1627d50cf67e830e6dd3d1c19c8c307315c2d1dd550ee20a9a1cde326b780a09';
+const TERMS_BODY_SHA256 = '7f48442633667bd16f7d8991bd2b3eece11fc021eda21db231f784b9eae66f06';
 const PRIVACY_BODY_SHA256 = 'fd1c58dc308bb57f592bbf5deea72d8c3dc0be7a4b03084c8a8310912a7bb725';
 
 // ---- WSHP Wave-1 PR-1 (A-1..A-28, T-1..T-26) ----
@@ -571,8 +571,8 @@ assert(!!wshpStart && wshpStart.next === 'wshp.hazard.flood_electrical' && wshpS
 assert(wshpStart.hint === 'No outdoor unit with a fan. Water pipes run to a ground loop, a well, or a pond.' && wshpStart.fact === 'Water-source or geothermal heat pump reported at system type.', 'A-3 water-source copy unchanged');
 const typeIds = systemType.options.map(o => o.id);
 assert(typeIds.join('|') === 'cooling_only_ac|heat_pump|furnace|other_heat_or_ductless|not_sure', 'A-4 start stays five choices');
-assert(otherSystem.options.map(o => o.id).join('|') === 'ductless_mini_split|water_source_geo|not_listed', 'A-4 other-system order');
-assert(systemType.options.find(o => o.id === 'other_heat_or_ductless').label === 'Something else: mini-split, geothermal, other' && systemType.options.find(o => o.id === 'other_heat_or_ductless').next === 'sw.intake.other_system', 'A-4 something-else label');
+assert(otherSystem.options.map(o => o.id).join('|') === 'ductless_mini_split|water_source_geo|thermostat_settings|not_listed', 'A-4 other-system order');
+assert(systemType.options.find(o => o.id === 'other_heat_or_ductless').label === 'Something else: mini-split, geothermal, thermostat, other' && systemType.options.find(o => o.id === 'other_heat_or_ductless').next === 'sw.intake.other_system', 'A-4 something-else label');
 assert(systemType.options.find(o => o.id === 'cooling_only_ac').next === 'ac.cool.intake.system_confirm', 'A-5 cooling-only edge unchanged');
 assert(systemType.options.find(o => o.id === 'heat_pump').next === 'hp.intake.system_confirm', 'A-5 heat-pump edge unchanged');
 assert(systemType.options.find(o => o.id === 'not_sure').next === 'sw.identify.winter_outdoor', 'A-5 not-sure edge unchanged');
@@ -796,7 +796,7 @@ assert(F.summary(t17).indexOf(scopedEquipment) === -1, 'N8 oversize divert omits
 assert(F.results.gas.avoid === 'Do not search for the leak, reset an alarm, or re-enter to switch the AC off.', 'AC gas avoid stays unchanged');
 assert(F.presentResult(t6).avoid === 'Do not search for the leak, reset an alarm, or re-enter to switch the system off.', 'N9 WSHP gas avoid says the system');
 assert(F.presentResult(t6) !== F.results.gas, 'N9 WSHP gas copy is a swap, not the shared result');
-const pointer = 'Start again, choose Something else: mini-split, geothermal, other, then Water-source / geothermal heat pump.';
+const pointer = 'Start again, choose Something else: mini-split, geothermal, thermostat, other, then Water-source / geothermal heat pump.';
 const hpWater = F.results.hp_water_source_oos;
 assert(!/later phase/i.test([hpWater.title, hpWater.explanation, hpWater.avoid].concat(hpWater.actions).join(' ')), 'hp water-source result drops later phase');
 assert(!/geothermal/i.test(hpWater.title + ' ' + hpWater.explanation + ' ' + hpWater.avoid), 'hp water-source result drops geothermal from the out-of-scope wording');
@@ -823,11 +823,11 @@ assert(/For water-source systems, this beta gives safety screens and a service n
 assert(!/water-source and geothermal equipment/.test(appText), 'safety page no longer lists water-source equipment as out of scope');
 const geoOption = F.nodes['ac.cool.intake.system_confirm'].options.find(op => op.id === 'geo_packaged_other');
 assert(geoOption && geoOption.next === '@out_of_scope_equipment', 'geothermal packaged option keeps its route');
-assert(geoOption.hint === 'Geothermal or water-source: start again, choose Something else: mini-split, geothermal, other, then Water-source / geothermal heat pump. Packaged or other systems are not covered yet.', 'geothermal packaged hint points back to the water-source check');
+assert(geoOption.hint === 'Geothermal or water-source: start again, choose Something else: mini-split, geothermal, thermostat, other, then Water-source / geothermal heat pump. Packaged or other systems are not covered yet.', 'geothermal packaged hint points back to the water-source check');
 assert(F.results.out_of_scope_equipment.urgency === 'Not covered in this beta yet', 'out-of-scope equipment urgency is not a hard outside-the-beta title');
 const geoMention = /water[-\s]?source|geothermal/i;
 const oosClaim = /out of scope|outside this beta|outside these checks|not diagnosed|not covered|not part of this beta/i;
-const redirect = /start again, choose Something else: mini-split, geothermal, other, then Water-source \/ geothermal heat pump/i;
+const redirect = /start again, choose Something else: mini-split, geothermal, thermostat, other, then Water-source \/ geothermal heat pump/i;
 function sentencesOf(text) {
   return String(text || '').split(/(?<=[.!?])\s+/).map(s => s.trim()).filter(Boolean);
 }
@@ -1165,8 +1165,8 @@ assert(/yellow or orange flame already seen/.test(d012) && /bang at ignition/.te
 assert(F.treeVersionMs === 'ms.ductless.v1', 'MS-A1 mini-split tree version');
 assert(Array.isArray(F.msPr1) && F.msPr1.length === 10, 'MS-G1 ten original mini-split nodes exported');
 assert(Array.isArray(F.msV1) && F.msV1.join('|') === 'ms.heat.mode_setpoint|ms.heat.force_heat|ms.heat.defrost_sanity|ms.outdoor.safe_observe', 'MS-G1 heat and outdoor nodes');
-assert(Object.keys(F.nodes).length === 68, 'node count is 68');
-assert(Object.keys(F.results).length === 170, 'result count is 170');
+assert(Object.keys(F.nodes).length === 84, 'node count is 84');
+assert(Object.keys(F.results).length === 203, 'result count is 203');
 const ms1 = ['none_of_these', 'agree_18_terms', 'other_heat_or_ductless', 'ductless_mini_split', 'ductless_single_zone'];
 const msGate = ms1.slice(0, 4);
 const msAt = walk('ask', msGate);
@@ -1269,7 +1269,7 @@ assert(openMs.node === openAc.node && openMs.node === 'ac.gate.cluster_entry' &&
 const agreeEdges = [];
 Object.keys(F.nodes).forEach(id => F.nodes[id].options.forEach(op => { if (op.id === 'agree_18_terms') agreeEdges.push(id + ':' + op.next); }));
 assert(agreeEdges.length === 1 && agreeEdges[0] === 'ac.session.consent:ac.cool.intake.system_confirm', 'consent is not forked');
-assert(F.results.hp_mini_split_oos.actions[0] === 'Go back home, press Start, and choose “Something else: mini-split, geothermal, other”, then “Ductless mini-split”. It covers cooling and heating problems on a single indoor unit.', 'MS-C14');
+assert(F.results.hp_mini_split_oos.actions[0] === 'Go back home, press Start, and choose “Something else: mini-split, geothermal, thermostat, other”, then “Ductless mini-split”. It covers cooling and heating problems on a single indoor unit.', 'MS-C14');
 assert(F.results.hp_mini_split_oos.actions[1] === 'For a system with more than one indoor unit, use a technician who works on mini-splits or the manufacturer owner guidance.', 'HP mini-split pointer leaves multi-zone to a pro');
 assert(F.results.out_of_scope_equipment.explanation === 'Window and portable units, packaged systems, and other types are not diagnosed here.', 'MS-C15');
 assert(F.nodes['ms.intake.system_confirm'].body.indexOf('Don’t remove a cover or climb up to check.') !== -1, 'MS-C16');
@@ -1436,12 +1436,415 @@ hpDigestLines.sort();
 assert(require('crypto').createHash('sha256').update(hpDigestLines.join('\n')).digest('hex').slice(0, 16) === '0a90560104be1a12', 'HP edge digest re-baselined to a3c2f60');
 assert(hpDigestLines.length === 65, 'HP edge digest line count');
 
+// ---- Thermostat ts.settings.v0 (TS-A1–TS-A21, mutations M1–M17) ----
+assert(F.treeVersionTs === 'ts.settings.v0' && Array.isArray(F.tsV0) && F.tsV0.length === 16, 'TS-A1 tree and TS_V0');
+assert(F.treeVersion === 'ac.cool.v1' && F.treeVersionHp === 'hp.air_source.v1' && F.treeVersionMs === 'ms.ductless.v1', 'TS-A1 AC HP ms versions');
+const tsGate = ['none_of_these', 'agree_18_terms', 'other_heat_or_ductless', 'thermostat_settings'];
+const ts0 = tsGate.concat(['ts_none_of_these']);
+const tsStart = walk('ask', tsGate);
+assert(tsStart.node === 'ts.gate.safety_stops' && tsStart.product === 'ts', 'TS-A2 reaches the thermostat gate');
+assert(tsStart.answers.map(a => a.node).join(',') === 'ac.gate.cluster_entry,ac.session.consent,sw.intake.system_type,sw.intake.other_system', 'TS-A2 answered nodes');
+assert(tsStart.audit.filter(e => e.event === 'product_lane:ts').length === 1, 'TS-A1 product_lane:ts once');
+const tsLaneAt = tsStart.audit.findIndex(e => e.event === 'product_lane:ts');
+assert(tsLaneAt >= 0 && tsStart.audit.slice(tsLaneAt).every(e => e.tree === 'ts.settings.v0'), 'TS-A1 tree field from product_lane:ts');
+assert(Object.keys(F.nodes).filter(id => F.nodes[id].options.some(op => op.id === 'agree_18_terms')).length === 1, 'TS-A3 one consent option');
+assert(F.nodes['ts.gate.safety_stops'].body.indexOf('Don’t take the thermostat off the wall or open any equipment to check.') !== -1, 'TS-C1');
+assert(F.nodes['ts.power.blank_screen'].body.indexOf('Don’t reset breakers in this check.') !== -1, 'TS-C2');
+assert(F.nodes['ts.power.blank_screen'].caution === 'Look only at the furnace door and power switch. Don’t remove the door, don’t flip the switch, and don’t touch thermostat wires.', 'TS-C3');
+assert(F.tsV0.reduce((n, id) => n + F.nodes[id].options.length, 0) === 120, 'ts options');
+assert(F.nodes['ts.power.blank_screen'].options.length === 11, 'blank screen options');
+assert(F.nodes['ts.power.battery'].body.indexOf('If you’d have to disconnect any wires to reach them, stop.') !== -1, 'TS-C4');
+assert(F.nodes['ts.status.wait_delay'].body.indexOf('Changing the setting during the wait can start it over.') !== -1, 'TS-C5');
+assert(JSON.stringify(F.results.ts_hazard_now.actions) === JSON.stringify(F.results.hp_hazard_now.actions), 'TS-C6');
+assert(F.results.ts_installer_guard.explanation === F.tsLc.lc6, 'TS-C7');
+assert(F.results.ts_screen_different.explanation === F.tsLc.lc5, 'TS-C8');
+['ts_co_gas_now', 'ts_burning_electrical', 'ts_hazard_now'].forEach(id => assert(F.results[id].explanation === F.tsLc.lc7, 'TS-C9 ' + id));
+assert(F.nodes['ts.intake.brand_picker'].body.indexOf(F.tsLc.lc1) !== -1, 'TS-C10');
+F.tsV0.filter(id => F.tsFnOf[id]).forEach(id => assert(F.nodes[id].options.some(op => op.label === 'My screen looks different'), 'TS-C11 ' + id));
+function tsEvents(state) { return state.audit.map(e => e.event); }
+function tsWalk(extra) { return walk('ask', ts0.concat(extra)); }
+const tw1 = tsWalk(['brand_honeywell_buttons', 'hw_focuspro', 'landing_no_heat_cool', 'mode_fixed']);
+assert(tw1.result === 'ts_mode_fixed_basic' && F.results[tw1.result].outcome === 'next_step' && F.results[tw1.result].diyTier === 'basic', 'W1 result');
+assert(tsEvents(tw1).indexOf('flag:ts_model=HW-FP6') !== -1 && !tsEvents(tw1).some(e => e.indexOf('flag:ts_mirror=') === 0), 'W1 model flag and no mirror');
+assert(tsEvents(tw1).indexOf('diy_tier_shown:basic') !== -1, 'W1 diy tier');
+const ttw1Panel = F.renderTsPanel('HW-FP6', 'ts.settings.mode_setpoint');
+assert(ttw1Panel.fallbacks.some(item => item.id === 'F-HW-FP6') && ttw1Panel.text.indexOf('Check your manual:') !== -1 && !ttw1Panel.served.length, 'W1 text plus LC-9');
+const tw2 = tsWalk(['brand_honeywell_smart', 'hw_t9', 'landing_code_alert', 'code_wifi', 'wifi_device_error']);
+assert(tw2.result === 'ts_wifi_device_fault' && F.results[tw2.result].outcome === 'call_pro', 'W2 result');
+assert((F.tsSteps.ALERT['HW-T9'].mirrors || []).length === 0 && F.tsSteps.ALERT['HW-T9'].text.indexOf('NO INTERNET') !== -1, 'W2 alert text');
+assert(F.tsSteps.WIFI['HW-T9'].mirrors.join('|') === 'HW-T9.WIFI.01/1|HW-T9.WIFI.01/2' && !F.renderTsPanel('HW-T9', 'ts.settings.wifi').served.length, 'W2 wifi mirrors cited and not rendered');
+const tw3 = walk('ask', tsGate.concat(['co_alarm']));
+assert(tw3.result === 'ts_co_gas_now' && F.results[tw3.result].outcome === 'emergency_exit', 'W3 result');
+assert(tsEvents(tw3).indexOf('gate_fired:ts_co_or_gas') !== -1, 'W3 gate');
+assert(tw3.answers.length === 5, 'W3 is 5 answers from Start');
+const tw4 = tsWalk(['brand_nest', 'nest_nt', 'landing_no_heat_cool', 'calling_nothing_runs']);
+assert(tw4.result === 'ts_calling_no_run' && !tsEvents(tw4).some(e => e.indexOf('flag:ts_mirror=') === 0), 'W4 result and no mirror');
+const ttw4Panel = F.renderTsPanel('NEST-NT', 'ts.settings.mode_setpoint');
+assert(ttw4Panel.lc3Plain.indexOf('Menus vary') !== -1 && ttw4Panel.fallbacks.some(item => item.id === 'F-NEST-MODES') && ttw4Panel.steps.length, 'W4 LC-3 text and link');
+const tw5 = tsWalk(['brand_amazon', 'landing_blank_screen', 'breaker_looks_tripped']);
+assert(tw5.result === 'ts_power_breaker_pro' && F.results[tw5.result].outcome === 'call_pro', 'W5 result');
+assert(!tsEvents(tw5).some(e => e.indexOf('gate_fired:') === 0 || e === 'diy_tier_shown:basic' || e === 'diy_tier_shown:advanced'), 'W5 no gate and no diy tier');
+assert(tw5.answers.some(a => a.fact === 'A breaker for the HVAC looked tripped. User did not reset it.'), 'W5 fact');
+const tw6 = tsWalk(['brand_ecobee', 'ecb_premium', 'landing_em_aux_heat', 'installer_setting_came_up']);
+assert(tw6.result === 'ts_installer_guard' && F.results[tw6.result].tier === 'Stop / professional', 'W6 result');
+assert(F.renderTsPanel('ECB-PRM', 'ts.settings.em_aux_heat').lc6 === F.tsLc.lc6 && F.presentResult(tw6).explanation === F.tsLc.lc6, 'W6 LC-6 inline and explanation');
+const ttw6Stopped = F.stop(JSON.parse(JSON.stringify(tw6)));
+assert(ttw6Stopped.result === 'ts_installer_guard', 'TS-A15 stop leaves installer guard');
+const ttw3Stopped = F.stop(JSON.parse(JSON.stringify(tw3)));
+assert(ttw3Stopped.result === 'ts_co_gas_now', 'TS-A15 stop leaves CO result');
+const tw7 = tsWalk(['brand_honeywell_smart', 'hw_t6', 'landing_schedule_hold', 'screen_looks_different']);
+assert(tw7.result === 'ts_screen_different' && F.results[tw7.result].outcome === 'insufficient_info', 'W7 result');
+assert(tsEvents(tw7).indexOf('flag:ts_mirror_mismatch=HOLD:HW-T6') !== -1, 'W7 mismatch flag');
+const ttw7Shown = F.presentResult(tw7);
+assert(ttw7Shown.explanation.indexOf('[Brand]') === -1 && ttw7Shown.explanation.indexOf('[link]') === -1 && ttw7Shown.explanation.indexOf('Honeywell Home (Resideo)') !== -1 && ttw7Shown.explanation.indexOf(F.tsFallbacks['F-HW-HELP'].url) !== -1, 'W7 LC-5 filled from the model help link');
+const tw8 = tsWalk(['brand_ecobee', 'ecb_premium', 'landing_fan', 'fan_fixed']);
+assert(tw8.result === 'ts_fan_fixed_basic' && !tsEvents(tw8).some(e => e.indexOf('flag:ts_mirror=') === 0), 'W8 basic and no mirror while the flag is off');
+assert((F.tsSteps.FAN['ECB-PRM'].mirrors || []).indexOf('ECB-PRM.FAN.02/1') !== -1, 'W8 cell cites the fan mirror');
+const tw9 = tsWalk(['brand_nest', 'nest_lt4', 'landing_code_alert', 'code_water_cooling']);
+assert(tw9.result === 'ts_water_indoor_unit' && tsEvents(tw9).indexOf('gate_fired:ts_water_indoor_unit') !== -1, 'W9 water gate');
+const ttw10a = tsWalk(['brand_honeywell_buttons', 'hw_rth7600d', 'landing_low_battery', 'battery_fixed']);
+const ttw10b = tsWalk(['brand_honeywell_buttons', 'hw_x2p', 'landing_wait_delay', 'wait_persists']);
+const ttw10c = tsWalk(['brand_honeywell_buttons', 'hw_th4000', 'landing_schedule_hold', 'hold_fixed']);
+assert(ttw10a.result === 'ts_battery_fixed_basic' && ttw10b.result === 'ts_wait_persists' && ttw10c.result === 'ts_hold_fixed_basic', 'W10 results');
+const tw11 = tsWalk(['brand_honeywell_smart', 'hw_t9', 'landing_blank_screen', 'furnace_switch_off']);
+assert(tw11.result === 'ts_power_breaker_pro' && F.results[tw11.result].outcome === 'call_pro', 'W11 result');
+assert(!tsEvents(tw11).some(e => e.indexOf('gate_fired:') === 0 || e.indexOf('diy_tier_shown') === 0), 'W11 no gate and no diy tier');
+assert(tw11.answers.some(a => a.fact === 'Furnace power switch was off. User did not switch it on.'), 'W11 fact');
+assert(F.results.ts_power_breaker_pro.title === 'A tripped breaker, a furnace switch that’s off, or missing power is a job for a pro.', 'W11 LC-15 title');
+assert(F.results.ts_power_breaker_pro.explanation.indexOf('This check doesn’t include resetting breakers or turning switches on') === 0, 'W11 LC-15 explanation');
+assert(F.results.ts_power_breaker_pro.actions[0] === 'Leave the breaker and the furnace switch as they are, and call a licensed HVAC professional or electrician.', 'W11 LC-15 action');
+assert(F.results.ts_power_breaker_pro.avoid === 'Don’t reset breakers, turn the furnace switch on, open the electrical panel, or open the furnace or outdoor unit.', 'W11 LC-15 avoid');
+const wVisited = new Set();
+[tw1, tw2, tw3, tw4, tw5, tw6, tw7, tw8, tw9, ttw10a, ttw10b, ttw10c, tw11].forEach(state => visited(state).forEach(id => { if (id.indexOf('ts.') === 0) wVisited.add(id); }));
+F.tsV0.forEach(id => assert(wVisited.has(id), 'W1–W11 visit ' + id));
+const ttw2Note = F.summary(tw2);
+assert(ttw2Note.indexOf('HOMEOWNER SERVICE NOTE — thermostat observations, not a diagnosis') === 0, 'TS-A14 line 1');
+assert(ttw2Note.indexOf('Thermostat: Honeywell Home T9 (homeowner reported).') !== -1 && ttw2Note.indexOf('Tried:') !== -1, 'TS-A14 thermostat and tried');
+const tsPaths = {};
+(function mapTs() {
+  const queue = [[walk('ask', tsGate), []]];
+  while (queue.length) {
+    const [state, path] = queue.shift();
+    if (!state.node || tsPaths[state.node]) continue;
+    tsPaths[state.node] = path;
+    F.nodes[state.node].options.forEach(op => {
+      if (op.next.charAt(0) === '@') return;
+      const next = JSON.parse(JSON.stringify(state));
+      F.answer(next, op.id, META);
+      if (next.node && !tsPaths[next.node]) queue.push([next, path.concat(op.id)]);
+    });
+  }
+})();
+F.tsV0.forEach(id => {
+  const state = walk('ask', tsGate.concat(tsPaths[id] || []).concat(['hazard_now']));
+  assert(state.result === 'ts_hazard_now', 'TS-A6 hazard ' + id);
+  const tail = tsEvents(state).slice(-4).join(',');
+  assert(tail === 'answer_selected:hazard_now,gate_fired:ts_new_hazard,exit_ramp:ts_new_hazard,conclusion_reached:emergency_exit', 'TS-A6 tail ' + id + ' ' + tail);
+  assert(tsEvents(state).indexOf('gate_fired:ts_new_hazard') < tsEvents(state).indexOf('exit_ramp:ts_new_hazard') && tsEvents(state).indexOf('exit_ramp:ts_new_hazard') < tsEvents(state).indexOf('conclusion_reached:emergency_exit'), 'TS-A13 ' + id);
+  assert(!tsEvents(state).some(e => e.indexOf('diy_tier_shown') === 0), 'TS-A13 no diy tier ' + id);
+});
+F.tsV0.forEach(id => {
+  F.nodes[id].options.filter(op => op.gate && op.id !== 'hazard_now').forEach(op => {
+    const state = walk('ask', tsGate.concat(tsPaths[id] || []).concat([op.id]));
+    assert(state.result && F.results[state.result].outcome === 'emergency_exit', 'TS-A6 gated ' + id + '/' + op.id);
+    assert(tsEvents(state).indexOf('gate_fired:' + op.gate) !== -1 && tsEvents(state).indexOf('exit_ramp:' + op.gate) !== -1, 'TS-A6 gate audit ' + op.gate);
+  });
+});
+['ts_co_gas_now', 'ts_burning_electrical', 'ts_breaker_retrip', 'ts_water_indoor_unit', 'ts_line_voltage_stop', 'ts_open_cabinet_stop', 'ts_hazard_now'].forEach(id => {
+  const choice = F.nodes['ts.gate.safety_stops'].options.find(op => op.next === '@' + id || (id === 'ts_hazard_now' && op.id === 'hazard_now') || (id === 'ts_co_gas_now' && op.id === 'co_alarm'));
+  const state = walk('ask', tsGate.concat([choice.id]));
+  assert(state.result === id && state.answers.length === 5, 'TS-A7 ' + id + ' answers ' + state.answers.length);
+});
+function tsLeaves() {
+  const out = [];
+  const start = walk('ask', tsGate);
+  const stack = [[start, 0]];
+  let maxDepth = 0;
+  while (stack.length) {
+    const [state, depth] = stack.pop();
+    if (state.result) {
+      out.push(state.result);
+      if (depth > maxDepth) maxDepth = depth;
+      const res = F.results[state.result];
+      assert(res.diyTier !== 'advanced' && state.result !== 'next_step_advanced' && state.result !== 'ts_advanced_off', 'TS-A4 ' + state.result);
+      assert(['next_step', 'call_pro', 'emergency_exit', 'insufficient_info'].indexOf(res.outcome) !== -1 && !res.continueTo, 'TS-A5 ' + state.result);
+      let resumed = false;
+      try { F.resume(JSON.parse(JSON.stringify(state))); resumed = true; } catch (err) { /* expected */ }
+      assert(!resumed, 'TS-A5 resume ' + state.result);
+      assert(!tsEvents(state).some(e => e === 'ai_explanation_shown'), 'TS-A17 ' + state.result);
+      const renderedBits = [res.title, res.urgency, res.explanation, res.avoid].concat(res.actions || []);
+      const shown = F.presentResult(state);
+      renderedBits.push(shown.explanation);
+      renderedBits.forEach((text, index) => {
+        const hits = F.tsForbiddenScan(text, state.result + ' ' + index);
+        assert(!hits.length, hits[0] || 'scan');
+        assert(String(text || '').indexOf('\u0027') === -1, 'TS-A21 apostrophe ' + state.result);
+      });
+      continue;
+    }
+    if (depth > 6) throw new Error('TS-A5 depth at ' + state.node);
+    const firstTs = visited(state).concat(state.node).find(id => String(id).indexOf('ts.') === 0);
+    assert(firstTs === 'ts.gate.safety_stops', 'TS-A7 gate first');
+    F.viewNode(state.node, state).options.forEach(op => {
+      const copy = JSON.parse(JSON.stringify(state));
+      F.answer(copy, op.id, META);
+      stack.push([copy, depth + 1]);
+    });
+  }
+  return { out: out.sort(), maxDepth };
+}
+const tsOff = tsLeaves();
+globalThis.SW_CONFIG.advancedRepairsEnabled = true;
+const tsOn = tsLeaves();
+globalThis.SW_CONFIG.advancedRepairsEnabled = false;
+const TS_LEAF_COUNT = 1212;
+assert(tsOff.out.length === TS_LEAF_COUNT && tsOff.out.join('|') === tsOn.out.join('|'), 'TS-A4/A5 leaf count ' + tsOff.out.length);
+assert(tsOff.maxDepth <= 6 && tsOn.maxDepth <= 6, 'TS-A5 depth ' + tsOff.maxDepth);
+const tsTextRows = [];
+Object.keys(F.tsSteps).forEach(fn => Object.keys(F.tsSteps[fn]).forEach(key => { const cell = F.tsSteps[fn][key]; if (!cell.generic) tsTextRows.push([fn + '|' + key, cell.text || '']); }));
+tsTextRows.sort((a, b) => a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0);
+assert(tsTextRows.length === 100 && require('crypto').createHash('sha256').update(JSON.stringify(tsTextRows)).digest('hex') === '7231e4c51c76a1c50fd695c5f70b96e1ded1ccfec303fd56019996f496325843', 'TS-G20 non-generic step text equals spec §3.17');
+const tsModelPaths = [
+  ['NEST-LT4', ['brand_nest', 'nest_lt4']], ['NEST-NT', ['brand_nest', 'nest_nt']], ['NEST-LT3', ['brand_nest', 'nest_lt3']], ['NEST-E', ['brand_nest', 'nest_e']],
+  ['HW-T5', ['brand_honeywell_smart', 'hw_t5']], ['HW-T6', ['brand_honeywell_smart', 'hw_t6']], ['HW-T9', ['brand_honeywell_smart', 'hw_t9']],
+  ['ECB-PRM', ['brand_ecobee', 'ecb_premium']], ['ECB-ESS', ['brand_ecobee', 'ecb_essential']],
+  ['HW-FP6', ['brand_honeywell_buttons', 'hw_focuspro']], ['HW-RTH76', ['brand_honeywell_buttons', 'hw_rth7600d']], ['HW-TH4', ['brand_honeywell_buttons', 'hw_th4000']], ['HW-X2P', ['brand_honeywell_buttons', 'hw_x2p']],
+  ['AMZ-AST', ['brand_amazon']]
+];
+assert(tsModelPaths.length === 14, '14 model keys');
+function scanPanel(panel, where) {
+  const hits = F.tsForbiddenScan(panel.text, where);
+  assert(!hits.length, (hits[0] || '') + ' ' + where);
+  assert(panel.text.indexOf('\u0027') === -1, 'TS-A21 panel ' + where);
+  if (panel.lc6) assert(panel.text.indexOf(F.tsLc.lc6) !== -1, 'TS-A9 LC-6 ' + where);
+}
+F.tsV0.forEach(id => {
+  const node = F.nodes[id];
+  [node.title, node.body, node.caution].concat(node.options.map(op => [op.label, op.hint, op.fact].join('\n'))).forEach((text, index) => {
+    const hits = F.tsForbiddenScan(text, id + ' ' + index);
+    assert(!hits.length, hits[0] || id);
+  });
+});
+Object.keys(F.results).filter(id => id.indexOf('ts_') === 0).forEach(id => {
+  const res = F.results[id];
+  [res.title, res.urgency, res.explanation, res.avoid].concat(res.actions || []).forEach((text, index) => {
+    const hits = F.tsForbiddenScan(text, id + ' field ' + index);
+    assert(!hits.length, hits[0] || id);
+  });
+});
+tsModelPaths.forEach(([key, path]) => {
+  const state = tsWalk(path.concat(['landing_no_heat_cool']));
+  assert(state.tsModel === key, 'model key ' + key);
+  Object.keys(F.tsFnOf).forEach(nodeId => {
+    const panel = F.renderTsPanel(key, nodeId);
+    scanPanel(panel, key + ' ' + nodeId);
+    assert(!panel.html || panel.html.indexOf('class="ts-screen"') === -1, 'TS-A18 no mirror ' + key + ' ' + nodeId);
+    assert(panel.text.indexOf('Menus vary') !== -1 && (panel.steps.length || panel.lc10) && panel.fallbacks.length && panel.text.indexOf('Check your manual:') !== -1, 'TS-A18 steps ' + key + ' ' + nodeId);
+    assert(panel.text.indexOf('Independent guide.') === -1, 'TS-A18 no LC-2 ' + key);
+  });
+});
+function withMirrors(extra) {
+  const opts = Object.assign({}, extra);
+  opts.mirrorsEnabled = !0;
+  return opts;
+}
+const mirrorOn = withMirrors({ today: '2026-10-10' });
+tsModelPaths.forEach(([key]) => {
+  Object.keys(F.tsFnOf).forEach(nodeId => {
+    const panel = F.renderTsPanel(key, nodeId, mirrorOn);
+    panel.served.forEach(block => {
+      assert(F.tsMirrors.serve.indexOf(block.id) !== -1, 'TS-A8 serve ' + block.id);
+      assert(F.tsMirrors.byId[block.id].verified_status === 'verified', 'TS-A8 status ' + block.id);
+      assert(!F.tsMirrors.hold.some(row => row.id === block.id), 'TS-A8 hold ' + block.id);
+      assert(block.html.indexOf('unverified') === -1, 'TS-A8 unverified line ' + block.id);
+    });
+    scanPanel(panel, 'on ' + key + ' ' + nodeId);
+  });
+});
+tsModelPaths.forEach(([key]) => {
+  Object.keys(F.tsFnOf).forEach(nodeId => {
+    const panel = F.renderTsPanel(key, nodeId, withMirrors({ today: '2026-10-10', serve: [] }));
+    assert(!panel.served.length && (panel.steps.length || panel.lc10) && panel.fallbacks.length, 'TS-A8 empty serve still has text ' + key + ' ' + nodeId);
+  });
+});
+function strippedRecords() {
+  return JSON.parse(JSON.stringify(F.tsMirrors.records)).map(record => {
+    record.second_check_by = null;
+    record.second_check_on = null;
+    return record;
+  });
+}
+const strippedById = {};
+strippedRecords().forEach(record => { strippedById[record.id] = record; });
+assert(F.tsMirrors.records.every(record => !F.tsMirrorRenderable(strippedById[record.id], withMirrors({ today: '2026-10-10', byId: strippedById }))), 'TS-A19a no second check renders nothing');
+const oneId = F.tsMirrors.serve[0];
+const one = JSON.parse(JSON.stringify(F.tsMirrors.byId[oneId]));
+one.second_check_by = 'Tree Lead';
+one.second_check_on = one.verified_on;
+const only = Object.assign({}, strippedById, { [oneId]: one });
+const renderedIds = F.tsMirrors.records.filter(record => F.tsMirrorRenderable(only[record.id], withMirrors({ today: '2026-10-10', byId: only }))).map(record => record.id);
+assert(renderedIds.join('|') === oneId, 'TS-A19b only one record ' + renderedIds.join('|'));
+const same = JSON.parse(JSON.stringify(one));
+same.second_check_by = same.verified_by;
+assert(!F.tsMirrorRenderable(same, withMirrors({ today: '2026-10-10' })), 'TS-A19c same checker');
+const held = JSON.parse(JSON.stringify(F.tsMirrors.byId[F.tsMirrors.hold[0].id]));
+held.second_check_by = 'Tree Lead';
+held.second_check_on = held.verified_on || '2026-10-10';
+held.verified_on = held.second_check_on;
+assert(!F.tsMirrorRenderable(held, withMirrors({ today: '2026-10-10' })), 'TS-A19d hold');
+assert(!F.tsMirrorRenderable(one, withMirrors({ today: '2099-01-01' })), 'TS-A19e recheck');
+const unver = JSON.parse(JSON.stringify(one));
+unver.verified_status = 'unverified';
+assert(!F.tsMirrorRenderable(unver, withMirrors({ today: '2026-10-10' })), 'TS-A19f unverified');
+assert(!F.tsMirrors.records.some(record => F.tsMirrorRenderable(record)), 'TS-G16 shipped renderable is false');
+const { execFileSync } = require('child_process');
+execFileSync(process.execPath, ['--check', path.join(__dirname, '../assets/flow.js')]);
+execFileSync(process.execPath, ['--check', path.join(__dirname, '../assets/ts-lane.js')]);
+execFileSync(process.execPath, ['--check', path.join(__dirname, '../assets/app.js')]);
+let straightCheckFailed = false;
+try {
+  execFileSync(process.execPath, ['--check', path.join(__dirname, '../assets/flow.js')], { input: '' });
+  const scratch = path.join(__dirname, '../.ts-apostrophe-scratch.js');
+  fs.writeFileSync(scratch, "const sample = 'isn\\'t';\nconst broken = 'isn't';\n");
+  try { execFileSync(process.execPath, ['--check', scratch], { stdio: 'pipe' }); } catch (err) { straightCheckFailed = true; }
+  fs.unlinkSync(scratch);
+} catch (err) { straightCheckFailed = true; }
+assert(straightCheckFailed, 'TS-A21 straight apostrophe fails node --check in a single-quoted file');
+function expectTs(label, fn) {
+  let message = '';
+  try { fn(); } catch (err) { message = String(err && err.message || err); }
+  assert(message.indexOf('TS-G') !== -1, label + ' threw ' + message.slice(0, 180));
+  console.log('TS-MUT ' + label + ' ' + Array.from(new Set(message.match(/TS-G\d+/g) || [])).join(','));
+  return message;
+}
+(function mutations() {
+  const cell = F.tsSteps.MODE['HW-T9'];
+  const mirrors = cell.mirrors.slice();
+  cell.mirrors = mirrors.concat(['HW-T9.MODE.01/2']);
+  expectTs('M1', () => F.assertTs(F.nodes, F.results));
+  cell.mirrors = mirrors;
+  const holdRow = F.tsMirrors.hold.find(row => row.id === 'HW-T5.MODE.01/1');
+  const holdAt = F.tsMirrors.hold.indexOf(holdRow);
+  F.tsMirrors.hold.splice(holdAt, 1);
+  F.tsMirrors.serve.push('HW-T5.MODE.01/1');
+  expectTs('M2', () => F.assertTs(F.nodes, F.results));
+  F.tsMirrors.serve.pop();
+  F.tsMirrors.hold.splice(holdAt, 0, holdRow);
+  const gateOpt = F.nodes['ts.gate.safety_stops'].options.find(op => op.id === 'breaker_keeps_tripping');
+  const gateNext = gateOpt.next;
+  gateOpt.next = '@ts_blank_after_basics';
+  expectTs('M3', () => F.assertTs(F.nodes, F.results));
+  gateOpt.next = gateNext;
+  const eheat = F.tsSteps.EHEAT['ECB-PRM'];
+  const eheatText = eheat.text;
+  eheat.text = eheatText + ' Open Installation Settings > Thresholds and lower the value.';
+  expectTs('M4', () => F.assertTs(F.nodes, F.results));
+  eheat.text = eheatText;
+  const fan = F.nodes['ts.settings.fan'];
+  const fanOpts = fan.options.slice();
+  fan.options = fan.options.filter(op => op.id !== 'screen_looks_different');
+  expectTs('M5', () => F.assertTs(F.nodes, F.results));
+  fan.options = fanOpts;
+  const startOpts = F.nodes['sw.intake.system_type'].options;
+  startOpts.push({ id: 'extra', label: 'Extra', next: 'sw.intake.other_system', hint: '', fact: '', gate: null });
+  expectTs('M6', () => F.assertTs(F.nodes, F.results));
+  startOpts.pop();
+  globalThis.SW_CONFIG.aiThermostatEnabled = true;
+  expectTs('M7', () => F.assertTs(F.nodes, F.results));
+  globalThis.SW_CONFIG.aiThermostatEnabled = false;
+  const lc6 = F.tsLc.lc6;
+  F.tsLc.lc6 = lc6.replace(/\u2019/g, "'");
+  const m8 = expectTs('M8', () => F.assertTs(F.nodes, F.results));
+  assert(m8.indexOf('TS-G14') !== -1 && m8.indexOf('TS-G18') !== -1, 'M8 mentions G14 and G18');
+  F.tsLc.lc6 = lc6;
+  const wifi = F.nodes['ts.settings.wifi'].options.find(op => op.id === 'wifi_fixed');
+  const wifiNext = wifi.next;
+  wifi.next = 'ts.alert.capture';
+  expectTs('M9', () => F.assertTs(F.nodes, F.results));
+  wifi.next = wifiNext;
+  const blank = F.nodes['ts.power.blank_screen'];
+  const blankBody = blank.body;
+  blank.body = blankBody + '\nIf the breaker is tripped, you can reset it once.';
+  expectTs('M10', () => F.assertTs(F.nodes, F.results));
+  blank.body = blankBody;
+  globalThis.SW_CONFIG.mirrorsEnabled = true;
+  expectTs('M11', () => F.assertTs(F.nodes, F.results));
+  globalThis.SW_CONFIG.mirrorsEnabled = false;
+  const holdRec = F.tsMirrors.byId['HW-T9.HOLD.01/1'];
+  const holdBy = holdRec.second_check_by;
+  holdRec.second_check_by = holdRec.verified_by;
+  expectTs('M12', () => F.assertTs(F.nodes, F.results));
+  assert(!F.tsMirrorRenderable(holdRec, withMirrors({ today: '2026-10-10' })), 'M12 A19c no render');
+  holdRec.second_check_by = holdBy;
+  const door = F.nodes['sw.intake.system_type'].options.find(op => op.id === 'other_heat_or_ductless');
+  const doorLabel = door.label;
+  door.label = 'Something else: mini-split, geothermal' + ', other';
+  expectTs('M13', () => F.assertTs(F.nodes, F.results));
+  door.label = doorLabel;
+  const burning = F.results.ts_burning_electrical;
+  const burningText = burning.explanation;
+  burning.explanation = burningText.replace(/\u2019/g, "'");
+  const m14 = expectTs('M14', () => F.assertTs(F.nodes, F.results));
+  assert(m14.indexOf('TS-G18') !== -1, 'M14 G18');
+  burning.explanation = burningText;
+  F.tsMirrors.serve.push('HW-FP6.MODE.01/1');
+  const m15 = expectTs('M15', () => F.assertTs(F.nodes, F.results));
+  assert(m15.indexOf('TS-G10') !== -1 && m15.indexOf('TS-G19') !== -1, 'M15 G10 and G19');
+  F.tsMirrors.serve.pop();
+  const th4 = F.tsMirrors.byId['HW-TH4.HOLD.01/1'];
+  const th4By = th4.second_check_by;
+  const th4On = th4.verified_on;
+  th4.second_check_by = null;
+  expectTs('M16a', () => F.assertTs(F.nodes, F.results));
+  th4.second_check_by = th4By;
+  th4.verified_on = '2026-10-09';
+  expectTs('M16b', () => F.assertTs(F.nodes, F.results));
+  th4.verified_on = th4On;
+  const alertT5 = F.tsSteps.ALERT['HW-T5'];
+  const alertText = alertT5.text;
+  alertT5.text = 'Write down the exact code or message. This check doesn’t interpret it.';
+  const m17a = expectTs('M17a', () => F.assertTs(F.nodes, F.results));
+  assert(m17a.indexOf('TS-G20') !== -1, 'M17a G20');
+  alertT5.text = alertText;
+  const modeNest = F.tsSteps.MODE['NEST-LT4'];
+  const modeText = modeNest.text;
+  modeNest.text = modeText + ' Extra sentence.';
+  const m17b = expectTs('M17b', () => F.assertTs(F.nodes, F.results));
+  assert(m17b.indexOf('TS-G20') !== -1, 'M17b G20');
+  modeNest.text = modeText;
+  const scratchPath = path.join(__dirname, '../.ts-data-m17c.json');
+  const shippedPath = path.join(__dirname, '../assets/ts-data.json');
+  const shippedText = fs.readFileSync(shippedPath, 'utf8');
+  const scratch = JSON.parse(shippedText);
+  const scratchCell = scratch.steps.MODE['NEST-LT4'];
+  assert(scratchCell && !scratchCell.generic && scratchCell.text, 'M17c source cell');
+  scratchCell.text = scratchCell.text.slice(0, -1) + (scratchCell.text.slice(-1) === '.' ? '!' : '.');
+  fs.writeFileSync(scratchPath, JSON.stringify(scratch));
+  try {
+    const scratchData = JSON.parse(fs.readFileSync(scratchPath, 'utf8'));
+    const scratchRows = [];
+    Object.keys(scratchData.steps).forEach(fn => Object.keys(scratchData.steps[fn]).forEach(key => {
+      const cell = scratchData.steps[fn][key];
+      if (!cell.generic) scratchRows.push([fn + '|' + key, cell.text || '']);
+    }));
+    scratchRows.sort((a, b) => a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0);
+    const scratchHash = require('crypto').createHash('sha256').update(JSON.stringify(scratchRows)).digest('hex');
+    const pin = '7231e4c51c76a1c50fd695c5f70b96e1ded1ccfec303fd56019996f496325843';
+    assert(scratchRows.length === 100 && scratchHash !== pin, 'M17c pin still matches ' + scratchHash);
+    console.log('TS-MUT M17c PIN_MISMATCH');
+  } finally {
+    fs.unlinkSync(scratchPath);
+  }
+  assert(fs.readFileSync(shippedPath, 'utf8') === shippedText, 'M17c left shipped copy');
+  F.assertTs(F.nodes, F.results);
+})();
+
 function finish() {
   if (failed) {
     console.error(failed + ' failed');
     process.exit(1);
   }
-  console.log('AC Wave-2, HP Wave-1, WSHP Wave-1 PR-1, furnace Wave-1, and mini-split heat v1 sanity passed');
+  console.log('AC Wave-2, HP Wave-1, WSHP Wave-1 PR-1, furnace Wave-1, mini-split heat v1, and thermostat v0 sanity passed');
 }
 
 function bootPage() {
@@ -1450,8 +1853,8 @@ function bootPage() {
   const virtualConsole = new VirtualConsole();
   virtualConsole.on('jsdomError', error => errors.push(String(error && error.stack || error)));
   const html = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8')
-    .replace(/\s*<script src="assets\/(?:config|flow|app)\.js\?v=[^"]+" defer><\/script>/g, '')
-    .replace('</body>', '<script>' + fs.readFileSync(path.join(__dirname, '../assets/config.js'), 'utf8') + '</script><script>' + fs.readFileSync(path.join(__dirname, '../assets/flow.js'), 'utf8') + '</script><script>' + fs.readFileSync(path.join(__dirname, '../assets/app.js'), 'utf8') + '</script></body>');
+    .replace(/\s*<script src="assets\/(?:config|ts-runtime|ts-lane|flow|app)\.js\?v=[^"]+" defer><\/script>/g, '')
+    .replace('</body>', '<script>' + fs.readFileSync(path.join(__dirname, '../assets/config.js'), 'utf8') + '</script><script>' + fs.readFileSync(path.join(__dirname, '../assets/ts-runtime.js'), 'utf8') + '</script><script>' + fs.readFileSync(path.join(__dirname, '../assets/ts-lane.js'), 'utf8') + '</script><script>' + fs.readFileSync(path.join(__dirname, '../assets/flow.js'), 'utf8') + '</script><script>' + fs.readFileSync(path.join(__dirname, '../assets/app.js'), 'utf8') + '</script></body>');
   const dom = new JSDOM(html, {
     url: 'http://127.0.0.1:8765/#/',
     runScripts: 'dangerously',
@@ -1725,11 +2128,35 @@ function pageChecks() {
     assert(norm(doc.querySelector('.sidebar')).indexOf('No ladders, chairs, or tools.') !== -1, 'mini-split sidebar limit');
     assert(doc.title.indexOf('Guided mini-split check') === 0, 'mini-split route title');
     assert(errors.length === 0, 'mini-split page has no script error: ' + errors.join(' | '));
+    await home();
+    click(doc.querySelector('[data-answer="none_of_these"]'));
+    await flush();
+    await acceptAndContinue();
+    await clickPath(['other_heat_or_ductless', 'thermostat_settings', 'ts_none_of_these', 'brand_honeywell_smart', 'hw_t9', 'landing_no_heat_cool']);
+    assert(doc.querySelector('h1').textContent === 'Check the mode and temperature', 'thermostat mode question is on screen');
+    assert(doc.title.indexOf('Guided thermostat check') === 0, 'thermostat route title');
+    assert(norm(doc.querySelector('.sidebar')).indexOf('Settings only. No wires, no covers, no installer menus. Low-voltage thermostats only.') !== -1, 'thermostat sidebar limit');
+    assert(norm(doc.querySelector('.ts-lc3')).indexOf('Menus vary by model and firmware.') !== -1, 'thermostat panel shows menus vary');
+    assert(!doc.querySelector('.ts-screen'), 'shipped config does not render a mirror box');
+    const affiliation = [...doc.querySelectorAll('.ts-affiliation')].map(el => el.textContent);
+    assert(affiliation.length === 1 && affiliation[0].indexOf('We’re not affiliated') !== -1, 'LC-1 appears once on the thermostat question');
+    answer('mode_fixed');
+    await flush();
+    assert(window.location.hash === '#/result', 'thermostat basic path reaches a result');
+    assert(doc.querySelector('h1').textContent === 'A setting was the problem.', 'thermostat basic success title');
+    assert(doc.getElementById('service-note').textContent.indexOf('HOMEOWNER SERVICE NOTE — thermostat observations, not a diagnosis') === 0, 'thermostat note renders');
+    assert(doc.querySelector('.tell-pro'), 'thermostat result lists what to tell the pro');
+    assert([...doc.querySelectorAll('.ts-affiliation')].length === 1, 'LC-1 appears once on the thermostat result');
+    assert(!doc.getElementById('flow-error'), 'thermostat basic result has no error');
+    window.location.hash = '#/sources';
+    await flush();
+    assert(norm(doc.querySelector('main')).indexOf('Thermostat guides') !== -1, 'sources list thermostat guides');
     window.location.hash = '#/terms';
     await flush();
     const termsBody = norm(doc.querySelector('.document-panel'));
     assert(termsBody.includes('Emergency / hazard help never requires this checkbox.'), 'rendered terms include the hazard checkbox sentence');
-    assert(crypto.createHash('sha256').update(termsBody).digest('hex') === TERMS_BODY_SHA256, 'terms body matches the approved text');
+    const termsHash = crypto.createHash('sha256').update(termsBody).digest('hex');
+    assert(termsHash === TERMS_BODY_SHA256, 'terms body matches the approved text ' + termsHash);
     window.location.hash = '#/privacy';
     await flush();
     const privacyBody = norm(doc.querySelector('.document-panel'));

@@ -1,0 +1,29 @@
+id: "HW-TH4.FAN.01/1"
+brand: "Honeywell Home (Resideo)"
+model: "PRO TH4000 series"
+gen: "unspecified"
+firmware_range: {min: null, max: null, fw_sensitive: false, basis: "Non-Wi-Fi model; firmware not stated."}
+step_id: "HW-TH4.FAN.01"
+screen: 1
+menu_path: ["Front", "Fan switch"]
+lines:
+  - {label: "Auto", type: "option", selected: false, verified: "figure", condition: null, note: "confirmed (p.1 device photo); shown"}
+  - {label: "On", type: "option", selected: false, verified: "figure", condition: null, note: "confirmed (p.1 device photo); shown"}
+buttons:
+  - {label: "Fan", on_screen_text: "Fan", kind: "physical", verified: "text", note: "slide switch"}
+source_url: "https://customer.resideo.com/resources/Techlit/TechLitDocuments/69-0000s/69-1760EFS.pdf"
+source_pages: "p.1 (device photo and callouts)"
+source_version: "Honeywell PRO TH4000 series guide, doc. 69-1760EFS-10 (PDF date not recorded; retrieved 2026-10-10)"
+source_host: "official"
+verified_status: "verified"
+verified_basis: "source_text"
+verified_by: "Second Wrench research worker (AI-assisted, single pass)"
+verified_on: "2026-10-10"
+second_check_by: "Tree Lead"
+second_check_on: "2026-10-10"
+recheck_cadence: "12m"
+recheck_due: "2027-10-10"
+verification_notes: ["Matrix status: verified (control names).", "2026-10-10 Tree Lead blind second check: PASS (mirror-second-check.md #16). verified_on is reset to that check date (unchanged, 2026-10-10)."]
+our_instruction_text:
+  - "Slide the Fan switch to Auto so the fan runs only while heating or cooling."
+  - "On runs the fan all the time."
