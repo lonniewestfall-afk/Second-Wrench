@@ -1600,6 +1600,10 @@ globalThis.SW_CONFIG.advancedRepairsEnabled = false;
 const TS_LEAF_COUNT = 1212;
 assert(tsOff.out.length === TS_LEAF_COUNT && tsOff.out.join('|') === tsOn.out.join('|'), 'TS-A4/A5 leaf count ' + tsOff.out.length);
 assert(tsOff.maxDepth <= 6 && tsOn.maxDepth <= 6, 'TS-A5 depth ' + tsOff.maxDepth);
+const tsTextRows = [];
+Object.keys(F.tsSteps).forEach(fn => Object.keys(F.tsSteps[fn]).forEach(key => { const cell = F.tsSteps[fn][key]; if (!cell.generic) tsTextRows.push([fn + '|' + key, cell.text || '']); }));
+tsTextRows.sort((a, b) => a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0);
+assert(tsTextRows.length === 100 && require('crypto').createHash('sha256').update(JSON.stringify(tsTextRows)).digest('hex') === '7231e4c51c76a1c50fd695c5f70b96e1ded1ccfec303fd56019996f496325843', 'TS-G20 non-generic step text equals spec §3.17');
 const tsModelPaths = [
   ['NEST-LT4', ['brand_nest', 'nest_lt4']], ['NEST-NT', ['brand_nest', 'nest_nt']], ['NEST-LT3', ['brand_nest', 'nest_lt3']], ['NEST-E', ['brand_nest', 'nest_e']],
   ['HW-T5', ['brand_honeywell_smart', 'hw_t5']], ['HW-T6', ['brand_honeywell_smart', 'hw_t6']], ['HW-T9', ['brand_honeywell_smart', 'hw_t9']],
@@ -1808,6 +1812,30 @@ function expectTs(label, fn) {
   const m17b = expectTs('M17b', () => F.assertTs(F.nodes, F.results));
   assert(m17b.indexOf('TS-G20') !== -1, 'M17b G20');
   modeNest.text = modeText;
+  const scratchPath = path.join(__dirname, '../.ts-data-m17c.json');
+  const shippedPath = path.join(__dirname, '../assets/ts-data.json');
+  const shippedText = fs.readFileSync(shippedPath, 'utf8');
+  const scratch = JSON.parse(shippedText);
+  const scratchCell = scratch.steps.MODE['NEST-LT4'];
+  assert(scratchCell && !scratchCell.generic && scratchCell.text, 'M17c source cell');
+  scratchCell.text = scratchCell.text.slice(0, -1) + (scratchCell.text.slice(-1) === '.' ? '!' : '.');
+  fs.writeFileSync(scratchPath, JSON.stringify(scratch));
+  try {
+    const scratchData = JSON.parse(fs.readFileSync(scratchPath, 'utf8'));
+    const scratchRows = [];
+    Object.keys(scratchData.steps).forEach(fn => Object.keys(scratchData.steps[fn]).forEach(key => {
+      const cell = scratchData.steps[fn][key];
+      if (!cell.generic) scratchRows.push([fn + '|' + key, cell.text || '']);
+    }));
+    scratchRows.sort((a, b) => a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0);
+    const scratchHash = require('crypto').createHash('sha256').update(JSON.stringify(scratchRows)).digest('hex');
+    const pin = '7231e4c51c76a1c50fd695c5f70b96e1ded1ccfec303fd56019996f496325843';
+    assert(scratchRows.length === 100 && scratchHash !== pin, 'M17c pin still matches ' + scratchHash);
+    console.log('TS-MUT M17c PIN_MISMATCH');
+  } finally {
+    fs.unlinkSync(scratchPath);
+  }
+  assert(fs.readFileSync(shippedPath, 'utf8') === shippedText, 'M17c left shipped copy');
   F.assertTs(F.nodes, F.results);
 })();
 
