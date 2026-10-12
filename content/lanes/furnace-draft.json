@@ -1,0 +1,2582 @@
+{
+  "nodes": [
+    {
+      "id": "fn.intake.system_confirm",
+      "change": "CHANGED",
+      "notice": "look",
+      "section": "(unchanged)",
+      "title": "(unchanged)",
+      "body": "(unchanged)",
+      "choices": [
+        [
+          "gas_furnace",
+          "Gas furnace (natural gas or propane)",
+          "fn.intake.gas_supply",
+          "(hint unchanged)",
+          "(unchanged)"
+        ],
+        [
+          "oil_furnace",
+          "Oil furnace (an oil tank, often in the basement or outside)",
+          "fn.intake.home_type",
+          "An oil check comes later. No burner work.",
+          "Oil furnace reported."
+        ],
+        [
+          "electric_furnace",
+          "Electric furnace or electric air handler (no heat pump)",
+          "fn.intake.home_type",
+          "No flame. Heat comes from electric heaters inside.",
+          "Electric furnace or air handler reported."
+        ],
+        [
+          "air_handler_hot_water",
+          "Air handler heated by hot water from a boiler or water heater",
+          "fn.ah.water_source",
+          "Sometimes called hydro-air.",
+          "Hydro-air air handler reported."
+        ],
+        [
+          "furnace_plus_heat_pump",
+          "(unchanged) → HP lane",
+          "(unchanged)",
+          "(unchanged)",
+          "(unchanged)"
+        ],
+        [
+          "boiler_radiators",
+          "Boiler: radiators, baseboard, or radiant floors",
+          "bl.gate.safety",
+          "The boiler check takes it from here. Its safety check comes first.",
+          "Boiler reported on the furnace screen. audit handoff:fn_to_bl"
+        ],
+        [
+          "other_fuel",
+          "Wood, coal, or something else",
+          "@fn_out_of_scope_equipment",
+          "Not covered yet.",
+          "Other heating fuel reported. (replaces oil_or_other)"
+        ],
+        [
+          "mini_split",
+          "(unchanged)",
+          "(unchanged)",
+          "(unchanged)",
+          "(unchanged)"
+        ],
+        [
+          "not_sure",
+          "(unchanged)",
+          "(unchanged)",
+          "(unchanged)",
+          "(unchanged)"
+        ],
+        [
+          "hazard_now",
+          "(unchanged FN_HAZARD)",
+          "@fn_hazard_now",
+          "",
+          ""
+        ]
+      ]
+    },
+    {
+      "id": "fn.intake.gas_supply",
+      "change": "NEW",
+      "notice": "look",
+      "section": "Your furnace",
+      "title": "Natural gas or propane?",
+      "body": "Natural gas comes through a meter, usually on an outside wall. Propane comes from a tank in the yard that a supplier fills.",
+      "choices": [
+        [
+          "natural_gas",
+          "Natural gas (a meter)",
+          "fn.intake.home_type",
+          "",
+          "Natural gas reported."
+        ],
+        [
+          "propane",
+          "Propane (a tank that gets filled)",
+          "fn.intake.home_type",
+          "A tank-gauge check can come later.",
+          "Propane reported."
+        ],
+        [
+          "not_sure",
+          "Not sure",
+          "fn.intake.home_type",
+          "That's fine. We'll skip fuel checks.",
+          "Gas type not confirmed."
+        ],
+        [
+          "hazard_now",
+          "FN_HAZARD",
+          "@fn_hazard_now",
+          "",
+          ""
+        ]
+      ]
+    },
+    {
+      "id": "fn.intake.home_type",
+      "change": "NEW",
+      "notice": "look",
+      "section": "Your home",
+      "title": "What kind of home is it?",
+      "body": "Manufactured homes (single-wide, double-wide) use furnaces and ducts built for them, so some checks differ.",
+      "choices": [
+        [
+          "site_built",
+          "A house built on site, a condo, or a townhouse",
+          "fn.landing.picker",
+          "",
+          "Site-built home reported."
+        ],
+        [
+          "manufactured_home",
+          "A manufactured or mobile home",
+          "fn.landing.picker",
+          "Built in a factory on a steel frame.",
+          "Manufactured home reported."
+        ],
+        [
+          "not_sure",
+          "Not sure",
+          "fn.landing.picker",
+          "We'll use the general checks.",
+          "Home type not confirmed."
+        ],
+        [
+          "hazard_now",
+          "FN_HAZARD",
+          "@fn_hazard_now",
+          "",
+          ""
+        ]
+      ]
+    },
+    {
+      "id": "fn.landing.picker",
+      "change": "CHANGED",
+      "notice": "look",
+      "section": "What's wrong",
+      "title": "(unchanged)",
+      "body": "(unchanged)",
+      "choices": [
+        [
+          "landing_code",
+          "A light is blinking or a code is showing on the furnace",
+          "fn.code.window_look",
+          "Read it before anything else. Don't turn the power off.",
+          "Blinking light or code reported."
+        ],
+        [
+          "landing_after_storm",
+          "Heat stopped during or after snow, ice, or a storm",
+          "fn.vent.outdoor_gate",
+          "Outdoor vent pipes can get blocked.",
+          "Heat loss after snow or ice reported."
+        ],
+        [
+          "landing_one_area_cold",
+          "One end or area of the home stays cold",
+          "(router) MH → fn.mh.closet_return; else → ac.cool.airflow.returns_supplies",
+          "",
+          "One cold area reported."
+        ],
+        [
+          "landing_fuel_low",
+          "Propane or oil may be low or out",
+          "(router) propane → fn.fuel.propane_gauge; oil → fn.fuel.oil_tank; else hidden",
+          "Shown only for propane or oil.",
+          "Possible low fuel reported."
+        ],
+        [
+          "landing_new_furnace",
+          "The furnace is new and the thermostat doesn't work right with it",
+          "fn.tstat.new_furnace",
+          "",
+          "New furnace with thermostat trouble reported."
+        ],
+        [
+          "(existing 8 choices)",
+          "(unchanged; inserted before cooling_problem, hazard_now stays last)",
+          "",
+          "",
+          ""
+        ]
+      ]
+    },
+    {
+      "id": "fn.code.window_look",
+      "change": "NEW",
+      "notice": "pn-short",
+      "section": "Furnace light",
+      "title": "Look at the furnace light",
+      "body": "Most furnaces have a small window or peephole in the lower door with a light behind it. Some show a code on a display or on the thermostat. Look only. Don't remove the door or turn the power off first: on some furnaces that erases the code.",
+      "step": {
+        "what": "Reading the light changes nothing on the furnace.",
+        "caution": "Removing the door or cutting power can erase the stored code on some brands.",
+        "source": "From Carrier 58-3T service label p.4 and ICP 441 01 2023 01 p.38, checked 2026-10-11.",
+        "steps": [
+          "Stand in front of the furnace and find the small window in the lower door.",
+          "Watch the light for one full minute.",
+          "Count the flashes, or write down what the display shows. A phone video helps."
+        ],
+        "watch": "One minute. Codes repeat with a pause between them.",
+        "stop": "Stop if you smell gas or burning, hear a CO alarm, or see water near wires."
+      },
+      "choices": [
+        [
+          "light_blinking_or_code",
+          "It blinks a pattern, or shows letters or numbers",
+          "fn.code.brand_picker",
+          "",
+          "Blinking light or code seen through the window."
+        ],
+        [
+          "light_steady",
+          "It's on steady, or blinks slowly and evenly",
+          "fn.code.brand_picker",
+          "Steady means different things by brand.",
+          "Steady or slow light seen."
+        ],
+        [
+          "light_off",
+          "No light at all",
+          "fn.power.switch_breaker_visual",
+          "",
+          "No furnace light seen."
+        ],
+        [
+          "cant_see",
+          "No window, or I can't see it",
+          "(path next: FN_CODE_SKIP)",
+          "That's fine.",
+          "Furnace light not readable."
+        ],
+        [
+          "hazard_now",
+          "FN_HAZARD",
+          "@fn_hazard_now",
+          "",
+          ""
+        ]
+      ]
+    },
+    {
+      "id": "fn.code.brand_picker",
+      "change": "NEW",
+      "notice": "look",
+      "section": "Furnace light",
+      "title": "What brand is on the furnace?",
+      "body": "Look for the name on the front of the furnace or near the window. Codes vary by model and control board, so if the code chart on your furnace says something different from ours, trust the chart.",
+      "choices": [
+        [
+          "(one per FAM row)",
+          "brand list from FN_CODE_TABLE",
+          "fn.code.match.<family>",
+          "",
+          "Brand: <display>."
+        ],
+        [
+          "oil_primary",
+          "Oil furnace: the light is on the oil burner control",
+          "fn.code.match.oil_primary",
+          "Shown only for oil.",
+          ""
+        ],
+        [
+          "other_or_cant_tell",
+          "Another brand, or I can't tell",
+          "@fn_code_unlisted",
+          "",
+          ""
+        ],
+        [
+          "hazard_now",
+          "FN_HAZARD",
+          "@fn_hazard_now",
+          "",
+          ""
+        ]
+      ]
+    },
+    {
+      "id": "fn.code.match.<family>",
+      "change": "NEW (11 nodes, generated from FN_CODE_TABLE)",
+      "notice": "look",
+      "section": "Furnace light",
+      "title": "Which one matches?",
+      "body": "Pick what you see. If none match, pick \"Not listed\".  Then the display line for the family (see §4).",
+      "choices": [
+        [
+          "<code id>",
+          "<code label> · hint = meaning",
+          "FN_CODE_NEXT[cat]",
+          "",
+          "Code <code> (<meaning>) read through the window. Power not cut."
+        ],
+        [
+          "not_listed",
+          "Not listed, or I'm not sure",
+          "@fn_code_unlisted",
+          "",
+          ""
+        ],
+        [
+          "hazard_now",
+          "FN_HAZARD",
+          "@fn_hazard_now",
+          "",
+          ""
+        ]
+      ]
+    },
+    {
+      "id": "fn.vent.outdoor_gate",
+      "change": "NEW",
+      "notice": "gate",
+      "section": "Before you go outside",
+      "title": "Before you go outside, check these",
+      "body": "Plastic vent pipes on an outside wall can get buried by snow. First make sure going outside is safe.",
+      "choices": [
+        [
+          "co_alarm_or_symptoms",
+          "A CO alarm is sounding, or anyone has headache, dizziness, or nausea",
+          "@fn_co_alarm",
+          "Get everyone out to fresh air.",
+          "CO alarm or symptoms at the outdoor check."
+        ],
+        [
+          "gas_smell",
+          "Rotten-egg or gas smell, inside or outside",
+          "@fn_gas_smell",
+          "Leave and call from outside.",
+          "Gas smell at the outdoor check."
+        ],
+        [
+          "someone_at_risk_cold",
+          "The house is getting cold and someone's at risk",
+          "@fn_cold_exposure",
+          "Get them warm first.",
+          "Cold-exposure risk at the outdoor check. (reuses gate cold_exposure_911 unchanged)"
+        ],
+        [
+          "meter_buried_iced",
+          "The gas meter or propane tank regulator is buried or iced",
+          "@fn_meter_iced",
+          "",
+          "Meter or regulator buried or iced."
+        ],
+        [
+          "vents_high_or_roof",
+          "The furnace pipes are high up or above the house, out of reach from the ground",
+          "@fn_vent_high_pro",
+          "",
+          "Vent out of reach."
+        ],
+        [
+          "unsafe_outside",
+          "Ice, dark, or the storm makes it unsafe to go out",
+          "@fn_vent_unsafe_wait",
+          "",
+          "Outdoor trip unsafe."
+        ],
+        [
+          "metal_chimney",
+          "No plastic pipes outside. The furnace vents through a metal pipe",
+          "fn.conclude.call_pro (reason vent_not_pvc)",
+          "",
+          "Metal vent reported; no outdoor pipes to check."
+        ],
+        [
+          "unsure",
+          "I'm not sure",
+          "@fn_gate_unsure",
+          "",
+          ""
+        ],
+        [
+          "none_of_these",
+          "None of these. I can safely reach the pipes from the ground",
+          "fn.vent.exterior_visual",
+          "",
+          "Outdoor gate cleared."
+        ]
+      ]
+    },
+    {
+      "id": "fn.vent.exterior_visual",
+      "change": "NEW (was Slice-2 placeholder)",
+      "notice": "pn-full",
+      "section": "Outside vent pipes",
+      "title": "Clear snow from the furnace pipes",
+      "body": "A high-efficiency furnace uses two white or gray plastic pipes on an outside wall: one brings air in, one sends exhaust out. If snow or ice covers either one, a safety switch shuts the furnace off.",
+      "step": {
+        "what": "Clearing snow from the outside of the pipes lets the furnace breathe again.",
+        "caution": "Exhaust can be hot and wet. Damaging a pipe can let exhaust into the house.",
+        "source": "From Enbridge Gas \"Keep your gas meter clear\" and Rheem R95T installation instructions (terminations at least 12 in. above snow level), checked 2026-10-11.",
+        "steps": [
+          "Find both pipe ends on the outside wall.",
+          "Brush snow away by hand or with a soft broom. Clear a wide area around both pipes.",
+          "Leave any ice that's stuck to a pipe.",
+          "Keep shoveled or plowed snow away from the pipes."
+        ],
+        "watch": "Watch for 15 minutes from inside for the furnace to start on its own.",
+        "stop": "Stop if a pipe is cracked, loose, or apart, if ice is inside a pipe, or if a CO alarm sounds."
+      },
+      "choices": [
+        [
+          "blocked_cleared",
+          "Snow was blocking a pipe, and I cleared it",
+          "fn.vent.after_clear",
+          "",
+          "Snow found at a vent pipe; cleared by hand."
+        ],
+        [
+          "ice_stuck",
+          "Ice is inside a pipe or frozen onto the end",
+          "@fn_vent_ice_pro",
+          "",
+          "Ice at vent pipe, not cleared."
+        ],
+        [
+          "pipe_damaged",
+          "A pipe is cracked, sagging, or pulled apart",
+          "@fn_vent_damaged_stop",
+          "",
+          "Vent pipe damage seen."
+        ],
+        [
+          "pipes_clear",
+          "The pipes were already clear",
+          "(path next: condensate or conclude)",
+          "",
+          "Vent pipes clear."
+        ],
+        [
+          "cant_reach",
+          "I can't find or reach them safely",
+          "fn.conclude.call_pro (reason vent_check_inaccessible)",
+          "",
+          ""
+        ],
+        [
+          "hazard_now",
+          "FN_HAZARD",
+          "@fn_hazard_now",
+          "",
+          ""
+        ]
+      ]
+    },
+    {
+      "id": "fn.vent.after_clear",
+      "change": "NEW",
+      "notice": "look",
+      "section": "Outside vent pipes",
+      "title": "Give it time to restart",
+      "body": "Many furnaces try again on their own once the pipes are clear. Some wait out a lockout first, about an hour on some brands and up to three hours on others. Watch from inside.",
+      "choices": [
+        [
+          "heat_back",
+          "Heat came back",
+          "@fn_vent_cleared_basic",
+          "",
+          ""
+        ],
+        [
+          "getting_too_cold",
+          "The house is getting too cold, or someone's at risk",
+          "@fn_cold_exposure",
+          "",
+          "(reuses gate cold_exposure_911 unchanged)"
+        ],
+        [
+          "same_code_again",
+          "It started, then stopped with the same code",
+          "fn.conclude.call_pro (reason vent_cleared_code_repeats)",
+          "",
+          ""
+        ],
+        [
+          "still_no_heat",
+          "Still no heat after the wait",
+          "fn.conclude.call_pro (reason vent_cleared_still_no_heat)",
+          "",
+          ""
+        ],
+        [
+          "hazard_now",
+          "FN_HAZARD",
+          "@fn_hazard_now",
+          "",
+          ""
+        ]
+      ]
+    },
+    {
+      "id": "fn.condensate.visual",
+      "change": "NEW (was Slice-2 placeholder)",
+      "notice": "pn-short",
+      "section": "Furnace drain",
+      "title": "Look at the drain tube",
+      "body": "High-efficiency furnaces make water. A clear or white tube carries it to a floor drain, a small pump, or outside. If it freezes or kinks, the furnace shuts off. Look from outside the furnace only.",
+      "step": {
+        "what": "Looking changes nothing. Straightening a kink in a tube you can reach without tools frees the water path.",
+        "caution": "Pulling on a tube can pop it off and leak water.",
+        "source": "From York/Coleman/Luxaire TM9E (pressure switches trip on a blocked condensate drain) and Rheem R95T p.9 (freeze protection), checked 2026-10-11.",
+        "steps": [
+          "Follow the tube from the outside of the furnace to where it drains.",
+          "Look for ice, a kink, a sag full of water, or a beeping pump.",
+          "If a tube outside the furnace is kinked, gently straighten it by hand."
+        ],
+        "watch": "Look for water on the floor over the next hour.",
+        "stop": "Stop if the tube is frozen, cracked, or you'd need to open the furnace."
+      },
+      "choices": [
+        [
+          "frozen",
+          "Ice in the tube, or the outside drain end is frozen",
+          "@fn_condensate_freeze_pro",
+          "",
+          "Frozen condensate drain seen."
+        ],
+        [
+          "kinked_straightened",
+          "A tube was kinked, and I straightened it by hand",
+          "@fn_condensate_kink_basic",
+          "",
+          "Kinked drain tube straightened."
+        ],
+        [
+          "pump_full_beeping",
+          "A small pump is full, beeping, or overflowing",
+          "@fn_condensate_pump_pro",
+          "",
+          "Condensate pump full or alarming."
+        ],
+        [
+          "water_on_floor",
+          "Water on the floor, away from wires",
+          "fn.conclude.call_pro (reason condensate_drain_issue, existing)",
+          "",
+          ""
+        ],
+        [
+          "looks_normal",
+          "It looks normal",
+          "(path next) → fn.conclude.call_pro (reason by path)",
+          "",
+          ""
+        ],
+        [
+          "cant_see",
+          "I can't see it without opening the furnace",
+          "fn.conclude.call_pro (reason condensate_check_inaccessible)",
+          "",
+          ""
+        ],
+        [
+          "hazard_now",
+          "FN_HAZARD",
+          "@fn_hazard_now",
+          "",
+          ""
+        ]
+      ]
+    },
+    {
+      "id": "fn.power.switch_breaker_visual",
+      "change": "NEW (was Slice-2 placeholder)",
+      "notice": "look",
+      "section": "Furnace power",
+      "title": "Look at the furnace switch and breaker",
+      "body": "Most furnaces have a nearby on/off switch that looks like a light switch. Then look at the breaker marked for the furnace. Look only for now.",
+      "choices": [
+        [
+          "switch_off",
+          "The furnace switch is off",
+          "fn.power.switch_intentional",
+          "",
+          "Furnace switch found off."
+        ],
+        [
+          "breaker_tripped",
+          "The furnace breaker is tripped (in the middle or off)",
+          "@fn_breaker_tripped_pro",
+          "",
+          "Furnace breaker looks tripped. Not reset."
+        ],
+        [
+          "both_on",
+          "Both look on",
+          "(path next: fn.code.window_look or conclude)",
+          "",
+          ""
+        ],
+        [
+          "cant_find",
+          "I can't find or reach them safely",
+          "(path next)",
+          "",
+          ""
+        ],
+        [
+          "hazard_now",
+          "FN_HAZARD",
+          "@fn_hazard_now",
+          "",
+          ""
+        ]
+      ]
+    },
+    {
+      "id": "fn.power.switch_intentional",
+      "change": "NEW",
+      "notice": "look",
+      "section": "Furnace power",
+      "title": "Was it turned off on purpose?",
+      "body": "People turn a furnace switch off for repairs, leaks, or a smell, and sometimes by mistake for a light switch.",
+      "choices": [
+        [
+          "on_purpose_or_unsure",
+          "Someone turned it off on purpose, or I'm not sure",
+          "@fn_switch_off_on_purpose",
+          "",
+          ""
+        ],
+        [
+          "by_mistake",
+          "It was turned off by mistake, and there's no smell, water, or noise",
+          "fn.power.switch_on_step",
+          "",
+          "Switch off by mistake reported."
+        ],
+        [
+          "hazard_now",
+          "FN_HAZARD",
+          "@fn_hazard_now",
+          "",
+          ""
+        ]
+      ]
+    },
+    {
+      "id": "fn.power.switch_on_step",
+      "change": "NEW · [LEGAL REVIEW] · reset_count",
+      "notice": "pn-reset",
+      "section": "Furnace power",
+      "title": "Turn the furnace switch back on, once",
+      "body": "If nobody turned it off on purpose, you can turn it back on, one time only.",
+      "spec_note": "Wave 1 never told anyone to touch this switch. Under pn-v1 §5 it is a homeowner-reachable switch outside the furnace, used once only after the intentional-off check (doctrine audit lesson f). The F11 regex must allow this one string id (see §8).",
+      "step": {
+        "what": "Turning the furnace switch back on gives the furnace power again.",
+        "caution": "If something made the furnace unsafe, power lets it try to run.",
+        "source": "From Trane \"Furnace Not Igniting?\" (check that the furnace switch is on), checked 2026-10-11.",
+        "steps": [
+          "Set the thermostat to Heat.",
+          "Flip the furnace on/off switch to on, once.",
+          "Step back and wait."
+        ],
+        "watch": "Watch for 15 minutes for warm air.",
+        "stop": "Stop and turn it back off if you smell gas or burning, hear a bang, or a breaker trips."
+      },
+      "choices": [
+        [
+          "heat_back",
+          "Heat came back",
+          "@fn_switch_on_basic",
+          "",
+          "Switch turned on once; heat returned."
+        ],
+        [
+          "no_heat",
+          "Still no heat",
+          "(path next: fn.code.window_look)",
+          "",
+          "Switch on once; no heat."
+        ],
+        [
+          "shut_off_again",
+          "It shut off again, or a breaker tripped",
+          "@fn_breaker_tripped_pro",
+          "",
+          "Shut off again after one switch-on. reset_count=1"
+        ],
+        [
+          "hazard_now",
+          "FN_HAZARD",
+          "@fn_hazard_now",
+          "",
+          ""
+        ]
+      ]
+    },
+    {
+      "id": "fn.fuel.propane_gauge",
+      "change": "NEW",
+      "notice": "pn-short",
+      "section": "Propane tank",
+      "title": "Read the propane tank gauge",
+      "body": "The gauge is usually under the dome lid on top of the tank and reads percent full. Reading it is all you need to do.",
+      "step": {
+        "what": "Reading the gauge changes nothing.",
+        "caution": "Opening the wrong cover or touching a valve can let gas out.",
+        "source": "From PERC Safety Guide for Propane Users (2025), \"Check the fuel gauge on your propane tank periodically\", checked 2026-10-11.",
+        "steps": [
+          "Lift the dome lid on top of the tank.",
+          "Read the number on the round gauge.",
+          "Close the lid."
+        ],
+        "watch": "—",
+        "stop": "Stop if you smell gas or hear hissing. Leave the area and call your supplier or 911 from a safe place."
+      },
+      "choices": [
+        [
+          "empty",
+          "It reads empty or near zero",
+          "@fn_propane_out",
+          "",
+          "Propane gauge near empty."
+        ],
+        [
+          "low",
+          "It reads low",
+          "@fn_propane_low_supplier",
+          "",
+          "Propane gauge low."
+        ],
+        [
+          "ok",
+          "It reads well above empty",
+          "(path next)",
+          "",
+          "Propane gauge OK."
+        ],
+        [
+          "cant_read",
+          "I can't read it, or there's no gauge",
+          "(path next)",
+          "",
+          ""
+        ],
+        [
+          "gas_smell",
+          "I smell gas or hear hissing",
+          "@fn_gas_smell",
+          "",
+          ""
+        ],
+        [
+          "hazard_now",
+          "FN_HAZARD",
+          "@fn_hazard_now",
+          "",
+          ""
+        ]
+      ]
+    },
+    {
+      "id": "fn.fuel.oil_tank",
+      "change": "NEW",
+      "notice": "pn-short",
+      "section": "Oil tank",
+      "title": "Check the oil tank gauge",
+      "body": "Many oil tanks have a gauge on top, often a clear tube with a float. Reading it is all you need to do. Don't press the red button on the oil burner.",
+      "step": {
+        "what": "Reading the gauge changes nothing.",
+        "caution": "Pressing the burner's red button can flood it with oil.",
+        "source": "From Thermo Pride OD6 manual (doc 1030), warning about the oil burner control's red button, checked 2026-10-11.",
+        "steps": [
+          "Find the gauge on top of the tank.",
+          "Read where the float or needle sits."
+        ],
+        "watch": "—",
+        "stop": "Stop if you smell oil or smoke, or see soot. Leave and call your oil service company."
+      },
+      "choices": [
+        [
+          "empty",
+          "Empty or near empty",
+          "@fn_oil_out",
+          "",
+          "Oil gauge near empty."
+        ],
+        [
+          "some_oil",
+          "There's oil",
+          "fn.code.window_look (oil family offered)",
+          "",
+          "Oil gauge shows oil."
+        ],
+        [
+          "cant_tell",
+          "I can't tell",
+          "fn.code.window_look",
+          "",
+          ""
+        ],
+        [
+          "oil_smoke",
+          "Oil smell, smoke, or soot",
+          "@fn_rollout_soot",
+          "Stop using the furnace.",
+          "(reuses existing stop)"
+        ],
+        [
+          "hazard_now",
+          "FN_HAZARD",
+          "@fn_hazard_now",
+          "",
+          ""
+        ]
+      ]
+    },
+    {
+      "id": "fn.airflow.filter_fit",
+      "change": "NEW",
+      "notice": "pn-short",
+      "section": "Filter",
+      "title": "Check how the filter fits",
+      "body": "A clean filter can still choke airflow if it's the wrong size, doubled up, or in backward.",
+      "step": {
+        "what": "Fixing how the filter sits lets air through.",
+        "caution": "Running with no filter lets dust into the furnace.",
+        "source": "From NRCan Keeping the Heat In §9.1.1 and §9.1.4, and the filter sections of the Carrier 58-3T and Intertherm M7RL manuals, checked 2026-10-11.",
+        "steps": [
+          "Check that the size printed on the filter matches the slot.",
+          "Check that only one filter is in the slot.",
+          "Check that the airflow arrow points toward the furnace.",
+          "Fix what's off, then close the cover."
+        ],
+        "watch": "Watch one full heating cycle.",
+        "stop": "Stop if the filter slot needs tools or opens into the furnace."
+      },
+      "choices": [
+        [
+          "fixed_fit",
+          "Something was off, and I fixed it",
+          "@fn_filter_fit_basic",
+          "",
+          ""
+        ],
+        [
+          "fits_fine",
+          "It fits fine",
+          "ac.cool.airflow.returns_supplies (fn overlay)",
+          "",
+          ""
+        ],
+        [
+          "cant_check",
+          "I can't check it safely",
+          "(path next)",
+          "",
+          ""
+        ],
+        [
+          "hazard_now",
+          "FN_HAZARD",
+          "@fn_hazard_now",
+          "",
+          ""
+        ]
+      ]
+    },
+    {
+      "id": "fn.mh.closet_return",
+      "change": "NEW",
+      "notice": "pn-short",
+      "section": "Manufactured home",
+      "title": "Check the furnace closet air path",
+      "body": "Most manufactured-home furnaces pull room air in through louvers on the front or in the closet door, and many hold the filter on the inside of the front cover.",
+      "step": {
+        "what": "Clearing the air path lets the furnace pull in room air.",
+        "caution": "A blocked door or closet can overheat the furnace and shut it off.",
+        "source": "From Intertherm/Nordyne M1 (return air through the door louvers) and M7RL (filter on the door), and 24 CFR 3280.709/3280.715, checked 2026-10-11.",
+        "steps": [
+          "Move anything stored in the furnace closet or against the louvered door.",
+          "Check that the grille and louvers aren't covered.",
+          "If the filter sits on the inside of the front cover and the cover lifts off without tools, look at it and replace it if it's dirty.",
+          "Check that inside doors have their gap at the bottom, not blocked by thick rugs."
+        ],
+        "watch": "Watch one full heating cycle.",
+        "stop": "Stop if a door needs tools to open or you see wires."
+      },
+      "choices": [
+        [
+          "cleared",
+          "I cleared something blocking air",
+          "@fn_mh_return_cleared_basic",
+          "",
+          ""
+        ],
+        [
+          "filter_dirty",
+          "The filter was dirty, and I replaced it",
+          "@fn_filter_replace_basic",
+          "",
+          ""
+        ],
+        [
+          "all_clear",
+          "All clear",
+          "(router) one_area_cold → fn.mh.crossover_look; else path next",
+          "",
+          ""
+        ],
+        [
+          "cant_check",
+          "I can't check it safely",
+          "(path next)",
+          "",
+          ""
+        ],
+        [
+          "hazard_now",
+          "FN_HAZARD",
+          "@fn_hazard_now",
+          "",
+          ""
+        ]
+      ]
+    },
+    {
+      "id": "fn.mh.crossover_look",
+      "change": "NEW",
+      "notice": "look",
+      "section": "Manufactured home",
+      "title": "Look at the crossover duct from outside",
+      "body": "In a double-wide or triple-wide, a big round duct under the home carries heat between the halves. Look only from outside the skirting with a flashlight, through a vent or an open access panel. Don't crawl under the home.",
+      "choices": [
+        [
+          "duct_problem",
+          "The duct is on the ground, crushed, torn, or loose",
+          "@fn_mh_crossover_pro",
+          "",
+          "Crossover duct problem seen from outside."
+        ],
+        [
+          "animals",
+          "I see or hear animals under the home",
+          "@fn_mh_animals_stop",
+          "",
+          ""
+        ],
+        [
+          "looks_ok",
+          "It looks connected and off the ground",
+          "fn.conclude.call_pro (reason mh_weak_heat_after_basics)",
+          "",
+          ""
+        ],
+        [
+          "cant_see",
+          "I can't see it without going under",
+          "fn.conclude.call_pro (reason mh_crossover_unchecked)",
+          "",
+          ""
+        ],
+        [
+          "single_wide",
+          "It's a single-wide",
+          "fn.conclude.call_pro (reason weak_heat_after_basics)",
+          "",
+          ""
+        ],
+        [
+          "hazard_now",
+          "FN_HAZARD",
+          "@fn_hazard_now",
+          "",
+          ""
+        ]
+      ]
+    },
+    {
+      "id": "fn.elec.pattern",
+      "change": "NEW",
+      "notice": "pn-short",
+      "section": "Electric heat",
+      "title": "Feel the air at a vent",
+      "body": "Electric furnaces turn their heaters on in steps after the fan starts. Set Heat above room temperature, then hold your hand near a vent for a few minutes.",
+      "step": {
+        "what": "Feeling the air changes nothing.",
+        "caution": "—",
+        "source": "From Nordyne E2 electric furnace manual (sequence of operation), checked 2026-10-11.",
+        "steps": [
+          "Set the thermostat to Heat, a few degrees above the room.",
+          "Hold your hand near a vent for 3 to 5 minutes."
+        ],
+        "watch": "3 to 5 minutes (policy, not a maker figure).",
+        "stop": "Stop if you smell burning or see smoke."
+      },
+      "choices": [
+        [
+          "cool_then_warm",
+          "Cool at first, then warm",
+          "@fn_elec_staging_normal",
+          "",
+          ""
+        ],
+        [
+          "warm_not_hot",
+          "Warm but weak, and rooms fall behind",
+          "fn.conclude.call_pro (reason elec_partial_heat)",
+          "",
+          ""
+        ],
+        [
+          "never_warm",
+          "The fan runs, but the air never warms",
+          "fn.conclude.call_pro (reason electric_furnace_components, existing)",
+          "",
+          ""
+        ],
+        [
+          "nothing_runs",
+          "Nothing runs",
+          "fn.power.switch_breaker_visual",
+          "Look only. Big double breakers stay as they are.",
+          ""
+        ],
+        [
+          "burning",
+          "Burning smell or smoke",
+          "@fn_burning_sparks",
+          "",
+          ""
+        ],
+        [
+          "hazard_now",
+          "FN_HAZARD",
+          "@fn_hazard_now",
+          "",
+          ""
+        ]
+      ]
+    },
+    {
+      "id": "fn.ah.blower_observe",
+      "change": "NEW",
+      "notice": "pn-short",
+      "section": "Air handler",
+      "title": "Listen and feel at the vents",
+      "body": "The blower moves air through the filter, the furnace or coil, and the ducts. Some motors ramp up slowly and quietly (ECM). Others start and stop all at once (PSC). Both are normal. Weak air usually means something is in the way: a dirty filter, closed vents, or blocked returns.",
+      "step": {
+        "what": "Listening and feeling changes nothing.",
+        "caution": "—",
+        "source": "From NRCan Keeping the Heat In §9.1.4 (ECM and PSC motors) and 24 CFR 3280.715(a)(2), checked 2026-10-11.",
+        "steps": [
+          "With heat on, listen near the indoor unit for the blower.",
+          "Hold your hand near two or three vents.",
+          "Count how many vents and return grilles are closed or covered."
+        ],
+        "watch": "5 minutes.",
+        "stop": "Stop if you smell burning or hear grinding or squealing."
+      },
+      "choices": [
+        [
+          "runs_weak",
+          "The blower runs, but air is weak",
+          "ac.cool.filter.check (fn overlay) → fn.airflow.filter_fit → returns",
+          "",
+          ""
+        ],
+        [
+          "never_runs",
+          "The blower never runs on a heat call",
+          "(fuel router) gas/oil → fn.code.window_look; electric → fn.power.switch_breaker_visual",
+          "",
+          ""
+        ],
+        [
+          "heat_pump_outdoor",
+          "It's a heat pump air handler, and the outdoor unit runs",
+          "HP lane entry (same target as furnace_plus_heat_pump)",
+          "Heat pump checks take it from here.",
+          "HP air handler; handed to the HP lane. audit handoff:fn_to_hp"
+        ],
+        [
+          "noise",
+          "Grinding, squealing, or loud noise",
+          "ac.noise.hazard_screen",
+          "",
+          ""
+        ],
+        [
+          "hazard_now",
+          "FN_HAZARD",
+          "@fn_hazard_now",
+          "",
+          ""
+        ]
+      ]
+    },
+    {
+      "id": "fn.ah.water_source",
+      "change": "NEW",
+      "notice": "look",
+      "section": "Hot-water air handler",
+      "title": "Where does the hot water come from?",
+      "body": "A hot-water air handler has a coil of pipes inside, fed by a boiler or a water heater.",
+      "choices": [
+        [
+          "boiler",
+          "A boiler",
+          "sw.handoff.hydronic_coil",
+          "",
+          "Hydro-air source: boiler."
+        ],
+        [
+          "water_heater_tank",
+          "A tank water heater",
+          "sw.handoff.hydronic_coil",
+          "",
+          "Hydro-air source: tank water heater. flag tankless_lead"
+        ],
+        [
+          "tankless_or_combi",
+          "A tankless water heater or combi boiler",
+          "sw.handoff.hydronic_coil",
+          "",
+          "Hydro-air source: tankless or combi. flag tankless_lead"
+        ],
+        [
+          "not_sure",
+          "Not sure",
+          "sw.handoff.hydronic_coil",
+          "",
+          ""
+        ],
+        [
+          "hazard_now",
+          "FN_HAZARD",
+          "@fn_hazard_now",
+          "",
+          ""
+        ]
+      ]
+    },
+    {
+      "id": "fn.hydro.air_side",
+      "change": "NEW",
+      "notice": "pn-short",
+      "section": "Hot-water air handler",
+      "title": "Check the air side",
+      "body": "Hot water is reaching the coil, so the problem is likely on the air side: the blower, the filter, or the air path. Look from outside the unit.",
+      "step": {
+        "what": "Looking and listening changes nothing.",
+        "caution": "—",
+        "source": "From First Co HBXBX-HW spec sheet (45-second blower-on delay; Freeze Protector), checked 2026-10-11.",
+        "steps": [
+          "With heat calling, wait one minute and listen for the blower.",
+          "Feel a vent for warm air.",
+          "Look for water or ice around the unit."
+        ],
+        "watch": "About a minute after the heat call starts.",
+        "stop": "Stop if you see water near wires or ice on the unit."
+      },
+      "choices": [
+        [
+          "delay_then_warm",
+          "A short wait, then warm air",
+          "@fn_hydro_fan_delay_normal",
+          "",
+          ""
+        ],
+        [
+          "blower_not_running",
+          "The blower never starts",
+          "fn.conclude.call_pro (reason hydro_blower_not_running)",
+          "",
+          ""
+        ],
+        [
+          "air_weak",
+          "Air is weak or barely warm",
+          "ac.cool.filter.check (fn overlay) → fn.airflow.filter_fit → returns",
+          "",
+          ""
+        ],
+        [
+          "ice_or_drip",
+          "Ice or dripping at the unit, and it's in a cold space",
+          "ac.gate.water_near_electrical (fn overlay) → @fn_water_electrical or @fn_hydro_coil_freeze_pro",
+          "",
+          ""
+        ],
+        [
+          "hazard_now",
+          "FN_HAZARD",
+          "@fn_hazard_now",
+          "",
+          ""
+        ]
+      ]
+    },
+    {
+      "id": "fn.tstat.new_furnace",
+      "change": "NEW",
+      "notice": "look",
+      "section": "Thermostat",
+      "title": "When was the furnace installed?",
+      "body": "Two-stage and variable furnaces can run differently depending on the thermostat type and its settings.",
+      "choices": [
+        [
+          "recent",
+          "In the last year, or it's still under the installer's warranty",
+          "@fn_ask_installer_card",
+          "Check with your installer first.",
+          ""
+        ],
+        [
+          "older_or_ok",
+          "Longer ago, or my installer said it's OK",
+          "@fn_new_furnace_tstat_handoff",
+          "",
+          ""
+        ],
+        [
+          "not_sure",
+          "Not sure",
+          "@fn_ask_installer_card",
+          "",
+          ""
+        ],
+        [
+          "hazard_now",
+          "FN_HAZARD",
+          "@fn_hazard_now",
+          "",
+          ""
+        ]
+      ]
+    }
+  ],
+  "results": [
+    {
+      "id": "fn_vent_high_pro",
+      "outcome": "pro_referral",
+      "badge": "Stop / professional",
+      "title": "Leave high vents to a pro",
+      "exp": "The furnace pipes are too high to reach safely from the ground.",
+      "act": [
+        "Call a licensed HVAC pro and say snow or ice may be blocking the furnace vent.",
+        "Keep CO alarms on, and leave if one sounds."
+      ],
+      "avoid": "Don't use a ladder or go on the roof.",
+      "gate": "vent_out_of_reach",
+      "src": "ENB, RH-R95T"
+    },
+    {
+      "id": "fn_vent_unsafe_wait",
+      "outcome": "pro_referral",
+      "badge": "Stop / professional",
+      "title": "Don't go out in unsafe conditions",
+      "exp": "Ice, dark, or the storm makes the trip outside unsafe right now.",
+      "act": [
+        "Call a licensed HVAC pro or your gas utility and say the vent may be blocked.",
+        "Keep CO alarms on, and leave if one sounds."
+      ],
+      "avoid": "Don't go out on ice or in the storm to clear vents.",
+      "gate": "outdoor_unsafe",
+      "src": "ENB"
+    },
+    {
+      "id": "fn_meter_iced",
+      "outcome": "pro_referral",
+      "badge": "Stop / professional",
+      "title": "Call the gas company about the meter",
+      "exp": "The gas meter or propane regulator is buried or iced. Ice there can affect gas pressure.",
+      "act": [
+        "Call your gas utility or propane supplier to report it.",
+        "You can brush loose snow off gently with a soft broom."
+      ],
+      "avoid": "Don't chip, kick, or melt ice on the meter or regulator.",
+      "gate": "meter_iced",
+      "src": "ENB"
+    },
+    {
+      "id": "fn_vent_ice_pro",
+      "outcome": "pro_referral",
+      "badge": "Professional guidance",
+      "title": "Ice is inside or frozen to the pipe",
+      "exp": "The snow came off, but ice stays inside or frozen onto a pipe end.",
+      "act": [
+        "Call a licensed HVAC pro and say a furnace vent pipe is iced.",
+        "Keep CO alarms on, and leave if one sounds."
+      ],
+      "avoid": "Don't chip, melt, or pour water on the pipes.",
+      "gate": "vent_iced",
+      "src": "ENB"
+    },
+    {
+      "id": "fn_vent_damaged_stop",
+      "outcome": "call_pro_stop",
+      "badge": "Stop / professional",
+      "title": "Stop using the furnace",
+      "exp": "A vent pipe outside looks cracked, sagging, or pulled apart. Exhaust could get back inside.",
+      "act": [
+        "Set the thermostat to Off.",
+        "Call a licensed HVAC pro today.",
+        "Keep CO alarms on, and leave if one sounds."
+      ],
+      "avoid": "Don't push pipes back together or tape them.",
+      "gate": "vent_damaged",
+      "src": "ENB, YK-TM9E"
+    },
+    {
+      "id": "fn_vent_cleared_basic",
+      "outcome": "basic_success",
+      "badge": "Basic homeowner check",
+      "title": "Vents clear · heat is back",
+      "exp": "Snow at the pipes was the likely cause. The furnace started again on its own.",
+      "act": [
+        "Check both pipes after every storm and drift.",
+        "If it stops again with clear pipes, start a new check."
+      ],
+      "avoid": "Don't pile shoveled snow near the pipes.",
+      "gate": "",
+      "src": "ENB, RH-R95T"
+    },
+    {
+      "id": "fn_condensate_freeze_pro",
+      "outcome": "pro_referral",
+      "badge": "Professional guidance",
+      "title": "The drain line is freezing",
+      "exp": "Ice in the drain tube can back water up and shut a high-efficiency furnace off. It needs freeze protection.",
+      "act": [
+        "Call a licensed HVAC pro and say the condensate drain is frozen.",
+        "Ask whether the trap and line need heat tape or a new route."
+      ],
+      "avoid": "Don't use a torch, heat gun, or boiling water on it.",
+      "gate": "condensate_frozen",
+      "src": "RH-R95T, YK-TM9E"
+    },
+    {
+      "id": "fn_condensate_pump_pro",
+      "outcome": "pro_referral",
+      "badge": "Professional guidance",
+      "title": "The condensate pump may be full",
+      "exp": "A full or beeping pump can shut the furnace off to stop a leak.",
+      "act": [
+        "Call a licensed HVAC pro or plumber about the condensate pump.",
+        "Wipe up water on the floor and keep it away from outlets."
+      ],
+      "avoid": "Don't open the pump or furnace to drain it.",
+      "gate": "condensate_pump",
+      "src": "YK-TM9E"
+    },
+    {
+      "id": "fn_condensate_kink_basic",
+      "outcome": "basic_success",
+      "badge": "Basic homeowner check",
+      "title": "Drain tube straightened · retest",
+      "exp": "A kinked or sagging drain tube can block water and shut the furnace off.",
+      "act": [
+        "Give it up to an hour to try again on its own.",
+        "If it stays off or water appears, start a new check."
+      ],
+      "avoid": "Don't pull tubes off the furnace or cut them.",
+      "gate": "",
+      "src": "YK-TM9E"
+    },
+    {
+      "id": "fn_code_rollout_stop",
+      "outcome": "call_pro_stop",
+      "badge": "Stop / professional",
+      "title": "Stop · the code means a flame-safety trip",
+      "exp": "Your code means a safety switch saw heat where flames shouldn't be.",
+      "act": [
+        "Set the thermostat to Off.",
+        "Call a licensed HVAC pro today and give them the code.",
+        "Keep CO alarms on, and leave if one sounds."
+      ],
+      "avoid": "Don't reset anything or open the furnace.",
+      "gate": "code_rollout",
+      "src": "CAR, ICP, JCI, RH-R95T, TR-S9V2, ALD"
+    },
+    {
+      "id": "fn_code_flame_no_call_stop",
+      "outcome": "call_pro_stop",
+      "badge": "Stop / professional",
+      "title": "Stop · flame when there shouldn't be",
+      "exp": "Your code means the furnace sensed flame or gas when it wasn't calling for heat.",
+      "act": [
+        "Set the thermostat to Off and call a licensed HVAC pro now.",
+        "Smell gas? Leave and call from outside."
+      ],
+      "avoid": "Don't open the furnace or touch the gas line.",
+      "gate": "code_flame_no_call",
+      "src": "CAR, GDM, LNX, JCI, NAP, ICP"
+    },
+    {
+      "id": "fn_code_to_pro",
+      "outcome": "pro_referral",
+      "badge": "Professional guidance",
+      "title": "Call a pro and give them the code",
+      "exp": "Your furnace showed code {code}: {code_meaning}.",
+      "act": [
+        "Tell the tech: {code_tell}",
+        "Keep the power on so the code stays stored."
+      ],
+      "avoid": "Don't reset the furnace or open its doors.",
+      "gate": "code_to_pro",
+      "src": "per FN_CODE_TABLE row"
+    },
+    {
+      "id": "fn_code_unlisted",
+      "outcome": "insufficient_info",
+      "badge": "More information needed",
+      "title": "Match the code to your door label",
+      "exp": "We don't list that code for your brand. Codes change by model and board.",
+      "act": [
+        "Read the code chart on the furnace, or take a photo through the window.",
+        "Give the code and model number to a licensed HVAC pro."
+      ],
+      "avoid": "Don't remove the door to find the chart.",
+      "gate": "",
+      "src": "CAR, ICP"
+    },
+    {
+      "id": "fn_breaker_tripped_pro",
+      "outcome": "pro_referral",
+      "badge": "Professional guidance",
+      "title": "A tripped furnace breaker needs a pro",
+      "exp": "A furnace breaker usually trips because of a problem in the furnace.",
+      "act": [
+        "Leave the breaker as it is.",
+        "Call a licensed HVAC pro and say the furnace breaker tripped."
+      ],
+      "avoid": "Don't reset the breaker or open the furnace.",
+      "gate": "breaker_tripped",
+      "src": "TR-NI"
+    },
+    {
+      "id": "fn_switch_off_on_purpose",
+      "outcome": "pro_referral",
+      "badge": "Professional guidance",
+      "title": "Leave the switch the way it is",
+      "exp": "Someone may have turned the furnace switch off on purpose, or you're not sure.",
+      "act": [
+        "Ask who turned it off, and why.",
+        "Call a licensed HVAC pro if it was off for a repair, leak, or smell."
+      ],
+      "avoid": "Don't turn it back on until you know why it's off.",
+      "gate": "switch_intentional",
+      "src": "TR-NI"
+    },
+    {
+      "id": "fn_switch_on_basic",
+      "outcome": "basic_success",
+      "badge": "Basic homeowner check",
+      "title": "Switch back on · heat is back",
+      "exp": "The furnace switch was off by accident. With it on, the furnace started.",
+      "act": [
+        "Mark or cover the switch so nobody flips it by mistake.",
+        "If it shuts off again, start a new check."
+      ],
+      "avoid": "Don't switch it off and on again to test.",
+      "gate": "",
+      "src": "TR-NI"
+    },
+    {
+      "id": "fn_propane_out",
+      "outcome": "call_pro_stop",
+      "badge": "Stop / professional",
+      "title": "Out of propane: the supplier checks first",
+      "exp": "Running out can let air into the gas lines. Code requires a leak check before the gas goes back on.",
+      "act": [
+        "Call your propane supplier and say you ran out.",
+        "Let them check for leaks and restart your appliances."
+      ],
+      "avoid": "Don't open the tank valve or relight anything.",
+      "gate": "propane_out",
+      "src": "PERC, NFPA54"
+    },
+    {
+      "id": "fn_propane_low_supplier",
+      "outcome": "pro_referral",
+      "badge": "Professional guidance",
+      "title": "Order propane now",
+      "exp": "The gauge reads low. Running out stops the furnace and means a leak check before the gas goes back on.",
+      "act": [
+        "Call your propane supplier for a delivery today.",
+        "If the furnace still won't heat, start a new check."
+      ],
+      "avoid": "Don't touch the tank valves or regulator.",
+      "gate": "propane_low",
+      "src": "PERC"
+    },
+    {
+      "id": "fn_oil_out",
+      "outcome": "call_pro_stop",
+      "badge": "Stop / professional",
+      "title": "Out of oil: call for delivery and service",
+      "exp": "An empty tank can draw air or sludge into the burner. It may need a tech after delivery.",
+      "act": [
+        "Call your oil supplier for a delivery and ask about a service visit.",
+        "Keep the thermostat on Off until then."
+      ],
+      "avoid": "Don't press the red reset button on the burner.",
+      "gate": "oil_out",
+      "src": "TP, BKT, R7184"
+    },
+    {
+      "id": "fn_oil_lockout_pro",
+      "outcome": "call_pro_stop",
+      "badge": "Stop / professional",
+      "title": "Oil burner locked out: call a pro",
+      "exp": "The burner control's light says it locked itself out.",
+      "act": [
+        "Call your oil service company and tell them the light color and pattern.",
+        "Keep the thermostat on Off until they come."
+      ],
+      "avoid": "Don't press the red reset button, even once.",
+      "gate": "oil_lockout",
+      "src": "TP, BKT, R7184"
+    },
+    {
+      "id": "fn_filter_fit_basic",
+      "outcome": "basic_success",
+      "badge": "Basic homeowner check",
+      "title": "Filter fixed · retest",
+      "exp": "A wrong-size, doubled-up, or backward filter can choke airflow and shut the furnace off.",
+      "act": [
+        "Use one filter of the size printed on the old one, arrow toward the furnace.",
+        "If it still shuts off, start a new check."
+      ],
+      "avoid": "Don't stack filters or run without one.",
+      "gate": "",
+      "src": "NRCAN, CAR, YK-TM9E, M7RL"
+    },
+    {
+      "id": "fn_mh_return_cleared_basic",
+      "outcome": "basic_success",
+      "badge": "Basic homeowner check",
+      "title": "Air path cleared · retest",
+      "exp": "A mobile-home furnace pulls air through its door louvers. Blocking them starves it.",
+      "act": [
+        "Keep the louvers, grilles, and gaps under doors clear.",
+        "Don't store anything in the furnace closet.",
+        "If it still shuts off, start a new check."
+      ],
+      "avoid": "Don't tape over or cover the louvered door.",
+      "gate": "",
+      "src": "M1, M7RL, HUD709, HUD715"
+    },
+    {
+      "id": "fn_mh_crossover_pro",
+      "outcome": "pro_referral",
+      "badge": "Professional guidance",
+      "title": "The crossover duct needs a look",
+      "exp": "If the duct between the halves is down, crushed, or loose, heat escapes under the home.",
+      "act": [
+        "Call a manufactured-home installer or HVAC pro about the crossover duct.",
+        "Ask them to seal it and strap it off the ground."
+      ],
+      "avoid": "Don't crawl under the home to fix it yourself.",
+      "gate": "",
+      "src": "HUD3285, HUD715, NRECA"
+    },
+    {
+      "id": "fn_mh_animals_stop",
+      "outcome": "pro_referral",
+      "badge": "Stop / professional",
+      "title": "Keep away from animals under the home",
+      "exp": "Animals under the home can damage ducts and wiring.",
+      "act": [
+        "Stay out from under the home.",
+        "Call pest control, then an HVAC pro for the ducts."
+      ],
+      "avoid": "Don't reach in or crawl under to look.",
+      "gate": "mh_animals",
+      "src": "NRECA"
+    },
+    {
+      "id": "fn_mh_listing_card",
+      "outcome": "pro_referral",
+      "badge": "Professional guidance",
+      "title": "Questions for a mobile-home furnace job",
+      "exp": "Furnaces in manufactured homes must be listed for manufactured homes.",
+      "act": [
+        "Ask your installer: is this furnace listed for manufactured homes?",
+        "Ask whether the AC or heat pump is certified to pair with it."
+      ],
+      "avoid": "Don't buy a standard house furnace for a manufactured home.",
+      "gate": "",
+      "src": "HUD707, M7RL"
+    },
+    {
+      "id": "fn_elec_staging_normal",
+      "outcome": "basic_success",
+      "badge": "Basic homeowner check",
+      "title": "Cool, then warm, can be normal",
+      "exp": "Many electric furnaces turn their heaters on in steps after the fan starts, so air warms over a few minutes.",
+      "act": [
+        "If air gets warm and rooms keep up, no action is needed.",
+        "If it never gets warm, start a new check."
+      ],
+      "avoid": "Don't open the furnace panel or touch the breaker.",
+      "gate": "",
+      "src": "NOR-E2"
+    },
+    {
+      "id": "fn_hydro_fan_delay_normal",
+      "outcome": "basic_success",
+      "badge": "Basic homeowner check",
+      "title": "A short fan delay can be normal",
+      "exp": "Some hot-water air handlers warm the coil before the fan starts, so a short wait is normal.",
+      "act": [
+        "If warm air follows the wait, no action is needed.",
+        "If air stays cool, start a new check."
+      ],
+      "avoid": "Don't open the air handler.",
+      "gate": "",
+      "src": "FCO"
+    },
+    {
+      "id": "fn_hydro_coil_freeze_pro",
+      "outcome": "call_pro_stop",
+      "badge": "Stop / professional",
+      "title": "The water coil may be freezing",
+      "exp": "Ice or dripping at an air handler in a cold space can mean the coil is freezing.",
+      "act": [
+        "Call a licensed heating pro today and say the hot-water coil may freeze.",
+        "Keep the thermostat calling for heat."
+      ],
+      "avoid": "Don't press any reset or open the unit.",
+      "gate": "hydro_coil_freeze",
+      "src": "FCO, DAC"
+    },
+    {
+      "id": "fn_new_furnace_tstat_handoff",
+      "outcome": "handoff",
+      "badge": "Basic homeowner check",
+      "title": "Check the thermostat next",
+      "exp": "A new furnace may need thermostat settings changed to match it.",
+      "act": [
+        "Continue to the thermostat check.",
+        "Have the furnace model number ready."
+      ],
+      "avoid": "Don't change thermostat wiring.",
+      "gate": "",
+      "src": "CAR, TS-W2"
+    },
+    {
+      "id": "fn_ask_installer_card",
+      "outcome": "pro_referral",
+      "badge": "Professional guidance",
+      "title": "Ask your installer first",
+      "exp": "A recent install is the installer's to check, and warranties may depend on it.",
+      "act": [
+        "Call your installer and ask the questions on this card.",
+        "Give them any code you saw."
+      ],
+      "avoid": "Don't change wiring or furnace settings yourself.",
+      "gate": "",
+      "src": "PN6"
+    }
+  ],
+  "families": [
+    [
+      "carrier",
+      "Carrier, Bryant, Payne",
+      "Amber light: short flashes, then long flashes (a two-digit code). Steady on = power, no code.",
+      "CAR",
+      "Carrier Troubleshooting Guide 58-3T, service label p.4 table + status-code pages; Bryant/Payne share the Carrier family by ownership, not separately read"
+    ],
+    [
+      "icp",
+      "Heil, Tempstar, Comfortmaker, Arcoaire, KeepRite, ICP",
+      "Light: heartbeat = normal; a count of flashes = code; on solid = control error.",
+      "ICP",
+      "ICP 90+ 2-stage installation guide 441 01 2023 01 p.38 (manualshelf mirror)"
+    ],
+    [
+      "trane",
+      "Trane, American Standard",
+      "Two-character display (for example E3.2). Older blink-only boards are not covered here.",
+      "TR-S9V2",
+      "Trane S9V2 installer guide, fault table (retailer-hosted copy)"
+    ],
+    [
+      "lennox_led",
+      "Lennox, Armstrong Air, Ducane, AirEase, Concord (blink-light boards)",
+      "Red light flashes a count; slow heartbeat = idle, fast heartbeat = heat call.",
+      "LNX-1910",
+      "Lennox ML196DFE Unit Information 1910-L7, control 107163-01"
+    ],
+    [
+      "lennox_disp",
+      "Lennox, Armstrong Air, Ducane, AirEase, Concord (display boards)",
+      "Display shows E plus three digits (for example E223).",
+      "LNX-1126 / ALD",
+      "Lennox EL296DFV 1126; Allied A96UH1EK/96G1UHEK installation manual"
+    ],
+    [
+      "goodman",
+      "Goodman, Amana, Daikin (blink-light boards)",
+      "Red light flashes a count; steady on = normal. Newer display boards are not covered here.",
+      "GDM",
+      "Goodman GMSS96 specification sheet wiring/diagnostic label"
+    ],
+    [
+      "rheem",
+      "Rheem, Ruud",
+      "Two-digit display (for example 57).",
+      "RH-R95T",
+      "Rheem R95T installation instructions, Table 17"
+    ],
+    [
+      "jci",
+      "York, Coleman, Luxaire (house furnaces)",
+      "Light: slow green = idle, slow amber = heating, red flashes = code. LAST ERROR button shows stored codes.",
+      "YK-TM9E",
+      "York/Coleman/Luxaire TM9E installation manual (Canadian distributor copy)"
+    ],
+    [
+      "napoleon",
+      "Napoleon",
+      "Red light flashes a count; on steady = normal; off = no power.",
+      "NAP",
+      "Napoleon 9600 installation manual W415-0919"
+    ],
+    [
+      "dettson",
+      "Dettson (Chinook)",
+      "Fault number shows on the Chinook thermostat screen.",
+      "DET",
+      "Dettson Chinook communicating thermostat manual R02P029"
+    ],
+    [
+      "oil_primary",
+      "Oil burner control (any oil furnace: Thermo Pride, Olsen, others)",
+      "Light on the oil burner control box, often next to a red button.",
+      "BKT / R7184",
+      "Beckett GeniSys 7505 Table 3; Honeywell/Resideo R7184 69-1384 Table 1"
+    ]
+  ],
+  "codes": {
+    "carrier": [
+      [
+        "11",
+        "No stored fault right now (codes clear after power loss or 48 hours)",
+        "NORMAL"
+      ],
+      [
+        "13",
+        "Limit or flame-safety lockout; it retries after 3 hours",
+        "LIMIT_LOCKOUT"
+      ],
+      [
+        "14",
+        "Ignition lockout; it retries after 3 hours",
+        "IGNITION"
+      ],
+      [
+        "21",
+        "Gas heating lockout; it will not retry on its own",
+        "LOCKOUT"
+      ],
+      [
+        "22",
+        "Flame sensed while the gas should be off",
+        "FLAME_NO_CALL"
+      ],
+      [
+        "23",
+        "Pressure switch did not open (stuck closed or blocked tubing)",
+        "PS_STUCK"
+      ],
+      [
+        "24",
+        "Low-voltage fuse open (a short in thermostat wiring)",
+        "POWER"
+      ],
+      [
+        "31",
+        "High-heat pressure switch did not close",
+        "VENT"
+      ],
+      [
+        "32",
+        "Low-heat pressure switch did not close (blocked vent, wind, or drain)",
+        "VENT"
+      ],
+      [
+        "33",
+        "Limit or flame-safety switch open (the maker says check for a dirty filter or blocked ducts first)",
+        "AIRFLOW"
+      ],
+      [
+        "34",
+        "Flame did not prove at ignition",
+        "IGNITION"
+      ],
+      [
+        "43",
+        "Low-heat pressure or draft switch opened while high-heat was closed",
+        "VENT"
+      ],
+      [
+        "45",
+        "Control board needs replacing",
+        "BOARD"
+      ],
+      [
+        "rapid",
+        "Rapid flashing: power wires reversed",
+        "POWER"
+      ]
+    ],
+    "icp": [
+      [
+        "heartbeat",
+        "Normal",
+        "NORMAL"
+      ],
+      [
+        "2",
+        "Pressure switch closed when it should be open",
+        "PS_STUCK"
+      ],
+      [
+        "3",
+        "Pressure switch open when it should be closed (vent, drain, or blower)",
+        "VENT"
+      ],
+      [
+        "4",
+        "Limit or flame-safety switch open under 2 minutes (check filter and vents first)",
+        "AIRFLOW"
+      ],
+      [
+        "5",
+        "Flame sensed when it shouldn't be",
+        "FLAME_NO_CALL"
+      ],
+      [
+        "6",
+        "Failed to light or lost flame",
+        "IGNITION"
+      ],
+      [
+        "6+1",
+        "Lockout after too many tries; retries after 3 hours",
+        "IGNITION"
+      ],
+      [
+        "7",
+        "Lockout: limit or flame-safety switch open over 2 minutes",
+        "LIMIT_LOCKOUT"
+      ],
+      [
+        "8",
+        "Permanent lockout, gas valve circuit",
+        "LOCKOUT"
+      ],
+      [
+        "9",
+        "High-heat pressure switch open",
+        "VENT"
+      ],
+      [
+        "10",
+        "Power wires reversed or twinning problem",
+        "POWER"
+      ],
+      [
+        "solid",
+        "Control error (soft lockout)",
+        "BOARD"
+      ]
+    ],
+    "trane": [
+      [
+        "E01",
+        "Internal control fault",
+        "BOARD"
+      ],
+      [
+        "E2.1",
+        "Failed to light after retries",
+        "IGNITION"
+      ],
+      [
+        "E2.2",
+        "Too many restarts after losing flame, or the pressure switch opened 10 times",
+        "IGNITION"
+      ],
+      [
+        "E3.1",
+        "First-stage pressure switch stuck closed",
+        "PS_STUCK"
+      ],
+      [
+        "E3.2",
+        "First-stage pressure switch open (vent, drain, or blower)",
+        "VENT"
+      ],
+      [
+        "E04",
+        "Limit, flame-safety, or reverse-airflow switch open",
+        "LIMIT_LOCKOUT"
+      ],
+      [
+        "E05",
+        "Flame present when it shouldn't be",
+        "FLAME_NO_CALL"
+      ],
+      [
+        "E06",
+        "Power wires reversed or poor ground",
+        "POWER"
+      ],
+      [
+        "E08",
+        "Weak flame signal",
+        "IGNITION"
+      ],
+      [
+        "E09",
+        "Vent-fan limit or condensate switch open",
+        "WATER"
+      ],
+      [
+        "E12",
+        "Fuse open",
+        "POWER"
+      ]
+    ],
+    "lennox_led": [
+      [
+        "slow",
+        "Slow heartbeat: idle, normal",
+        "NORMAL"
+      ],
+      [
+        "1",
+        "Power wires reversed",
+        "POWER"
+      ],
+      [
+        "2",
+        "Poor ground",
+        "POWER"
+      ],
+      [
+        "3",
+        "Failed to light or lost flame",
+        "IGNITION"
+      ],
+      [
+        "4",
+        "Weak flame signal",
+        "IGNITION"
+      ],
+      [
+        "5",
+        "1-hour lockout after failed tries",
+        "IGNITION"
+      ],
+      [
+        "7",
+        "Limit switch open",
+        "AIRFLOW"
+      ],
+      [
+        "8",
+        "Flame-safety (rollout) switch open",
+        "ROLLOUT"
+      ],
+      [
+        "9",
+        "Pressure switch failed to close or opened",
+        "VENT"
+      ],
+      [
+        "10",
+        "Lockout: pressure switch opened 5 times",
+        "VENT"
+      ],
+      [
+        "11",
+        "Pressure switch stuck closed",
+        "PS_STUCK"
+      ],
+      [
+        "12",
+        "Flame sensed with the gas off",
+        "FLAME_NO_CALL"
+      ],
+      [
+        "13",
+        "Low line voltage",
+        "POWER"
+      ]
+    ],
+    "lennox_disp": [
+      [
+        "E200",
+        "Hard lockout, flame-safety (rollout) switch",
+        "ROLLOUT"
+      ],
+      [
+        "E204",
+        "Gas valve wiring fault",
+        "LOCKOUT"
+      ],
+      [
+        "E223",
+        "Pressure switch failed to close",
+        "VENT"
+      ],
+      [
+        "E224",
+        "Pressure switch stuck closed",
+        "PS_STUCK"
+      ],
+      [
+        "E227",
+        "Pressure switch opened during start or run",
+        "VENT"
+      ],
+      [
+        "E240",
+        "Weak flame signal",
+        "IGNITION"
+      ],
+      [
+        "E241",
+        "Flame sensed out of sequence",
+        "FLAME_NO_CALL"
+      ],
+      [
+        "E250",
+        "Limit circuit open (1-hour lockout if repeated)",
+        "AIRFLOW"
+      ],
+      [
+        "E270",
+        "Lockout after too many tries",
+        "IGNITION"
+      ],
+      [
+        "E290",
+        "Ignitor fault",
+        "IGNITION"
+      ],
+      [
+        "E292",
+        "Blower motor can't start",
+        "BLOWER"
+      ]
+    ],
+    "goodman": [
+      [
+        "steady",
+        "Steady on: normal",
+        "NORMAL"
+      ],
+      [
+        "1",
+        "Lockout after too many tries",
+        "IGNITION"
+      ],
+      [
+        "2",
+        "Pressure switch stuck closed",
+        "PS_STUCK"
+      ],
+      [
+        "3",
+        "Pressure switch stuck open (vent, drain, or blower)",
+        "VENT"
+      ],
+      [
+        "4",
+        "High limit open",
+        "AIRFLOW"
+      ],
+      [
+        "5",
+        "Flame sensed with no gas valve signal",
+        "FLAME_NO_CALL"
+      ],
+      [
+        "6",
+        "Flame-safety (rollout) switch open",
+        "ROLLOUT"
+      ],
+      [
+        "7",
+        "Weak flame signal",
+        "IGNITION"
+      ],
+      [
+        "8",
+        "Ignitor or grounding problem",
+        "IGNITION"
+      ],
+      [
+        "rapid",
+        "Rapid flashing: power wires reversed",
+        "POWER"
+      ],
+      [
+        "off",
+        "Light off: control failure or no power",
+        "BOARD"
+      ]
+    ],
+    "rheem": [
+      [
+        "0",
+        "Standby, normal",
+        "NORMAL"
+      ],
+      [
+        "10",
+        "1-hour lockout",
+        "IGNITION"
+      ],
+      [
+        "11",
+        "Failed to light",
+        "IGNITION"
+      ],
+      [
+        "12",
+        "Weak flame signal",
+        "IGNITION"
+      ],
+      [
+        "13",
+        "Flame lost",
+        "IGNITION"
+      ],
+      [
+        "14",
+        "Flame sensed when it shouldn't be",
+        "FLAME_NO_CALL"
+      ],
+      [
+        "22",
+        "Main limit open",
+        "AIRFLOW"
+      ],
+      [
+        "26",
+        "Power wires reversed",
+        "POWER"
+      ],
+      [
+        "33",
+        "Flame-safety (rollout) switch open",
+        "ROLLOUT"
+      ],
+      [
+        "55",
+        "Pressure switch stuck closed",
+        "PS_STUCK"
+      ],
+      [
+        "57",
+        "Pressure switch stuck open (vent, drain, or blower)",
+        "VENT"
+      ],
+      [
+        "58",
+        "Water-sense circuit open",
+        "WATER"
+      ],
+      [
+        "59",
+        "Water sensed",
+        "WATER"
+      ],
+      [
+        "61",
+        "Blower can't run",
+        "BLOWER"
+      ],
+      [
+        "93",
+        "Internal control fault",
+        "BOARD"
+      ]
+    ],
+    "jci": [
+      [
+        "green",
+        "Slow green: idle, normal",
+        "NORMAL"
+      ],
+      [
+        "amber",
+        "Slow amber: heating, normal",
+        "NORMAL"
+      ],
+      [
+        "1",
+        "Flame sensed with no call for heat",
+        "FLAME_NO_CALL"
+      ],
+      [
+        "2",
+        "Pressure switch closed when it should be open",
+        "PS_STUCK"
+      ],
+      [
+        "3",
+        "Pressure switch open (blocked vent, drain, or hose)",
+        "VENT"
+      ],
+      [
+        "4",
+        "Main limit open (check a dirty filter first)",
+        "AIRFLOW"
+      ],
+      [
+        "5",
+        "Flame-safety (rollout) switch open; hard lockout",
+        "ROLLOUT"
+      ],
+      [
+        "6",
+        "Pressure switch opened 4 times",
+        "VENT"
+      ],
+      [
+        "7",
+        "Flame did not light in 3 tries; 1-hour lockout",
+        "IGNITION"
+      ],
+      [
+        "8",
+        "Flame lost 5 times",
+        "IGNITION"
+      ],
+      [
+        "9",
+        "Power wires reversed or poor ground",
+        "POWER"
+      ],
+      [
+        "10",
+        "Gas valve on with no call for heat",
+        "FLAME_NO_CALL"
+      ],
+      [
+        "11",
+        "Limit open over 5 minutes; hard lockout",
+        "LIMIT_LOCKOUT"
+      ],
+      [
+        "steady",
+        "Steady on (any color): control failure",
+        "BOARD"
+      ]
+    ],
+    "napoleon": [
+      [
+        "steady",
+        "Steady on: normal",
+        "NORMAL"
+      ],
+      [
+        "1",
+        "High limit open",
+        "AIRFLOW"
+      ],
+      [
+        "2",
+        "Pressure switch open with the vent fan running",
+        "VENT"
+      ],
+      [
+        "3",
+        "Pressure switch closed with the vent fan off",
+        "PS_STUCK"
+      ],
+      [
+        "4",
+        "Lockout after failed lighting; 1 hour",
+        "IGNITION"
+      ],
+      [
+        "5",
+        "Power wires reversed",
+        "POWER"
+      ],
+      [
+        "6",
+        "Too many limit trips",
+        "AIRFLOW"
+      ],
+      [
+        "7",
+        "Pressure switch cycle lockout",
+        "VENT"
+      ],
+      [
+        "8",
+        "Flame dropout lockout",
+        "IGNITION"
+      ],
+      [
+        "10",
+        "Flame present with gas off",
+        "FLAME_NO_CALL"
+      ],
+      [
+        "off",
+        "Light off: no power",
+        "POWER"
+      ]
+    ],
+    "dettson": [
+      [
+        "11",
+        "Failed to light",
+        "IGNITION"
+      ],
+      [
+        "12",
+        "Weak flame signal",
+        "IGNITION"
+      ],
+      [
+        "13",
+        "Flame lost",
+        "IGNITION"
+      ],
+      [
+        "14",
+        "Flame with the gas valve off",
+        "FLAME_NO_CALL"
+      ],
+      [
+        "21",
+        "Low pressure switch trip",
+        "VENT"
+      ],
+      [
+        "22",
+        "Main limit open",
+        "AIRFLOW"
+      ],
+      [
+        "23",
+        "Auxiliary limit open",
+        "AIRFLOW"
+      ],
+      [
+        "26",
+        "Power wires reversed",
+        "POWER"
+      ],
+      [
+        "33",
+        "Flame-safety (rollout) switch open",
+        "ROLLOUT"
+      ],
+      [
+        "44-46",
+        "Low pressure switch fault",
+        "VENT"
+      ],
+      [
+        "55/57",
+        "High pressure switch fault",
+        "VENT"
+      ],
+      [
+        "60/61",
+        "Blower fault",
+        "BLOWER"
+      ],
+      [
+        "93",
+        "Board failure",
+        "BOARD"
+      ]
+    ],
+    "oil_primary": [
+      [
+        "green_on",
+        "Green on: flame sensed, normal while running",
+        "NORMAL"
+      ],
+      [
+        "green_flash",
+        "Green flashing: recycle (Beckett)",
+        "OIL_SOFT"
+      ],
+      [
+        "red_flash",
+        "Red flashing: soft lockout (Beckett)",
+        "OIL_SOFT"
+      ],
+      [
+        "red_on",
+        "Red on steady: hard (restricted) lockout (Beckett)",
+        "OIL_HARD"
+      ],
+      [
+        "r7184_half",
+        "Light flashing every half second: lockout or restricted lockout (Honeywell R7184)",
+        "OIL_HARD"
+      ],
+      [
+        "r7184_2s",
+        "Light flashing every 2 seconds: recycle (Honeywell R7184)",
+        "OIL_SOFT"
+      ]
+    ]
+  },
+  "reasons": [
+    [
+      "vent_not_pvc",
+      "Your furnace vents through a metal pipe, so there are no outdoor plastic pipes to clear."
+    ],
+    [
+      "vent_check_inaccessible",
+      "The outdoor vent pipes couldn't be checked safely."
+    ],
+    [
+      "vent_cleared_still_no_heat",
+      "The vent pipes are clear, but the heat didn't come back after the wait."
+    ],
+    [
+      "vent_cleared_code_repeats",
+      "The furnace stopped again with the same code after the pipes were cleared."
+    ],
+    [
+      "condensate_check_inaccessible",
+      "The drain tube couldn't be seen without opening the furnace."
+    ],
+    [
+      "code_limit_after_basics",
+      "The code points to overheating, and the filter and vents looked fine."
+    ],
+    [
+      "code_pressure_after_basics",
+      "The code points to the vent or drain, and both looked clear."
+    ],
+    [
+      "code_normal_no_heat",
+      "The furnace light shows no fault right now, but the heat still isn't right."
+    ],
+    [
+      "switch_on_no_heat",
+      "The furnace has power again, but the heat didn't come back."
+    ],
+    [
+      "elec_partial_heat",
+      "Some electric heaters may not be coming on. That's high-voltage work for a pro."
+    ],
+    [
+      "ah_weak_airflow_after_basics",
+      "Air is still weak with a clean, well-fitted filter and open vents."
+    ],
+    [
+      "blower_not_running",
+      "The blower doesn't start when the thermostat calls for heat."
+    ],
+    [
+      "hydro_blower_not_running",
+      "Hot water reaches the coil, but the blower doesn't start."
+    ],
+    [
+      "mh_crossover_unchecked",
+      "The crossover duct under the home couldn't be seen from outside."
+    ],
+    [
+      "mh_weak_heat_after_basics",
+      "The air path and crossover duct look fine, but one area still falls behind."
+    ]
+  ],
+  "categories": [
+    [
+      "NORMAL",
+      "No fault shown",
+      "Back to the path: fn.tstat.mode_setpoint if not yet asked, else fn.conclude.call_pro (reason code_normal_no_heat)."
+    ],
+    [
+      "AIRFLOW",
+      "Overheat/limit (airflow first)",
+      "ac.cool.filter.check (fn overlay) → fn.airflow.filter_fit → ac.cool.airflow.returns_supplies → fn.conclude.call_pro (reason code_limit_after_basics). MH: fn.mh.closet_return inserted before returns."
+    ],
+    [
+      "LIMIT_LOCKOUT",
+      "Limit or flame-safety lockout (could be either)",
+      "Same as AIRFLOW, but the filter-check body shows the soot/scorch stop line first (\"If you see soot, scorching, or melted wires, stop\" → @fn_rollout_soot). Never a reset."
+    ],
+    [
+      "VENT",
+      "Pressure switch open / did not close",
+      "fn.vent.outdoor_gate (gas, plastic or unsure vent) → fn.vent.exterior_visual → fn.condensate.visual → fn.conclude.call_pro (reason code_pressure_after_basics)."
+    ],
+    [
+      "WATER",
+      "Water/condensate sensed",
+      "ac.gate.water_near_electrical (fn overlay) → fn.condensate.visual."
+    ],
+    [
+      "PS_STUCK",
+      "Pressure switch stuck closed",
+      "@fn_code_to_pro"
+    ],
+    [
+      "IGNITION",
+      "Ignition / flame signal / retries lockout",
+      "Propane → fn.fuel.propane_gauge first; then @fn_code_to_pro."
+    ],
+    [
+      "POWER",
+      "Polarity, ground, fuse, low voltage",
+      "@fn_code_to_pro"
+    ],
+    [
+      "BOARD",
+      "Control fault",
+      "@fn_code_to_pro"
+    ],
+    [
+      "BLOWER",
+      "Blower fault",
+      "@fn_code_to_pro"
+    ],
+    [
+      "LOCKOUT",
+      "Gas-valve circuit / hard lockout",
+      "@fn_code_to_pro"
+    ],
+    [
+      "ROLLOUT",
+      "Flame-safety (rollout) open",
+      "@fn_code_rollout_stop"
+    ],
+    [
+      "FLAME_NO_CALL",
+      "Flame or gas valve on with no call",
+      "@fn_code_flame_no_call_stop"
+    ],
+    [
+      "OIL_SOFT",
+      "Oil soft lockout / recycle",
+      "fn.fuel.oil_tank if not yet asked → @fn_oil_lockout_pro"
+    ],
+    [
+      "OIL_HARD",
+      "Oil hard / restricted lockout",
+      "@fn_oil_lockout_pro"
+    ]
+  ]
+}

@@ -1,3 +1,8 @@
-# Static site. Repository root is the publish directory. No build step.
+# Static site. Deploy only the reviewed public assets.
 [build]
-  publish = "."
+  publish = "dist"
+  command = "node scripts/build-public.js"
+  ignore = "node scripts/ignore-netlify-build.js"
+
+[build.environment]
+  NODE_VERSION = "24"

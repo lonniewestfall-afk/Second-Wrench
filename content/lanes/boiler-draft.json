@@ -1,0 +1,4333 @@
+{
+  "nodes": {
+    "bl.gate.safety": {
+      "section": "Boiler safety",
+      "title": "Any of these right now?",
+      "body": "Answer from what you already know. Don’t open the boiler to check. For immediate danger, get outside and call 911.",
+      "options": [
+        {
+          "id": "gas_smell_or_unknown_smell",
+          "label": "Gas or rotten-egg smell, or a strong smell you can’t place",
+          "next": "@bl_gas_smell",
+          "hint": "Leave now.",
+          "fact": "Gas, rotten-egg, or unknown strong smell reported.",
+          "gate": "gas_co",
+          "cond": "gas",
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "co_alarm_or_symptoms",
+          "label": "CO alarm, or headache, dizziness, nausea, or drowsiness",
+          "next": "@bl_co_alarm",
+          "hint": "Get to fresh air.",
+          "fact": "CO alarm or possible CO symptoms reported.",
+          "gate": "co_alarm_or_symptoms",
+          "cond": "co",
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "soot_scorch_flame",
+          "label": "Soot, scorch marks, flame outside the burner, or a heavy oil or exhaust smell",
+          "next": "@bl_soot_scorch",
+          "hint": "Stop using it.",
+          "fact": "Soot, scorch marks, flame outside the burner, or heavy oil or exhaust smell reported.",
+          "gate": "combustion_soot",
+          "cond": "soot",
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "burning_smoke_sparks",
+          "label": "Burning or electrical smell, smoke, or sparks",
+          "next": "@bl_burning_sparks",
+          "hint": "Get away.",
+          "fact": "Burning or electrical smell, smoke, or sparks reported.",
+          "gate": "smoke_fire_sparks_burn",
+          "cond": "burning",
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "water_steam_release",
+          "label": "Hot water or steam spraying or pouring from the boiler or pipes",
+          "next": "@bl_water_steam_release",
+          "hint": "Stay back.",
+          "fact": "Hot water or steam spraying or pouring reported.",
+          "gate": "water_steam_release",
+          "cond": "water_steam_release",
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "water_near_electrical",
+          "label": "Water on or near the boiler’s wiring or outlet, or it’s been under water",
+          "next": "@bl_water_electrical",
+          "hint": "Stay out of the water.",
+          "fact": "Water near boiler electrical parts, or flooding, reported.",
+          "gate": "water_near_electrical",
+          "cond": "water_electrical",
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "pressure_at_relief",
+          "label": "You already saw the gauge at 30 psi or more (steam: 15 psi or more)",
+          "next": "@bl_pressure_relief_stop",
+          "hint": "Don’t go touch it.",
+          "fact": "Gauge at or above the relief setting reported (30 psi hot water or 15 psi steam).",
+          "gate": "pressure_at_relief",
+          "cond": "pressure_at_relief",
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "steam_glass_empty",
+          "label": "Steam boiler: the glass tube shows no water",
+          "next": "@bl_steam_glass_empty",
+          "hint": "Don’t add water.",
+          "fact": "Steam boiler sight glass looked empty.",
+          "gate": "steam_low_water",
+          "cond": "steam_glass_empty",
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "bang_or_puffback",
+          "label": "A bang, boom, or puff of smoke when it starts",
+          "next": "@bl_bang_puffback",
+          "hint": "Stop using it.",
+          "fact": "Bang, boom, or puffback at start reported.",
+          "gate": "delayed_ignition_puffback",
+          "cond": "puffback",
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "cold_exposure_risk",
+          "label": "Someone at risk from the cold (baby, older adult, medical need) with no safe heat",
+          "next": "@bl_cold_exposure",
+          "hint": "Warm them first.",
+          "fact": "Someone at risk from the cold with no safe heat.",
+          "gate": "cold_exposure_911",
+          "cond": "cold_at_risk",
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "unsure",
+          "label": "I’m not sure",
+          "next": "@bl_gate_unsure",
+          "hint": "Not sure means stop.",
+          "fact": "Not sure whether a boiler hazard was present.",
+          "gate": "unsure_hazard",
+          "cond": "unsure_hazard",
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "none_of_these",
+          "label": "None of these",
+          "next": {
+            "afterHazardNow": "@bl_gate_unsure",
+            "fromWhIndirect": "bl.dhw.indirect_call",
+            "fromWhCode": "bl.cold.screen",
+            "fromFnCoil": "bl.coil.type",
+            "fromWhHeat": "bl.intake.fuel",
+            "default": "bl.intake.type"
+          },
+          "hint": "Continue.",
+          "fact": "",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "gateCleared": true
+          },
+          "reason": null,
+          "legal": null
+        }
+      ],
+      "diyTier": "basic",
+      "safetyGate": true,
+      "modes": [
+        "heat",
+        "dhw"
+      ],
+      "pn": null,
+      "input": null,
+      "legal": "L-7",
+      "owner": "bl"
+    },
+    "bl.gate.carryover": {
+      "section": "Boiler safety",
+      "title": "One more boiler check",
+      "body": "The other check already covered gas, CO, and smoke. These are boiler-only. Answer from what you already know.",
+      "options": [
+        {
+          "id": "water_steam_release",
+          "label": "Hot water or steam spraying or pouring from the boiler or pipes",
+          "next": "@bl_water_steam_release",
+          "hint": "Stay back.",
+          "fact": "Hot water or steam spraying or pouring reported.",
+          "gate": "water_steam_release",
+          "cond": "water_steam_release",
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "water_near_electrical",
+          "label": "Water on or near the boiler’s wiring or outlet, or it’s been under water",
+          "next": "@bl_water_electrical",
+          "hint": "Stay out of the water.",
+          "fact": "Water near boiler electrical parts, or flooding, reported.",
+          "gate": "water_near_electrical",
+          "cond": "water_electrical",
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "pressure_at_relief",
+          "label": "You already saw the gauge at 30 psi or more (steam: 15 psi or more)",
+          "next": "@bl_pressure_relief_stop",
+          "hint": "Don’t go touch it.",
+          "fact": "Gauge at or above the relief setting reported (30 psi hot water or 15 psi steam).",
+          "gate": "pressure_at_relief",
+          "cond": "pressure_at_relief",
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "steam_glass_empty",
+          "label": "Steam boiler: the glass tube shows no water",
+          "next": "@bl_steam_glass_empty",
+          "hint": "Don’t add water.",
+          "fact": "Steam boiler sight glass looked empty.",
+          "gate": "steam_low_water",
+          "cond": "steam_glass_empty",
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "bang_or_puffback",
+          "label": "A bang, boom, or puff of smoke when it starts",
+          "next": "@bl_bang_puffback",
+          "hint": "Stop using it.",
+          "fact": "Bang, boom, or puffback at start reported.",
+          "gate": "delayed_ignition_puffback",
+          "cond": "puffback",
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "unsure",
+          "label": "I’m not sure",
+          "next": "@bl_gate_unsure",
+          "hint": "Not sure means stop.",
+          "fact": "Not sure whether a boiler hazard was present.",
+          "gate": "unsure_hazard",
+          "cond": "unsure_hazard",
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "none_of_these",
+          "label": "None of these",
+          "next": {
+            "afterHazardNow": "@bl_gate_unsure",
+            "fromWhIndirect": "bl.dhw.indirect_call",
+            "fromWhCode": "bl.cold.screen",
+            "fromFnCoil": "bl.coil.type",
+            "fromWhHeat": "bl.intake.fuel",
+            "default": "bl.intake.type"
+          },
+          "hint": "Continue.",
+          "fact": "",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "gateCleared": true
+          },
+          "reason": null,
+          "legal": null
+        }
+      ],
+      "diyTier": "basic",
+      "safetyGate": true,
+      "modes": [
+        "heat",
+        "dhw"
+      ],
+      "pn": null,
+      "input": null,
+      "legal": "L-8",
+      "owner": "bl"
+    },
+    "bl.intake.type": {
+      "section": "Your boiler",
+      "title": "What kind of boiler is it?",
+      "body": "Use what you already know, a manual, or a label you can read without opening anything.\n\nPlastic (white or gray) vent pipes out a wall usually mean a high-efficiency boiler. A metal pipe into a chimney usually means a standard boiler.",
+      "options": [
+        {
+          "id": "hot_water_high_eff",
+          "label": "Hot-water boiler with plastic vent pipes (high-efficiency)",
+          "next": "bl.intake.fuel",
+          "hint": "Heats baseboard, radiators, or floors with hot water.",
+          "fact": "High-efficiency hot-water boiler reported.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "type": "he",
+            "typeConf": "reported"
+          },
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "hot_water_standard",
+          "label": "Hot-water boiler with a metal flue or chimney",
+          "next": "bl.intake.fuel",
+          "hint": "Often older cast iron.",
+          "fact": "Standard hot-water boiler reported.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "type": "std",
+            "typeConf": "reported"
+          },
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "combi",
+          "label": "Combi boiler: it also heats tap water, with no separate tank",
+          "next": "bl.intake.fuel",
+          "hint": "Usually wall-hung with plastic vent pipes.",
+          "fact": "Combi boiler reported.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "type": "combi",
+            "typeConf": "reported"
+          },
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "steam",
+          "label": "Steam boiler: a glass tube on the side shows the water level",
+          "next": "bl.intake.fuel",
+          "hint": "Radiators often hiss or clank when heating starts.",
+          "fact": "Steam boiler reported.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "type": "steam",
+            "typeConf": "reported"
+          },
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "hydro_air",
+          "label": "A boiler or water heater feeds a hot-water coil in a duct system",
+          "next": "sw.handoff.hydronic_coil",
+          "hint": "Heat comes out of floor or wall vents.",
+          "fact": "Hydro-air (hot-water coil in ducts) reported.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "coilFrom": "bl"
+          },
+          "reason": null,
+          "legal": "L-28"
+        },
+        {
+          "id": "not_sure",
+          "label": "I’m not sure",
+          "next": "bl.identify.look",
+          "hint": "A few look-only clues next.",
+          "fact": "",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "hazard_now",
+          "label": "Something new: a smell, alarm, smoke, sparks, or spraying water or steam",
+          "next": "bl.gate.safety",
+          "hint": "Back to the safety check.",
+          "fact": "New hazard reported during the boiler check.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "retriage": "hazard_now"
+          },
+          "reason": null,
+          "legal": "L-7"
+        }
+      ],
+      "diyTier": "basic",
+      "safetyGate": false,
+      "modes": [
+        "heat",
+        "dhw"
+      ],
+      "pn": null,
+      "input": null,
+      "legal": "L-34",
+      "owner": "bl"
+    },
+    "bl.identify.look": {
+      "section": "Your boiler",
+      "title": "Which of these can you see without opening anything?",
+      "body": "Stand back from the boiler and look. Don’t touch pipes; they can be very hot.",
+      "options": [
+        {
+          "id": "sees_glass_tube",
+          "label": "A small glass tube with water in it on the side of the boiler",
+          "next": "bl.intake.fuel",
+          "hint": "That’s usually a steam boiler.",
+          "fact": "Look clue: glass tube seen (steam boiler, not confirmed).",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "type": "steam",
+            "typeConf": "look clue, not confirmed"
+          },
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "sees_plastic_vent",
+          "label": "White or gray plastic pipes from the boiler out through a wall",
+          "next": "bl.intake.fuel",
+          "hint": "That’s usually a high-efficiency hot-water boiler.",
+          "fact": "Look clue: plastic vent pipes seen (high-efficiency hot-water boiler, not confirmed).",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "type": "he",
+            "typeConf": "look clue, not confirmed"
+          },
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "sees_round_gauge_metal_flue",
+          "label": "A round gauge showing psi and temperature, and a metal flue pipe",
+          "next": "bl.intake.fuel",
+          "hint": "That’s usually a standard hot-water boiler.",
+          "fact": "Look clue: round gauge and metal flue seen (standard hot-water boiler, not confirmed).",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "type": "std",
+            "typeConf": "look clue, not confirmed"
+          },
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "cannot_tell",
+          "label": "I still can’t tell",
+          "next": "@bl_type_unconfirmed",
+          "hint": "That’s OK. A pro can tell.",
+          "fact": "",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "hazard_now",
+          "label": "Something new: a smell, alarm, smoke, sparks, or spraying water or steam",
+          "next": "bl.gate.safety",
+          "hint": "Back to the safety check.",
+          "fact": "New hazard reported during the boiler check.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "retriage": "hazard_now"
+          },
+          "reason": null,
+          "legal": "L-7"
+        }
+      ],
+      "diyTier": "basic",
+      "safetyGate": false,
+      "modes": [
+        "heat",
+        "dhw"
+      ],
+      "pn": null,
+      "input": null,
+      "legal": "L-34",
+      "owner": "bl"
+    },
+    "bl.coil.type": {
+      "section": "Your boiler",
+      "title": "What kind of boiler heats the water for the coil?",
+      "body": "Use what you already know, a manual, or a label you can read without opening anything.",
+      "options": [
+        {
+          "id": "coil_he",
+          "label": "Hot-water boiler with plastic vent pipes (high-efficiency)",
+          "next": "bl.intake.fuel",
+          "hint": "",
+          "fact": "High-efficiency hot-water boiler feeds the coil (reported).",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "type": "he",
+            "typeConf": "reported",
+            "landing": "landing_no_heat",
+            "coil": true
+          },
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "coil_std",
+          "label": "Hot-water boiler with a metal flue or chimney",
+          "next": "bl.intake.fuel",
+          "hint": "",
+          "fact": "Standard hot-water boiler feeds the coil (reported).",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "type": "std",
+            "typeConf": "reported",
+            "landing": "landing_no_heat",
+            "coil": true
+          },
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "coil_combi",
+          "label": "Combi boiler: it also heats tap water",
+          "next": "bl.intake.fuel",
+          "hint": "",
+          "fact": "Combi boiler feeds the coil (reported).",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "type": "combi",
+            "typeConf": "reported",
+            "landing": "landing_no_heat",
+            "coil": true
+          },
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "coil_not_sure",
+          "label": "I’m not sure",
+          "next": "bl.identify.look",
+          "hint": "A few look-only clues next.",
+          "fact": "",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "landing": "landing_no_heat",
+            "coil": true
+          },
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "hazard_now",
+          "label": "Something new: a smell, alarm, smoke, sparks, or spraying water or steam",
+          "next": "bl.gate.safety",
+          "hint": "Back to the safety check.",
+          "fact": "New hazard reported during the boiler check.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "retriage": "hazard_now"
+          },
+          "reason": null,
+          "legal": "L-7"
+        }
+      ],
+      "diyTier": "basic",
+      "safetyGate": false,
+      "modes": [
+        "heat"
+      ],
+      "pn": null,
+      "input": null,
+      "legal": "L-28",
+      "owner": "bl"
+    },
+    "bl.intake.fuel": {
+      "section": "Your boiler",
+      "title": "What does it run on?",
+      "body": "Use a bill, a tank, a label, or what you already know. Propane counts as gas.",
+      "options": [
+        {
+          "id": "fuel_gas",
+          "label": "Natural gas or propane",
+          "next": {
+            "coil": "bl.cold.screen",
+            "default": "bl.landing.picker"
+          },
+          "hint": "",
+          "fact": "Fuel: gas or propane (reported).",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "fuel": "gas"
+          },
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "fuel_oil",
+          "label": "Oil (there is an oil tank)",
+          "next": {
+            "coil": "bl.cold.screen",
+            "default": "bl.landing.picker"
+          },
+          "hint": "",
+          "fact": "Fuel: oil (reported).",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "fuel": "oil"
+          },
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "fuel_electric",
+          "label": "Electric (no gas line, no oil tank, no flue)",
+          "next": {
+            "coil": "bl.cold.screen",
+            "default": "bl.landing.picker"
+          },
+          "hint": "",
+          "fact": "Fuel: electric (reported).",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "fuel": "electric"
+          },
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "fuel_not_sure",
+          "label": "I’m not sure",
+          "next": {
+            "coil": "bl.cold.screen",
+            "default": "bl.landing.picker"
+          },
+          "hint": "That’s OK. Keep going.",
+          "fact": "Fuel: not known.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "fuel": "unsure"
+          },
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "hazard_now",
+          "label": "Something new: a smell, alarm, smoke, sparks, or spraying water or steam",
+          "next": "bl.gate.safety",
+          "hint": "Back to the safety check.",
+          "fact": "New hazard reported during the boiler check.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "retriage": "hazard_now"
+          },
+          "reason": null,
+          "legal": "L-7"
+        }
+      ],
+      "diyTier": "basic",
+      "safetyGate": false,
+      "modes": [
+        "heat",
+        "dhw"
+      ],
+      "pn": null,
+      "input": null,
+      "legal": "L-34",
+      "owner": "bl"
+    },
+    "bl.landing.picker": {
+      "section": "What you noticed",
+      "title": "What’s going on?",
+      "body": "Pick the closest match.",
+      "options": [
+        {
+          "id": "landing_no_heat",
+          "label": "No heat anywhere",
+          "next": "bl.cold.screen",
+          "hint": "",
+          "fact": "Complaint: No heat from the boiler.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "landing": "landing_no_heat"
+          },
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "landing_some_rooms",
+          "label": "Some rooms or zones heat and others stay cold, or heat is weak",
+          "next": "bl.cold.screen",
+          "hint": "",
+          "fact": "Complaint: Some rooms cold or weak heat.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "landing": "landing_some_rooms"
+          },
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "landing_code",
+          "label": "The boiler shows an error code or lockout message",
+          "next": "bl.cold.screen",
+          "hint": "Write down the exact code.",
+          "fact": "Complaint: Boiler shows a code or lockout.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "landing": "landing_code",
+            "sawCode": true
+          },
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "landing_pressure",
+          "label": "The gauge reading looks off to me",
+          "next": "bl.cold.screen",
+          "hint": "",
+          "fact": "Complaint: Gauge reading looks off.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "landing": "landing_pressure"
+          },
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "landing_noise",
+          "label": "Banging, gurgling, rumbling, or a new noise",
+          "next": "bl.noise.screen",
+          "hint": "",
+          "fact": "Complaint: Noise from the boiler or pipes.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "landing": "landing_noise"
+          },
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "landing_leak",
+          "label": "Water dripping or a puddle (nothing spraying)",
+          "next": "bl.leak.where",
+          "hint": "",
+          "fact": "Complaint: Water dripping or puddling.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "landing": "landing_leak"
+          },
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "landing_no_hot_water",
+          "label": "No hot tap water",
+          "next": "bl.dhw.source",
+          "hint": "",
+          "fact": "Complaint: No hot tap water.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "landing": "landing_no_hot_water",
+            "mode": "dhw"
+          },
+          "reason": null,
+          "legal": "L-27"
+        },
+        {
+          "id": "hazard_now",
+          "label": "Something new: a smell, alarm, smoke, sparks, or spraying water or steam",
+          "next": "bl.gate.safety",
+          "hint": "Back to the safety check.",
+          "fact": "New hazard reported during the boiler check.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "retriage": "hazard_now"
+          },
+          "reason": null,
+          "legal": "L-7"
+        }
+      ],
+      "diyTier": "basic",
+      "safetyGate": false,
+      "modes": [
+        "heat",
+        "dhw"
+      ],
+      "pn": null,
+      "input": null,
+      "legal": "L-34",
+      "owner": "bl"
+    },
+    "bl.cold.screen": {
+      "section": "Warmth first",
+      "title": "First: is anyone at risk from the cold?",
+      "body": "Answer for the people at home right now. Pick the first one that fits.",
+      "options": [
+        {
+          "id": "cold_at_risk_no_safe_heat",
+          "label": "Someone at risk from the cold (baby, older adult, medical need) with no safe heat",
+          "next": "@bl_cold_exposure",
+          "hint": "Warm them first.",
+          "fact": "Someone at risk from the cold with no safe heat.",
+          "gate": "cold_exposure_911",
+          "cond": "cold_at_risk",
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "fragile_warm_for_now",
+          "label": "Someone here is a baby, an older adult, or medically fragile, and they’re warm for now",
+          "next": "bl.cold.weather",
+          "hint": "",
+          "fact": "Someone medically fragile, a baby, or an older adult is at home (warm for now).",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "fragile": true
+          },
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "cold_getting_colder",
+          "label": "No one at risk, but the house is getting colder fast, or pipes could freeze",
+          "next": "bl.cold.weather",
+          "hint": "We’ll point you to a pro first.",
+          "fact": "House getting colder fast, or freeze risk, reported.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "coldUrgent": true
+          },
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "nobody_at_risk",
+          "label": "No one at risk, and the house is holding its temperature",
+          "next": "bl.cold.weather",
+          "hint": "",
+          "fact": "No one at risk; house holding its temperature.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "cold_not_sure",
+          "label": "I’m not sure",
+          "next": "bl.cold.weather",
+          "hint": "We’ll treat it as someone at risk.",
+          "fact": "Not sure whether anyone is at risk from the cold (treated as at risk).",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "fragile": true
+          },
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "hazard_now",
+          "label": "Something new: a smell, alarm, smoke, sparks, or spraying water or steam",
+          "next": "bl.gate.safety",
+          "hint": "Back to the safety check.",
+          "fact": "New hazard reported during the boiler check.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "retriage": "hazard_now"
+          },
+          "reason": null,
+          "legal": "L-7"
+        }
+      ],
+      "diyTier": "basic",
+      "safetyGate": false,
+      "modes": [
+        "heat",
+        "dhw"
+      ],
+      "pn": null,
+      "input": null,
+      "legal": "L-9",
+      "owner": "bl"
+    },
+    "bl.cold.weather": {
+      "section": "Warmth first",
+      "title": "Is it 40 °F (4 °C) or colder outside, or will it be in the next few days?",
+      "body": "This decides which steps we show. It’s our own cautious cutoff, not a rating for your boiler.",
+      "options": [
+        {
+          "id": "cold_yes",
+          "label": "Yes",
+          "next": {
+            "fragileNoHeat": "@bl_fragile_cold_pro",
+            "byLanding": {
+              "landing_no_heat": "bl.tstat.call",
+              "landing_some_rooms": "bl.zone.look",
+              "landing_code": "bl.code.read",
+              "landing_pressure": {
+                "steam": "bl.steam.glass",
+                "default": "bl.pressure.read"
+              }
+            }
+          },
+          "hint": "",
+          "fact": "Outdoor: 40 °F (4 °C) or colder now or in the next few days.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "cold": true,
+            "coldKnown": true
+          },
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "cold_no",
+          "label": "No",
+          "next": {
+            "fragileNoHeat": "@bl_fragile_cold_pro",
+            "byLanding": {
+              "landing_no_heat": "bl.tstat.call",
+              "landing_some_rooms": "bl.zone.look",
+              "landing_code": "bl.code.read",
+              "landing_pressure": {
+                "steam": "bl.steam.glass",
+                "default": "bl.pressure.read"
+              }
+            }
+          },
+          "hint": "",
+          "fact": "Outdoor: warmer than 40 °F (4 °C).",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "cold": false,
+            "coldKnown": true
+          },
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "cold_unsure",
+          "label": "I’m not sure",
+          "next": {
+            "fragileNoHeat": "@bl_fragile_cold_pro",
+            "byLanding": {
+              "landing_no_heat": "bl.tstat.call",
+              "landing_some_rooms": "bl.zone.look",
+              "landing_code": "bl.code.read",
+              "landing_pressure": {
+                "steam": "bl.steam.glass",
+                "default": "bl.pressure.read"
+              }
+            }
+          },
+          "hint": "We’ll treat it as cold.",
+          "fact": "Outdoor temperature not known (treated as cold).",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "cold": true,
+            "coldKnown": true
+          },
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "hazard_now",
+          "label": "Something new: a smell, alarm, smoke, sparks, or spraying water or steam",
+          "next": "bl.gate.safety",
+          "hint": "Back to the safety check.",
+          "fact": "New hazard reported during the boiler check.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "retriage": "hazard_now"
+          },
+          "reason": null,
+          "legal": "L-7"
+        }
+      ],
+      "diyTier": "basic",
+      "safetyGate": false,
+      "modes": [
+        "heat",
+        "dhw"
+      ],
+      "pn": null,
+      "input": null,
+      "legal": "L-9",
+      "owner": "bl"
+    },
+    "bl.tstat.call": {
+      "section": "Thermostat",
+      "title": "Is the thermostat calling for heat?",
+      "body": "Look at the thermostat you already use. Don’t take it off the wall.\n\n1. Mode is Heat.\n2. Setpoint is a few degrees above the room temperature.\n\nSome thermostats wait a few minutes before starting heat. Radiators and floors can take a while to warm up.",
+      "options": [
+        {
+          "id": "tstat_not_calling",
+          "label": "It wasn’t on Heat, or the setpoint was at or below room temperature",
+          "next": "@bl_tstat_set_heat_basic",
+          "hint": "Easy fix first.",
+          "fact": "Thermostat was not calling for heat.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "settings_ok_still_problem",
+          "label": "Heat, setpoint above room, and it’s still cold",
+          "next": "bl.power.look",
+          "hint": "Next: look at the boiler.",
+          "fact": "Thermostat set to Heat above room temperature; still no heat.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "tstat_blank",
+          "label": "The screen is blank or I can’t read it",
+          "next": "bl.tstat.blank",
+          "hint": "Battery check next.",
+          "fact": "Thermostat screen blank or unreadable.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "cannot_change_settings",
+          "label": "I can’t change the settings",
+          "next": "bl.conclude.call_pro",
+          "hint": "Don’t pull it off the wall.",
+          "fact": "Thermostat settings could not be changed.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": "thermostat_control_issue",
+          "legal": null
+        },
+        {
+          "id": "not_sure",
+          "label": "I’m not sure",
+          "next": "@bl_tstat_unsure",
+          "hint": "Don’t guess.",
+          "fact": "",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "hazard_now",
+          "label": "Something new: a smell, alarm, smoke, sparks, or spraying water or steam",
+          "next": "bl.gate.safety",
+          "hint": "Back to the safety check.",
+          "fact": "New hazard reported during the boiler check.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "retriage": "hazard_now"
+          },
+          "reason": null,
+          "legal": "L-7"
+        }
+      ],
+      "diyTier": "basic",
+      "safetyGate": false,
+      "modes": [
+        "heat"
+      ],
+      "pn": null,
+      "input": null,
+      "legal": "L-34",
+      "owner": "bl"
+    },
+    "bl.tstat.blank": {
+      "section": "Thermostat",
+      "title": "Thermostat screen blank",
+      "body": "If your thermostat takes batteries:\n\n1. Check whether its face is made to pull off for batteries, or it has a battery door. Its manual shows how.\n2. If it does, put in fresh batteries of the same type.\n\nDon’t pull wires from the wall or open the boiler to look for power.",
+      "options": [
+        {
+          "id": "batteries_display_back",
+          "label": "New batteries, and the screen works again",
+          "next": "@bl_batteries_display_back",
+          "hint": "",
+          "fact": "Thermostat batteries replaced; screen works again.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "batteries_still_blank",
+          "label": "New batteries, and it’s still blank",
+          "next": "bl.conclude.call_pro",
+          "hint": "",
+          "fact": "Thermostat still blank after new batteries.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": "blank_tstat_after_basics",
+          "legal": null
+        },
+        {
+          "id": "no_batteries",
+          "label": "It has no batteries, and it’s blank",
+          "next": "bl.conclude.call_pro",
+          "hint": "",
+          "fact": "Thermostat has no batteries and is blank.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": "blank_tstat_no_batteries",
+          "legal": null
+        },
+        {
+          "id": "cannot_access",
+          "label": "I can’t get to the batteries without forcing it",
+          "next": "bl.conclude.call_pro",
+          "hint": "Don’t force it.",
+          "fact": "Thermostat batteries could not be reached without forcing.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": "tstat_inaccessible",
+          "legal": null
+        },
+        {
+          "id": "not_sure",
+          "label": "I’m not sure",
+          "next": "@bl_tstat_unsure",
+          "hint": "",
+          "fact": "",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "hazard_now",
+          "label": "Something new: a smell, alarm, smoke, sparks, or spraying water or steam",
+          "next": "bl.gate.safety",
+          "hint": "Back to the safety check.",
+          "fact": "New hazard reported during the boiler check.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "retriage": "hazard_now"
+          },
+          "reason": null,
+          "legal": "L-7"
+        }
+      ],
+      "diyTier": "basic",
+      "safetyGate": false,
+      "modes": [
+        "heat"
+      ],
+      "pn": null,
+      "input": null,
+      "legal": "L-24",
+      "owner": "bl"
+    },
+    "bl.power.look": {
+      "section": "Look at the boiler",
+      "title": "What do you see at the boiler?",
+      "body": "Look only. Many boilers have their own power switch, plus a service switch nearby, often with a red plate at the top of the basement stairs. Don’t flip any switch or breaker, and don’t open the boiler.",
+      "options": [
+        {
+          "id": "display_code",
+          "label": "A display shows a code, a lockout, or a flashing light",
+          "next": "bl.code.read",
+          "hint": "Write down the exact code.",
+          "fact": "Boiler display shows a code or lockout.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "sawCode": true
+          },
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "display_normal",
+          "label": "The display is on with no code, or it’s an older boiler with no display",
+          "next": {
+            "steam": "bl.steam.glass",
+            "default": "bl.pressure.read"
+          },
+          "hint": "Next: the gauge.",
+          "fact": "Boiler display normal or no display.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "display_dark",
+          "label": "The display is dark, and the switches look on",
+          "next": "bl.conclude.call_pro",
+          "hint": "A pro checks power from here.",
+          "fact": "Boiler display dark with switches apparently on.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": "display_dark",
+          "legal": null
+        },
+        {
+          "id": "switch_or_breaker_off",
+          "label": "A boiler switch is off, or a breaker looks tripped",
+          "next": "@bl_switch_off_pro",
+          "hint": "Leave it as it is.",
+          "fact": "Boiler switch off or breaker looked tripped.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "cannot_see_safely",
+          "label": "I can’t get to the boiler safely",
+          "next": "bl.conclude.call_pro",
+          "hint": "Don’t climb or move things to reach it.",
+          "fact": "Boiler could not be reached safely.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": "boiler_inaccessible",
+          "legal": null
+        },
+        {
+          "id": "hazard_now",
+          "label": "Something new: a smell, alarm, smoke, sparks, or spraying water or steam",
+          "next": "bl.gate.safety",
+          "hint": "Back to the safety check.",
+          "fact": "New hazard reported during the boiler check.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "retriage": "hazard_now"
+          },
+          "reason": null,
+          "legal": "L-7"
+        }
+      ],
+      "diyTier": "basic",
+      "safetyGate": false,
+      "modes": [
+        "heat"
+      ],
+      "pn": null,
+      "input": null,
+      "legal": "L-34",
+      "owner": "bl"
+    },
+    "bl.code.read": {
+      "section": "Boiler code",
+      "title": "What does the code or message point to?",
+      "body": "Write down the exact code and the boiler’s brand and model, or take a photo. You can type the code below. Your owner’s manual explains it.\n\nPick the closest match. Don’t reset anything on this screen.",
+      "options": [
+        {
+          "id": "code_low_pressure",
+          "label": "Low water pressure or low water",
+          "next": {
+            "steam": "bl.steam.glass",
+            "default": "bl.pressure.read"
+          },
+          "hint": "Next: the gauge.",
+          "fact": "Code points to low water pressure or low water.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "code_ignition_flame",
+          "label": "Ignition, flame, or a lockout",
+          "next": {
+            "resetEligible": "bl.reset.check",
+            "default": "bl.conclude.call_pro"
+          },
+          "hint": "Next: whether a reset is allowed.",
+          "fact": "Code points to ignition, flame, or lockout.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": {
+            "oil": "oil_lockout",
+            "default": null
+          },
+          "legal": null
+        },
+        {
+          "id": "code_overheat",
+          "label": "Overheat, high limit, or high temperature",
+          "next": "bl.conclude.call_pro",
+          "hint": "This one is for a pro, not a reset.",
+          "fact": "Code points to overheat or high limit.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": "overheat_code",
+          "legal": null
+        },
+        {
+          "id": "code_vent_condensate",
+          "label": "Vent, exhaust, air, fan, or condensate",
+          "next": {
+            "fuelGas": "bl.vent.look",
+            "default": "bl.conclude.call_pro"
+          },
+          "hint": "Next: a look outside.",
+          "fact": "Code points to vent, exhaust, fan, or condensate.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": "other_code",
+          "legal": null
+        },
+        {
+          "id": "code_co",
+          "label": "It mentions CO or carbon monoxide",
+          "next": "@bl_co_alarm",
+          "hint": "Get to fresh air.",
+          "fact": "Boiler code or message mentions CO.",
+          "gate": "co_alarm_or_symptoms",
+          "cond": "co",
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "code_other",
+          "label": "A sensor or something else",
+          "next": "bl.conclude.call_pro",
+          "hint": "",
+          "fact": "Code points to a sensor or other fault.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": "other_code",
+          "legal": null
+        },
+        {
+          "id": "code_unknown",
+          "label": "I can’t tell what it means",
+          "next": "bl.conclude.call_pro",
+          "hint": "The pro will look it up.",
+          "fact": "Code meaning not known.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": "code_unknown",
+          "legal": null
+        },
+        {
+          "id": "hazard_now",
+          "label": "Something new: a smell, alarm, smoke, sparks, or spraying water or steam",
+          "next": "bl.gate.safety",
+          "hint": "Back to the safety check.",
+          "fact": "New hazard reported during the boiler check.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "retriage": "hazard_now"
+          },
+          "reason": null,
+          "legal": "L-7"
+        }
+      ],
+      "diyTier": "basic",
+      "safetyGate": false,
+      "modes": [
+        "heat",
+        "dhw"
+      ],
+      "pn": {
+        "type": "§8 short (reading a code)",
+        "what": "Nothing changes. You’re only reading the code.",
+        "caution": "Some codes clear on their own, so a photo keeps the exact one.",
+        "source": "From your boiler maker’s owner’s manual (the code list), checked by you.",
+        "watch": "Note whether the code stays, flashes, or changes.",
+        "stop": "Stop and put things back the way you wrote them down if you’d need to open a cover to see the display. If that doesn’t fix it, call a licensed HVAC professional."
+      },
+      "input": {
+        "id": "blCode",
+        "label": "Exact code (optional)",
+        "optional": true,
+        "max": 16,
+        "pattern": "^[A-Za-z0-9 .:-]{1,16}$"
+      },
+      "legal": "L-14",
+      "owner": "bl"
+    },
+    "bl.reset.check": {
+      "section": "Before a reset",
+      "title": "Before any reset: does any of this fit?",
+      "body": "A reset is only for a lockout your owner’s manual tells you to reset, from the front of the boiler. Pick the first one that fits.",
+      "options": [
+        {
+          "id": "reset_gas_smell",
+          "label": "Gas or rotten-egg smell, or a strong smell you can’t place",
+          "next": "@bl_gas_smell",
+          "hint": "Leave now.",
+          "fact": "Gas, rotten-egg, or unknown strong smell reported.",
+          "gate": "gas_co",
+          "cond": "gas",
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "reset_soot_exhaust",
+          "label": "Soot, scorch marks, flame outside the burner, or a heavy oil or exhaust smell",
+          "next": "@bl_soot_scorch",
+          "hint": "Stop using it.",
+          "fact": "Soot, scorch marks, flame outside the burner, or heavy oil or exhaust smell reported.",
+          "gate": "combustion_soot",
+          "cond": "soot",
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "reset_bang",
+          "label": "A bang, boom, or puff of smoke when it starts",
+          "next": "@bl_bang_puffback",
+          "hint": "Stop using it.",
+          "fact": "Bang, boom, or puffback at start reported.",
+          "gate": "delayed_ignition_puffback",
+          "cond": "puffback",
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "reset_already",
+          "label": "It’s already been reset since this started",
+          "next": "bl.conclude.call_pro",
+          "hint": "One reset is the limit.",
+          "fact": "Boiler was already reset since this started (reset limit used).",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "resetCount": 1
+          },
+          "reason": "reset_already_used",
+          "legal": null
+        },
+        {
+          "id": "reset_none",
+          "label": "None of these",
+          "next": "bl.pn.notice",
+          "hint": "",
+          "fact": "",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "pnStep": "reset"
+          },
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "hazard_now",
+          "label": "Something new: a smell, alarm, smoke, sparks, or spraying water or steam",
+          "next": "bl.gate.safety",
+          "hint": "Back to the safety check.",
+          "fact": "New hazard reported during the boiler check.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "retriage": "hazard_now"
+          },
+          "reason": null,
+          "legal": "L-7"
+        }
+      ],
+      "diyTier": "basic",
+      "safetyGate": false,
+      "modes": [
+        "heat",
+        "dhw"
+      ],
+      "pn": null,
+      "input": null,
+      "legal": "L-15",
+      "owner": "bl"
+    },
+    "bl.pn.notice": {
+      "section": "Before you start",
+      "title": "Before you start",
+      "body": "- **These steps are optional.** You can stop and call a licensed HVAC professional at any time.\n- **Write down or photograph how things are set now.** You’ll need it to put things back.\n- **Do only the step shown, the way it’s shown.** Don’t open panels, use tools on the equipment, or change anything else, even if it’s on the same screen or nearby.\n- **If anything looks different from these steps, stop.** Your equipment may not match what we describe. Check your owner’s manual.\n- **If you smell gas or burning, hear a CO alarm, see smoke, or see water near wires, stop now** and use the emergency steps.\n- These steps come from the equipment maker’s documents and common trade practice. They’re general information, not a diagnosis or an inspection of your system.",
+      "options": [
+        {
+          "id": "notice_ack",
+          "label": "I wrote down or photographed the current settings, I’ll do only the step shown, and I’ll stop if anything looks different or unsafe.",
+          "next": {
+            "pnReset": "bl.reset.brand",
+            "pnBleed": "bl.pn.warranty"
+          },
+          "hint": "",
+          "fact": "Proper-notice acknowledgement given (pn-v1).",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "noticeAck": true
+          },
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "notice_decline",
+          "label": "I’d rather call a pro",
+          "next": "bl.conclude.call_pro",
+          "hint": "",
+          "fact": "Chose a pro instead of the homeowner step.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": "notice_declined",
+          "legal": null
+        },
+        {
+          "id": "hazard_now",
+          "label": "Something new: a smell, alarm, smoke, sparks, or spraying water or steam",
+          "next": "bl.gate.safety",
+          "hint": "Back to the safety check.",
+          "fact": "New hazard reported during the boiler check.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "retriage": "hazard_now"
+          },
+          "reason": null,
+          "legal": "L-7"
+        }
+      ],
+      "diyTier": "basic",
+      "safetyGate": false,
+      "modes": [
+        "heat",
+        "dhw"
+      ],
+      "pn": null,
+      "input": null,
+      "legal": "L-16",
+      "owner": "bl"
+    },
+    "bl.reset.brand": {
+      "section": "Reset once",
+      "title": "Which matches your boiler and its screen?",
+      "body": "**Reset once, only once.** If it stops or shows the same code again, don’t reset it again. Repeated shutdowns mean a safety device is doing its job. Call a licensed HVAC professional and tell them the code and what you saw.\n\nWe show resets only for owner’s manuals we’ve checked. If yours isn’t listed, skip the reset.",
+      "options": [
+        {
+          "id": "rs_wm",
+          "label": "Weil-McLain Evergreen: the screen is red and shows LOCKOUT",
+          "next": "bl.reset.do",
+          "hint": "",
+          "fact": "Brand reported: Weil-McLain Evergreen (LOCKOUT screen).",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "resetBrand": "wm"
+          },
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "rs_bosch",
+          "label": "Bosch Greenstar combi: a fault code shows",
+          "next": "bl.reset.do",
+          "hint": "",
+          "fact": "Brand reported: Bosch Greenstar combi.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "resetBrand": "bosch"
+          },
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "rs_buderus",
+          "label": "Buderus GB142: an error code flashes on the display",
+          "next": "bl.reset.do",
+          "hint": "",
+          "fact": "Brand reported: Buderus GB142.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "resetBrand": "buderus"
+          },
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "rs_rinnai",
+          "label": "Rinnai I-Series combi: the Central Heating or Domestic Hot Water button is blinking",
+          "next": "bl.reset.do",
+          "hint": "",
+          "fact": "Brand reported: Rinnai I-Series combi.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "resetBrand": "rinnai"
+          },
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "rs_viessmann",
+          "label": "Viessmann Vitodens 100-W: the screen shows a burner fault",
+          "next": "bl.reset.do",
+          "hint": "",
+          "fact": "Brand reported: Viessmann Vitodens 100-W.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "resetBrand": "viessmann"
+          },
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "rs_not_listed",
+          "label": "Another brand, or mine doesn’t look like this",
+          "next": "bl.conclude.call_pro",
+          "hint": "Skip the reset.",
+          "fact": "Brand or screen not on the checked reset list.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": "reset_not_on_model",
+          "legal": null
+        },
+        {
+          "id": "hazard_now",
+          "label": "Something new: a smell, alarm, smoke, sparks, or spraying water or steam",
+          "next": "bl.gate.safety",
+          "hint": "Back to the safety check.",
+          "fact": "New hazard reported during the boiler check.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "retriage": "hazard_now"
+          },
+          "reason": null,
+          "legal": "L-7"
+        }
+      ],
+      "diyTier": "basic",
+      "safetyGate": false,
+      "modes": [
+        "heat",
+        "dhw"
+      ],
+      "pn": null,
+      "input": null,
+      "legal": "L-17",
+      "owner": "bl"
+    },
+    "bl.reset.do": {
+      "section": "Reset once",
+      "title": "Reset it once",
+      "body": "[RESET_STEPS by brand]\n\n**Don’t change these. They protect your equipment and your safety, and they’re for professionals only:** the relief valve and its lever, the gas valve and gas piping, the low-water cutoff and its buttons, an oil burner’s red reset button, the water feed (fill) valve and its lever, the expansion tank’s air valve, zone valve levers and buttons, the temperature dial on a tank the boiler heats, and the boiler’s installer menus and temperature limits. If a step would take you to one of these, stop. If you see a password or code prompt, stop. That’s for installers.",
+      "options": [
+        {
+          "id": "reset_ok",
+          "label": "It started, and the code hasn’t come back",
+          "next": "@bl_reset_ok_basic",
+          "hint": "",
+          "fact": "One owner-manual reset done; boiler restarted and the code has not come back so far.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "resetCount": "+1"
+          },
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "reset_same_code",
+          "label": "The same code came back",
+          "next": "bl.conclude.call_pro",
+          "hint": "Don’t reset it again.",
+          "fact": "One owner-manual reset done; the same code came back.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "resetCount": "+1"
+          },
+          "reason": "reset_failed",
+          "legal": null
+        },
+        {
+          "id": "reset_new_code",
+          "label": "A different code showed up",
+          "next": "bl.conclude.call_pro",
+          "hint": "Don’t reset it again.",
+          "fact": "One owner-manual reset done; a different code showed up.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "resetCount": "+1"
+          },
+          "reason": "reset_new_code",
+          "legal": null
+        },
+        {
+          "id": "reset_no_match",
+          "label": "My screen or buttons don’t match these steps",
+          "next": "bl.conclude.call_pro",
+          "hint": "Skip the reset.",
+          "fact": "Screen or buttons did not match the manual’s reset steps; no reset done.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": "reset_not_on_model",
+          "legal": null
+        },
+        {
+          "id": "hazard_now",
+          "label": "Something new: a smell, alarm, smoke, sparks, or spraying water or steam",
+          "next": "bl.gate.safety",
+          "hint": "Back to the safety check.",
+          "fact": "New hazard reported during the boiler check.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "retriage": "hazard_now"
+          },
+          "reason": null,
+          "legal": "L-7"
+        }
+      ],
+      "diyTier": "basic",
+      "safetyGate": false,
+      "modes": [
+        "heat",
+        "dhw"
+      ],
+      "pn": {
+        "type": "§2 + §3 + §5 (owner-manual reset once)",
+        "what": "Asks the boiler to try starting again after a lockout.",
+        "caution": "If the problem is still there, it will lock out again, and repeated resets can hide a real fault.",
+        "source": "[RESET_STEPS[brand].source]",
+        "watch": {
+          "heat": "Watch the screen for about 15 minutes with the thermostat calling for heat.",
+          "dhw": "Watch the screen for about 15 minutes with a hot tap running."
+        },
+        "stop": "Stop and put things back the way you wrote them down if the same code comes back, or you smell gas or exhaust. If that doesn’t fix it, call a licensed HVAC professional."
+      },
+      "input": null,
+      "legal": "L-17",
+      "owner": "bl"
+    },
+    "bl.pn.warranty": {
+      "section": "Before you start",
+      "title": "Was it installed recently?",
+      "body": "**If your system or this part was installed recently, check with your installer first.** Some warranties and installer agreements expect them to make changes. Changing things yourself may affect what they’ll cover.",
+      "options": [
+        {
+          "id": "ask_installer",
+          "label": "Ask my installer first",
+          "next": "@bl_ask_installer",
+          "hint": "",
+          "fact": "Chose to ask the installer first.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "warranty_ok",
+          "label": "Not under warranty, or my installer said it’s OK",
+          "next": "bl.bleed.step",
+          "hint": "",
+          "fact": "Warranty: not under warranty, or the installer said it’s OK (reported).",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "warrantyAck": true
+          },
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "warranty_unsure",
+          "label": "I’m not sure",
+          "next": "@bl_ask_installer",
+          "hint": "",
+          "fact": "Not sure about warranty; asking the installer first.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "hazard_now",
+          "label": "Something new: a smell, alarm, smoke, sparks, or spraying water or steam",
+          "next": "bl.gate.safety",
+          "hint": "Back to the safety check.",
+          "fact": "New hazard reported during the boiler check.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "retriage": "hazard_now"
+          },
+          "reason": null,
+          "legal": "L-7"
+        }
+      ],
+      "diyTier": "basic",
+      "safetyGate": false,
+      "modes": [
+        "heat"
+      ],
+      "pn": null,
+      "input": null,
+      "legal": "L-21",
+      "owner": "bl"
+    },
+    "bl.bleed.step": {
+      "section": "Let air out",
+      "title": "Bleed air from a cold radiator or baseboard",
+      "body": "1. Write down the boiler gauge reading. Set the thermostat to Off, and wait until the radiators are cool to the touch.\n2. Find the small vent at the top or end of the cold radiator or baseboard. Some baseboard vents sit behind a hinged end cap. Use only the radiator key made for the vent, or a coin for a coin-slot vent.\n3. Hold a cup and a towel under it. Turn the vent slowly until air hisses out.\n4. When water flows steadily for a few seconds, close the vent.\n5. Read the gauge again. Then set the thermostat back the way you wrote it down.",
+      "options": [
+        {
+          "id": "bleed_done_ok",
+          "label": "Done: the gauge stayed in range, and the heat is coming back",
+          "next": "@bl_bleed_done_basic",
+          "hint": "",
+          "fact": "Air let out of a radiator or baseboard vent; gauge stayed in range; heat coming back.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "bleed_still_cold",
+          "label": "Done, but it’s still cold or still gurgling",
+          "next": "bl.conclude.call_pro",
+          "hint": "",
+          "fact": "Air let out of a vent; still cold or gurgling.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": "air_after_bleed",
+          "legal": null
+        },
+        {
+          "id": "bleed_pressure_low",
+          "label": "The gauge dropped below my manual’s minimum",
+          "next": "bl.conclude.call_pro",
+          "hint": "Don’t add water.",
+          "fact": "Gauge dropped below the manual’s minimum after letting air out.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": "pressure_low_after_bleed",
+          "legal": null
+        },
+        {
+          "id": "bleed_wont_close",
+          "label": "Water keeps coming, or the vent won’t close",
+          "next": "@bl_vent_wont_close",
+          "hint": "Catch the water.",
+          "fact": "Radiator or baseboard vent would not close.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "bleed_water_electrical",
+          "label": "Water got near wiring, a switch, or an outlet",
+          "next": "@bl_water_electrical",
+          "hint": "Stay out of the water.",
+          "fact": "Water near electrical parts reported.",
+          "gate": "water_near_electrical",
+          "cond": "water_electrical",
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "bleed_no_vent",
+          "label": "I can’t find a vent, or it needs a tool I don’t have",
+          "next": "bl.conclude.call_pro",
+          "hint": "",
+          "fact": "No reachable vent, or it needs a tool the homeowner does not have.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": "air_in_system",
+          "legal": null
+        },
+        {
+          "id": "hazard_now",
+          "label": "Something new: a smell, alarm, smoke, sparks, or spraying water or steam",
+          "next": "bl.gate.safety",
+          "hint": "Back to the safety check.",
+          "fact": "New hazard reported during the boiler check.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "retriage": "hazard_now"
+          },
+          "reason": null,
+          "legal": "L-7"
+        }
+      ],
+      "diyTier": "basic",
+      "safetyGate": false,
+      "modes": [
+        "heat"
+      ],
+      "pn": {
+        "type": "§2 + §3 + §6 + §7 (full pattern)",
+        "what": "Lets trapped air out of a radiator or baseboard so hot water can fill it.",
+        "caution": "Water can drip or spurt from the vent, and the pressure can drop low enough that the boiler stops heating.",
+        "source": "From Caleffi idronics No. 15, page 11, checked 2026-10-11.",
+        "watch": "Watch the gauge. Many makers list about 12 psi or more when cold; your manual’s number comes first.",
+        "stop": "Stop and put things back the way you wrote them down if water won’t stop, water reaches anything electrical, or the gauge drops below your manual’s minimum. If that doesn’t fix it, call a licensed HVAC professional.",
+        "lc40": "If the house is getting cold and the boiler isn’t heating after this, set the thermostat back the way you wrote it down right away, then call a licensed HVAC professional. If it’s dangerously cold and anyone is at risk, get them somewhere warm first.",
+        "guard": "Second Wrench doesn’t guide these changes when it’s 40 °F (4 °C) or colder outside, or will be in the next few days. That’s our own cautious cutoff, not a rating for your equipment. If anyone at home is an infant, elderly, or medically fragile, leave these to a professional."
+      },
+      "input": null,
+      "legal": "L-22",
+      "owner": "bl"
+    },
+    "bl.pressure.read": {
+      "section": "Pressure gauge",
+      "title": "What does the pressure gauge read?",
+      "body": "Look at the round gauge on the boiler or a nearby pipe. Many show psi and temperature together. Some combis show bar: 1 bar is about 14.5 psi.\n\nMany makers ask for about 12 psi or more when the system is cold, and not over about 24 to 25 psi when hot. Your manual’s numbers come first. Don’t tap or adjust anything.",
+      "options": [
+        {
+          "id": "pressure_low",
+          "label": "Under about 12 psi (about 0.8 bar)",
+          "next": "bl.conclude.call_pro",
+          "hint": "Don’t add water yourself.",
+          "fact": "Pressure gauge read under about 12 psi.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": "low_pressure",
+          "legal": null
+        },
+        {
+          "id": "pressure_normal",
+          "label": "About 12 to 25 psi (about 0.8 to 1.7 bar)",
+          "next": {
+            "landingPressure": "@bl_pressure_in_range_basic",
+            "dhw": "bl.conclude.call_pro",
+            "default": "bl.heat.where"
+          },
+          "hint": "",
+          "fact": "Pressure gauge read about 12 to 25 psi.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": {
+            "dhw": "code_pressure_ok",
+            "default": null
+          },
+          "legal": null
+        },
+        {
+          "id": "pressure_high",
+          "label": "Over 25 but under 30 psi",
+          "next": "bl.conclude.call_pro",
+          "hint": "Watch the relief valve pipe for water.",
+          "fact": "Pressure gauge read over 25 but under 30 psi.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": "pressure_high",
+          "legal": null
+        },
+        {
+          "id": "pressure_at_relief",
+          "label": "30 psi or more",
+          "next": "@bl_pressure_relief_stop",
+          "hint": "Stay back from the relief valve.",
+          "fact": "Gauge at or above 30 psi.",
+          "gate": "pressure_at_relief",
+          "cond": "pressure_at_relief",
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "pressure_relief_discharging",
+          "label": "Water or steam is coming from the relief valve or its pipe",
+          "next": "@bl_water_steam_release",
+          "hint": "Stay back.",
+          "fact": "Relief valve discharging.",
+          "gate": "water_steam_release",
+          "cond": "water_steam_release",
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "pressure_cant_find",
+          "label": "I can’t find or read the gauge",
+          "next": "@bl_pressure_unsure",
+          "hint": "Don’t open anything to find it.",
+          "fact": "",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "hazard_now",
+          "label": "Something new: a smell, alarm, smoke, sparks, or spraying water or steam",
+          "next": "bl.gate.safety",
+          "hint": "Back to the safety check.",
+          "fact": "New hazard reported during the boiler check.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "retriage": "hazard_now"
+          },
+          "reason": null,
+          "legal": "L-7"
+        }
+      ],
+      "diyTier": "basic",
+      "safetyGate": false,
+      "modes": [
+        "heat",
+        "dhw"
+      ],
+      "pn": {
+        "type": "§8 short (reading a gauge)",
+        "what": "Nothing changes. You’re only reading the gauge.",
+        "caution": "The gauge and nearby pipes can be hot.",
+        "source": "From Weil-McLain Evergreen Series 2 User’s Manual, page 6, and Triangle Tube Prestige User’s Information Manual, pages 10 and 11, checked 2026-10-11.",
+        "watch": "If you can, read it once cold and once while it’s heating.",
+        "stop": "Stop and put things back the way you wrote them down if you’d need to open, tap, or move anything to read it. If that doesn’t fix it, call a licensed HVAC professional."
+      },
+      "input": null,
+      "legal": "L-11",
+      "owner": "bl"
+    },
+    "bl.steam.glass": {
+      "section": "Steam water level",
+      "title": "Where is the water in the glass tube?",
+      "body": "Look at the glass tube on the side of the boiler from a step back. Don’t touch it or its valves; it can be hot. The water level moves a little while the boiler runs.",
+      "options": [
+        {
+          "id": "glass_normal",
+          "label": "Water is visible, near the middle",
+          "next": {
+            "landingPressure": "@bl_pressure_in_range_basic",
+            "default": "bl.heat.where"
+          },
+          "hint": "",
+          "fact": "Steam sight glass showed water near the middle.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "glass_low_or_light",
+          "label": "Water is low in the tube, or a low-water light is on",
+          "next": "bl.conclude.call_pro",
+          "hint": "Don’t add water yourself.",
+          "fact": "Steam water low, or low-water light on.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": "steam_low_water",
+          "legal": null
+        },
+        {
+          "id": "glass_empty",
+          "label": "Steam boiler: the glass tube shows no water",
+          "next": "@bl_steam_glass_empty",
+          "hint": "Don’t add water.",
+          "fact": "Steam boiler sight glass looked empty.",
+          "gate": "steam_low_water",
+          "cond": "steam_glass_empty",
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "glass_full_or_surging",
+          "label": "Full to the top, or the level jumps up and down a lot",
+          "next": "bl.conclude.call_pro",
+          "hint": "",
+          "fact": "Steam sight glass full or surging.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": "steam_water_level",
+          "legal": null
+        },
+        {
+          "id": "glass_cant_see",
+          "label": "I can’t see the water level",
+          "next": "bl.conclude.call_pro",
+          "hint": "Don’t open anything to find it.",
+          "fact": "Steam water level could not be seen.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": "steam_glass_unreadable",
+          "legal": null
+        },
+        {
+          "id": "hazard_now",
+          "label": "Something new: a smell, alarm, smoke, sparks, or spraying water or steam",
+          "next": "bl.gate.safety",
+          "hint": "Back to the safety check.",
+          "fact": "New hazard reported during the boiler check.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "retriage": "hazard_now"
+          },
+          "reason": null,
+          "legal": "L-7"
+        }
+      ],
+      "diyTier": "basic",
+      "safetyGate": false,
+      "modes": [
+        "heat"
+      ],
+      "pn": {
+        "type": "§8 short (reading a sight glass)",
+        "what": "Nothing changes. You’re only reading the water level.",
+        "caution": "The glass, its valves, and nearby pipes can be hot.",
+        "source": "From Burnham User’s Information Manual 111241-01, page 3, and Weil-McLain SGO Series 4 Boiler Manual, page 6, checked 2026-10-11.",
+        "watch": "Watch the level for a minute from a step back.",
+        "stop": "Stop and put things back the way you wrote them down if you’d need to touch the glass or its valves to see it. If that doesn’t fix it, call a licensed HVAC professional."
+      },
+      "input": null,
+      "legal": "L-12",
+      "owner": "bl"
+    },
+    "bl.heat.where": {
+      "section": "Where the heat stops",
+      "title": "Is the boiler hot while the rooms stay cold?",
+      "body": "With the thermostat calling for heat for about 15 minutes, look at the temperature on the boiler’s gauge or display. Or hold your hand a few inches from the pipe leaving the top of the boiler.\n\nDon’t touch the pipes. They can burn.",
+      "options": [
+        {
+          "id": "boiler_hot_rooms_cold",
+          "label": "The boiler or its top pipe is hot, but radiators, baseboard, or floors stay cold",
+          "next": "bl.conclude.call_pro",
+          "hint": "",
+          "fact": "Boiler hot but heat not reaching rooms.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": {
+            "steam": "steam_distribution_after_basics",
+            "default": "circulation_after_basics"
+          },
+          "legal": null
+        },
+        {
+          "id": "boiler_cold",
+          "label": "The boiler and its pipes stay cool",
+          "next": {
+            "highEffGas": "bl.vent.look",
+            "default": "bl.conclude.call_pro"
+          },
+          "hint": "",
+          "fact": "Boiler stays cool with a call for heat.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": "no_fire_after_basics",
+          "legal": null
+        },
+        {
+          "id": "cant_tell",
+          "label": "I can’t tell",
+          "next": {
+            "highEffGas": "bl.vent.look",
+            "default": "bl.conclude.call_pro"
+          },
+          "hint": "",
+          "fact": "Could not tell whether the boiler heats.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": "no_fire_after_basics",
+          "legal": null
+        },
+        {
+          "id": "hazard_now",
+          "label": "Something new: a smell, alarm, smoke, sparks, or spraying water or steam",
+          "next": "bl.gate.safety",
+          "hint": "Back to the safety check.",
+          "fact": "New hazard reported during the boiler check.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "retriage": "hazard_now"
+          },
+          "reason": null,
+          "legal": "L-7"
+        }
+      ],
+      "diyTier": "basic",
+      "safetyGate": false,
+      "modes": [
+        "heat"
+      ],
+      "pn": null,
+      "input": null,
+      "legal": "L-34",
+      "owner": "bl"
+    },
+    "bl.zone.look": {
+      "section": "Rooms and zones",
+      "title": "What do you notice in the cold rooms?",
+      "body": "Some homes have more than one thermostat. Each one runs a zone. Look only for now.",
+      "options": [
+        {
+          "id": "zone_tstat_not_calling",
+          "label": "That room’s thermostat wasn’t on Heat or was set below the room temperature",
+          "next": "@bl_tstat_set_heat_basic",
+          "hint": "Easy fix first.",
+          "fact": "Cold-zone thermostat was not calling for heat.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "emitters_blocked",
+          "label": "Furniture, curtains, or covers are against the baseboard or radiators",
+          "next": "@bl_emitters_cleared_basic",
+          "hint": "Clear them and give it time.",
+          "fact": "Baseboard or radiators blocked by furniture or covers.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "gurgle_or_cold_top",
+          "label": "Gurgling, or radiators warm at the bottom and cold at the top",
+          "next": {
+            "steam": "bl.conclude.call_pro",
+            "bleedOk": "bl.pn.notice",
+            "default": "bl.conclude.call_pro"
+          },
+          "hint": "",
+          "fact": "Gurgling or radiators cold at the top reported.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "pnStep": "bleed"
+          },
+          "reason": {
+            "steam": "steam_distribution_after_basics",
+            "bleedOk": null,
+            "guarded": "guard_blocked",
+            "default": "air_in_system"
+          },
+          "legal": null
+        },
+        {
+          "id": "one_zone_cold_ok_settings",
+          "label": "One zone stays cold with its thermostat calling for heat",
+          "next": {
+            "steam": "bl.conclude.call_pro",
+            "default": "bl.zone.valve"
+          },
+          "hint": "",
+          "fact": "One zone cold with thermostat calling.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": {
+            "steam": "zone_after_basics",
+            "default": null
+          },
+          "legal": null
+        },
+        {
+          "id": "everywhere_weak",
+          "label": "The heat is weak everywhere",
+          "next": "bl.power.look",
+          "hint": "Next: look at the boiler.",
+          "fact": "Heat weak everywhere.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "not_sure",
+          "label": "I’m not sure",
+          "next": "bl.conclude.call_pro",
+          "hint": "",
+          "fact": "",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": "rooms_unclear",
+          "legal": null
+        },
+        {
+          "id": "hazard_now",
+          "label": "Something new: a smell, alarm, smoke, sparks, or spraying water or steam",
+          "next": "bl.gate.safety",
+          "hint": "Back to the safety check.",
+          "fact": "New hazard reported during the boiler check.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "retriage": "hazard_now"
+          },
+          "reason": null,
+          "legal": "L-7"
+        }
+      ],
+      "diyTier": "basic",
+      "safetyGate": false,
+      "modes": [
+        "heat"
+      ],
+      "pn": null,
+      "input": null,
+      "legal": "L-34",
+      "owner": "bl"
+    },
+    "bl.zone.valve": {
+      "section": "Zone valve",
+      "title": "Look at the zone valve’s light",
+      "body": {
+        "heat": "1. With the cold zone’s thermostat calling for heat, find that zone’s valve on the pipes near the boiler. Many are labeled by zone.\n2. Look at the light on top. Don’t press the button on top or move any lever.",
+        "dhw": "1. With a hot tap running, find the valve for the hot water tank on the pipes near the boiler. It may be labeled for the tank.\n2. Look at the light on top. Don’t press the button on top or move any lever."
+      },
+      "options": [
+        {
+          "id": "zv_solid",
+          "label": "Taco: the green light is on steady",
+          "next": "bl.conclude.call_pro",
+          "hint": "",
+          "fact": "Taco zone valve light on steady (valve powered).",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": "zone_valve_calling",
+          "legal": null
+        },
+        {
+          "id": "zv_off",
+          "label": "Taco: the light is off",
+          "next": "bl.conclude.call_pro",
+          "hint": "",
+          "fact": "Taco zone valve light off.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": "zone_no_call",
+          "legal": null
+        },
+        {
+          "id": "zv_slow_or_double",
+          "label": "Taco: it blinks slowly (about every 5 seconds) or double-blinks",
+          "next": "bl.conclude.call_pro",
+          "hint": "",
+          "fact": "Taco zone valve light slow-blinking or double-blinking.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": "zone_valve_fault",
+          "legal": null
+        },
+        {
+          "id": "zv_other",
+          "label": "Another brand, no light, or I can’t tell which valve",
+          "next": "bl.conclude.call_pro",
+          "hint": "",
+          "fact": "Zone valve status not readable (other brand, no light, or valve not identified).",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": "zone_after_basics",
+          "legal": null
+        },
+        {
+          "id": "hazard_now",
+          "label": "Something new: a smell, alarm, smoke, sparks, or spraying water or steam",
+          "next": "bl.gate.safety",
+          "hint": "Back to the safety check.",
+          "fact": "New hazard reported during the boiler check.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "retriage": "hazard_now"
+          },
+          "reason": null,
+          "legal": "L-7"
+        }
+      ],
+      "diyTier": "basic",
+      "safetyGate": false,
+      "modes": [
+        "heat",
+        "dhw"
+      ],
+      "pn": {
+        "type": "§8 short (reading a status light)",
+        "what": "Nothing changes. You’re only reading a light.",
+        "caution": "The valve and the pipes near it can be hot.",
+        "source": "From Taco Zone Sentry instruction sheet 102-410, page 2, checked 2026-10-11.",
+        "watch": "Give it about a minute. The light blinks about once a second while the valve gets ready.",
+        "stop": "Stop and put things back the way you wrote them down if you’d need to move or open anything to see it. If that doesn’t fix it, call a licensed HVAC professional."
+      },
+      "input": null,
+      "legal": "L-20",
+      "owner": "bl"
+    },
+    "bl.vent.look": {
+      "section": "Vent pipes outside",
+      "title": "Are the plastic vent pipes outside clear?",
+      "body": "From the ground only, look at the boiler’s plastic pipes where they leave the house. Then look at the small drain tube from the boiler to a drain or pump. Don’t climb, and don’t open the boiler.",
+      "options": [
+        {
+          "id": "vent_blocked",
+          "label": "Snow, ice, leaves, a nest, or something else covers or blocks a pipe end",
+          "next": "@bl_vent_blocked",
+          "hint": "Leave it for the pro.",
+          "fact": "Vent or air pipe blocked outside.",
+          "gate": null,
+          "cond": "vent_blocked",
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "condensate_problem",
+          "label": "The drain tube is frozen, kinked, off its drain, or water is backing up",
+          "next": "bl.conclude.call_pro",
+          "hint": "",
+          "fact": "Condensate drain tube frozen, kinked, disconnected, or backing up.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": "condensate_issue",
+          "legal": null
+        },
+        {
+          "id": "vent_clear",
+          "label": "Both pipe ends and the drain tube look clear",
+          "next": "bl.conclude.call_pro",
+          "hint": "",
+          "fact": "Vent pipes and drain tube looked clear.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": {
+            "viaCode": "vent_code_after_look",
+            "default": "no_fire_after_basics"
+          },
+          "legal": null
+        },
+        {
+          "id": "vent_cant_see",
+          "label": "I can’t see them from the ground",
+          "next": "bl.conclude.call_pro",
+          "hint": "Don’t climb to look.",
+          "fact": "Vent pipes could not be seen from the ground.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": "vent_inaccessible",
+          "legal": null
+        },
+        {
+          "id": "hazard_now",
+          "label": "Something new: a smell, alarm, smoke, sparks, or spraying water or steam",
+          "next": "bl.gate.safety",
+          "hint": "Back to the safety check.",
+          "fact": "New hazard reported during the boiler check.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "retriage": "hazard_now"
+          },
+          "reason": null,
+          "legal": "L-7"
+        }
+      ],
+      "diyTier": "basic",
+      "safetyGate": false,
+      "modes": [
+        "heat",
+        "dhw"
+      ],
+      "pn": null,
+      "input": null,
+      "legal": "L-34",
+      "owner": "bl"
+    },
+    "bl.noise.screen": {
+      "section": "Noise",
+      "title": "What does it sound like?",
+      "body": "Listen from where you are. Don’t touch pipes or open the boiler.",
+      "options": [
+        {
+          "id": "noise_burning",
+          "label": "Burning or electrical smell, smoke, or sparks",
+          "next": "@bl_burning_sparks",
+          "hint": "Get away.",
+          "fact": "Burning or electrical smell, smoke, or sparks reported.",
+          "gate": "smoke_fire_sparks_burn",
+          "cond": "burning",
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "noise_relief_hiss",
+          "label": "Hissing or spitting from the relief valve or its pipe",
+          "next": "@bl_water_steam_release",
+          "hint": "Stay back.",
+          "fact": "Hissing or spitting from the relief valve.",
+          "gate": "water_steam_release",
+          "cond": "water_steam_release",
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "noise_steam_bang",
+          "label": "Banging or hammering in steam pipes or radiators",
+          "next": "bl.conclude.call_pro",
+          "hint": "",
+          "fact": "Banging in steam pipes or radiators.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": "steam_hammer",
+          "legal": null
+        },
+        {
+          "id": "noise_kettling",
+          "label": "Rumbling or popping inside the boiler, like a kettle",
+          "next": "bl.conclude.call_pro",
+          "hint": "",
+          "fact": "Kettle-like rumbling or popping in the boiler.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": "kettling",
+          "legal": null
+        },
+        {
+          "id": "noise_gurgle",
+          "label": "Gurgling or rushing water in hot-water pipes",
+          "next": "bl.conclude.call_pro",
+          "hint": "",
+          "fact": "Gurgling or rushing water in pipes.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": "air_in_system",
+          "legal": null
+        },
+        {
+          "id": "noise_grind_squeal",
+          "label": "Grinding, squealing, or loud humming near the boiler",
+          "next": "bl.conclude.call_pro",
+          "hint": "",
+          "fact": "Grinding, squealing, or loud hum near the boiler.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": "circulator_noise",
+          "legal": null
+        },
+        {
+          "id": "noise_other",
+          "label": "Something else",
+          "next": "bl.conclude.call_pro",
+          "hint": "",
+          "fact": "Other noise.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": "noise_other",
+          "legal": null
+        },
+        {
+          "id": "hazard_now",
+          "label": "Something new: a smell, alarm, smoke, sparks, or spraying water or steam",
+          "next": "bl.gate.safety",
+          "hint": "Back to the safety check.",
+          "fact": "New hazard reported during the boiler check.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "retriage": "hazard_now"
+          },
+          "reason": null,
+          "legal": "L-7"
+        }
+      ],
+      "diyTier": "basic",
+      "safetyGate": false,
+      "modes": [
+        "heat"
+      ],
+      "pn": null,
+      "input": null,
+      "legal": "L-34",
+      "owner": "bl"
+    },
+    "bl.leak.where": {
+      "section": "Water",
+      "title": "Where is the water coming from?",
+      "body": "Look from where you stand. Stay out of standing water near anything electrical. Don’t open the boiler.",
+      "options": [
+        {
+          "id": "leak_near_electrical",
+          "label": "It’s near the boiler’s wiring, switch, or an outlet, or I can’t tell",
+          "next": "@bl_water_electrical",
+          "hint": "Stay out of the water.",
+          "fact": "Water near electrical, or not sure.",
+          "gate": "water_near_electrical",
+          "cond": "water_electrical",
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "leak_relief_drip",
+          "label": "Dripping from the pipe on the side or top of the boiler (the relief valve)",
+          "next": "@bl_relief_weep_pro",
+          "hint": "Don’t cap or plug it.",
+          "fact": "Relief valve pipe dripping.",
+          "gate": null,
+          "cond": "relief_drip",
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "leak_condensate",
+          "label": "Around the small drain tube of a high-efficiency boiler",
+          "next": "bl.conclude.call_pro",
+          "hint": "",
+          "fact": "Water around the condensate drain tube.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": "condensate_leak",
+          "legal": null
+        },
+        {
+          "id": "leak_radiator_valve",
+          "label": "At a radiator, baseboard, valve, or air vent",
+          "next": "bl.conclude.call_pro",
+          "hint": "",
+          "fact": "Water at a radiator, baseboard, valve, or vent.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": "emitter_leak",
+          "legal": null
+        },
+        {
+          "id": "leak_boiler_pipes",
+          "label": "From the boiler itself or the pipes next to it",
+          "next": "bl.conclude.call_pro",
+          "hint": "",
+          "fact": "Water from the boiler or nearby pipes.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": "boiler_leak",
+          "legal": null
+        },
+        {
+          "id": "hazard_now",
+          "label": "Something new: a smell, alarm, smoke, sparks, or spraying water or steam",
+          "next": "bl.gate.safety",
+          "hint": "Back to the safety check.",
+          "fact": "New hazard reported during the boiler check.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "retriage": "hazard_now"
+          },
+          "reason": null,
+          "legal": "L-7"
+        }
+      ],
+      "diyTier": "basic",
+      "safetyGate": false,
+      "modes": [
+        "heat"
+      ],
+      "pn": null,
+      "input": null,
+      "legal": "L-34",
+      "owner": "bl"
+    },
+    "bl.dhw.source": {
+      "section": "Hot water",
+      "title": "How does your home get hot tap water?",
+      "body": "Use what you already know. Look only; don’t open the boiler or a tank.",
+      "options": [
+        {
+          "id": "dhw_combi",
+          "label": "From the boiler itself (a combi, no separate tank)",
+          "next": ">bl_to_wh",
+          "hint": "The water heater check takes it from here.",
+          "fact": "Hot water from a combi boiler (reported).",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "hwType": "combi"
+          },
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "dhw_indirect",
+          "label": "From a tank the boiler heats (an indirect tank)",
+          "next": ">bl_to_wh",
+          "hint": "The water heater check takes it from here.",
+          "fact": "Hot water from an indirect tank heated by the boiler (reported).",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "hwType": "indirect"
+          },
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "dhw_separate",
+          "label": "From a separate water heater with its own burner or element",
+          "next": ">bl_to_wh",
+          "hint": "The water heater check takes it from here.",
+          "fact": "Hot water from a separate water heater (reported).",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "hwType": "tank_or_tankless"
+          },
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "dhw_coil_in_boiler",
+          "label": "From a coil inside an older boiler, with no tank",
+          "next": "bl.conclude.call_pro",
+          "hint": "",
+          "fact": "Hot water from a coil inside the boiler (reported).",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": "tankless_coil",
+          "legal": null
+        },
+        {
+          "id": "dhw_not_sure",
+          "label": "I’m not sure",
+          "next": ">bl_to_wh",
+          "hint": "The water heater check has look-only clues.",
+          "fact": "Hot water source not known.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "hwType": "unknown"
+          },
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "hazard_now",
+          "label": "Something new: a smell, alarm, smoke, sparks, or spraying water or steam",
+          "next": "bl.gate.safety",
+          "hint": "Back to the safety check.",
+          "fact": "New hazard reported during the boiler check.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "retriage": "hazard_now"
+          },
+          "reason": null,
+          "legal": "L-7"
+        }
+      ],
+      "diyTier": "basic",
+      "safetyGate": false,
+      "modes": [
+        "dhw"
+      ],
+      "pn": null,
+      "input": null,
+      "legal": "L-27",
+      "owner": "bl"
+    },
+    "bl.dhw.indirect_call": {
+      "section": "Hot water",
+      "title": "What does the boiler do when the tank needs heat?",
+      "body": "The water heater check found the tank side looks OK. Run a hot tap for a few minutes and look at the boiler. Look only; don’t open the boiler.\n\nIf the tank has a temperature dial, you can read it, but don’t turn it. Hot water can scald.",
+      "options": [
+        {
+          "id": "ind_hot_tank_cold",
+          "label": "The boiler runs and gets hot, but the tank stays cold",
+          "next": "bl.zone.valve",
+          "hint": "Next: the tank’s zone valve light.",
+          "fact": "Boiler runs hot while the indirect tank stays cold.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "ind_no_start",
+          "label": "The boiler doesn’t start",
+          "next": "bl.conclude.call_pro",
+          "hint": "",
+          "fact": "Boiler does not start when the indirect tank calls.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": "indirect_no_call",
+          "legal": null
+        },
+        {
+          "id": "ind_code",
+          "label": "The boiler shows a code",
+          "next": "bl.cold.screen",
+          "hint": "Write down the exact code.",
+          "fact": "Boiler shows a code while the tank calls.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "landing": "landing_code",
+            "sawCode": true
+          },
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "ind_not_sure",
+          "label": "I’m not sure",
+          "next": "bl.conclude.call_pro",
+          "hint": "",
+          "fact": "",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": "indirect_unclear",
+          "legal": null
+        },
+        {
+          "id": "hazard_now",
+          "label": "Something new: a smell, alarm, smoke, sparks, or spraying water or steam",
+          "next": "bl.gate.safety",
+          "hint": "Back to the safety check.",
+          "fact": "New hazard reported during the boiler check.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "retriage": "hazard_now"
+          },
+          "reason": null,
+          "legal": "L-7"
+        }
+      ],
+      "diyTier": "basic",
+      "safetyGate": false,
+      "modes": [
+        "dhw"
+      ],
+      "pn": null,
+      "input": null,
+      "legal": "L-27",
+      "owner": "bl"
+    },
+    "bl.conclude.call_pro": {
+      "section": "Call a professional",
+      "title": "Time for a licensed pro",
+      "body": "You’ve done the homeowner checks this guide offers. What’s left is inside the boiler or its piping, and that’s work for a licensed heating pro.\n\nDon’t press reset buttons again, keep restarting the boiler, add water, or open any boiler door or panel. If it’s acting strangely, set the thermostat to Off.\n\nThe next screen has a note to share with the pro.",
+      "options": [
+        {
+          "id": "ack_call_pro",
+          "label": "Got it, I’ll call a pro",
+          "next": "@bl_call_pro",
+          "hint": "",
+          "fact": "",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "want_diy_anyway",
+          "label": "I want to fix it myself",
+          "next": "@bl_call_pro",
+          "hint": "Fixes inside the boiler are work for a licensed pro.",
+          "fact": "",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": "diy_not_offered",
+          "legal": null
+        },
+        {
+          "id": "hazard_now",
+          "label": "Something new: a smell, alarm, smoke, sparks, or spraying water or steam",
+          "next": "bl.gate.safety",
+          "hint": "Back to the safety check.",
+          "fact": "New hazard reported during the boiler check.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "retriage": "hazard_now"
+          },
+          "reason": null,
+          "legal": "L-7"
+        }
+      ],
+      "diyTier": "pro_only",
+      "safetyGate": false,
+      "modes": [
+        "heat",
+        "dhw"
+      ],
+      "pn": null,
+      "input": null,
+      "legal": "L-33",
+      "owner": "bl"
+    },
+    "sw.handoff.hydronic_coil": {
+      "section": "Hot-water coil",
+      "title": "Check the hot-water pipe to the coil",
+      "body": "1. With the thermostat calling for heat for about 15 minutes, find the pipe that carries hot water into the coil at the air handler.\n2. Hold your hand near the pipe, or touch it briefly with the back of your hand. Don’t grab it.\n\nIt can be over 160 °F. Don’t touch the fittings near the valves, and don’t open anything.",
+      "options": [
+        {
+          "id": "pipe_hot_no_air",
+          "label": "The pipe is hot, but the vents blow cool air, weak air, or none",
+          "next": ">bl_to_fn",
+          "hint": "The furnace check covers the blower and filter.",
+          "fact": "Coil supply pipe hot; vents blow cool, weak, or no air.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "pipe_cool",
+          "label": "The pipe is cool or only lukewarm",
+          "next": "sw.handoff.hydronic_coil.source",
+          "hint": "",
+          "fact": "Coil supply pipe cool or lukewarm.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "pipe_not_sure",
+          "label": "I’m not sure",
+          "next": "sw.handoff.hydronic_coil.both",
+          "hint": "We’ll treat it as not hot.",
+          "fact": "Not sure whether the coil supply pipe is hot (treated as not hot).",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "hazard_now",
+          "label": "Something new: a smell, alarm, smoke, sparks, or spraying water or steam",
+          "next": "bl.gate.safety",
+          "hint": "Back to the safety check.",
+          "fact": "New hazard reported during the boiler check.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "retriage": "hazard_now"
+          },
+          "reason": null,
+          "legal": "L-7"
+        }
+      ],
+      "diyTier": "basic",
+      "safetyGate": false,
+      "modes": [
+        "heat"
+      ],
+      "pn": {
+        "type": "§8 short (observing; brief back-of-hand touch) PENDING LEGAL",
+        "what": "Nothing changes. You’re only checking whether the pipe is hot.",
+        "caution": "The pipe can burn you if you hold it.",
+        "source": "From Triangle Tube Prestige User’s Information Manual, page 11, checked 2026-10-11.",
+        "watch": "Check once after the thermostat has called for heat for about 15 minutes.",
+        "stop": "Stop and put things back the way you wrote them down if you’d need to open a cover or move insulation to reach the pipe. If that doesn’t fix it, call a licensed HVAC professional."
+      },
+      "input": null,
+      "legal": "L-28",
+      "owner": "shared"
+    },
+    "sw.handoff.hydronic_coil.both": {
+      "section": "Hot-water coil",
+      "title": "Not sure? Check both sides.",
+      "body": "We’ll treat the pipe as not hot. Pick where to start. You can do the other one next.",
+      "options": [
+        {
+          "id": "start_water_side",
+          "label": "The water side first (boiler or water heater)",
+          "next": "sw.handoff.hydronic_coil.source",
+          "hint": "",
+          "fact": "Chose to check the water side first.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "start_air_side",
+          "label": "The air side first (blower and filter)",
+          "next": ">bl_to_fn",
+          "hint": "",
+          "fact": "Chose to check the air side first.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "hazard_now",
+          "label": "Something new: a smell, alarm, smoke, sparks, or spraying water or steam",
+          "next": "bl.gate.safety",
+          "hint": "Back to the safety check.",
+          "fact": "New hazard reported during the boiler check.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "retriage": "hazard_now"
+          },
+          "reason": null,
+          "legal": "L-7"
+        }
+      ],
+      "diyTier": "basic",
+      "safetyGate": false,
+      "modes": [
+        "heat"
+      ],
+      "pn": null,
+      "input": null,
+      "legal": "L-28",
+      "owner": "shared"
+    },
+    "sw.handoff.hydronic_coil.source": {
+      "section": "Hot-water coil",
+      "title": "What heats the water for the coil?",
+      "body": "Use what you already know, or a label you can read without opening anything.",
+      "options": [
+        {
+          "id": "src_boiler",
+          "label": "A boiler",
+          "next": {
+            "fromBl": "bl.coil.type",
+            "default": ">fn_to_bl"
+          },
+          "hint": "",
+          "fact": "A boiler heats the water for the coil (reported).",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "src_water_heater",
+          "label": "A water heater (tank or tankless)",
+          "next": ">coil_to_wh",
+          "hint": "The water heater check looks at the heater first.",
+          "fact": "A water heater heats the water for the coil (reported).",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "hwType": "tank_or_tankless"
+          },
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "src_combi",
+          "label": "A combi boiler that also heats tap water",
+          "next": {
+            "fromBl": "bl.intake.fuel",
+            "default": ">fn_to_bl"
+          },
+          "hint": "",
+          "fact": "A combi boiler heats the water for the coil (reported).",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "type": "combi",
+            "typeConf": "reported",
+            "landing": "landing_no_heat",
+            "coil": true
+          },
+          "reason": null,
+          "legal": null
+        },
+        {
+          "id": "src_not_sure",
+          "label": "I’m not sure",
+          "next": {
+            "fromBl": "bl.conclude.call_pro",
+            "default": ">fn_call_pro"
+          },
+          "hint": "",
+          "fact": "Not sure what heats the water for the coil.",
+          "gate": null,
+          "cond": null,
+          "set": {},
+          "reason": "coil_source_unclear",
+          "legal": null
+        },
+        {
+          "id": "hazard_now",
+          "label": "Something new: a smell, alarm, smoke, sparks, or spraying water or steam",
+          "next": "bl.gate.safety",
+          "hint": "Back to the safety check.",
+          "fact": "New hazard reported during the boiler check.",
+          "gate": null,
+          "cond": null,
+          "set": {
+            "retriage": "hazard_now"
+          },
+          "reason": null,
+          "legal": "L-7"
+        }
+      ],
+      "diyTier": "basic",
+      "safetyGate": false,
+      "modes": [
+        "heat"
+      ],
+      "pn": null,
+      "input": null,
+      "legal": "L-28",
+      "owner": "shared"
+    }
+  },
+  "results": {
+    "bl_gas_smell": {
+      "tier": "Emergency",
+      "urgency": "Leave now · call from outside",
+      "title": "Leave the house now.",
+      "explanation": "A gas smell comes before anything else.",
+      "actions": [
+        "Get everyone, and pets, out now.",
+        "Don’t touch light switches, the thermostat, phones, or anything that could spark while you’re inside.",
+        "Don’t try to find the leak.",
+        "From outside or a neighbor’s, call the gas utility’s emergency line or 911.",
+        "Don’t go back in until they say it’s safe.",
+        "Until heat’s back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
+      ],
+      "avoid": "Don’t try to shut off the gas yourself.",
+      "source": "gas",
+      "outcome": "emergency_exit",
+      "reason": "gas_co",
+      "gate": "gas_co",
+      "cond": "gas",
+      "diyTier": null,
+      "modes": [
+        "heat",
+        "dhw"
+      ],
+      "legal": "L-7",
+      "continueTo": null
+    },
+    "bl_co_alarm": {
+      "tier": "Emergency",
+      "urgency": "Get to fresh air · call 911",
+      "title": "Get everyone out to fresh air now.",
+      "explanation": "A CO alarm or these symptoms can mean carbon monoxide. You can’t see or smell it.",
+      "actions": [
+        "Get everyone, and pets, outside to fresh air now.",
+        "From outside, call 911 or the fire department.",
+        "Don’t go back in until responders say it’s safe.",
+        "Until heat’s back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
+      ],
+      "avoid": "Don’t silence the alarm and stay inside, and don’t open windows instead of leaving.",
+      "source": "gas",
+      "outcome": "emergency_exit",
+      "reason": "co_alarm_or_symptoms",
+      "gate": "co_alarm_or_symptoms",
+      "cond": "co",
+      "diyTier": null,
+      "modes": [
+        "heat",
+        "dhw"
+      ],
+      "legal": "L-7",
+      "continueTo": null
+    },
+    "bl_soot_scorch": {
+      "tier": "Emergency",
+      "urgency": "Stop · keep away from the boiler",
+      "title": "Stop using the boiler.",
+      "explanation": "These signs can mean unsafe burning and carbon monoxide.",
+      "actions": [
+        "If you’re at the thermostat and smell no gas, set it to Off.",
+        "If you smell gas, a CO alarm sounds, or anyone feels sick, get everyone out and call 911 from outside.",
+        "Call a licensed heating pro before using the boiler again.",
+        "Until heat’s back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
+      ],
+      "avoid": "Don’t open, reset, or restart the boiler.",
+      "source": "gas",
+      "outcome": "emergency_exit",
+      "reason": "combustion_soot",
+      "gate": "combustion_soot",
+      "cond": "soot",
+      "diyTier": null,
+      "modes": [
+        "heat",
+        "dhw"
+      ],
+      "legal": "L-7",
+      "continueTo": null
+    },
+    "bl_burning_sparks": {
+      "tier": "Emergency",
+      "urgency": "Get away · call 911",
+      "title": "Get away from the boiler and call 911.",
+      "explanation": "A burning or electrical smell, smoke, or sparks can mean a fire is starting.",
+      "actions": [
+        "Get everyone, and pets, out.",
+        "Call 911 from outside.",
+        "Don’t go back in until responders say it’s safe.",
+        "Until heat’s back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
+      ],
+      "avoid": "Don’t stay to troubleshoot, open the boiler, or flip switches or breakers.",
+      "source": "fire",
+      "outcome": "emergency_exit",
+      "reason": "smoke_fire_sparks_burn",
+      "gate": "smoke_fire_sparks_burn",
+      "cond": "burning",
+      "diyTier": null,
+      "modes": [
+        "heat",
+        "dhw"
+      ],
+      "legal": "L-7",
+      "continueTo": null
+    },
+    "bl_water_steam_release": {
+      "tier": "Emergency",
+      "urgency": "Stay back · it can scald",
+      "title": "Stay back from the spray.",
+      "explanation": "Escaping hot water or steam can scald and can mean the boiler is too hot or over pressure.",
+      "actions": [
+        "Keep everyone, and pets, away.",
+        "If you can reach the thermostat without passing the spray, set the thermostat to Off.",
+        "Call a licensed heating pro now. If anyone is burned, call 911.",
+        "Until heat’s back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
+      ],
+      "avoid": "Don’t touch, cap, or plug the valve or pipe, or close any valves.",
+      "source": "safety",
+      "outcome": "emergency_exit",
+      "reason": "water_steam_release",
+      "gate": "water_steam_release",
+      "cond": "water_steam_release",
+      "diyTier": null,
+      "modes": [
+        "heat",
+        "dhw"
+      ],
+      "legal": "L-7",
+      "continueTo": null
+    },
+    "bl_water_electrical": {
+      "tier": "Emergency",
+      "urgency": "Stay out of the water",
+      "title": "Stay clear of the water and the boiler.",
+      "explanation": "Water near wiring can shock, and a boiler that has been under water needs its controls checked before it runs.",
+      "actions": [
+        "Stay out of standing water.",
+        "Shut power only from a dry place you already know.",
+        "Call a licensed heating pro. If water is rising or you see sparks, get out and call 911.",
+        "Until heat’s back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
+      ],
+      "avoid": "Don’t touch the boiler, its switch, or cords while there’s water near them.",
+      "source": "electrical",
+      "outcome": "emergency_exit",
+      "reason": "water_near_electrical",
+      "gate": "water_near_electrical",
+      "cond": "water_electrical",
+      "diyTier": null,
+      "modes": [
+        "heat",
+        "dhw"
+      ],
+      "legal": "L-7",
+      "continueTo": null
+    },
+    "bl_pressure_relief_stop": {
+      "tier": "Stop / professional",
+      "urgency": "Turn the heat off · call now",
+      "title": "Turn the heat off and call a pro now.",
+      "explanation": "At this pressure the relief valve can open and release scalding water or steam.",
+      "actions": [
+        "If you can reach the thermostat without passing the boiler, set the thermostat to Off.",
+        "Keep everyone away from the relief valve pipe.",
+        "Call a licensed heating pro now. Tell them the gauge reading.",
+        "Until heat’s back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
+      ],
+      "avoid": "Don’t drain water, touch the relief valve, or try to lower the pressure yourself.",
+      "source": "safety",
+      "outcome": "emergency_exit",
+      "reason": "pressure_at_relief",
+      "gate": "pressure_at_relief",
+      "cond": "pressure_at_relief",
+      "diyTier": null,
+      "modes": [
+        "heat",
+        "dhw"
+      ],
+      "legal": "L-7",
+      "continueTo": null
+    },
+    "bl_steam_glass_empty": {
+      "tier": "Stop / professional",
+      "urgency": "Stop · call a pro today",
+      "title": "Don’t add water.",
+      "explanation": "Don’t add water to a hot boiler with an empty sight glass. Shut it off at the thermostat and call a pro, or let it cool and follow the label.",
+      "actions": [
+        "Call a licensed heating pro today. Tell them the glass showed no water.",
+        "Until heat’s back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
+      ],
+      "avoid": "Don’t open valves or reset anything on the boiler.",
+      "source": "safety",
+      "outcome": "call_pro",
+      "reason": "steam_low_water",
+      "gate": "steam_low_water",
+      "cond": "steam_glass_empty",
+      "diyTier": null,
+      "modes": [
+        "heat",
+        "dhw"
+      ],
+      "legal": "L-13",
+      "continueTo": null
+    },
+    "bl_bang_puffback": {
+      "tier": "Stop / professional",
+      "urgency": "Stop · call a pro",
+      "title": "Stop using the boiler.",
+      "explanation": "A bang or a puff of smoke at start can mean fuel is lighting late.",
+      "actions": [
+        "Set the thermostat to Off.",
+        "Call a licensed heating pro, or your oil company if you have oil heat.",
+        "If you smell gas or a CO alarm sounds, get everyone out and call 911 from outside.",
+        "Until heat’s back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
+      ],
+      "avoid": "Don’t open the boiler, press reset buttons, or try to relight anything.",
+      "source": "gas",
+      "outcome": "call_pro",
+      "reason": "delayed_ignition_puffback",
+      "gate": "delayed_ignition_puffback",
+      "cond": "puffback",
+      "diyTier": null,
+      "modes": [
+        "heat",
+        "dhw"
+      ],
+      "legal": "L-7",
+      "continueTo": null
+    },
+    "bl_cold_exposure": {
+      "tier": "Emergency",
+      "urgency": "Warm them now · call 911 if needed",
+      "title": "Get the person at risk warm now.",
+      "explanation": "Cold can harm babies, older adults, and people with medical needs quickly.",
+      "actions": [
+        "Move them to a warm, safe place, like a neighbor, relative, or warming center.",
+        "If they are confused, very drowsy, or hard to wake, call 911.",
+        "Then call a licensed heating pro for emergency service.",
+        "Until heat’s back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
+      ],
+      "avoid": "Don’t wait at home in the cold for the boiler to come back.",
+      "source": "safety",
+      "outcome": "emergency_exit",
+      "reason": "cold_exposure_911",
+      "gate": "cold_exposure_911",
+      "cond": "cold_at_risk",
+      "diyTier": null,
+      "modes": [
+        "heat",
+        "dhw"
+      ],
+      "legal": "L-7",
+      "continueTo": null
+    },
+    "bl_gate_unsure": {
+      "tier": "Stop / professional",
+      "urgency": "Stop · call a pro",
+      "title": "Stop here. Not sure means don’t continue.",
+      "explanation": "If you can’t rule out a hazard, the safe move is to stop.",
+      "actions": [
+        "If you smell gas or a CO alarm sounds, get everyone out and call 911 from outside.",
+        "Otherwise, set the thermostat to Off and call a licensed heating pro.",
+        "Fuel-burning heat needs working CO alarms.",
+        "Until heat’s back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
+      ],
+      "avoid": "Don’t keep checking the boiler to find out.",
+      "source": "safety",
+      "outcome": "emergency_exit",
+      "reason": "unsure_hazard",
+      "gate": "unsure_hazard",
+      "cond": "unsure_hazard",
+      "diyTier": null,
+      "modes": [
+        "heat",
+        "dhw"
+      ],
+      "legal": "L-7",
+      "continueTo": null
+    },
+    "bl_fragile_cold_pro": {
+      "tier": "Stop / professional",
+      "urgency": "Call for emergency service now",
+      "title": "Call for emergency heating service now.",
+      "explanation": "With someone fragile at home in cold weather, no heat needs a pro now.",
+      "actions": [
+        "Keep them warm: layers, one warm room, or a neighbor, relative, or warming center.",
+        "Call a licensed heating pro for emergency service now. Tell them who is home.",
+        "If anyone is confused, very drowsy, or hard to wake, call 911.",
+        "Until heat’s back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
+      ],
+      "avoid": "Don’t try resets or other boiler steps while you wait.",
+      "source": "safety",
+      "outcome": "call_pro",
+      "reason": "fragile_cold_no_heat",
+      "gate": "fragile_cold_no_heat",
+      "cond": "fragile_cold",
+      "diyTier": "pro_only",
+      "modes": [
+        "heat",
+        "dhw"
+      ],
+      "legal": "L-10",
+      "continueTo": null
+    },
+    "bl_tstat_set_heat_basic": {
+      "tier": "Basic homeowner check",
+      "urgency": "Try this first",
+      "title": "Set the thermostat to call for heat.",
+      "explanation": "The boiler only runs when a thermostat asks for heat.",
+      "actions": [
+        "Set the mode to Heat.",
+        "Set the temperature a few degrees above the room.",
+        "Give it up to an hour. Radiators and floors warm slowly.",
+        "Still cold after that? Start this check again or call a licensed heating pro.",
+        "Until heat’s back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
+      ],
+      "avoid": "Don’t take the thermostat off the wall.",
+      "source": "maintenance",
+      "outcome": "next_step",
+      "reason": "bl_tstat_set_heat_basic",
+      "gate": null,
+      "cond": null,
+      "diyTier": "basic",
+      "modes": [
+        "heat"
+      ],
+      "legal": "L-35",
+      "continueTo": null
+    },
+    "bl_emitters_cleared_basic": {
+      "tier": "Basic homeowner check",
+      "urgency": "Try this first",
+      "title": "Give the heat room to move.",
+      "explanation": "Baseboard and radiators heat the room by letting air flow over and around them.",
+      "actions": [
+        "Move furniture, curtains, and covers a few inches away.",
+        "Give it a few hours with the thermostat calling for heat.",
+        "Still cold? Call a licensed heating pro.",
+        "Until heat’s back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
+      ],
+      "avoid": "Don’t remove baseboard covers or open radiator valves.",
+      "source": "maintenance",
+      "outcome": "next_step",
+      "reason": "bl_emitters_cleared_basic",
+      "gate": null,
+      "cond": null,
+      "diyTier": "basic",
+      "modes": [
+        "heat"
+      ],
+      "legal": "L-35",
+      "continueTo": null
+    },
+    "bl_batteries_display_back": {
+      "tier": "Basic homeowner check",
+      "urgency": "Display is back",
+      "title": "Now set it to call for heat.",
+      "explanation": "New batteries brought the thermostat screen back.",
+      "actions": [
+        "Set the mode to Heat and the temperature a few degrees above the room.",
+        "Give it up to an hour.",
+        "Still cold? Start this check again or call a licensed heating pro.",
+        "Until heat’s back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
+      ],
+      "avoid": "Don’t take the thermostat off the wall.",
+      "source": "maintenance",
+      "outcome": "next_step",
+      "reason": "bl_batteries_display_back",
+      "gate": null,
+      "cond": null,
+      "diyTier": "basic",
+      "modes": [
+        "heat"
+      ],
+      "legal": "L-24",
+      "continueTo": null
+    },
+    "bl_pressure_in_range_basic": {
+      "tier": "Basic homeowner check",
+      "urgency": "Nothing to do now",
+      "title": "That reading is in the usual range.",
+      "explanation": "It’s within what many makers list. Your manual’s numbers come first.",
+      "actions": [
+        "Note the reading and whether the boiler was hot or cold.",
+        "If it rises toward 30 psi, or drops and keeps dropping, call a licensed heating pro.",
+        "Until heat’s back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
+      ],
+      "avoid": "Don’t add or drain water to change the reading.",
+      "source": "maintenance",
+      "outcome": "next_step",
+      "reason": "bl_pressure_in_range_basic",
+      "gate": null,
+      "cond": null,
+      "diyTier": "basic",
+      "modes": [
+        "heat"
+      ],
+      "legal": "L-35",
+      "continueTo": null
+    },
+    "bl_bleed_done_basic": {
+      "tier": "Basic homeowner check",
+      "urgency": "Air’s out",
+      "title": "Give the heat time to come back.",
+      "explanation": "Letting trapped air out helps hot water fill the radiator or baseboard.",
+      "actions": [
+        "Give it an hour with the thermostat calling for heat.",
+        "Read the gauge again later. If it keeps dropping, call a licensed heating pro.",
+        "Still cold or gurgling? Call a licensed heating pro.",
+        "Until heat’s back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
+      ],
+      "avoid": "Don’t add water to raise the pressure.",
+      "source": "maintenance",
+      "outcome": "next_step",
+      "reason": "bl_bleed_done_basic",
+      "gate": null,
+      "cond": null,
+      "diyTier": "basic",
+      "modes": [
+        "heat"
+      ],
+      "legal": "L-23",
+      "continueTo": null
+    },
+    "bl_reset_ok_basic": {
+      "tier": "Basic homeowner check",
+      "urgency": "It restarted",
+      "title": "It restarted after one reset.",
+      "explanation": "That doesn’t fix the cause.",
+      "actions": [
+        "**Reset once, only once.** If it stops or shows the same code again, don’t reset it again. Repeated shutdowns mean a safety device is doing its job. Call a licensed HVAC professional and tell them the code and what you saw.",
+        "Call a licensed heating pro to find the cause.",
+        "Until heat’s back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
+      ],
+      "avoid": "Don’t open the boiler.",
+      "source": "maintenance",
+      "outcome": "next_step",
+      "reason": "bl_reset_ok_basic",
+      "gate": null,
+      "cond": null,
+      "diyTier": "basic",
+      "modes": [
+        "heat",
+        "dhw"
+      ],
+      "legal": "L-18",
+      "continueTo": null
+    },
+    "bl_tstat_unsure": {
+      "tier": "More information needed",
+      "urgency": "Check the thermostat first",
+      "title": "Let’s get the thermostat settings first.",
+      "explanation": "This check needs to know whether the thermostat is asking for heat.",
+      "actions": [
+        "Look at the thermostat’s mode and setpoint, or check its manual.",
+        "Then start this check again.",
+        "Until heat’s back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
+      ],
+      "avoid": "Don’t take the thermostat off the wall.",
+      "source": "scope",
+      "outcome": "insufficient_info",
+      "reason": "bl_tstat_unsure",
+      "gate": null,
+      "cond": null,
+      "diyTier": null,
+      "modes": [
+        "heat"
+      ],
+      "legal": "L-35",
+      "continueTo": null
+    },
+    "bl_type_unconfirmed": {
+      "tier": "More information needed",
+      "urgency": "Boiler type needed",
+      "title": "We couldn’t confirm the boiler type.",
+      "explanation": "The checks differ for hot-water and steam boilers.",
+      "actions": [
+        "Look for the maker’s label you can read without opening anything, or a manual or past service invoice.",
+        "Or call a licensed heating pro.",
+        "Until heat’s back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
+      ],
+      "avoid": "Don’t remove panels or climb to read a label.",
+      "source": "scope",
+      "outcome": "insufficient_info",
+      "reason": "bl_type_unconfirmed",
+      "gate": null,
+      "cond": null,
+      "diyTier": null,
+      "modes": [
+        "heat"
+      ],
+      "legal": "L-35",
+      "continueTo": null
+    },
+    "bl_pressure_unsure": {
+      "tier": "More information needed",
+      "urgency": "Gauge reading needed",
+      "title": "We couldn’t get a gauge reading.",
+      "explanation": "The pressure check needs a reading you can see without opening anything.",
+      "actions": [
+        "Check the manual for where the gauge is.",
+        "Or call a licensed heating pro and tell them what you saw.",
+        "Until heat’s back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
+      ],
+      "avoid": "Don’t open panels or touch valves to find it.",
+      "source": "scope",
+      "outcome": "insufficient_info",
+      "reason": "bl_pressure_unsure",
+      "gate": null,
+      "cond": null,
+      "diyTier": null,
+      "modes": [
+        "heat",
+        "dhw"
+      ],
+      "legal": "L-35",
+      "continueTo": null
+    },
+    "bl_switch_off_pro": {
+      "tier": "Professional guidance",
+      "urgency": "Call a licensed pro",
+      "title": "A switch that is off or a tripped breaker is a job for a pro.",
+      "explanation": "It may have been turned off on purpose, so ask a pro before it goes back on.",
+      "actions": [
+        "Leave the breaker and the boiler switch as they are, and call a licensed heating pro or electrician.",
+        "If you smell burning or see smoke, get people away and call 911 from safety.",
+        "Until heat’s back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
+      ],
+      "avoid": "Don’t reset breakers, turn the boiler switch on, or open the boiler.",
+      "source": "electrical",
+      "outcome": "call_pro",
+      "reason": "bl_switch_off_pro",
+      "gate": null,
+      "cond": null,
+      "diyTier": "pro_only",
+      "modes": [
+        "heat"
+      ],
+      "legal": "L-35",
+      "continueTo": null
+    },
+    "bl_vent_blocked": {
+      "tier": "Professional guidance",
+      "urgency": "Turn the heat off · call a pro",
+      "title": "Turn the heat off and call a pro.",
+      "explanation": "A blocked vent can stop the boiler or push exhaust and carbon monoxide back inside.",
+      "actions": [
+        "Set the thermostat to Off.",
+        "Call a licensed heating pro, and tell them what blocks the pipe.",
+        "If a CO alarm sounds or anyone feels sick, get everyone out and call 911 from outside.",
+        "Until heat’s back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
+      ],
+      "avoid": "Don’t chip ice, climb, or reset the boiler.",
+      "source": "gas",
+      "outcome": "call_pro",
+      "reason": "bl_vent_blocked",
+      "gate": null,
+      "cond": "vent_blocked",
+      "diyTier": "pro_only",
+      "modes": [
+        "heat",
+        "dhw"
+      ],
+      "legal": "L-35",
+      "continueTo": null
+    },
+    "bl_relief_weep_pro": {
+      "tier": "Professional guidance",
+      "urgency": "Call a pro soon",
+      "title": "Call a licensed heating pro soon.",
+      "explanation": "A dripping relief valve often means pressure is running high, sometimes from an expansion tank problem.",
+      "actions": [
+        "Keep the pipe end clear and put a bucket under it.",
+        "Note the gauge reading if you can see it.",
+        "If it sprays or the gauge reaches 30 psi, set the thermostat to Off and call now.",
+        "Until heat’s back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
+      ],
+      "avoid": "Don’t cap, plug, or lift the valve’s lever.",
+      "source": "safety",
+      "outcome": "call_pro",
+      "reason": "bl_relief_weep_pro",
+      "gate": null,
+      "cond": "relief_drip",
+      "diyTier": "pro_only",
+      "modes": [
+        "heat"
+      ],
+      "legal": "L-35",
+      "continueTo": null
+    },
+    "bl_ask_installer": {
+      "tier": "Professional guidance",
+      "urgency": "Ask your installer first",
+      "title": "Ask your installer first.",
+      "explanation": "Your installer may want to make this change to keep coverage in place.",
+      "actions": [
+        "Call your installer and tell them what you noticed.",
+        "If you can’t reach them, call a licensed heating pro.",
+        "Until heat’s back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
+      ],
+      "avoid": "Don’t open the boiler or change other settings.",
+      "source": "scope",
+      "outcome": "call_pro",
+      "reason": "bl_ask_installer",
+      "gate": null,
+      "cond": null,
+      "diyTier": "pro_only",
+      "modes": [
+        "heat"
+      ],
+      "legal": "L-21",
+      "continueTo": null
+    },
+    "bl_vent_wont_close": {
+      "tier": "Professional guidance",
+      "urgency": "Call a pro now · catch the water",
+      "title": "Catch the water and call a pro now.",
+      "explanation": "A vent that won’t close keeps letting water out, and the pressure will drop.",
+      "actions": [
+        "Keep a cup or bucket and towels under it.",
+        "Set the thermostat to Off.",
+        "Call a licensed heating pro now. Tell them which vent.",
+        "If water reaches anything electrical, stay away and shut power only from a dry place you already know.",
+        "Until heat’s back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
+      ],
+      "avoid": "Don’t force the vent or use other tools on it.",
+      "source": "safety",
+      "outcome": "call_pro",
+      "reason": "bl_vent_wont_close",
+      "gate": null,
+      "cond": null,
+      "diyTier": "pro_only",
+      "modes": [
+        "heat"
+      ],
+      "legal": "L-23",
+      "continueTo": null
+    },
+    "bl_call_pro": {
+      "tier": "Professional guidance",
+      "urgency": "Call a licensed heating pro",
+      "title": "Call a licensed heating pro.",
+      "explanation": "The homeowner checks are done. The next checks are inside the boiler or its piping.",
+      "actions": [
+        "If the boiler acts strangely, set the thermostat to Off.",
+        "Gas smell or CO alarm: get everyone out and call 911 from outside.",
+        "Until heat’s back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
+      ],
+      "avoid": "Don’t press reset buttons again, restart, add water, or open panels.",
+      "source": "safety",
+      "outcome": "call_pro",
+      "reason": "bl_call_pro",
+      "gate": null,
+      "cond": null,
+      "diyTier": "pro_only",
+      "modes": [
+        "heat",
+        "dhw"
+      ],
+      "legal": "L-35",
+      "continueTo": null
+    }
+  },
+  "REASON": {
+    "no_fire_after_basics": [
+      "The boiler stays cool while the thermostat calls for heat.",
+      "Tell them: boiler stays cool on a heat call."
+    ],
+    "circulation_after_basics": [
+      "The boiler gets hot, but the heat isn’t reaching the rooms.",
+      "Tell them: boiler hot, rooms cold, which zones."
+    ],
+    "steam_distribution_after_basics": [
+      "Steam radiators stay cold or heat unevenly.",
+      "Tell them: which radiators stay cold, any noises."
+    ],
+    "thermostat_control_issue": [
+      "The thermostat won’t take Heat or a new setpoint.",
+      "Tell them: the thermostat model and what it does."
+    ],
+    "blank_tstat_after_basics": [
+      "The thermostat screen is still blank after new batteries.",
+      "Tell them: blank screen after new batteries."
+    ],
+    "blank_tstat_no_batteries": [
+      "The thermostat is blank and has no batteries.",
+      "Tell them: blank thermostat, no batteries."
+    ],
+    "tstat_inaccessible": [
+      "The thermostat batteries couldn’t be reached safely.",
+      "Tell them: the thermostat screen is blank."
+    ],
+    "display_dark": [
+      "The boiler display is dark with the switches on.",
+      "Tell them: display dark, switches looked on."
+    ],
+    "boiler_inaccessible": [
+      "The boiler couldn’t be reached safely.",
+      "Tell them: what blocks the way."
+    ],
+    "low_pressure": [
+      "The gauge reads low. That can stop the boiler and can mean a leak.",
+      "Tell them: the reading and any code."
+    ],
+    "pressure_high": [
+      "The gauge reads high, which can point to an expansion tank problem.",
+      "Tell them: the reading, hot or cold."
+    ],
+    "code_pressure_ok": [
+      "The gauge is in the usual range, so the code points somewhere else.",
+      "Tell them: the exact code and the reading."
+    ],
+    "oil_lockout": [
+      "An oil boiler lockout needs a pro. This guide doesn’t walk oil resets.",
+      "Tell them: the code or light, and oil level."
+    ],
+    "overheat_code": [
+      "The boiler shut down on high temperature.",
+      "Tell them: the code and the gauge reading."
+    ],
+    "vent_code_after_look": [
+      "The code points to the vent or drain, but nothing outside looks blocked.",
+      "Tell them: the code; vents looked clear."
+    ],
+    "other_code": [
+      "The code points to a part inside the boiler.",
+      "Tell them: the exact code, brand, and model."
+    ],
+    "code_unknown": [
+      "A pro can look up the code for your model.",
+      "Tell them: the exact code, brand, and model."
+    ],
+    "reset_already_used": [
+      "It was already reset once. Another reset could hide a real fault.",
+      "Tell them: the code and the earlier reset."
+    ],
+    "reset_failed": [
+      "The same code came back after one reset. A safety device is doing its job.",
+      "Tell them: the code, before and after the reset."
+    ],
+    "reset_new_code": [
+      "A new code showed up after one reset.",
+      "Tell them: both codes, in order."
+    ],
+    "reset_not_on_model": [
+      "We only show resets from owner’s manuals we’ve checked.",
+      "Tell them: the exact code, brand, and model."
+    ],
+    "notice_declined": [
+      "You chose a pro instead of the homeowner step. That’s always fine.",
+      "Tell them: what you saw so far."
+    ],
+    "steam_low_water": [
+      "The steam boiler is low on water. Needing water often can mean a leak.",
+      "Tell them: the level and how often."
+    ],
+    "steam_water_level": [
+      "The steam water level is too high or unsteady.",
+      "Tell them: full or jumping level, any banging."
+    ],
+    "steam_glass_unreadable": [
+      "The steam water level couldn’t be seen.",
+      "Tell them: you couldn’t see the level."
+    ],
+    "condensate_issue": [
+      "The drain tube looks blocked, frozen, or off its drain.",
+      "Tell them: what the drain tube looks like."
+    ],
+    "vent_inaccessible": [
+      "The vent pipes couldn’t be seen from the ground.",
+      "Tell them: where the vents are."
+    ],
+    "air_in_system": [
+      "Gurgling or cold tops usually mean air in the system.",
+      "Tell them: which radiators or zones."
+    ],
+    "air_after_bleed": [
+      "Air was let out, but it’s still cold or gurgling.",
+      "Tell them: which vents, and the gauge before and after."
+    ],
+    "pressure_low_after_bleed": [
+      "The pressure dropped after air was let out. The system may need water a pro adds.",
+      "Tell them: the gauge before and after."
+    ],
+    "guard_blocked": [
+      "Air in the system is likely. With the cold or who’s at home, we leave letting air out to a pro.",
+      "Tell them: which radiators, and who’s at home."
+    ],
+    "zone_after_basics": {
+      "heat": [
+        "One zone stays cold with its thermostat calling.",
+        "Tell them: which zone and its thermostat."
+      ],
+      "dhw": [
+        "The tank stays cold while the boiler runs.",
+        "Tell them: boiler hot, tank cold."
+      ]
+    },
+    "zone_valve_calling": {
+      "heat": [
+        "The zone valve shows power, but the zone stays cold.",
+        "Tell them: valve light on steady, zone cold."
+      ],
+      "dhw": [
+        "The tank’s zone valve shows power, but the tank stays cold.",
+        "Tell them: valve light on steady, tank cold."
+      ]
+    },
+    "zone_no_call": {
+      "heat": [
+        "The zone valve light is off, so it may not be getting the call.",
+        "Tell them: valve light off with the thermostat calling."
+      ],
+      "dhw": [
+        "The tank’s zone valve light is off, so it may not be getting the call.",
+        "Tell them: valve light off with a hot tap running."
+      ]
+    },
+    "zone_valve_fault": {
+      "heat": [
+        "The zone valve light shows a fault pattern.",
+        "Tell them: how the light blinks, and which zone."
+      ],
+      "dhw": [
+        "The tank’s zone valve light shows a fault pattern.",
+        "Tell them: how the light blinks."
+      ]
+    },
+    "indirect_no_call": [
+      "The boiler doesn’t start when the tank calls.",
+      "Tell them: tank cold, boiler doesn’t start, the tank dial reading."
+    ],
+    "indirect_unclear": [
+      "It’s not clear what the boiler does when the tank calls.",
+      "Tell them: what the water heater check found."
+    ],
+    "tankless_coil": [
+      "Hot water comes from a coil inside the boiler. That’s a pro check.",
+      "Tell them: no hot water, coil in the boiler."
+    ],
+    "coil_source_unclear": [
+      "It’s not clear what heats the water for the coil.",
+      "Tell them: hot-water coil in the ducts, no heat."
+    ],
+    "coil_loop_wh_source": [
+      "The water heater makes hot water, but it isn’t reaching the coil.",
+      "Tell them: hot taps work, coil pipe cool."
+    ],
+    "rooms_unclear": [
+      "It’s not clear which rooms are short on heat.",
+      "Tell them: which rooms feel cold, and when."
+    ],
+    "steam_hammer": [
+      "Banging in steam pipes often comes from water sitting in them.",
+      "Tell them: which pipes bang, and when."
+    ],
+    "kettling": [
+      "Kettle sounds can mean deposits or low flow in the boiler.",
+      "Tell them: the sound and when it happens."
+    ],
+    "circulator_noise": [
+      "Grinding or squealing near the boiler needs a pro.",
+      "Tell them: where the noise is."
+    ],
+    "noise_other": [
+      "This guide doesn’t diagnose that sound.",
+      "Tell them: the sound and when it happens."
+    ],
+    "condensate_leak": [
+      "Water around the drain tube can mean a blocked or leaking drain.",
+      "Tell them: where the water is."
+    ],
+    "emitter_leak": [
+      "A leak at a radiator, valve, or vent needs a pro.",
+      "Tell them: which one leaks."
+    ],
+    "boiler_leak": [
+      "Water from the boiler or nearby pipes needs a pro soon.",
+      "Tell them: where, and how much."
+    ],
+    "diy_not_offered": [
+      "Fixes inside the boiler are work for a licensed pro.",
+      "Tell them: what you wanted to fix."
+    ]
+  },
+  "HANDOFFS": {
+    "bl_to_wh": {
+      "to": "WH: first non-gate node for hw.type (WH names it); WH re-runs only T&P discharge, water or rust at the tank base, scald",
+      "carries": [
+        "safety.cleared",
+        "sessionId",
+        "mode",
+        "hw.type",
+        "facts"
+      ]
+    },
+    "bl_to_fn": {
+      "to": "fn.hydro.air_side (Furnace Lead wave-2 draft id; air side: blower, filter, freeze-stat)",
+      "carries": [
+        "safety.cleared",
+        "sessionId",
+        "mode",
+        "facts"
+      ]
+    },
+    "fn_to_bl": {
+      "to": "bl.gate.carryover",
+      "carries": [
+        "safety.cleared",
+        "sessionId",
+        "mode",
+        "facts"
+      ]
+    },
+    "coil_to_wh": {
+      "to": "WH heater-side entry (wh.intake.type per WH §11a); WH asks the tap question and returns heaterOk",
+      "carries": [
+        "safety.cleared",
+        "sessionId",
+        "mode",
+        "hw.type",
+        "facts"
+      ]
+    },
+    "fn_call_pro": {
+      "to": "fn lane call-pro (shared node entered from fn)",
+      "carries": [
+        "facts"
+      ]
+    }
+  },
+  "ENTRIES": {
+    "start": {
+      "node": "bl.gate.safety",
+      "s": {
+        "mode": "heat"
+      }
+    },
+    "identify": {
+      "node": "bl.gate.safety",
+      "s": {
+        "mode": "heat"
+      }
+    },
+    "fn_boiler_choice": {
+      "node": "bl.gate.safety",
+      "s": {
+        "mode": "heat"
+      }
+    },
+    "fn_to_bl": {
+      "node": "bl.gate.carryover",
+      "s": {
+        "mode": "heat",
+        "entry": "fn_coil",
+        "clearedBy": "fn",
+        "clearedSession": "S1",
+        "coilFrom": "fn"
+      }
+    },
+    "wh_to_bl_indirect": {
+      "node": "bl.gate.carryover",
+      "s": {
+        "mode": "dhw",
+        "entry": "wh_indirect",
+        "clearedBy": "wh",
+        "clearedSession": "S1",
+        "hwType": "indirect",
+        "hwWorks": "no"
+      }
+    },
+    "wh_to_bl_code": {
+      "node": "bl.gate.carryover",
+      "s": {
+        "mode": "dhw",
+        "entry": "wh_code",
+        "clearedBy": "wh",
+        "clearedSession": "S1",
+        "hwType": "combi",
+        "type": "combi",
+        "typeConf": "reported by the water heater check",
+        "fuel": "unsure",
+        "landing": "landing_code",
+        "sawCode": true
+      }
+    },
+    "wh_to_bl_heat": {
+      "node": "bl.gate.carryover",
+      "s": {
+        "mode": "heat",
+        "entry": "wh_heat",
+        "clearedBy": "wh",
+        "clearedSession": "S1",
+        "hwType": "combi",
+        "type": "combi",
+        "typeConf": "reported by the water heater check"
+      }
+    },
+    "fn_coil_node": {
+      "node": "sw.handoff.hydronic_coil",
+      "s": {
+        "mode": "heat",
+        "coilFrom": "fn",
+        "clearedBy": "fn",
+        "clearedSession": "S1",
+        "gateCleared": true
+      }
+    },
+    "wh_heater_ok_coil": {
+      "node": "bl.conclude.call_pro",
+      "s": {
+        "mode": "heat",
+        "entry": "wh_coil_return",
+        "clearedBy": "wh",
+        "clearedSession": "S1",
+        "reason": "coil_loop_wh_source",
+        "gateCleared": true,
+        "coldScreened": true
+      }
+    },
+    "stale_wh": {
+      "node": "bl.gate.carryover",
+      "s": {
+        "mode": "dhw",
+        "entry": "wh_indirect",
+        "clearedBy": "wh",
+        "clearedSession": "S0"
+      }
+    }
+  },
+  "CO": "Until heat’s back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns.",
+  "CO_DHW": "Fuel-burning equipment needs working CO alarms.",
+  "DHW_SWAP": [
+    "set the thermostat to Off",
+    "set the thermostat to Off and don’t run hot water"
+  ],
+  "COLD_URGENT": "Getting colder? Call for emergency service now.",
+  "OIL_AVOID": "Don’t press any reset, including an oil burner’s red button, add water, or open panels.",
+  "PN": {
+    "short": "Do only the step shown. If anything looks different or you see a hazard sign, stop. You can always call a licensed HVAC professional.",
+    "notice": [
+      "**These steps are optional.** You can stop and call a licensed HVAC professional at any time.",
+      "**Write down or photograph how things are set now.** You’ll need it to put things back.",
+      "**Do only the step shown, the way it’s shown.** Don’t open panels, use tools on the equipment, or change anything else, even if it’s on the same screen or nearby.",
+      "**If anything looks different from these steps, stop.** Your equipment may not match what we describe. Check your owner’s manual.",
+      "**If you smell gas or burning, hear a CO alarm, see smoke, or see water near wires, stop now** and use the emergency steps.",
+      "These steps come from the equipment maker’s documents and common trade practice. They’re general information, not a diagnosis or an inspection of your system."
+    ],
+    "ack": "I wrote down or photographed the current settings, I’ll do only the step shown, and I’ll stop if anything looks different or unsafe.",
+    "undo": "If you’re not sure what you changed, put back what you wrote down. If you can’t, leave it and call a licensed HVAC professional. Don’t guess.",
+    "resetOnce": "**Reset once, only once.** If it stops or shows the same code again, don’t reset it again. Repeated shutdowns mean a safety device is doing its job. Call a licensed HVAC professional and tell them the code and what you saw.",
+    "warranty": "**If your system or this part was installed recently, check with your installer first.** Some warranties and installer agreements expect them to make changes. Changing things yourself may affect what they’ll cover.",
+    "guard": "Second Wrench doesn’t guide these changes when it’s 40 °F (4 °C) or colder outside, or will be in the next few days. That’s our own cautious cutoff, not a rating for your equipment. If anyone at home is an infant, elderly, or medically fragile, leave these to a professional.",
+    "locked": "**Don’t change these. They protect your equipment and your safety, and they’re for professionals only:** the relief valve and its lever, the gas valve and gas piping, the low-water cutoff and its buttons, an oil burner’s red reset button, the water feed (fill) valve and its lever, the expansion tank’s air valve, zone valve levers and buttons, the temperature dial on a tank the boiler heats, and the boiler’s installer menus and temperature limits. If a step would take you to one of these, stop. If you see a password or code prompt, stop. That’s for installers."
+  },
+  "SRC": {
+    "gauge": "From Weil-McLain Evergreen Series 2 User’s Manual, page 6, and Triangle Tube Prestige User’s Information Manual, pages 10 and 11, checked 2026-10-11.",
+    "glass": "From Burnham User’s Information Manual 111241-01, page 3, and Weil-McLain SGO Series 4 Boiler Manual, page 6, checked 2026-10-11.",
+    "taco": "From Taco Zone Sentry instruction sheet 102-410, page 2, checked 2026-10-11.",
+    "bleed": "From Caleffi idronics No. 15, page 11, checked 2026-10-11.",
+    "code": "From your boiler maker’s owner’s manual (the code list), checked by you."
+  },
+  "RESET_STEPS": {
+    "wm": {
+      "name": "Weil-McLain Evergreen",
+      "source": "From Weil-McLain Evergreen Series 2 User’s Manual, page 12, checked 2026-10-11.",
+      "steps": "1. On the screen, select **MANUAL RESET**.\n2. On the next screen, press **Reset**.",
+      "legal": "L-17a"
+    },
+    "bosch": {
+      "name": "Bosch Greenstar combi",
+      "source": "From Bosch Greenstar combi 100 p / 151 p Operating instructions, page 9, checked 2026-10-11.",
+      "steps": "1. If the reset button is flashing, press and hold it until the display changes, as your manual shows.\n2. If it isn’t flashing, switch the boiler **OFF** and **ON** again, the way your manual shows.",
+      "legal": "L-17b"
+    },
+    "buderus": {
+      "name": "Buderus GB142",
+      "source": "From Buderus GB142 User’s instructions, page 23, checked 2026-10-11.",
+      "steps": "1. Press and hold the **Reset** button for about 5 seconds.\n2. The display shows **rE** while it resets.",
+      "legal": "L-17c"
+    },
+    "rinnai": {
+      "name": "Rinnai I-Series combi",
+      "source": "From Rinnai I-Series Condensing Combi Boiler User’s Information Manual, page 26, checked 2026-10-11.",
+      "steps": "1. Press the blinking button once: **Central Heating** or **Domestic Hot Water**.",
+      "legal": "L-17d"
+    },
+    "viessmann": {
+      "name": "Viessmann Vitodens 100-W",
+      "source": "From Viessmann Vitodens 100-W B1HE/B1KE Operating instructions, page 25, checked 2026-10-11.",
+      "steps": "1. On the home screen, tap **Unlock**.\n2. Tap **OK** twice to confirm.",
+      "legal": "L-17e"
+    }
+  },
+  "HZ": {
+    "id": "hazard_now",
+    "label": "Something new: a smell, alarm, smoke, sparks, or spraying water or steam",
+    "next": "bl.gate.safety",
+    "hint": "Back to the safety check.",
+    "fact": "New hazard reported during the boiler check.",
+    "gate": null,
+    "cond": null,
+    "set": {
+      "retriage": "hazard_now"
+    },
+    "reason": null,
+    "legal": "L-7"
+  },
+  "G": {},
+  "GATE_NONE": {
+    "afterHazardNow": "@bl_gate_unsure",
+    "fromWhIndirect": "bl.dhw.indirect_call",
+    "fromWhCode": "bl.cold.screen",
+    "fromFnCoil": "bl.coil.type",
+    "fromWhHeat": "bl.intake.fuel",
+    "default": "bl.intake.type"
+  }
+}

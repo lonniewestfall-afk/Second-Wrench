@@ -1,0 +1,1607 @@
+{
+  "nodes": {
+    "ms.intake.system_confirm": {
+      "section": "Your system",
+      "title": "Is this a ductless mini-split with one indoor unit?",
+      "body": "Answer from what you already know or the owner’s manual. Don’t remove a cover or climb up to check.\n\nA ductless mini-split has an indoor unit on a wall, floor, or ceiling that blows air straight into the room. There are no vents or ducts. Pipes and a cable run through the wall to a small outdoor unit.\n\nThis check covers cooling and heating problems on a system with one indoor unit and one outdoor unit.",
+      "options": [
+        {
+          "id": "ductless_single_zone",
+          "label": "Ductless mini-split, one indoor unit",
+          "next": "ms.landing.picker",
+          "hint": "One indoor unit connected to its own outdoor unit.",
+          "fact": "Ductless mini-split with one indoor unit reported.",
+          "gate": null
+        },
+        {
+          "id": "ductless_multi_zone",
+          "label": "Ductless, but two or more indoor units share one outdoor unit",
+          "next": "@ms_multi_zone_pr2",
+          "hint": "Systems with more than one indoor unit come in a later version.",
+          "fact": "Multi-zone ductless mini-split reported.",
+          "gate": null
+        },
+        {
+          "id": "ducted_central",
+          "label": "Central AC or a heat pump with vents and ducts",
+          "next": "@ms_use_central_check",
+          "hint": "Use the central AC or heat pump check instead.",
+          "fact": "Ducted central system reported on the mini-split check.",
+          "gate": null
+        },
+        {
+          "id": "window_portable_other",
+          "label": "Window, portable, through-the-wall, or another kind of unit",
+          "next": "@ms_equipment_oos",
+          "hint": "Not covered here.",
+          "fact": "Window, portable, through-the-wall, or other equipment reported.",
+          "gate": null
+        },
+        {
+          "id": "not_sure",
+          "label": "I’m not sure",
+          "next": "@ms_system_unconfirmed",
+          "hint": "Don’t open covers to find out.",
+          "fact": "",
+          "gate": null
+        },
+        {
+          "id": "hazard_now",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
+          "next": "@ms_hazard_now",
+          "hint": "Stop. Don’t keep checking.",
+          "fact": "New hazard reported during the mini-split check.",
+          "gate": "ms_new_hazard"
+        }
+      ],
+      "caution": "",
+      "diyTier": "basic",
+      "safetyGate": false
+    },
+    "ms.landing.picker": {
+      "section": "What you noticed",
+      "title": "What’s going on with the mini-split?",
+      "body": "Pick the closest match. Answer only what you know.\n\nIf anything new comes up, like a burning smell, smoke, sparks, or water reaching an outlet or cord, choose the last option.",
+      "options": [
+        {
+          "id": "landing_no_cool",
+          "label": "Not cooling, or not cooling enough",
+          "next": "ms.controls.mode_setpoint",
+          "hint": "Remote or app settings first, then the filters.",
+          "fact": "Complaint: Mini-split not cooling or not cooling enough.",
+          "gate": null
+        },
+        {
+          "id": "landing_no_heat",
+          "label": "Not heating, or not heating enough",
+          "next": "ms.heat.mode_setpoint",
+          "hint": "Remote or app settings first.",
+          "fact": "Complaint: Mini-split not heating or not heating enough.",
+          "gate": null
+        },
+        {
+          "id": "landing_weak_airflow",
+          "label": "Weak air from the indoor unit while cooling",
+          "next": "ms.controls.mode_setpoint",
+          "hint": "Settings first, then the filters and anything blocking the air.",
+          "fact": "Complaint: Weak airflow from the indoor unit while cooling.",
+          "gate": null
+        },
+        {
+          "id": "landing_water_at_head",
+          "label": "Water dripping from or under the indoor unit",
+          "next": "ms.head.water_observe",
+          "hint": "Electrical safety question first.",
+          "fact": "Complaint: Water dripping from or under the indoor unit.",
+          "gate": null
+        },
+        {
+          "id": "landing_error_code",
+          "label": "A code or blinking lights on the indoor unit, remote, or app",
+          "next": "ms.error.capture",
+          "hint": "Write it down. A pro reads it.",
+          "fact": "Complaint: Error code or blinking lights shown.",
+          "gate": null
+        },
+        {
+          "id": "landing_ice_seen",
+          "label": "Ice or frost on the indoor unit or its pipes",
+          "next": "ms.ice.stop_observe",
+          "hint": "Stop-and-thaw steps. Don’t chip ice.",
+          "fact": "Complaint: Ice or frost seen on the mini-split.",
+          "gate": null
+        },
+        {
+          "id": "landing_outdoor_unit",
+          "label": "The outdoor unit: quiet, iced, or still not comfortable",
+          "next": "ms.outdoor.safe_observe",
+          "hint": "Look from a window or dry ground only.",
+          "fact": "Complaint: Outdoor unit on a ductless mini-split.",
+          "gate": null
+        },
+        {
+          "id": "landing_something_else",
+          "label": "Something else (a noise or a smell)",
+          "next": "@ms_landing_not_in_pr1",
+          "hint": "Not covered in this check.",
+          "fact": "Complaint: A noise or a smell from the mini-split.",
+          "gate": null
+        },
+        {
+          "id": "hazard_now",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
+          "next": "@ms_hazard_now",
+          "hint": "Stop. Don’t keep checking.",
+          "fact": "New hazard reported during the mini-split check.",
+          "gate": "ms_new_hazard"
+        }
+      ],
+      "caution": "",
+      "diyTier": "basic",
+      "safetyGate": false
+    },
+    "ms.controls.mode_setpoint": {
+      "section": "Remote or app",
+      "title": "Check the settings first",
+      "body": "Use the remote, wall control, or app you already use. Don’t open the indoor unit.\n\n1. Mode is Cool (a snowflake on many remotes). If it says Auto, Dry, Fan, or Heat, switch it to Cool for this check.\n2. The temperature is set at least 3°F below the room. In Cool, many units won’t start cooling if the setting is at or above room temperature.\n3. Fan is Auto or High, not Quiet, Silent, or Night.\n4. Timers, Sleep, and app schedules are off for now.\n5. If your remote has Follow Me or I Feel, keep the remote in the same room.\n\nAfter any change, wait 5 to 10 minutes. Many mini-splits run the fan slowly for the first few minutes.\n\nRemote screen blank? You can put in fresh batteries if the battery cover slides off by hand and nothing is cracked or leaking.",
+      "options": [
+        {
+          "id": "settings_fixed_now_cooling",
+          "label": "I changed a setting, and now it’s cooling",
+          "next": "@ms_settings_fixed_basic",
+          "hint": "Simple fix. We’ll show what to watch for.",
+          "fact": "User changed the remote or app settings, and cooling returned.",
+          "gate": null
+        },
+        {
+          "id": "remote_batteries_fixed",
+          "label": "The remote was dead. Fresh batteries fixed it, and now it’s cooling",
+          "next": "@ms_settings_fixed_basic",
+          "hint": "Only if the cover slid off by hand.",
+          "fact": "User replaced the remote batteries, and cooling returned.",
+          "gate": null
+        },
+        {
+          "id": "settings_right_still_problem",
+          "label": "Settings are right, and the problem is still there",
+          "next": "ms.head.filter_path_ok",
+          "hint": "Next: the filters.",
+          "fact": "User set Cool, a setpoint below the room, a normal fan, and no timer. The problem remained.",
+          "gate": null
+        },
+        {
+          "id": "remote_or_unit_not_responding",
+          "label": "The remote or app won’t change anything, or the indoor unit shows no lights",
+          "next": "@ms_no_response_wave1",
+          "hint": "A pro checks power and controls.",
+          "fact": "Remote or app would not control the unit, or the indoor unit showed no lights.",
+          "gate": null
+        },
+        {
+          "id": "not_sure",
+          "label": "I’m not sure",
+          "next": "@ms_controls_unsure",
+          "hint": "Don’t guess. Don’t open the unit to find out.",
+          "fact": "",
+          "gate": null
+        },
+        {
+          "id": "hazard_now",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
+          "next": "@ms_hazard_now",
+          "hint": "Stop. Don’t keep checking.",
+          "fact": "New hazard reported during the mini-split check.",
+          "gate": "ms_new_hazard"
+        }
+      ],
+      "caution": "",
+      "diyTier": "basic",
+      "safetyGate": false
+    },
+    "ms.heat.mode_setpoint": {
+      "section": "Heat",
+      "title": "Set Heat and give it time to warm up",
+      "body": "Use the remote, wall control, or app you already use. Don’t open the indoor unit.\n\nIf someone is at risk from the cold (a baby, an older adult, or a medical need) , choose that first.\n\n1. Mode is Heat. A sun marks Heat on many remotes. If it says Auto, Cool, Dry, or Fan, this question asks about that next.\n2. The temperature is set at least 3°F above the room. In Heat, many units won’t start heating if the setting is at or below room temperature.\n3. Fan is Auto or High, not Quiet, Silent, or Night.\n4. Timers, Sleep, and schedules are off for now.\n5. After a change, wait about 10 to 15 minutes. In Heat, the indoor fan may stay off at first so it doesn’t blow cold air.\n\nIf the remote has no Heat setting, say so. Don’t guess that a cooling-only unit can heat.",
+      "options": [
+        {
+          "id": "cold_exposure_risk",
+          "label": "Someone’s at risk from the cold (a baby, an older adult, or a medical need) ",
+          "next": "@ms_cold_exposure",
+          "hint": "Get them warm first.",
+          "fact": "Someone at risk from the cold .",
+          "gate": "cold_exposure_911"
+        },
+        {
+          "id": "heat_fixed_after_setting",
+          "label": "I changed a setting, and now it’s heating",
+          "next": "@ms_heat_settings_fixed_basic",
+          "hint": "Simple fix. We’ll show what to watch for.",
+          "fact": "User set Heat, a setting above the room, a normal fan, and no timer. Heating returned.",
+          "gate": null
+        },
+        {
+          "id": "mode_was_auto",
+          "label": "It was on Auto",
+          "next": "ms.heat.force_heat",
+          "hint": "Set Heat and wait.",
+          "fact": "Mode was Auto while heat was needed.",
+          "gate": null
+        },
+        {
+          "id": "heat_settings_right_still_problem",
+          "label": "Heat, a setting above the room, a normal fan, no timer, and the problem is still there",
+          "next": "ms.heat.defrost_sanity",
+          "hint": "Next: a look at defrost.",
+          "fact": "User set Heat, a setting above the room, a normal fan, and no timer. The problem remained.",
+          "gate": null
+        },
+        {
+          "id": "no_heat_setting_on_remote",
+          "label": "The remote or app has no Heat setting",
+          "next": "@ms_heat_not_supported",
+          "hint": "It may be cooling-only.",
+          "fact": "Remote or app has no Heat setting.",
+          "gate": null
+        },
+        {
+          "id": "remote_or_unit_not_responding",
+          "label": "The remote or app won’t change anything, or the indoor unit shows no lights",
+          "next": "@ms_no_response_wave1",
+          "hint": "A pro checks power and controls.",
+          "fact": "Remote or app would not control the unit, or the indoor unit showed no lights.",
+          "gate": null
+        },
+        {
+          "id": "not_sure",
+          "label": "I’m not sure",
+          "next": "@ms_controls_unsure",
+          "hint": "Don’t guess. Don’t open the unit to find out.",
+          "fact": "",
+          "gate": null
+        },
+        {
+          "id": "hazard_now",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
+          "next": "@ms_hazard_now",
+          "hint": "Stop. Don’t keep checking.",
+          "fact": "New hazard reported during the mini-split check.",
+          "gate": "ms_new_hazard"
+        }
+      ],
+      "caution": "If someone is at risk from the cold , that comes first.",
+      "diyTier": "basic",
+      "safetyGate": true
+    },
+    "ms.heat.force_heat": {
+      "section": "Heat",
+      "title": "Set Heat, not Auto, and wait",
+      "body": "Auto can switch away from Heat. Set the mode to Heat on the remote, wall control, or app.\n\nSet the temperature at least 3°F above the room. Fan on Auto or High. Timers and Sleep off.\n\nWait 10 to 15 minutes. In Heat, the indoor fan may stay off for the first few minutes so it doesn’t blow cold air. That can be normal. Don’t switch modes while you wait.\n\nIf you can’t change the mode, stop. Don’t open the indoor unit.",
+      "options": [
+        {
+          "id": "forced_heat_works",
+          "label": "It’s heating after the wait",
+          "next": "@ms_heat_auto_fixed_basic",
+          "hint": "Leave it in Heat.",
+          "fact": "User set Heat instead of Auto and waited. Heating returned.",
+          "gate": null
+        },
+        {
+          "id": "forced_heat_still_problem",
+          "label": "I waited, and it still isn’t heating",
+          "next": "ms.heat.defrost_sanity",
+          "hint": "Next: a look at defrost.",
+          "fact": "User set Heat instead of Auto and waited 10 to 15 minutes. The problem remained.",
+          "gate": null
+        },
+        {
+          "id": "could_not_change_mode",
+          "label": "I can’t change the mode to Heat",
+          "next": "@ms_no_response_wave1",
+          "hint": "A pro checks the controls.",
+          "fact": "User could not change the mode to Heat.",
+          "gate": null
+        },
+        {
+          "id": "not_sure_waited",
+          "label": "I’m not sure I waited long enough",
+          "next": "@ms_heat_wait_unsure",
+          "hint": "Wait the full 10 to 15 minutes.",
+          "fact": "",
+          "gate": null
+        },
+        {
+          "id": "hazard_now",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
+          "next": "@ms_hazard_now",
+          "hint": "Stop. Don’t keep checking.",
+          "fact": "New hazard reported during the mini-split check.",
+          "gate": "ms_new_hazard"
+        }
+      ],
+      "caution": "",
+      "diyTier": "basic",
+      "safetyGate": false
+    },
+    "ms.heat.defrost_sanity": {
+      "section": "Heat",
+      "title": "Is this a normal defrost, or ice that stays?",
+      "body": "In Heat, a mini-split sometimes pauses to clear light frost on the outdoor unit. A normal defrost often lasts about 5 to 15 minutes. You may see steam, heating may pause, and you may hear a whoosh. Then heat should return. The remote may not change the mode until that pause ends. Leave it in Heat. Don’t switch modes during the pause.\n\nSteam from the outdoor unit in cold weather is usually that pause. If you aren’t sure it’s steam, or it smells like burning, or it comes from the indoor unit, choose that option.\n\nIce that keeps building, or a unit coated thickly that doesn’t recover after about an hour, is not a normal defrost.\n\nLook from a window or from dry, cleared ground. Don’t reach into the grille. Don’t go out in ice, deep snow, or the dark to get a closer look.\n\nIf the outdoor air is well above freezing and dry, a defrost is unlikely.",
+      "options": [
+        {
+          "id": "defrost_then_heat_fine",
+          "label": "It paused, then heat came back",
+          "next": "@ms_defrost_normal_basic",
+          "hint": "That can be normal.",
+          "fact": "User saw a short pause, then heat returned.",
+          "gate": null
+        },
+        {
+          "id": "defrost_seen_heat_still_weak",
+          "label": "I saw a short pause or some steam, and heat is still weak",
+          "next": "ms.head.filter_path_ok",
+          "hint": "Next: the filters.",
+          "fact": "A short defrost was seen, and heat stayed weak.",
+          "gate": null
+        },
+        {
+          "id": "no_frost_or_mild_weather",
+          "label": "No frost, or it’s mild and dry outside",
+          "next": "ms.head.filter_path_ok",
+          "hint": "Next: the filters.",
+          "fact": "No outdoor frost seen, or the weather was mild and dry.",
+          "gate": null
+        },
+        {
+          "id": "outdoor_iced_solid_no_recover",
+          "label": "The outdoor unit is thick with ice, and heat doesn’t come back",
+          "next": "@ms_outdoor_freeze_heat_wave1",
+          "hint": "That’s a pro visit.",
+          "fact": "Outdoor unit stayed thick with ice in heat and did not recover.",
+          "gate": null
+        },
+        {
+          "id": "ice_want_keep_running",
+          "label": "There’s ice, but I want to keep it running to force heat",
+          "next": "@ms_ice_heat_keep_running",
+          "hint": "Hard stop. Turn it off.",
+          "fact": "Homeowner wanted to keep the iced outdoor unit running for heat.",
+          "gate": "ice_keep_running"
+        },
+        {
+          "id": "steam_or_smoke_unsure",
+          "label": "I’m not sure the cloud is steam, or it smells like burning",
+          "next": "@ms_hazard_now",
+          "hint": "Stop. Don’t keep checking.",
+          "fact": "Steam or smoke at the outdoor unit was not confirmed as steam.",
+          "gate": "ms_new_hazard"
+        },
+        {
+          "id": "not_sure",
+          "label": "I’m not sure what I saw",
+          "next": "@ms_ice_unclear_or_heat",
+          "hint": "Next steps.",
+          "fact": "",
+          "gate": null
+        },
+        {
+          "id": "hazard_now",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
+          "next": "@ms_hazard_now",
+          "hint": "Stop. Don’t keep checking.",
+          "fact": "New hazard reported during the mini-split check.",
+          "gate": "ms_new_hazard"
+        }
+      ],
+      "caution": "No defrost buttons. Don’t chip ice, pour hot water, or use a heat gun. Don’t keep an iced unit running to force heat.",
+      "diyTier": "basic",
+      "safetyGate": true
+    },
+    "ms.head.filter_path_ok": {
+      "section": "Indoor unit filters",
+      "title": "Can you reach the filters?",
+      "body": "Most mini-splits have washable filters behind the front cover of the indoor unit. Clean them only if all four of these are true:\n\n1. Your owner’s manual shows the filter steps without tools.\n2. The front cover lifts by hand. Nothing needs to be pried, unscrewed, or forced.\n3. You can reach it standing on the floor. If you’d need a ladder, chair, or step stool, stop here.\n4. The manual says to turn the unit off with the remote first. If it says to switch off power at a breaker or switch, stop here. This check doesn’t guide that step.\n\nTurning the unit off with the remote stops it running. It doesn’t cut the power. That’s why you’ll touch only the filters.",
+      "options": [
+        {
+          "id": "filter_ok_tool_free_floor",
+          "label": "Yes to all four",
+          "next": "ms.head.filter_clean",
+          "hint": "Clean the filters next.",
+          "fact": "Owner’s manual shows a tool-free filter path reachable from the floor.",
+          "gate": null
+        },
+        {
+          "id": "filter_cleaned_recently",
+          "label": "I cleaned the filters in the last two weeks",
+          "next": "ms.head.discharge_clear",
+          "hint": "Skip ahead to what’s blocking the air.",
+          "fact": "User reports the filters were cleaned within the last two weeks.",
+          "gate": null
+        },
+        {
+          "id": "filter_needs_ladder",
+          "label": "It’s mounted high. I’d need a ladder, chair, or step stool",
+          "next": "@ms_filter_inaccessible",
+          "hint": "Don’t climb. A pro can clean them.",
+          "fact": "Indoor unit too high to reach from the floor.",
+          "gate": null
+        },
+        {
+          "id": "filter_needs_tools_or_force",
+          "label": "The cover needs tools, feels stuck, or the clips might break",
+          "next": "@ms_filter_inaccessible",
+          "hint": "Don’t force it.",
+          "fact": "Filter cover needs tools or force.",
+          "gate": null
+        },
+        {
+          "id": "manual_says_cut_power",
+          "label": "My manual says to switch off power at a breaker or switch first",
+          "next": "@ms_filter_inaccessible",
+          "hint": "This check stops there.",
+          "fact": "Manual asks for power to be switched off at a breaker or switch before filter cleaning.",
+          "gate": null
+        },
+        {
+          "id": "no_manual_not_sure",
+          "label": "I don’t have the manual, or I’m not sure",
+          "next": "@ms_filter_path_unconfirmed",
+          "hint": "Don’t guess at clips or covers.",
+          "fact": "Filter steps could not be confirmed from the manual.",
+          "gate": null
+        },
+        {
+          "id": "hazard_now",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
+          "next": "@ms_hazard_now",
+          "hint": "Stop. Don’t keep checking.",
+          "fact": "New hazard reported during the mini-split check.",
+          "gate": "ms_new_hazard"
+        }
+      ],
+      "caution": "No ladders, chairs, or step stools. No tools. Touch only the filters.",
+      "diyTier": "basic",
+      "safetyGate": true
+    },
+    "ms.head.filter_clean": {
+      "section": "Indoor unit filters",
+      "title": "Clean the filters the way your manual shows",
+      "body": "1. Turn the unit Off with the remote. Wait until the fan stops and the louver closes.\n2. Lift the front cover by hand, the way the manual shows.\n3. Slide the filters out. If the manual says a part shouldn’t get wet, keep it dry.\n4. Vacuum the dust off, or rinse with lukewarm water, never hotter than 104°F (40°C). Use mild soap only if the manual allows it. Don’t wring them.\n5. Let washed filters dry fully in the shade.\n6. Slide them back in and close the cover until it’s fully shut.\n\nRemote Off doesn’t cut the power. Touch only the filters and the cover. Don’t reach past them, and don’t spray anything on the parts inside.\n\nRun it only with the filters in place.",
+      "options": [
+        {
+          "id": "cleaned_were_dirty",
+          "label": "Done. The filters were dusty or dirty",
+          "next": "ms.head.discharge_clear",
+          "hint": "Next: what’s in front of the unit.",
+          "fact": "User cleaned the indoor-unit filters. They were dusty or dirty.",
+          "gate": null
+        },
+        {
+          "id": "cleaned_looked_clean",
+          "label": "Done. They looked mostly clean",
+          "next": "ms.head.discharge_clear",
+          "hint": "Next: what’s in front of the unit.",
+          "fact": "User cleaned the indoor-unit filters. They looked mostly clean.",
+          "gate": null
+        },
+        {
+          "id": "filters_washed_still_drying",
+          "label": "I washed them, and they’re still drying",
+          "next": "@ms_filter_drying_basic",
+          "hint": "Finish later. We’ll show how.",
+          "fact": "User washed the filters. They were still drying.",
+          "gate": null
+        },
+        {
+          "id": "filter_torn_or_missing",
+          "label": "A filter is torn, damaged, or missing",
+          "next": "@ms_filter_replace_basic",
+          "hint": "Get the right replacement.",
+          "fact": "Indoor-unit filter torn, damaged, or missing.",
+          "gate": null
+        },
+        {
+          "id": "cover_or_filter_wont_go_back",
+          "label": "The cover or a filter won’t go back the way it came out",
+          "next": "@ms_filter_inaccessible",
+          "hint": "Don’t force it.",
+          "fact": "Filter or front cover would not go back in place.",
+          "gate": null
+        },
+        {
+          "id": "saw_mold_or_slime",
+          "label": "I see heavy mold, black buildup, or slime inside",
+          "next": "@ms_head_cleaning_pro",
+          "hint": "Inside cleaning is a pro job.",
+          "fact": "Heavy mold, black buildup, or slime seen inside the indoor unit.",
+          "gate": null
+        },
+        {
+          "id": "saw_ice_behind_filter",
+          "label": "I see ice or frost behind the filters",
+          "next": "ms.ice.stop_observe",
+          "hint": "Stop-and-thaw steps next.",
+          "fact": "Ice or frost seen behind the filters.",
+          "gate": null
+        },
+        {
+          "id": "hazard_now",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
+          "next": "@ms_hazard_now",
+          "hint": "Stop. Don’t keep checking.",
+          "fact": "New hazard reported during the mini-split check.",
+          "gate": "ms_new_hazard"
+        }
+      ],
+      "caution": "Remote Off doesn’t cut the power. Touch only the filters and the cover.",
+      "diyTier": "basic",
+      "safetyGate": false
+    },
+    "ms.head.discharge_clear": {
+      "section": "Indoor unit airflow",
+      "title": "Is anything blocking the air?",
+      "body": "Look from the floor. Don’t climb.\n\n1. Curtains, furniture, shelves, or tall plants shouldn’t sit in front of the indoor unit or right under it. Nothing should hang on it or sit on top.\n2. The louver (the flap where the air comes out) should be open. If it’s closed or pointing straight up, use the swing or air-direction button on the remote. Don’t move it by hand.\n\nMove anything that’s in the way.",
+      "options": [
+        {
+          "id": "blocker_moved",
+          "label": "Something was in the way, and I moved it",
+          "next": "ms.head.airflow_result",
+          "hint": "Next: a 15-minute check.",
+          "fact": "User moved something that was blocking the indoor unit.",
+          "gate": null
+        },
+        {
+          "id": "louver_opened_with_remote",
+          "label": "The louver was closed or stuck in one spot. The remote fixed it",
+          "next": "ms.head.airflow_result",
+          "hint": "Next: a 15-minute check.",
+          "fact": "User reset the louver with the remote.",
+          "gate": null
+        },
+        {
+          "id": "nothing_blocking",
+          "label": "Nothing was blocking it",
+          "next": "ms.head.airflow_result",
+          "hint": "Next: a 15-minute check.",
+          "fact": "Nothing blocking the indoor unit.",
+          "gate": null
+        },
+        {
+          "id": "louver_stuck_wont_move",
+          "label": "The louver won’t move with the remote",
+          "next": "@ms_louver_stuck",
+          "hint": "Don’t force it by hand.",
+          "fact": "Louver would not move with the remote.",
+          "gate": null
+        },
+        {
+          "id": "hazard_now",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
+          "next": "@ms_hazard_now",
+          "hint": "Stop. Don’t keep checking.",
+          "fact": "New hazard reported during the mini-split check.",
+          "gate": "ms_new_hazard"
+        }
+      ],
+      "caution": "",
+      "diyTier": "basic",
+      "safetyGate": false
+    },
+    "ms.head.airflow_result": {
+      "section": "Indoor unit airflow",
+      "title": "Run it for 15 minutes, then check",
+      "body": "Set the mode you need (Cool or Heat), at least 3°F past the room temperature, fan on High. Run it about 15 minutes.\n\nThen stand in front of the indoor unit and feel the air.\n\nIf you see ice or dripping water now, choose that option. Don’t keep it running.",
+      "options": [
+        {
+          "id": "improved_ok",
+          "label": "Better. Strong air at the right temperature now.",
+          "next": "@ms_airflow_improved_basic",
+          "hint": "Basic fix. We’ll show how to keep it that way.",
+          "fact": "Airflow is strong at the right temperature after the basic checks.",
+          "gate": null
+        },
+        {
+          "id": "still_weak_air",
+          "label": "The air is still weak",
+          "next": "@ms_weak_air_after_basics",
+          "hint": "A pro checks the inside of the unit.",
+          "fact": "Airflow still weak after settings, filters, and clearance checks.",
+          "gate": null
+        },
+        {
+          "id": "air_ok_not_cooling",
+          "label": "The air is strong, but it isn’t cold, or the room won’t cool",
+          "next": "@ms_no_cool_after_basics",
+          "hint": "A pro checks the system.",
+          "fact": "Airflow strong but not cooling after the basic checks.",
+          "gate": null
+        },
+        {
+          "id": "air_ok_not_heating",
+          "label": "The air is strong, but the room isn’t warming",
+          "next": "ms.outdoor.safe_observe",
+          "hint": "Next: a look at the outdoor unit.",
+          "fact": "Airflow strong but not heating after the basic checks.",
+          "gate": null
+        },
+        {
+          "id": "now_ice_or_water",
+          "label": "Now I see ice or dripping water",
+          "next": "ms.head.water_observe",
+          "hint": "Next: where the water or melting ice is. Electrical safety comes first.",
+          "fact": "Ice or dripping water appeared during the airflow check.",
+          "gate": null
+        },
+        {
+          "id": "not_sure_result",
+          "label": "I’m not sure",
+          "next": "@ms_airflow_unsure",
+          "hint": "Don’t open the unit to check.",
+          "fact": "",
+          "gate": null
+        },
+        {
+          "id": "hazard_now",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
+          "next": "@ms_hazard_now",
+          "hint": "Stop. Don’t keep checking.",
+          "fact": "New hazard reported during the mini-split check.",
+          "gate": "ms_new_hazard"
+        }
+      ],
+      "caution": "",
+      "diyTier": "basic",
+      "safetyGate": false
+    },
+    "ms.outdoor.safe_observe": {
+      "section": "Outdoor unit",
+      "title": "What is the outdoor unit doing?",
+      "body": "Look from a window, or from dry, cleared ground. Don’t climb onto the unit, a roof, or a snowbank. Don’t reach into the grille. If the ground is icy, dark, or flooded, choose that you can’t look from where you stand.\n\nA unit that is calling for heat or cool should have the outdoor unit running, except during a short defrost pause.\n\nIf you see water, melt, or ice on or near the outdoor unit’s power box, cord, or outlet, choose that first. Don’t touch it.\n\nSteam in cold weather can be a normal defrost. If you aren’t sure it’s steam, or it smells like burning, choose that option.",
+      "options": [
+        {
+          "id": "water_near_outdoor_electrical",
+          "label": "Water, melt, or ice is on or near the power box, cord, or outlet",
+          "next": "@ms_outdoor_water_electrical",
+          "hint": "Stop. Don’t touch it.",
+          "fact": "Water, melt, or ice on or near the outdoor unit power box, cord, or outlet.",
+          "gate": "water_near_electrical"
+        },
+        {
+          "id": "outdoor_running_still_problem",
+          "label": "The outdoor unit is running, and the room still isn’t comfortable",
+          "next": "@ms_outdoor_running_call_pro",
+          "hint": "A pro tests the system.",
+          "fact": "Outdoor unit was running and the room was still not comfortable.",
+          "gate": null
+        },
+        {
+          "id": "outdoor_quiet_while_calling",
+          "label": "The indoor unit is calling, and the outdoor unit is quiet",
+          "next": "@ms_outdoor_not_running_wave1",
+          "hint": "A pro checks why it’s quiet.",
+          "fact": "Indoor unit was calling and the outdoor unit was quiet.",
+          "gate": null
+        },
+        {
+          "id": "outdoor_thick_ice_heating",
+          "label": "The outdoor unit is thick with ice while heating",
+          "next": "@ms_outdoor_freeze_heat_wave1",
+          "hint": "That’s a pro visit.",
+          "fact": "Outdoor unit was thick with ice while heating.",
+          "gate": null
+        },
+        {
+          "id": "ice_want_keep_running",
+          "label": "There’s ice, but I want to keep it running",
+          "next": "@ms_ice_heat_keep_running",
+          "hint": "Hard stop. Turn it off.",
+          "fact": "Homeowner wanted to keep the iced outdoor unit running for heat.",
+          "gate": "ice_keep_running"
+        },
+        {
+          "id": "outdoor_ice_cooling",
+          "label": "I see ice while it’s set to Cool",
+          "next": "ms.ice.stop_observe",
+          "hint": "Stop-and-thaw steps next.",
+          "fact": "Ice seen at the outdoor unit while cooling.",
+          "gate": null
+        },
+        {
+          "id": "steam_or_smoke_unsure",
+          "label": "I’m not sure the cloud is steam, or it smells like burning",
+          "next": "@ms_hazard_now",
+          "hint": "Stop. Don’t keep checking.",
+          "fact": "Steam or smoke at the outdoor unit was not confirmed as steam.",
+          "gate": "ms_new_hazard"
+        },
+        {
+          "id": "cannot_observe_safely",
+          "label": "I can’t see it from where you stand from here",
+          "next": "@ms_outdoor_unsure",
+          "hint": "Don’t go closer.",
+          "fact": "",
+          "gate": null
+        },
+        {
+          "id": "hazard_now",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
+          "next": "@ms_hazard_now",
+          "hint": "Stop. Don’t keep checking.",
+          "fact": "New hazard reported during the mini-split check.",
+          "gate": "ms_new_hazard"
+        }
+      ],
+      "caution": "Look only from a window or dry ground. Don’t reach into the grille.",
+      "diyTier": "basic",
+      "safetyGate": true
+    },
+    "ms.head.water_observe": {
+      "section": "Water",
+      "title": "Where is the water or melting ice?",
+      "body": "Answer from where you’re standing. Don’t step into water, touch the unit, or climb up to look. Don’t go into an attic or crawlspace. Ice that is melting counts as water for this question.\n\nFirst: is any water, or ice that is melting, on or near an outlet, a power cord, a light, a switch, or the unit’s wiring? Or dripping onto anything that plugs in?",
+      "options": [
+        {
+          "id": "water_on_electrical",
+          "label": "Yes, water is on or near something electrical",
+          "next": "@ms_water_electrical",
+          "hint": "Stop. Don’t touch it.",
+          "fact": "Water on or near electrical parts at the mini-split.",
+          "gate": "water_near_electrical"
+        },
+        {
+          "id": "water_unsure_electrical",
+          "label": "I can’t tell if it’s near anything electrical",
+          "next": "@ms_unsure_water_electrical",
+          "hint": "Stop. Don’t keep checking.",
+          "fact": "Not sure whether water was near electrical parts.",
+          "gate": "unsure_water_electrical"
+        },
+        {
+          "id": "water_with_ice",
+          "label": "Nothing electrical, but I also see ice on the unit or its pipes",
+          "next": "ms.ice.stop_observe",
+          "hint": "Stop-and-thaw steps next.",
+          "fact": "Water and ice seen. No electrical contact reported.",
+          "gate": null
+        },
+        {
+          "id": "water_drip_away_from_electrical",
+          "label": "It’s dripping or pooling under the unit, away from anything electrical",
+          "next": "@ms_condensate_leak_wave1",
+          "hint": "Towels down. A pro clears the drain.",
+          "fact": "Water dripping or pooling under the indoor unit, away from electrical parts.",
+          "gate": null
+        },
+        {
+          "id": "water_hidden_or_pump",
+          "label": "Water is in the wall or ceiling, or a small pump box is beeping or overflowing",
+          "next": "@ms_condensate_leak_wave1",
+          "hint": "Near a light or outlet? Choose the first option.",
+          "fact": "Water in the wall or ceiling, or a condensate pump alarm or overflow.",
+          "gate": null
+        },
+        {
+          "id": "hazard_now",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
+          "next": "@ms_hazard_now",
+          "hint": "Stop. Don’t keep checking.",
+          "fact": "New hazard reported during the mini-split check.",
+          "gate": "ms_new_hazard"
+        }
+      ],
+      "caution": "Water and electricity together is a stop, not a cleanup job.",
+      "diyTier": "basic",
+      "safetyGate": true
+    },
+    "ms.error.capture": {
+      "section": "Error code",
+      "title": "Write down the code",
+      "body": "Codes help a pro. They aren’t a repair guide. Look from the floor at the indoor unit display, the remote, or the app.\n\n1. Write down the exact letters and numbers, or take a photo. If it’s blinking lights, count the blinks and note which light.\n2. Note what the unit was doing and when it started.\n3. Don’t keep turning it off and on to clear the code. Don’t open the unit to look for it.\n\nSome newer units show a code for a refrigerant leak. If the screen, app, or manual says that, choose the first option.",
+      "options": [
+        {
+          "id": "code_refrigerant_leak_alert",
+          "label": "The screen, app, or manual says it’s a refrigerant leak",
+          "next": "@leak",
+          "hint": "Leave the room. Don’t reset it.",
+          "fact": "Mini-split showed a refrigerant leak alert.",
+          "gate": "refrigerant_alarm_or_release"
+        },
+        {
+          "id": "code_recorded",
+          "label": "I wrote down or photographed the code",
+          "next": "@ms_error_code_wave1",
+          "hint": "We’ll package it for a pro.",
+          "fact": "User recorded the error code shown.",
+          "gate": null
+        },
+        {
+          "id": "lights_blinking_pattern",
+          "label": "It’s blinking lights, and I noted the pattern",
+          "next": "@ms_error_code_wave1",
+          "hint": "We’ll package it for a pro.",
+          "fact": "User noted a blinking-light pattern.",
+          "gate": null
+        },
+        {
+          "id": "code_cleared_after_restart",
+          "label": "The code went away after the unit restarted",
+          "next": "@ms_error_code_wave1",
+          "hint": "Still worth telling a pro.",
+          "fact": "Error code cleared after a restart.",
+          "gate": null
+        },
+        {
+          "id": "cannot_read_from_floor",
+          "label": "I can’t read it from the floor",
+          "next": "@ms_error_code_wave1",
+          "hint": "Don’t climb. Check the app or remote.",
+          "fact": "Error code could not be read from the floor.",
+          "gate": null
+        },
+        {
+          "id": "hazard_now",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
+          "next": "@ms_hazard_now",
+          "hint": "Stop. Don’t keep checking.",
+          "fact": "New hazard reported during the mini-split check.",
+          "gate": "ms_new_hazard"
+        }
+      ],
+      "caution": "Codes are for a pro to read. No resets, covers, or meters.",
+      "diyTier": "basic",
+      "safetyGate": true
+    },
+    "ms.ice.stop_observe": {
+      "section": "Ice",
+      "title": "Ice on the mini-split: stop and thaw",
+      "body": "Ice on a mini-split while it’s cooling isn’t normal. A dirty filter can cause it, and so can problems only a pro can check. Running it iced can damage it.\n\nLook only from where you stand. Don’t open the unit, chip the ice, or go outside in unsafe weather to check.\n\nPick the one that fits best.",
+      "options": [
+        {
+          "id": "ice_dripping_near_electrical",
+          "label": "Melting ice is dripping on or near an outlet, cord, or anything electrical",
+          "next": "@ms_water_electrical",
+          "hint": "Stop. Don’t touch it.",
+          "fact": "Melting ice dripping near electrical parts.",
+          "gate": "water_near_electrical"
+        },
+        {
+          "id": "ice_want_keep_running",
+          "label": "There’s ice, but I want to keep it running",
+          "next": "@ms_ice_keep_running",
+          "hint": "Hard stop. Turn it off.",
+          "fact": "Homeowner wanted to keep the mini-split running despite ice.",
+          "gate": "ice_keep_running"
+        },
+        {
+          "id": "ice_seen_cooling",
+          "label": "There’s ice or frost on the indoor unit, its pipes, or the pipes at the outdoor unit",
+          "next": "@ms_ice_cooling_wave1",
+          "hint": "Turn it off, let it thaw, call a pro.",
+          "fact": "Ice or frost seen while cooling.",
+          "gate": null
+        },
+        {
+          "id": "ice_outdoor_heating_or_unsure",
+          "label": "It’s frost on the outdoor unit while heating, or I’m not sure it’s ice",
+          "next": "@ms_ice_unclear_or_heat",
+          "hint": "Next, including what a normal defrost looks like.",
+          "fact": "Outdoor frost while heating, or ice not confirmed.",
+          "gate": null
+        },
+        {
+          "id": "hazard_now",
+          "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
+          "next": "@ms_hazard_now",
+          "hint": "Stop. Don’t keep checking.",
+          "fact": "New hazard reported during the mini-split check.",
+          "gate": "ms_new_hazard"
+        }
+      ],
+      "caution": "No chipping ice, no covers, and no refrigerant or electrical work.",
+      "diyTier": "basic",
+      "safetyGate": true
+    }
+  },
+  "results": {
+    "ms_multi_zone_pr2": {
+      "tier": "More information needed",
+      "urgency": "Not covered yet",
+      "title": "This check covers one indoor unit for now.",
+      "explanation": "Systems where two or more indoor units share one outdoor unit need extra questions. They come in a later version.",
+      "actions": [
+        "Note which indoor units work and which don’t, and what each one shows.",
+        "Call a licensed HVAC pro who works on mini-splits, or use the maker’s owner support."
+      ],
+      "avoid": "Don’t open covers or climb to check any indoor unit.",
+      "source": "scope",
+      "outcome": "insufficient_info",
+      "reason": "ms_multi_zone_pr2",
+      "diyTier": null,
+      "gate": null,
+      "continueTo": null
+    },
+    "ms_use_central_check": {
+      "tier": "More information needed",
+      "urgency": "Use the right check",
+      "title": "This path is for ductless mini-splits.",
+      "explanation": "A system with vents and ducts has its own check.",
+      "actions": [
+        "Go back home, press Start, and choose Cooling-only AC or Heat pump."
+      ],
+      "avoid": "Don’t remove a cover to re-check the equipment.",
+      "source": "scope",
+      "outcome": "insufficient_info",
+      "reason": "ms_use_central_check",
+      "diyTier": null,
+      "gate": null,
+      "continueTo": null
+    },
+    "ms_equipment_oos": {
+      "tier": "More information needed",
+      "urgency": "Outside this beta",
+      "title": "This equipment isn’t covered here.",
+      "explanation": "Window, portable, and through-the-wall units, and other types, aren’t diagnosed in this beta.",
+      "actions": [
+        "Use the maker’s owner guidance, or a technician who works on that type of unit.",
+        "If you already know the model number, write it down. Don’t remove a cover or climb to find it."
+      ],
+      "avoid": "Don’t apply this mini-split guide to other equipment.",
+      "source": "scope",
+      "outcome": "insufficient_info",
+      "reason": "ms_equipment_oos",
+      "diyTier": null,
+      "gate": null,
+      "continueTo": null
+    },
+    "ms_system_unconfirmed": {
+      "tier": "More information needed",
+      "urgency": "Confirm the system first",
+      "title": "This check needs a confirmed ductless mini-split.",
+      "explanation": "Guessing the equipment type can send you down the wrong steps.",
+      "actions": [
+        "Check the owner’s manual, or ask someone who knows the equipment.",
+        "Start again when you can confirm it. If you can’t, call an HVAC company rather than guessing."
+      ],
+      "avoid": "Don’t remove covers or climb to read labels.",
+      "source": "scope",
+      "outcome": "insufficient_info",
+      "reason": "ms_system_unconfirmed",
+      "diyTier": null,
+      "gate": null,
+      "continueTo": null
+    },
+    "ms_landing_not_in_pr1": {
+      "tier": "More information needed",
+      "urgency": "Not covered in this check",
+      "title": "Noise and smell aren’t sorted out here.",
+      "explanation": "This check covers cooling, heating, and a look at the outdoor unit. It won’t guess at a noise or a smell.",
+      "actions": [
+        "If something smells like burning, or you see smoke or sparks, get people away and call 911 from safety.",
+        "Otherwise, call a licensed HVAC pro who works on mini-splits. Tell them what you noticed and when it started."
+      ],
+      "avoid": "Don’t open covers, reset breakers, or open the outdoor unit to look for the cause.",
+      "source": "safety",
+      "outcome": "insufficient_info",
+      "reason": "ms_landing_not_in_pr1",
+      "diyTier": null,
+      "gate": null,
+      "continueTo": null
+    },
+    "ms_settings_fixed_basic": {
+      "tier": "Basic homeowner check",
+      "urgency": "Leave it set this way",
+      "title": "A setting was the problem.",
+      "explanation": "Cool mode, a setting below the room, and a normal fan speed let the mini-split cool the way it should.",
+      "actions": [
+        "Leave it in Cool, not Auto, while you need cooling.",
+        "If you use Quiet, Sleep, or a schedule, check that it isn’t turning cooling off when you need it.",
+        "If it stops cooling again with the right settings, start a new check and choose Not cooling."
+      ],
+      "avoid": "Don’t change installer settings or open the unit.",
+      "source": "maintenance",
+      "outcome": "next_step",
+      "reason": "ms_settings_fixed_basic",
+      "diyTier": "basic",
+      "gate": null,
+      "continueTo": null
+    },
+    "ms_no_response_wave1": {
+      "tier": "Professional guidance",
+      "urgency": "Arrange HVAC service",
+      "title": "The unit isn’t responding to its controls.",
+      "explanation": "When the remote or app can’t control it, or the indoor unit shows no lights, the cause can be power, wiring, or the controls inside. Those are pro checks.",
+      "actions": [
+        "Call a licensed HVAC pro. Tell them whether the indoor unit shows any lights, and whether fresh remote batteries helped.",
+        "If you smell burning or see smoke or sparks, get people away and call 911 from safety."
+      ],
+      "avoid": "Don’t open the indoor or outdoor unit, rewire anything, or reset breakers to test it.",
+      "source": "electrical",
+      "outcome": "call_pro",
+      "reason": "ms_no_response_wave1",
+      "diyTier": null,
+      "gate": null,
+      "continueTo": null
+    },
+    "ms_controls_unsure": {
+      "tier": "More information needed",
+      "urgency": "Check the settings first",
+      "title": "The next steps depend on the remote or app settings.",
+      "explanation": "If the remote screen is hard to read, the app or the owner’s manual can show the current mode and setting.",
+      "actions": [
+        "Look at the app, or the remote in good light, and note the mode, temperature, and fan setting.",
+        "Start again when you can see them. If you can’t read them at all, call an HVAC pro."
+      ],
+      "avoid": "Don’t open the unit to look for settings.",
+      "source": "scope",
+      "outcome": "insufficient_info",
+      "reason": "ms_controls_unsure",
+      "diyTier": null,
+      "gate": null,
+      "continueTo": null
+    },
+    "ms_filter_inaccessible": {
+      "tier": "Professional guidance",
+      "urgency": "Arrange HVAC service",
+      "title": "Skip a filter step you can’t do.",
+      "explanation": "If the filters are out of reach from the floor, need tools or force, or need power switched off at a breaker first, let a pro do it.",
+      "actions": [
+        "If a cover is partly open, leave it and keep the unit Off with the remote.",
+        "From the floor, move curtains or furniture away from the indoor unit.",
+        "Call a licensed HVAC pro and ask them to clean the filters and check airflow. Tell them how the system is acting."
+      ],
+      "avoid": "Don’t climb a ladder, chair, or stool, pry the cover, or run the unit without filters.",
+      "source": "maintenance",
+      "outcome": "call_pro",
+      "reason": "ms_filter_inaccessible",
+      "diyTier": null,
+      "gate": null,
+      "continueTo": null
+    },
+    "ms_filter_path_unconfirmed": {
+      "tier": "More information needed",
+      "urgency": "Find the filter steps first",
+      "title": "The filter step waits on your owner’s manual.",
+      "explanation": "Covers and clips differ by model. Guessing can break them.",
+      "actions": [
+        "If you already know the model number, look up the owner’s manual from the maker. Don’t climb or remove a cover to find it.",
+        "Start a new check when you have the filter steps, or ask an HVAC pro to clean the filters."
+      ],
+      "avoid": "Don’t pry or force the front cover.",
+      "source": "maintenance",
+      "outcome": "insufficient_info",
+      "reason": "ms_filter_path_unconfirmed",
+      "diyTier": null,
+      "gate": null,
+      "continueTo": null
+    },
+    "ms_filter_drying_basic": {
+      "tier": "Basic homeowner check",
+      "urgency": "Finish when the filters are dry",
+      "title": "Washed filters need to dry fully first.",
+      "explanation": "Let them dry in the shade, not in the sun or with a heater or hair dryer.",
+      "actions": [
+        "Leave the unit Off until the filters are back in. Run it only with the filters in place.",
+        "When they’re dry, slide them back in and close the cover all the way.",
+        "Run it in the mode you need for about 15 minutes. If the air is still weak, or the room still isn’t comfortable, start a new check."
+      ],
+      "avoid": "Don’t use heat to dry them, and don’t run the unit without filters.",
+      "source": "maintenance",
+      "outcome": "next_step",
+      "reason": "ms_filter_drying_basic",
+      "diyTier": "basic",
+      "gate": null,
+      "continueTo": null
+    },
+    "ms_filter_replace_basic": {
+      "tier": "Basic homeowner check",
+      "urgency": "Get the right replacement filter",
+      "title": "A filter is torn, damaged, or missing.",
+      "explanation": "Replacement filters are made for each model. The maker or your installer can tell you which one fits.",
+      "actions": [
+        "Order the replacement filter for your model from the maker or a dealer.",
+        "Most manuals say not to run the unit without its filters. Follow yours until the new one arrives.",
+        "Put the new filter in the way the manual shows. If it doesn’t fit, don’t force it. Call your installer."
+      ],
+      "avoid": "Don’t trim a different filter to fit, and don’t force the cover.",
+      "source": "maintenance",
+      "outcome": "next_step",
+      "reason": "ms_filter_replace_basic",
+      "diyTier": "basic",
+      "gate": null,
+      "continueTo": null
+    },
+    "ms_head_cleaning_pro": {
+      "tier": "Professional guidance",
+      "urgency": "Arrange a professional cleaning",
+      "title": "Buildup inside the indoor unit is a pro cleaning job.",
+      "explanation": "Mold, slime, or heavy dirt inside the unit needs a pro cleaning. Spray cleaners and bleach can damage the unit.",
+      "actions": [
+        "Close the cover. Leave the unit Off if the air smells musty or bad.",
+        "Call a licensed HVAC pro and ask for an indoor-unit cleaning. Tell them what you saw.",
+        "Keep cleaning the washable filters on the schedule in your manual."
+      ],
+      "avoid": "Don’t spray cleaners, bleach, or water into the unit, or take it apart.",
+      "source": "maintenance",
+      "outcome": "call_pro",
+      "reason": "ms_head_cleaning_pro",
+      "diyTier": null,
+      "gate": null,
+      "continueTo": null
+    },
+    "ms_louver_stuck": {
+      "tier": "Professional guidance",
+      "urgency": "Arrange HVAC service",
+      "title": "The louver won’t move with the remote.",
+      "explanation": "Forcing a louver by hand can break it. A pro can check the louver and what drives it.",
+      "actions": [
+        "Leave the louver where it is.",
+        "If air still comes out, you can keep using the unit. If the louver is closed and blocking the air, turn it Off with the remote.",
+        "Call a licensed HVAC pro and tell them what the louver does."
+      ],
+      "avoid": "Don’t push, pry, or bend the louver, or open the unit.",
+      "source": "maintenance",
+      "outcome": "call_pro",
+      "reason": "ms_louver_stuck",
+      "diyTier": null,
+      "gate": null,
+      "continueTo": null
+    },
+    "ms_airflow_improved_basic": {
+      "tier": "Basic homeowner check",
+      "urgency": "Keep the filters clean",
+      "title": "The basic checks brought the air back.",
+      "explanation": "Clean filters and a clear path in front of the unit are common fixes for weak air.",
+      "actions": [
+        "Clean the filters as often as your manual says. Many say every two weeks when it runs a lot.",
+        "Keep curtains and furniture clear of the indoor unit.",
+        "If the air gets weak again soon after cleaning, or you see ice or water, start a new check."
+      ],
+      "avoid": "Don’t spray cleaners into the unit or open it past the filters.",
+      "source": "maintenance",
+      "outcome": "next_step",
+      "reason": "ms_airflow_improved_basic",
+      "diyTier": "basic",
+      "gate": null,
+      "continueTo": null
+    },
+    "ms_weak_air_after_basics": {
+      "tier": "Professional guidance",
+      "urgency": "Arrange HVAC service",
+      "title": "Air is still weak after the basic checks.",
+      "explanation": "Settings, filters, and a clear path are done. What’s left is inside the unit, and that needs a pro. This isn’t a confirmed diagnosis.",
+      "actions": [
+        "If you see ice or water, or it isn’t cooling or heating, turn it Off with the remote.",
+        "Call a licensed HVAC pro. Tell them what you checked: settings, filters, and anything blocking the unit.",
+        "Your service note below lists what you told this check."
+      ],
+      "avoid": "Don’t open the unit, spray cleaners inside, or add refrigerant.",
+      "source": "maintenance",
+      "outcome": "call_pro",
+      "reason": "ms_weak_air_after_basics",
+      "diyTier": null,
+      "gate": null,
+      "continueTo": null
+    },
+    "ms_no_cool_after_basics": {
+      "tier": "Professional guidance",
+      "urgency": "Arrange HVAC service",
+      "title": "Air is moving, but it isn’t cooling.",
+      "explanation": "Settings, filters, and a clear path are done. When strong air still isn’t cold, the cause needs a pro to test. This isn’t a confirmed diagnosis.",
+      "actions": [
+        "Turn it Off with the remote so it doesn’t run without cooling.",
+        "Call a licensed HVAC pro. Tell them the settings, filter, and airflow checks you did.",
+        "If someone in the home becomes confused, faint, or seriously ill from the heat, call 911."
+      ],
+      "avoid": "Don’t add refrigerant, open the outdoor unit, or reset breakers to test it.",
+      "source": "safety",
+      "outcome": "call_pro",
+      "reason": "ms_no_cool_after_basics",
+      "diyTier": null,
+      "gate": null,
+      "continueTo": null
+    },
+    "ms_airflow_unsure": {
+      "tier": "More information needed",
+      "urgency": "Check again when you can",
+      "title": "The airflow check needs a clearer answer.",
+      "explanation": "It’s fine not to know. Don’t open the unit to find out.",
+      "actions": [
+        "Run Cool with the fan on High for 15 minutes, then compare the air to how it felt before.",
+        "Start a new check if it’s still unclear, or call an HVAC pro and describe what you noticed."
+      ],
+      "avoid": "Don’t open the unit or put anything into the air outlet.",
+      "source": "safety",
+      "outcome": "insufficient_info",
+      "reason": "ms_airflow_unsure",
+      "diyTier": null,
+      "gate": null,
+      "continueTo": null
+    },
+    "ms_condensate_leak_wave1": {
+      "tier": "Professional guidance",
+      "urgency": "Protect the area · arrange service",
+      "title": "Water from the indoor unit needs a pro.",
+      "explanation": "The water usually comes from the drain that carries water away from the unit. Clearing or fixing the drain, pump, or pan is a pro job.",
+      "actions": [
+        "Turn the unit Off with the remote to stop new water. Remote Off doesn’t cut the power, so stay away from the unit’s wiring.",
+        "Put towels or a bucket under it. Keep water away from outlets and cords.",
+        "Call a licensed HVAC pro. Tell them where the water is and how much.",
+        "If water reaches an outlet, cord, or light, stay clear and call a pro or electrician.",
+        "If you see sparks or smoke, or smell burning, get out and call 911 from outside."
+      ],
+      "avoid": "Don’t open the unit, pour bleach, vinegar, or other chemicals into the drain, push anything through it, or drill holes.",
+      "source": "safety",
+      "outcome": "call_pro",
+      "reason": "ms_condensate_leak_wave1",
+      "diyTier": null,
+      "gate": null,
+      "continueTo": null
+    },
+    "ms_error_code_wave1": {
+      "tier": "Professional guidance",
+      "urgency": "Arrange HVAC service",
+      "title": "Give the code to a pro.",
+      "explanation": "Error codes point a pro to what to check. They aren’t a homeowner repair list, and the same code can mean different things on different brands.",
+      "actions": [
+        "If it isn’t cooling, or the code keeps coming back, turn it Off with the remote.",
+        "Call a licensed HVAC pro, or the installer or maker. Give them the code or light pattern, when it showed, and what the unit was doing.",
+        "If you couldn’t read it from the floor, say so. Don’t climb to read it."
+      ],
+      "avoid": "Don’t follow repair steps from a code list.",
+      "source": "safety",
+      "outcome": "call_pro",
+      "reason": "ms_error_code_wave1",
+      "diyTier": null,
+      "gate": null,
+      "continueTo": null
+    },
+    "ms_ice_cooling_wave1": {
+      "tier": "Stop / professional",
+      "urgency": "Turn it off · call a pro",
+      "title": "Turn it off and let the ice melt.",
+      "explanation": "Running a mini-split with ice on it can damage it, and the melt can drip. A dirty filter can cause ice, and so can problems only a pro can check.",
+      "actions": [
+        "Turn the unit Off with the remote or app.",
+        "Put towels or a bucket under the indoor unit. Keep water away from outlets and cords.",
+        "Let the ice melt on its own. It can take a few hours.",
+        "Call a licensed HVAC pro. Tell them where you saw ice and when the filters were last cleaned.",
+        "If water reaches an outlet, cord, or light, stay clear and call a pro or electrician.",
+        "If you see sparks or smoke, or smell burning, get out and call 911 from outside."
+      ],
+      "avoid": "Don’t chip or pick at the ice, or use a hair dryer, heat gun, or hot water. Don’t restart cooling while any ice remains.",
+      "source": "ice",
+      "outcome": "call_pro",
+      "reason": "ms_ice_cooling_wave1",
+      "diyTier": null,
+      "gate": null,
+      "continueTo": null
+    },
+    "ms_ice_keep_running": {
+      "tier": "Stop / professional",
+      "urgency": "Hard stop · call a pro",
+      "title": "Stop. Turn it off and let the ice melt.",
+      "explanation": "Running a mini-split with ice on it, or restarting it too soon, can damage it. Melting ice can drip from the indoor unit.",
+      "actions": [
+        "Turn the unit Off with the remote or app.",
+        "Put towels or a bucket under the indoor unit. Keep water away from outlets and cords.",
+        "Don’t open the front cover or any panel to check the ice.",
+        "Leave it off and call a licensed HVAC pro.",
+        "If water reaches an outlet or cord, stay clear and call a pro or electrician."
+      ],
+      "avoid": "Don’t chip or pick at the ice, use a hair dryer, heat gun, or hot water, or keep restarting it.",
+      "source": "ice",
+      "outcome": "emergency_exit",
+      "reason": "ice_keep_running",
+      "diyTier": null,
+      "gate": "ice_keep_running",
+      "continueTo": null
+    },
+    "ms_ice_unclear_or_heat": {
+      "tier": "More information needed",
+      "urgency": "Look only",
+      "title": "This check can’t sort out this ice yet.",
+      "explanation": "Light frost on the outdoor unit while heating can be normal for a short time. A normal defrost can show steam, a pause in heating, and a whoosh, then heat returns. Thick ice that keeps building isn’t normal.",
+      "actions": [
+        "If the ice is thick, keeps building, or doesn’t clear within about an hour, turn the system Off with the remote and call a licensed HVAC pro.",
+        "If you’re not sure it’s ice, watch from where you already stand and describe it to a pro.",
+        "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+      ],
+      "avoid": "Don’t chip ice, pour hot water on it, or open the outdoor unit.",
+      "source": "ice",
+      "outcome": "insufficient_info",
+      "reason": "ms_ice_unclear_or_heat",
+      "diyTier": null,
+      "gate": null,
+      "continueTo": null
+    },
+    "ms_hazard_now": {
+      "tier": "Emergency",
+      "urgency": "Stop. Get to safety.",
+      "title": "A new hazard ends this check.",
+      "explanation": "Gas, smoke, sparks, a burning smell, or water at electrical equipment is not a mini-split DIY path.",
+      "actions": [
+        "If you smell gas or a carbon monoxide alarm is sounding, leave the building and call for help from outside. Do not operate switches inside.",
+        "If there is smoke, fire, or sparks, get people away and call 911 from safety.",
+        "If a refrigerant leak alarm is going off, move people out of the affected area to fresh air without operating switches or creating ignition sources. Don’t reset the alarm, cycle power, or turn off a blower that’s running. Call a licensed HVAC professional from outside the affected area, and for breathing trouble or immediate danger, call 911.",
+        "If water is at electrical equipment, stay clear and don’t touch anything. Leave the area and call a licensed HVAC pro or an electrician.",
+        "Do not return to troubleshooting until the hazard has been handled."
+      ],
+      "avoid": "Do not keep diagnosing, open covers, or touch wet equipment.",
+      "source": "safety",
+      "outcome": "emergency_exit",
+      "reason": "ms_new_hazard",
+      "diyTier": null,
+      "gate": "ms_new_hazard",
+      "continueTo": null
+    },
+    "ms_unsure_water_electrical": {
+      "tier": "Stop / professional",
+      "urgency": "Do not continue the check",
+      "title": "Don’t touch the indoor unit to find out.",
+      "explanation": "If you can’t tell whether water or melting ice is near an outlet, a cord, or the unit’s wiring, stop.",
+      "actions": [
+        "Stay clear of the indoor unit and any wet floor. Don’t touch the unit, a switch, a cord, or the breaker panel.",
+        "Leave the area and call a licensed HVAC pro or an electrician. Tell them what you already saw.",
+        "If you see sparks or smoke, or smell burning, get out and call 911 from outside."
+      ],
+      "avoid": "Don’t mop around the unit, and don’t touch the breaker panel.",
+      "source": "electrical",
+      "outcome": "emergency_exit",
+      "reason": "unsure_water_electrical",
+      "diyTier": null,
+      "gate": "unsure_water_electrical",
+      "continueTo": null
+    },
+    "ms_water_electrical": {
+      "tier": "Stop / professional",
+      "urgency": "Keep away · urgent help",
+      "title": "Don’t touch the indoor unit or stand in the water.",
+      "explanation": "Water is on or near the mini-split’s electrical parts.",
+      "actions": [
+        "Don’t touch the indoor unit, any switch, a cord, or the breaker panel, and don’t stand in the water.",
+        "Leave the area, keep others and pets away, and call a licensed HVAC pro or an electrician.",
+        "If you see sparks, smoke, or smell burning, get out and call 911 from outside."
+      ],
+      "avoid": "Don’t touch the indoor unit, any switch, or the breaker panel.",
+      "source": "electrical",
+      "outcome": "emergency_exit",
+      "reason": "water_near_electrical",
+      "diyTier": null,
+      "gate": "water_near_electrical",
+      "continueTo": null
+    },
+    "ms_heat_settings_fixed_basic": {
+      "tier": "Basic homeowner check",
+      "urgency": "Leave it set this way",
+      "title": "Leave it in Heat.",
+      "explanation": "Heat mode, a setting above the room, and a normal fan let the mini-split heat the way it should. A short warm-up is normal. So is an occasional defrost pause.",
+      "actions": [
+        "Leave it in Heat, not Auto, while you need heat.",
+        "Expect a short warm-up. The indoor fan may wait a few minutes so it doesn’t blow cold air.",
+        "An occasional pause with steam and a whoosh can be a normal defrost. If ice stays or keeps building, turn it Off with the remote and call a licensed HVAC pro."
+      ],
+      "avoid": "Don’t change installer settings, open the unit, or switch modes during a defrost pause.",
+      "source": "maintenance",
+      "outcome": "next_step",
+      "reason": "ms_heat_settings_fixed_basic",
+      "diyTier": "basic",
+      "gate": null,
+      "continueTo": null
+    },
+    "ms_heat_auto_fixed_basic": {
+      "tier": "Basic homeowner check",
+      "urgency": "Leave it in Heat",
+      "title": "Heat, not Auto, was the fix.",
+      "explanation": "Auto had the unit off Heat. Setting Heat and waiting brought the heat back.",
+      "actions": [
+        "Leave it in Heat, not Auto, during heating season.",
+        "If it stops heating again with Heat set, start a new check and choose Not heating.",
+        "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+      ],
+      "avoid": "Don’t leave it on Auto when you need steady heat.",
+      "source": "maintenance",
+      "outcome": "next_step",
+      "reason": "ms_heat_auto_fixed_basic",
+      "diyTier": "basic",
+      "gate": null,
+      "continueTo": null
+    },
+    "ms_defrost_normal_basic": {
+      "tier": "Basic homeowner check",
+      "urgency": "Leave it in Heat",
+      "title": "That pause was a normal defrost.",
+      "explanation": "Steam, a pause, and a whoosh, then heat returns, can be a normal defrost. It often lasts about 5 to 15 minutes.",
+      "actions": [
+        "Leave it in Heat. Don’t switch modes during a defrost pause.",
+        "If ice stays, keeps building, or heat doesn’t return after about an hour, turn it Off with the remote and call a licensed HVAC pro.",
+        "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+      ],
+      "avoid": "Don’t chip ice, pour hot water, or use a heat gun. Don’t cover the outdoor unit.",
+      "source": "ice",
+      "outcome": "next_step",
+      "reason": "ms_defrost_normal_basic",
+      "diyTier": "basic",
+      "gate": null,
+      "continueTo": null
+    },
+    "ms_outdoor_running_call_pro": {
+      "tier": "Professional guidance",
+      "urgency": "Arrange HVAC service",
+      "title": "The outdoor unit is running, and the room still isn’t comfortable.",
+      "explanation": "A pro needs to test the system. This isn’t a diagnosis.",
+      "actions": [
+        "You can leave it in Heat if some heat is coming. If no useful heat is coming, turn it Off with the remote.",
+        "Call a licensed HVAC pro. Tell them the outdoor unit was running and the room was still not comfortable.",
+        "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+      ],
+      "avoid": "Don’t open either unit.",
+      "source": "safety",
+      "outcome": "call_pro",
+      "reason": "ms_outdoor_running_call_pro",
+      "diyTier": null,
+      "gate": null,
+      "continueTo": null
+    },
+    "ms_outdoor_not_running_wave1": {
+      "tier": "Professional guidance",
+      "urgency": "Arrange HVAC service",
+      "title": "The outdoor unit is quiet while a unit is calling.",
+      "explanation": "When an indoor unit is asking for heat or cool and the outdoor unit stays quiet, the cause needs a pro. This isn’t a diagnosis.",
+      "actions": [
+        "Leave the indoor unit as it is, or turn it Off with the remote.",
+        "Call a licensed HVAC pro. Tell them the indoor unit was calling and the outdoor unit was quiet.",
+        "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+      ],
+      "avoid": "Don’t reset a breaker, open a disconnect, or cover the outdoor unit.",
+      "source": "safety",
+      "outcome": "call_pro",
+      "reason": "ms_outdoor_not_running_wave1",
+      "diyTier": null,
+      "gate": null,
+      "continueTo": null
+    },
+    "ms_outdoor_freeze_heat_wave1": {
+      "tier": "Stop / professional",
+      "urgency": "Turn it Off · call a pro",
+      "title": "Thick ice that won’t clear needs a pro.",
+      "explanation": "Ice that keeps building, or a unit that stays thickly coated after about an hour, isn’t a normal defrost. A normal defrost is a short pause with steam and a whoosh, then heat returns.",
+      "actions": [
+        "Turn the unit Off with the remote.",
+        "Call a licensed HVAC professional. Tell them the outdoor unit stayed thick with ice in heat and didn’t recover.",
+        "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+      ],
+      "avoid": "Don’t chip the ice, pour hot water, use a heat gun or salt, or cover the outdoor unit.",
+      "source": "ice",
+      "outcome": "call_pro",
+      "reason": "ms_outdoor_freeze_heat_wave1",
+      "diyTier": null,
+      "gate": null,
+      "continueTo": null
+    },
+    "ms_ice_heat_keep_running": {
+      "tier": "Stop / professional",
+      "urgency": "Hard stop · call a pro",
+      "title": "Stop. Turn it off. Don’t run it iced to force heat.",
+      "explanation": "Running an iced outdoor unit to force heat can damage it. Most mini-splits have no separate emergency heat.",
+      "actions": [
+        "Turn the unit Off with the remote or app.",
+        "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn.",
+        "Call a licensed HVAC pro once everyone is warm."
+      ],
+      "avoid": "Don’t chip ice, pour hot water, use a heat gun or salt, or keep the iced unit running.",
+      "source": "ice",
+      "outcome": "emergency_exit",
+      "reason": "ice_keep_running",
+      "diyTier": null,
+      "gate": "ice_keep_running",
+      "continueTo": null
+    },
+    "ms_cold_exposure": {
+      "tier": "Emergency",
+      "urgency": "Get warm now · call 911 if needed",
+      "title": "Get the person warm first.",
+      "explanation": "Someone at risk from the cold matters more than the mini-split.",
+      "actions": [
+        "If anyone is confused, very drowsy, or hard to wake, call 911 now.",
+        "Otherwise, get them somewhere warm: a neighbor, family, or a warming center.",
+        "Add blankets and dry layers in the meantime.",
+        "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn.",
+        "Call a licensed HVAC pro for the mini-split once everyone is warm."
+      ],
+      "avoid": "Don’t wait on a mini-split repair to get someone warm.",
+      "source": "safety",
+      "outcome": "emergency_exit",
+      "reason": "cold_exposure_911",
+      "diyTier": null,
+      "gate": "cold_exposure_911",
+      "continueTo": null
+    },
+    "ms_heat_not_supported": {
+      "tier": "More information needed",
+      "urgency": "Confirm the equipment",
+      "title": "This remote may have no heat.",
+      "explanation": "If the remote or app has no Heat setting, the unit may be cooling-only. This check won’t guess that it can heat.",
+      "actions": [
+        "Check the owner’s manual for the model you already know. Don’t open a cover or climb to find a model number.",
+        "If the manual has no Heat mode, call a licensed HVAC pro rather than guessing.",
+        "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+      ],
+      "avoid": "Don’t force a mode the remote doesn’t offer, and don’t open the unit.",
+      "source": "scope",
+      "outcome": "insufficient_info",
+      "reason": "ms_heat_not_supported",
+      "diyTier": null,
+      "gate": null,
+      "continueTo": null
+    },
+    "ms_heat_wait_unsure": {
+      "tier": "More information needed",
+      "urgency": "Wait, then check again",
+      "title": "Wait the full 10 to 15 minutes, then check again.",
+      "explanation": "Heat can take 10 to 15 minutes, and the indoor fan may stay off at first. Stopping early can look like no heat.",
+      "actions": [
+        "Leave it in Heat, at least 3°F above the room, and wait the full 10 to 15 minutes.",
+        "Start a new check after that if it still isn’t heating.",
+        "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+      ],
+      "avoid": "Don’t switch modes during the wait, and don’t open the unit.",
+      "source": "maintenance",
+      "outcome": "insufficient_info",
+      "reason": "ms_heat_wait_unsure",
+      "diyTier": null,
+      "gate": null,
+      "continueTo": null
+    },
+    "ms_outdoor_unsure": {
+      "tier": "More information needed",
+      "urgency": "Stop where you can see from where I stand",
+      "title": "Don’t go closer to see the outdoor unit.",
+      "explanation": "If you can’t see it from a window or from dry, cleared ground, stop there. Icy ground, deep snow, and darkness are reasons not to go out.",
+      "actions": [
+        "Stay inside. Describe what you already know to a licensed HVAC pro.",
+        "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+      ],
+      "avoid": "Don’t climb, reach into the grille, or go out in unsafe conditions to look.",
+      "source": "safety",
+      "outcome": "insufficient_info",
+      "reason": "ms_outdoor_unsure",
+      "diyTier": null,
+      "gate": null,
+      "continueTo": null
+    },
+    "ms_outdoor_water_electrical": {
+      "tier": "Stop / professional",
+      "urgency": "Keep away · urgent help",
+      "title": "Don’t touch the outdoor unit or stand in the water.",
+      "explanation": "Water, melt, or ice is on or near the outdoor unit’s power box, cord, or outlet.",
+      "actions": [
+        "Don’t touch the outdoor unit, any switch, a cord, or the breaker panel, and don’t stand in the water.",
+        "Leave the area, keep others and pets away, and call a licensed HVAC pro or an electrician.",
+        "If you see sparks, smoke, or smell burning, get out and call 911 from outside."
+      ],
+      "avoid": "Don’t touch the outdoor unit, any switch, or the breaker panel.",
+      "source": "electrical",
+      "outcome": "emergency_exit",
+      "reason": "water_near_electrical",
+      "diyTier": null,
+      "gate": "water_near_electrical",
+      "continueTo": null
+    },
+    "ms_advanced_off": {
+      "tier": "Professional guidance",
+      "urgency": "Mini-split electrical DIY is off",
+      "title": "Capacitor, contactor, inverter, and board work are not offered on a mini-split in this beta.",
+      "explanation": "Advanced electrical stays off for mini-splits.",
+      "actions": [
+        "Leave covers on.",
+        "Call a licensed HVAC professional. Tell them what the unit was doing and that you did not remove covers."
+      ],
+      "avoid": "Do not start a capacitor, contactor, inverter, or board repair from this mini-split check.",
+      "source": "electrical",
+      "outcome": "call_pro",
+      "reason": "ms_advanced_off",
+      "diyTier": "pro_only",
+      "gate": null,
+      "continueTo": null
+    }
+  }
+}
