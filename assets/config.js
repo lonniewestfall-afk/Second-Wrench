@@ -1,12 +1,12 @@
 /* Public configuration. Never place passwords, tokens, or API keys in this file. */
 window.SW_CONFIG = Object.freeze({
   version: '0.1.0-beta',
-  contentVersion: '2026-10-11.3',
-  privacyVersion: 'privacy-public-beta-2026-10-11',
+  contentVersion: '2026-10-12.1',
+  privacyVersion: 'privacy-public-beta-2026-10-12.1',
   domain: 'secondwrench.co',
   contactEmail: 'support@secondwrench.co',
   operatorName: 'Second Wrench',
-  termsVersion: 'public-beta-2026-10-11',
+  termsVersion: 'public-beta-2026-10-12.1',
   // Netlify detects beta-feedback and beta-session. liveFormsVerified stays false until a live test submission.
   formsEnabled: true,
   // Public runtime. Capacitor steps exist in the tree and run only when this is true.

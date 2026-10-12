@@ -1,0 +1,2970 @@
+{
+  "edges": {
+    "ms.intake.system_confirm": [
+      {
+        "id": "ductless_single_zone",
+        "next": "ms.landing.picker"
+      },
+      {
+        "id": "ductless_multi_zone",
+        "next": "ms.zone.which_head"
+      },
+      {
+        "id": "ducted_central",
+        "next": "@ms_use_central_check"
+      },
+      {
+        "id": "window_portable_other",
+        "next": "@ms_equipment_oos"
+      },
+      {
+        "id": "not_sure",
+        "next": "@ms_system_unconfirmed"
+      },
+      {
+        "id": "hazard_now",
+        "next": "@ms_hazard_now",
+        "gate": "ms_new_hazard"
+      }
+    ],
+    "ms.zone.which_head": [
+      {
+        "id": "water_or_ice_at_a_unit",
+        "next": "ms.head.water_observe"
+      },
+      {
+        "id": "one_unit_problem",
+        "next": "ms.zone.others_ok"
+      },
+      {
+        "id": "several_units_problem",
+        "next": "ms.zone.others_ok"
+      },
+      {
+        "id": "zone_display_conflict",
+        "next": "ms.zone.mode_conflict"
+      },
+      {
+        "id": "all_units_problem",
+        "next": "ms.landing.picker"
+      },
+      {
+        "id": "not_sure_which",
+        "next": "ms.landing.picker"
+      },
+      {
+        "id": "hazard_now",
+        "next": "@ms_hazard_now",
+        "gate": "ms_new_hazard"
+      }
+    ],
+    "ms.zone.others_ok": [
+      {
+        "id": "cold_exposure_risk",
+        "next": "@ms_cold_exposure",
+        "gate": "cold_exposure_911"
+      },
+      {
+        "id": "others_work_same_mode",
+        "next": "ms.landing.picker"
+      },
+      {
+        "id": "others_off_or_unused",
+        "next": "ms.landing.picker"
+      },
+      {
+        "id": "others_different_mode_or_auto",
+        "next": "ms.zone.isolate_head"
+      },
+      {
+        "id": "not_sure_other_modes",
+        "next": "ms.zone.isolate_head"
+      },
+      {
+        "id": "hazard_now",
+        "next": "@ms_hazard_now",
+        "gate": "ms_new_hazard"
+      }
+    ],
+    "ms.zone.isolate_head": [
+      {
+        "id": "cold_exposure_risk",
+        "next": "@ms_cold_exposure",
+        "gate": "cold_exposure_911"
+      },
+      {
+        "id": "zone_cold_or_fragile",
+        "next": "@ms_cold_weather_stop"
+      },
+      {
+        "id": "unit_works_after_matching",
+        "next": "@ms_zone_mode_match_basic"
+      },
+      {
+        "id": "unit_still_problem",
+        "next": "ms.landing.picker"
+      },
+      {
+        "id": "cannot_set_other_units",
+        "next": "@ms_zone_control_pro"
+      },
+      {
+        "id": "water_or_ice_now",
+        "next": "ms.head.water_observe"
+      },
+      {
+        "id": "not_sure_result",
+        "next": "@ms_zone_unsure"
+      },
+      {
+        "id": "hazard_now",
+        "next": "@ms_hazard_now",
+        "gate": "ms_new_hazard"
+      }
+    ],
+    "ms.landing.picker": [
+      {
+        "id": "landing_no_cool",
+        "next": "ms.controls.mode_setpoint"
+      },
+      {
+        "id": "landing_no_heat",
+        "next": "ms.heat.mode_setpoint"
+      },
+      {
+        "id": "landing_weak_airflow",
+        "next": "ms.controls.mode_setpoint"
+      },
+      {
+        "id": "landing_water_at_head",
+        "next": "ms.head.water_observe"
+      },
+      {
+        "id": "landing_error_code",
+        "next": "ms.error.capture"
+      },
+      {
+        "id": "landing_ice_seen",
+        "next": "ms.ice.stop_observe"
+      },
+      {
+        "id": "landing_outdoor_unit",
+        "next": "ms.context.mode"
+      },
+      {
+        "id": "landing_after_outage",
+        "next": "ms.controls.after_outage"
+      },
+      {
+        "id": "landing_noise",
+        "next": "ms.sound.observe"
+      },
+      {
+        "id": "landing_smell",
+        "next": "ms.smell.observe"
+      },
+      {
+        "id": "landing_water_outside",
+        "next": "ms.head.condensate_outside"
+      },
+      {
+        "id": "landing_something_else",
+        "next": "@ms_landing_not_in_pr1"
+      },
+      {
+        "id": "hazard_now",
+        "next": "@ms_hazard_now",
+        "gate": "ms_new_hazard"
+      }
+    ],
+    "ms.controls.after_outage": [
+      {
+        "id": "cold_exposure_risk",
+        "next": "@ms_cold_exposure",
+        "gate": "cold_exposure_911"
+      },
+      {
+        "id": "outage_running_now",
+        "next": "@ms_after_outage_normal_basic"
+      },
+      {
+        "id": "outage_lit_not_cooling",
+        "next": "ms.controls.mode_setpoint"
+      },
+      {
+        "id": "outage_lit_not_heating",
+        "next": "ms.heat.mode_setpoint"
+      },
+      {
+        "id": "outage_remote_ignored",
+        "next": "ms.controls.remote_app"
+      },
+      {
+        "id": "outage_code_showing",
+        "next": "ms.error.capture"
+      },
+      {
+        "id": "outage_no_lights",
+        "next": "@ms_no_response_wave1"
+      },
+      {
+        "id": "hazard_now",
+        "next": "@ms_hazard_now",
+        "gate": "ms_new_hazard"
+      }
+    ],
+    "ms.sound.observe": [
+      {
+        "id": "sound_electrical_or_burning",
+        "next": "@ms_hazard_now",
+        "gate": "ms_new_hazard"
+      },
+      {
+        "id": "sound_steady_hiss_indoor",
+        "next": "@leak",
+        "gate": "refrigerant_alarm_or_release"
+      },
+      {
+        "id": "sound_normal_list",
+        "next": "@ms_sound_normal_basic"
+      },
+      {
+        "id": "sound_heat_whoosh_pause",
+        "next": "ms.heat.defrost_indoor"
+      },
+      {
+        "id": "sound_airflow_louder",
+        "next": "ms.head.filter_path_ok"
+      },
+      {
+        "id": "sound_with_dripping",
+        "next": "ms.head.water_observe"
+      },
+      {
+        "id": "sound_outdoor_unit",
+        "next": "ms.context.mode"
+      },
+      {
+        "id": "sound_steady_hiss_outdoor",
+        "next": "@ms_sound_pro"
+      },
+      {
+        "id": "sound_not_normal",
+        "next": "@ms_sound_pro"
+      },
+      {
+        "id": "sound_not_sure",
+        "next": "@ms_sound_unsure"
+      },
+      {
+        "id": "hazard_now",
+        "next": "@ms_hazard_now",
+        "gate": "ms_new_hazard"
+      }
+    ],
+    "ms.smell.observe": [
+      {
+        "id": "smell_burning_or_gas",
+        "next": "@ms_hazard_now",
+        "gate": "ms_new_hazard"
+      },
+      {
+        "id": "smell_sweet_chemical_sharp",
+        "next": "@leak",
+        "gate": "refrigerant_alarm_or_release"
+      },
+      {
+        "id": "smell_musty",
+        "next": "ms.head.filter_path_ok"
+      },
+      {
+        "id": "smell_room_odor",
+        "next": "@ms_smell_room_odor_basic"
+      },
+      {
+        "id": "smell_sewage_or_drain",
+        "next": "@ms_smell_pro"
+      },
+      {
+        "id": "smell_not_sure",
+        "next": "@ms_smell_unsure"
+      },
+      {
+        "id": "hazard_now",
+        "next": "@ms_hazard_now",
+        "gate": "ms_new_hazard"
+      }
+    ],
+    "ms.controls.mode_setpoint": [
+      {
+        "id": "settings_fixed_now_cooling",
+        "next": "@ms_settings_fixed_basic"
+      },
+      {
+        "id": "remote_batteries_fixed",
+        "next": "@ms_settings_fixed_basic"
+      },
+      {
+        "id": "settings_right_still_problem",
+        "next": "ms.head.filter_path_ok"
+      },
+      {
+        "id": "remote_or_unit_not_responding",
+        "next": "@ms_no_response_wave1"
+      },
+      {
+        "id": "cool_special_feature_on",
+        "next": "ms.controls.feature_check"
+      },
+      {
+        "id": "remote_ignored_unit_lit",
+        "next": "ms.controls.remote_app"
+      },
+      {
+        "id": "not_sure",
+        "next": "@ms_controls_unsure"
+      },
+      {
+        "id": "hazard_now",
+        "next": "@ms_hazard_now",
+        "gate": "ms_new_hazard"
+      }
+    ],
+    "ms.heat.mode_setpoint": [
+      {
+        "id": "cold_exposure_risk",
+        "next": "@ms_cold_exposure",
+        "gate": "cold_exposure_911"
+      },
+      {
+        "id": "heat_fixed_after_setting",
+        "next": "@ms_heat_settings_fixed_basic"
+      },
+      {
+        "id": "mode_was_auto",
+        "next": "ms.heat.force_heat"
+      },
+      {
+        "id": "heat_settings_right_still_problem",
+        "next": "ms.heat.defrost_sanity"
+      },
+      {
+        "id": "no_heat_setting_on_remote",
+        "next": "@ms_heat_not_supported"
+      },
+      {
+        "id": "remote_or_unit_not_responding",
+        "next": "@ms_no_response_wave1"
+      },
+      {
+        "id": "heat_special_feature_on",
+        "next": "ms.controls.feature_check"
+      },
+      {
+        "id": "heat_comes_and_goes",
+        "next": "ms.heat.defrost_indoor"
+      },
+      {
+        "id": "remote_ignored_unit_lit",
+        "next": "ms.controls.remote_app"
+      },
+      {
+        "id": "not_sure",
+        "next": "@ms_controls_unsure"
+      },
+      {
+        "id": "hazard_now",
+        "next": "@ms_hazard_now",
+        "gate": "ms_new_hazard"
+      }
+    ],
+    "ms.controls.remote_app": [
+      {
+        "id": "remote_works_now_ok",
+        "next": "@ms_remote_fixed_basic"
+      },
+      {
+        "id": "remote_works_still_not_cooling",
+        "next": "ms.head.filter_path_ok"
+      },
+      {
+        "id": "remote_works_still_not_heating",
+        "next": "ms.heat.defrost_indoor"
+      },
+      {
+        "id": "app_only_problem",
+        "next": "@ms_app_support_info"
+      },
+      {
+        "id": "remote_still_dead",
+        "next": "@ms_remote_pro"
+      },
+      {
+        "id": "hazard_now",
+        "next": "@ms_hazard_now",
+        "gate": "ms_new_hazard"
+      }
+    ],
+    "ms.controls.feature_check": [
+      {
+        "id": "feature_fixed",
+        "next": "@ms_feature_fixed_basic"
+      },
+      {
+        "id": "louver_sweating",
+        "next": "@ms_louver_sweat_basic"
+      },
+      {
+        "id": "water_dripping_other",
+        "next": "ms.head.water_observe"
+      },
+      {
+        "id": "features_off_still_not_cooling",
+        "next": "ms.head.filter_path_ok"
+      },
+      {
+        "id": "features_off_still_not_heating",
+        "next": "ms.heat.defrost_indoor"
+      },
+      {
+        "id": "feature_unsure",
+        "next": "@ms_feature_unsure"
+      },
+      {
+        "id": "hazard_now",
+        "next": "@ms_hazard_now",
+        "gate": "ms_new_hazard"
+      }
+    ],
+    "ms.heat.force_heat": [
+      {
+        "id": "forced_heat_works",
+        "next": "@ms_heat_auto_fixed_basic"
+      },
+      {
+        "id": "forced_heat_still_problem",
+        "next": "ms.heat.defrost_sanity"
+      },
+      {
+        "id": "could_not_change_mode",
+        "next": "@ms_no_response_wave1"
+      },
+      {
+        "id": "not_sure_waited",
+        "next": "@ms_heat_wait_unsure"
+      },
+      {
+        "id": "hazard_now",
+        "next": "@ms_hazard_now",
+        "gate": "ms_new_hazard"
+      }
+    ],
+    "ms.heat.defrost_indoor": [
+      {
+        "id": "cold_exposure_risk",
+        "next": "@ms_cold_exposure",
+        "gate": "cold_exposure_911"
+      },
+      {
+        "id": "pause_then_heat_back",
+        "next": "@ms_defrost_normal_basic"
+      },
+      {
+        "id": "pause_long_or_often",
+        "next": "ms.heat.defrost_sanity"
+      },
+      {
+        "id": "cold_air_steady",
+        "next": "ms.head.filter_path_ok"
+      },
+      {
+        "id": "pause_not_sure",
+        "next": "ms.heat.defrost_sanity"
+      },
+      {
+        "id": "hazard_now",
+        "next": "@ms_hazard_now",
+        "gate": "ms_new_hazard"
+      }
+    ],
+    "ms.heat.defrost_sanity": [
+      {
+        "id": "cold_exposure_risk",
+        "next": "@ms_cold_exposure",
+        "gate": "cold_exposure_911"
+      },
+      {
+        "id": "defrost_then_heat_fine",
+        "next": "@ms_defrost_normal_basic"
+      },
+      {
+        "id": "defrost_seen_heat_still_weak",
+        "next": "ms.head.filter_path_ok"
+      },
+      {
+        "id": "no_frost_or_mild_weather",
+        "next": "ms.head.filter_path_ok"
+      },
+      {
+        "id": "outdoor_iced_solid_no_recover",
+        "next": "@ms_outdoor_freeze_heat_wave1",
+        "gate": "ice_keep_running"
+      },
+      {
+        "id": "ice_want_keep_running",
+        "next": "@ms_ice_heat_keep_running",
+        "gate": "ice_keep_running"
+      },
+      {
+        "id": "steam_or_smoke_unsure",
+        "next": "@ms_hazard_now",
+        "gate": "ms_new_hazard"
+      },
+      {
+        "id": "not_sure",
+        "next": "@ms_ice_unclear_or_heat"
+      },
+      {
+        "id": "hazard_now",
+        "next": "@ms_hazard_now",
+        "gate": "ms_new_hazard"
+      }
+    ],
+    "ms.head.filter_path_ok": [
+      {
+        "id": "filter_ok_tool_free_floor",
+        "next": "ms.head.shutdown_thaw_check"
+      },
+      {
+        "id": "filter_cleaned_recently",
+        "next": "ms.head.discharge_clear"
+      },
+      {
+        "id": "filter_needs_ladder",
+        "next": "@ms_filter_inaccessible"
+      },
+      {
+        "id": "filter_needs_tools_or_force",
+        "next": "@ms_filter_inaccessible"
+      },
+      {
+        "id": "manual_says_cut_power",
+        "next": "@ms_filter_inaccessible"
+      },
+      {
+        "id": "no_manual_not_sure",
+        "next": "@ms_filter_path_unconfirmed"
+      },
+      {
+        "id": "hazard_now",
+        "next": "@ms_hazard_now",
+        "gate": "ms_new_hazard"
+      }
+    ],
+    "ms.head.shutdown_thaw_check": [
+      {
+        "id": "thaw_off_stopped_no_ice",
+        "next": "ms.head.filter_clean"
+      },
+      {
+        "id": "thaw_ice_or_frost",
+        "next": "ms.ice.stop_observe"
+      },
+      {
+        "id": "thaw_water_dripping",
+        "next": "ms.head.water_observe"
+      },
+      {
+        "id": "thaw_wont_stop",
+        "next": "@ms_no_response_wave1"
+      },
+      {
+        "id": "thaw_code_showing",
+        "next": "ms.error.capture"
+      },
+      {
+        "id": "hazard_now",
+        "next": "@ms_hazard_now",
+        "gate": "ms_new_hazard"
+      }
+    ],
+    "ms.head.filter_clean": [
+      {
+        "id": "cleaned_were_dirty",
+        "next": "ms.head.discharge_clear"
+      },
+      {
+        "id": "cleaned_looked_clean",
+        "next": "ms.head.discharge_clear"
+      },
+      {
+        "id": "filters_washed_still_drying",
+        "next": "@ms_filter_drying_basic"
+      },
+      {
+        "id": "filter_torn_or_missing",
+        "next": "@ms_filter_replace_basic"
+      },
+      {
+        "id": "cover_or_filter_wont_go_back",
+        "next": "@ms_filter_inaccessible"
+      },
+      {
+        "id": "saw_mold_or_slime",
+        "next": "@ms_head_cleaning_pro"
+      },
+      {
+        "id": "saw_ice_behind_filter",
+        "next": "ms.ice.stop_observe"
+      },
+      {
+        "id": "look_behind_filters",
+        "next": "ms.head.coil_face_look"
+      },
+      {
+        "id": "hazard_now",
+        "next": "@ms_hazard_now",
+        "gate": "ms_new_hazard"
+      }
+    ],
+    "ms.head.coil_face_look": [
+      {
+        "id": "fins_clean_or_light_dust",
+        "next": "ms.head.discharge_clear"
+      },
+      {
+        "id": "fins_clean_but_musty",
+        "next": "@ms_musty_dryout_basic"
+      },
+      {
+        "id": "fins_matted_or_growth",
+        "next": "@ms_head_cleaning_pro"
+      },
+      {
+        "id": "fins_damaged_or_loose",
+        "next": "@ms_head_inside_damage_pro"
+      },
+      {
+        "id": "water_inside",
+        "next": "ms.head.water_observe"
+      },
+      {
+        "id": "ice_behind_filters",
+        "next": "ms.ice.stop_observe"
+      },
+      {
+        "id": "filters_still_drying",
+        "next": "@ms_filter_drying_basic"
+      },
+      {
+        "id": "cant_see_from_floor",
+        "next": "ms.head.discharge_clear"
+      },
+      {
+        "id": "hazard_now",
+        "next": "@ms_hazard_now",
+        "gate": "ms_new_hazard"
+      }
+    ],
+    "ms.head.discharge_clear": [
+      {
+        "id": "blocker_moved",
+        "next": "ms.head.airflow_result"
+      },
+      {
+        "id": "louver_opened_with_remote",
+        "next": "ms.head.airflow_result"
+      },
+      {
+        "id": "nothing_blocking",
+        "next": "ms.head.airflow_result"
+      },
+      {
+        "id": "louver_stuck_wont_move",
+        "next": "@ms_louver_stuck"
+      },
+      {
+        "id": "hazard_now",
+        "next": "@ms_hazard_now",
+        "gate": "ms_new_hazard"
+      }
+    ],
+    "ms.head.airflow_result": [
+      {
+        "id": "improved_ok",
+        "next": "@ms_airflow_improved_basic"
+      },
+      {
+        "id": "still_weak_air",
+        "next": "@ms_weak_air_after_basics"
+      },
+      {
+        "id": "air_ok_not_cooling",
+        "next": "@ms_no_cool_after_basics"
+      },
+      {
+        "id": "air_ok_not_heating",
+        "next": "ms.outdoor.safe_observe"
+      },
+      {
+        "id": "now_ice_or_water",
+        "next": "ms.head.water_observe"
+      },
+      {
+        "id": "now_code_showing",
+        "next": "ms.error.capture"
+      },
+      {
+        "id": "not_sure_result",
+        "next": "@ms_airflow_unsure"
+      },
+      {
+        "id": "hazard_now",
+        "next": "@ms_hazard_now",
+        "gate": "ms_new_hazard"
+      }
+    ],
+    "ms.head.condensate_outside": [
+      {
+        "id": "outdoor_electrical_wet",
+        "next": "@ms_outdoor_water_electrical",
+        "gate": "water_near_electrical"
+      },
+      {
+        "id": "drip_normal_cooling",
+        "next": "@ms_condensate_outside_normal_basic"
+      },
+      {
+        "id": "no_drip_no_inside_water",
+        "next": "@ms_condensate_outside_normal_basic"
+      },
+      {
+        "id": "no_drip_but_inside_water",
+        "next": "ms.head.water_observe"
+      },
+      {
+        "id": "drip_bad_spot",
+        "next": "@ms_condensate_outlet_pro"
+      },
+      {
+        "id": "hose_damaged",
+        "next": "@ms_condensate_outlet_pro"
+      },
+      {
+        "id": "water_from_outdoor_unit_heat",
+        "next": "ms.outdoor.safe_observe"
+      },
+      {
+        "id": "hazard_now",
+        "next": "@ms_hazard_now",
+        "gate": "ms_new_hazard"
+      }
+    ],
+    "ms.context.mode": [
+      {
+        "id": "cold_exposure_risk",
+        "next": "@ms_cold_exposure",
+        "gate": "cold_exposure_911"
+      },
+      {
+        "id": "ctx_mode_heat",
+        "next": "ms.outdoor.safe_observe"
+      },
+      {
+        "id": "ctx_mode_cool",
+        "next": "ms.outdoor.safe_observe"
+      },
+      {
+        "id": "ctx_mode_unsure",
+        "next": "ms.outdoor.safe_observe"
+      },
+      {
+        "id": "hazard_now",
+        "next": "@ms_hazard_now",
+        "gate": "ms_new_hazard"
+      }
+    ],
+    "ms.outdoor.safe_observe": [
+      {
+        "id": "water_near_outdoor_electrical",
+        "next": "@ms_outdoor_water_electrical",
+        "gate": "water_near_electrical"
+      },
+      {
+        "id": "outdoor_running_still_problem",
+        "next": "@ms_outdoor_running_call_pro"
+      },
+      {
+        "id": "outdoor_quiet_while_calling",
+        "next": "@ms_outdoor_not_running_wave1"
+      },
+      {
+        "id": "outdoor_thick_ice_heating",
+        "next": "@ms_outdoor_freeze_heat_wave1",
+        "gate": "ice_keep_running"
+      },
+      {
+        "id": "ice_want_keep_running",
+        "next": "@ms_ice_heat_keep_running",
+        "gate": "ice_keep_running"
+      },
+      {
+        "id": "outdoor_ice_cooling",
+        "next": "ms.ice.stop_observe"
+      },
+      {
+        "id": "outdoor_snow_or_low",
+        "next": "sd.entry.outdoor"
+      },
+      {
+        "id": "outdoor_blocked_close",
+        "next": "sd.entry.outdoor"
+      },
+      {
+        "id": "outdoor_ice_under_base",
+        "next": "sd.entry.outdoor"
+      },
+      {
+        "id": "steam_or_smoke_unsure",
+        "next": "@ms_hazard_now",
+        "gate": "ms_new_hazard"
+      },
+      {
+        "id": "cannot_observe_safely",
+        "next": "@ms_outdoor_unsure"
+      },
+      {
+        "id": "hazard_now",
+        "next": "@ms_hazard_now",
+        "gate": "ms_new_hazard"
+      }
+    ],
+    "ms.head.water_observe": [
+      {
+        "id": "water_on_electrical",
+        "next": "@ms_water_electrical",
+        "gate": "water_near_electrical"
+      },
+      {
+        "id": "water_unsure_electrical",
+        "next": "@ms_unsure_water_electrical",
+        "gate": "unsure_water_electrical"
+      },
+      {
+        "id": "water_with_ice",
+        "next": "ms.ice.stop_observe"
+      },
+      {
+        "id": "water_drip_away_from_electrical",
+        "next": "@ms_condensate_leak_wave1"
+      },
+      {
+        "id": "water_hidden_or_pump",
+        "next": "@ms_condensate_leak_wave1"
+      },
+      {
+        "id": "hazard_now",
+        "next": "@ms_hazard_now",
+        "gate": "ms_new_hazard"
+      }
+    ],
+    "ms.error.capture": [
+      {
+        "id": "code_refrigerant_leak_alert",
+        "next": "@leak",
+        "gate": "refrigerant_alarm_or_release"
+      },
+      {
+        "id": "code_check_manual",
+        "next": "ms.error.manual_lookup"
+      },
+      {
+        "id": "code_recorded",
+        "next": "@ms_error_code_wave1"
+      },
+      {
+        "id": "lights_blinking_pattern",
+        "next": "@ms_error_code_wave1"
+      },
+      {
+        "id": "code_cleared_after_restart",
+        "next": "@ms_error_code_wave1"
+      },
+      {
+        "id": "cannot_read_from_floor",
+        "next": "@ms_error_code_wave1"
+      },
+      {
+        "id": "hazard_now",
+        "next": "@ms_hazard_now",
+        "gate": "ms_new_hazard"
+      }
+    ],
+    "ms.error.manual_lookup": [
+      {
+        "id": "manual_refrigerant_leak",
+        "next": "@leak",
+        "gate": "refrigerant_alarm_or_release"
+      },
+      {
+        "id": "manual_serious_fault",
+        "next": "@ms_error_code_serious_pro"
+      },
+      {
+        "id": "manual_normal_status",
+        "next": "@ms_code_status_basic"
+      },
+      {
+        "id": "manual_mode_conflict",
+        "next": "ms.zone.mode_conflict"
+      },
+      {
+        "id": "manual_allows_restart",
+        "next": "ms.error.restart_once"
+      },
+      {
+        "id": "manual_says_call_service",
+        "next": "@ms_error_code_wave1"
+      },
+      {
+        "id": "code_not_in_manual",
+        "next": "@ms_error_code_wave1"
+      },
+      {
+        "id": "hazard_now",
+        "next": "@ms_hazard_now",
+        "gate": "ms_new_hazard"
+      }
+    ],
+    "ms.error.restart_once": [
+      {
+        "id": "cold_exposure_risk",
+        "next": "@ms_cold_exposure",
+        "gate": "cold_exposure_911"
+      },
+      {
+        "id": "restart_cold_or_fragile",
+        "next": "@ms_cold_weather_stop"
+      },
+      {
+        "id": "warranty_ask_installer",
+        "next": "@ms_ask_installer"
+      },
+      {
+        "id": "warranty_not_sure",
+        "next": "@ms_ask_installer"
+      },
+      {
+        "id": "restart_cleared",
+        "next": "@ms_restart_cleared_basic"
+      },
+      {
+        "id": "restart_code_back",
+        "next": "@ms_error_code_returned_pro"
+      },
+      {
+        "id": "restart_already_done",
+        "next": "@ms_error_code_returned_pro"
+      },
+      {
+        "id": "restart_needs_more",
+        "next": "@ms_error_code_wave1"
+      },
+      {
+        "id": "hazard_now",
+        "next": "@ms_hazard_now",
+        "gate": "ms_new_hazard"
+      }
+    ],
+    "ms.zone.mode_conflict": [
+      {
+        "id": "cold_exposure_risk",
+        "next": "@ms_cold_exposure",
+        "gate": "cold_exposure_911"
+      },
+      {
+        "id": "zone_cold_or_fragile",
+        "next": "@ms_cold_weather_stop"
+      },
+      {
+        "id": "zone_conflict_cleared",
+        "next": "@ms_zone_mode_match_basic"
+      },
+      {
+        "id": "zone_cannot_set_others",
+        "next": "@ms_zone_control_pro"
+      },
+      {
+        "id": "zone_conflict_persists",
+        "next": "@ms_error_code_wave1"
+      },
+      {
+        "id": "zone_not_sure",
+        "next": "@ms_zone_unsure"
+      },
+      {
+        "id": "hazard_now",
+        "next": "@ms_hazard_now",
+        "gate": "ms_new_hazard"
+      }
+    ],
+    "ms.ice.stop_observe": [
+      {
+        "id": "ice_dripping_near_electrical",
+        "next": "@ms_water_electrical",
+        "gate": "water_near_electrical"
+      },
+      {
+        "id": "ice_want_keep_running",
+        "next": "@ms_ice_keep_running",
+        "gate": "ice_keep_running"
+      },
+      {
+        "id": "ice_seen_cooling",
+        "next": "@ms_ice_cooling_wave1"
+      },
+      {
+        "id": "ice_outdoor_heating_or_unsure",
+        "next": "@ms_ice_unclear_or_heat"
+      },
+      {
+        "id": "hazard_now",
+        "next": "@ms_hazard_now",
+        "gate": "ms_new_hazard"
+      }
+    ]
+  },
+  "nodes": {
+    "ms.intake.system_confirm": {
+      "title": "Is this a ductless mini-split?",
+      "section": "",
+      "caution": "",
+      "notice": "none",
+      "safetyGate": false,
+      "options": {},
+      "body": ""
+    },
+    "ms.landing.picker": {
+      "title": "",
+      "section": "",
+      "caution": "",
+      "notice": "none",
+      "safetyGate": false,
+      "options": {
+        "landing_after_outage": {
+          "id": "landing_after_outage",
+          "label": "It just came back after a power outage, or I just turned it on, and nothing’s happening",
+          "hint": "Give it a few minutes first.",
+          "next": "ms.controls.after_outage",
+          "fact": "Complaint: Nothing happening right after power returned or after turning it on.",
+          "gate": "after_outage"
+        },
+        "landing_noise": {
+          "id": "landing_noise",
+          "label": "A noise from the indoor unit",
+          "hint": "",
+          "next": "ms.sound.observe",
+          "fact": "Complaint: A noise from the mini-split.",
+          "gate": "noise"
+        },
+        "landing_smell": {
+          "id": "landing_smell",
+          "label": "A smell from the indoor unit",
+          "hint": "",
+          "next": "ms.smell.observe",
+          "fact": "Complaint: A smell from the mini-split.",
+          "gate": "smell"
+        },
+        "landing_water_outside": {
+          "id": "landing_water_outside",
+          "label": "Water dripping outside the house",
+          "hint": "",
+          "next": "ms.head.condensate_outside",
+          "fact": "Complaint: Water dripping outside.",
+          "gate": "water_outside"
+        },
+        "landing_something_else": {
+          "id": "landing_something_else",
+          "label": "Something else",
+          "hint": "Not covered in this check.",
+          "next": "@ms_landing_not_in_pr1",
+          "fact": "Complaint: Something else on the mini-split.",
+          "gate": "something_else"
+        }
+      },
+      "body": ""
+    },
+    "ms.controls.mode_setpoint": {
+      "title": "",
+      "section": "",
+      "caution": "",
+      "notice": "none",
+      "safetyGate": false,
+      "options": {
+        "cool_special_feature_on": {
+          "id": "cool_special_feature_on",
+          "label": "Eco, Quiet, Sleep, Dry, a timer, or Follow Me is on, or I’m not sure",
+          "hint": "",
+          "next": "ms.controls.feature_check",
+          "fact": "Special feature may be limiting cooling."
+        },
+        "remote_ignored_unit_lit": {
+          "id": "remote_ignored_unit_lit",
+          "label": "The unit has lights, but the remote or app won’t change anything",
+          "hint": "",
+          "next": "ms.controls.remote_app",
+          "fact": "Unit lit, remote or app ignored."
+        }
+      },
+      "body": ""
+    },
+    "ms.heat.mode_setpoint": {
+      "title": "",
+      "section": "",
+      "caution": "",
+      "notice": "none",
+      "safetyGate": false,
+      "options": {
+        "heat_special_feature_on": {
+          "id": "heat_special_feature_on",
+          "label": "Eco, Quiet, Sleep, a timer, or Follow Me is on, or I’m not sure",
+          "hint": "",
+          "next": "ms.controls.feature_check",
+          "fact": "Special feature may be limiting heat."
+        },
+        "heat_comes_and_goes": {
+          "id": "heat_comes_and_goes",
+          "label": "Heat comes and goes: the fan stops for a few minutes, or a light blinks",
+          "hint": "Could be a normal defrost.",
+          "next": "ms.heat.defrost_indoor",
+          "fact": "Heat stops and starts; fan pauses or light blinks."
+        },
+        "remote_ignored_unit_lit": {
+          "id": "remote_ignored_unit_lit",
+          "label": "The unit has lights, but the remote or app won’t change anything",
+          "hint": "",
+          "next": "ms.controls.remote_app",
+          "fact": "Unit lit, remote or app ignored."
+        }
+      },
+      "body": ""
+    },
+    "ms.heat.force_heat": {
+      "title": "",
+      "section": "",
+      "caution": "",
+      "notice": "none",
+      "safetyGate": false,
+      "options": {},
+      "body": ""
+    },
+    "ms.heat.defrost_sanity": {
+      "title": "Is this a normal defrost, or ice that stays?",
+      "section": "",
+      "caution": "LK-14 unchanged.",
+      "notice": "none",
+      "safetyGate": false,
+      "options": {
+        "no_frost_or_mild_weather": {
+          "id": "no_frost_or_mild_weather",
+          "label": "No frost or ice on the outdoor unit",
+          "hint": "Next: the filters.",
+          "next": "ms.head.filter_path_ok",
+          "fact": "No frost or ice seen on the outdoor unit.",
+          "gate": "—"
+        },
+        "outdoor_iced_solid_no_recover": {
+          "id": "outdoor_iced_solid_no_recover",
+          "label": "The outdoor unit is thick with ice, and heat doesn’t come back",
+          "hint": "Hard stop. Turn it off.",
+          "next": "@ms_outdoor_freeze_heat_wave1",
+          "fact": "",
+          "gate": "ice_keep_running"
+        },
+        "not_sure": {
+          "id": "not_sure",
+          "label": "I’m not sure what I saw",
+          "hint": "Next steps, including what a normal defrost looks like.",
+          "next": "@ms_ice_unclear_or_heat",
+          "fact": "—",
+          "gate": "—"
+        }
+      },
+      "body": "In Heat, a mini-split sometimes pauses to clear frost from the outdoor unit. From inside, heating stops for a while, the indoor fan stops or slows, and a light may blink. You may hear a whoosh. The remote may not change the mode until that pause ends. Leave it in Heat. Don’t switch modes during the pause.\n\n A normal defrost usually lasts about 5 to 15 minutes, and some models finish sooner. Ice that is still there after about an hour of running is not normal. Call a licensed HVAC professional.\n\n While it defrosts, the outdoor fan often stops and steam can rise from the unit. Don’t try to speed it up.\n In cold weather, a cloud of steam from the outdoor unit during defrost can be normal. If you’re not sure it’s steam, or you smell burning, treat it as smoke.\n If so, choose that option. A cloud from the indoor unit in Heat isn’t a defrost. Choose that option too.\n Not normal: a solid block of ice that keeps growing, a grille iced shut, or ice that never clears.\n\n Don’t chip or pick at ice, use hot water, a hose, a heat gun, a hair dryer, or salt, or cover the unit.\n\n Look from a window or from dry, cleared ground. Don’t reach into the grille. Don’t go out in ice, deep snow, or the dark to get a closer look."
+    },
+    "ms.head.filter_path_ok": {
+      "title": "",
+      "section": "",
+      "caution": "",
+      "notice": "none",
+      "safetyGate": false,
+      "options": {},
+      "body": ""
+    },
+    "ms.head.filter_clean": {
+      "title": "",
+      "section": "",
+      "caution": "",
+      "notice": "none",
+      "safetyGate": false,
+      "options": {
+        "look_behind_filters": {
+          "id": "look_behind_filters",
+          "label": "Filters done. I want to look behind them before they go back",
+          "hint": "Look only.",
+          "next": "ms.head.coil_face_look",
+          "fact": "Filters cleaned; owner chose a look behind them."
+        }
+      },
+      "body": ""
+    },
+    "ms.head.discharge_clear": {
+      "title": "",
+      "section": "",
+      "caution": "",
+      "notice": "none",
+      "safetyGate": false,
+      "options": {},
+      "body": ""
+    },
+    "ms.head.airflow_result": {
+      "title": "",
+      "section": "",
+      "caution": "",
+      "notice": "none",
+      "safetyGate": false,
+      "options": {
+        "now_code_showing": {
+          "id": "now_code_showing",
+          "label": "A code or blinking lights are showing",
+          "hint": "Write it down first.",
+          "next": "ms.error.capture",
+          "fact": "Code or blinking lights showed during the airflow check.",
+          "gate": "—"
+        }
+      },
+      "body": ""
+    },
+    "ms.outdoor.safe_observe": {
+      "title": "",
+      "section": "",
+      "caution": "",
+      "notice": "none",
+      "safetyGate": false,
+      "options": {
+        "outdoor_thick_ice_heating": {
+          "id": "outdoor_thick_ice_heating",
+          "label": "The outdoor unit is thick with ice while heating",
+          "hint": "Hard stop. Turn it off.",
+          "next": "@ms_outdoor_freeze_heat_wave1",
+          "fact": "",
+          "gate": "ice_keep_running"
+        },
+        "ice_want_keep_running": {
+          "id": "ice_want_keep_running",
+          "label": "There’s ice while it’s heating, but I want to keep it running",
+          "hint": "Hard stop. Turn it off.",
+          "next": "@ms_ice_heat_keep_running",
+          "fact": "",
+          "gate": "ice_keep_running"
+        },
+        "outdoor_snow_or_low": {
+          "id": "outdoor_snow_or_low",
+          "label": "Snow piled against it, or it sits low in the snow",
+          "hint": "Look only from a window or dry ground.",
+          "next": "sd.entry.outdoor",
+          "fact": "Snow against the outdoor unit, or it sits low in the snow.",
+          "gate": "—"
+        },
+        "outdoor_blocked_close": {
+          "id": "outdoor_blocked_close",
+          "label": "A fence, wall, shrubs, or stored items are close to it",
+          "hint": "Look only from a window or dry ground.",
+          "next": "sd.entry.outdoor",
+          "fact": "Fence, wall, shrubs, or stored items close to the outdoor unit.",
+          "gate": "—"
+        },
+        "outdoor_ice_under_base": {
+          "id": "outdoor_ice_under_base",
+          "label": "Ice building under it, or meltwater freezing on a path",
+          "hint": "Look only from a window or dry ground.",
+          "next": "sd.entry.outdoor",
+          "fact": "Ice building under the outdoor unit, or meltwater freezing on a path.",
+          "gate": "—"
+        }
+      },
+      "body": ""
+    },
+    "ms.head.water_observe": {
+      "title": "",
+      "section": "",
+      "caution": "",
+      "notice": "none",
+      "safetyGate": false,
+      "options": {},
+      "body": ""
+    },
+    "ms.error.capture": {
+      "title": "",
+      "section": "",
+      "caution": "",
+      "notice": "none",
+      "safetyGate": false,
+      "options": {
+        "code_check_manual": {
+          "id": "code_check_manual",
+          "label": "I wrote it down and have the owner’s manual or the maker’s code page",
+          "hint": "Look it up there.",
+          "next": "ms.error.manual_lookup",
+          "fact": "Code recorded; owner has the manual."
+        }
+      },
+      "body": ""
+    },
+    "ms.ice.stop_observe": {
+      "title": "",
+      "section": "",
+      "caution": "",
+      "notice": "none",
+      "safetyGate": false,
+      "options": {},
+      "body": ""
+    },
+    "ms.controls.after_outage": {
+      "title": "It just came back on, and nothing’s happening yet",
+      "section": "It just came back on, and nothing’s happening yet",
+      "caution": "Don’t reset a breaker or switch to make it start. This check doesn’t guide that.",
+      "notice": "short",
+      "safetyGate": false,
+      "options": {
+        "cold_exposure_risk": {
+          "id": "cold_exposure_risk",
+          "label": "Someone’s at risk from the cold (a baby, an older adult, or a medical need) and there’s no working heat",
+          "hint": "Get them warm first.",
+          "next": "@ms_cold_exposure",
+          "fact": "Someone at risk from the cold with no working heat. (R2)",
+          "gate": "cold_exposure_911"
+        },
+        "outage_running_now": {
+          "id": "outage_running_now",
+          "label": "It started after the wait, and it’s working",
+          "hint": "",
+          "next": "@ms_after_outage_normal_basic",
+          "fact": "Unit started on its own after a wait once power returned.",
+          "gate": "—"
+        },
+        "outage_lit_not_cooling": {
+          "id": "outage_lit_not_cooling",
+          "label": "It has lights, but it isn’t cooling after 10 minutes",
+          "hint": "Next: the mode and setting.",
+          "next": "ms.controls.mode_setpoint",
+          "fact": "Lights on after power returned, not cooling after a 10-minute wait.",
+          "gate": "—"
+        },
+        "outage_lit_not_heating": {
+          "id": "outage_lit_not_heating",
+          "label": "It has lights, but it isn’t heating after 10 minutes",
+          "hint": "Next: the mode and setting.",
+          "next": "ms.heat.mode_setpoint",
+          "fact": "Lights on after power returned, not heating after a 10-minute wait.",
+          "gate": "—"
+        },
+        "outage_remote_ignored": {
+          "id": "outage_remote_ignored",
+          "label": "It has lights, but the remote or app won’t change anything",
+          "hint": "",
+          "next": "ms.controls.remote_app",
+          "fact": "Lights on after power returned; remote or app not changing anything.",
+          "gate": "—"
+        },
+        "outage_code_showing": {
+          "id": "outage_code_showing",
+          "label": "A code or blinking lights are showing",
+          "hint": "Write it down first.",
+          "next": "ms.error.capture",
+          "fact": "Code or blink pattern after power returned.",
+          "gate": "—"
+        },
+        "outage_no_lights": {
+          "id": "outage_no_lights",
+          "label": "No lights at all on the indoor unit",
+          "hint": "Don’t reset breakers. A pro checks power.",
+          "next": "@ms_no_response_wave1",
+          "fact": "No lights on the indoor unit after power returned.",
+          "gate": "—"
+        },
+        "hazard_now": {
+          "id": "hazard_now",
+          "label": "",
+          "hint": "",
+          "next": "@ms_hazard_now",
+          "fact": "",
+          "gate": "ms_new_hazard"
+        }
+      },
+      "body": "",
+      "step": {
+        "what": "Gives the mini-split time to finish the start-up wait many models build in after power comes back or after you turn them on.",
+        "caution": "Waiting doesn’t fix a real fault. If nothing happens after the wait, the next screens or a pro take over.",
+        "source": "From Fujitsu Operating Manual (9/12/15RLS3), pages 7 and 10, checked Oct 11, 2026. From Gree Livo+ Owner’s Manual, page 18, checked Oct 11, 2026.",
+        "watch": "The indoor unit’s lights and the air coming out, for 10 minutes.",
+        "stop": "Stop and put things back the way you wrote them down if it starts and stops again within a few minutes, or a code shows. If that doesn’t fix it, call a licensed HVAC professional.",
+        "undo": "pn-v1 §3 verbatim.",
+        "steps": [
+          "Don’t press buttons over and over. Leave the remote on the mode you need.",
+          "Wait 10 minutes. Many units hold off for about 3 minutes after power comes back, and in Heat the indoor fan can wait a few more minutes so it doesn’t blow cold air.",
+          "Many units start again on their own after an outage, with the settings they had before. Timers may be cleared. If the TIMER light on the indoor unit is blinking, set your timer again the way your manual shows, or leave timers off.",
+          "If a code or a blinking pattern shows, write it down."
+        ]
+      }
+    },
+    "ms.sound.observe": {
+      "title": "Is that sound normal?",
+      "section": "Is that sound normal?",
+      "caution": "Listen from where you stand. Don’t open the unit or put your ear against it.",
+      "notice": "none",
+      "safetyGate": true,
+      "options": {
+        "sound_electrical_or_burning": {
+          "id": "sound_electrical_or_burning",
+          "label": "Buzzing, popping, or crackling from the cord, an outlet, or the unit’s wires, or any sound with a burning smell or smoke",
+          "hint": "Stop. Don’t keep checking.",
+          "next": "@ms_hazard_now",
+          "fact": "Electrical-type sound or a sound with burning smell or smoke.",
+          "gate": "ms_new_hazard"
+        },
+        "sound_steady_hiss_indoor": {
+          "id": "sound_steady_hiss_indoor",
+          "label": "A steady hiss from the indoor unit that doesn’t stop",
+          "hint": "Leave the room. Don’t reset it.",
+          "next": "@leak",
+          "fact": "Steady hiss from the indoor unit that didn’t stop.",
+          "gate": "refrigerant_alarm_or_release"
+        },
+        "sound_normal_list": {
+          "id": "sound_normal_list",
+          "label": "It matches the normal list, and it fades or comes and goes",
+          "hint": "",
+          "next": "@ms_sound_normal_basic",
+          "fact": "Sound matched the normal list and faded.",
+          "gate": "—"
+        },
+        "sound_heat_whoosh_pause": {
+          "id": "sound_heat_whoosh_pause",
+          "label": "In Heat: a whoosh or sizzle, and the indoor fan stopped for a while",
+          "hint": "Could be a defrost.",
+          "next": "ms.heat.defrost_indoor",
+          "fact": "Heat-mode whoosh or sizzle with the indoor fan pausing.",
+          "gate": "—"
+        },
+        "sound_airflow_louder": {
+          "id": "sound_airflow_louder",
+          "label": "The air itself sounds louder or whistles, and it feels weaker",
+          "hint": "Filters first.",
+          "next": "ms.head.filter_path_ok",
+          "fact": "Louder or whistling air with weaker airflow.",
+          "gate": "—"
+        },
+        "sound_with_dripping": {
+          "id": "sound_with_dripping",
+          "label": "It gurgles or drips, and I see water at or under the indoor unit",
+          "hint": "",
+          "next": "ms.head.water_observe",
+          "fact": "Gurgle or drip sound with water seen at the indoor unit.",
+          "gate": "—"
+        },
+        "sound_outdoor_unit": {
+          "id": "sound_outdoor_unit",
+          "label": "The sound is from the outdoor unit",
+          "hint": "Look only from a window or dry ground.",
+          "next": "ms.context.mode",
+          "fact": "Sound is from the outdoor unit.",
+          "gate": "—"
+        },
+        "sound_steady_hiss_outdoor": {
+          "id": "sound_steady_hiss_outdoor",
+          "label": "A steady hiss from the outdoor unit that doesn’t stop",
+          "hint": "",
+          "next": "@ms_sound_pro",
+          "fact": "Steady hiss from the outdoor unit that didn’t stop.",
+          "gate": "—"
+        },
+        "sound_not_normal": {
+          "id": "sound_not_normal",
+          "label": "Grinding, scraping, rattling, squealing, a bang, a high whine, or it keeps getting louder",
+          "hint": "",
+          "next": "@ms_sound_pro",
+          "fact": "Not-normal sound at the indoor unit.",
+          "gate": "—"
+        },
+        "sound_not_sure": {
+          "id": "sound_not_sure",
+          "label": "I’m not sure",
+          "hint": "",
+          "next": "@ms_sound_unsure",
+          "fact": "Sound unclear.",
+          "gate": "—"
+        },
+        "hazard_now": {
+          "id": "hazard_now",
+          "label": "",
+          "hint": "",
+          "next": "@ms_hazard_now",
+          "fact": "",
+          "gate": "ms_new_hazard"
+        }
+      },
+      "body": "Often normal on a mini-split:\n• A gurgle, trickle, or short hiss, like water moving, mostly in the first few minutes after it starts or stops. That’s fluid moving through the pipes inside.\n• A light crack, creak, snap, or tick when it starts, stops, or changes temperature. That’s plastic parts growing and shrinking.\n• A soft click or tap when the louver moves.\n• A dripping sound for a little while after it turns off.\n• In Heat: a whoosh or sizzle, with the indoor fan stopping for a few minutes. That’s often a defrost.\n\nNot normal: grinding, scraping, rattling, squealing, a loud bang, a high whine, a hiss that doesn’t stop, or a sound that keeps getting louder.\n\nA steady hiss from the indoor unit that doesn’t stop gets its own answer below. \n\nBuzzing, popping, or crackling from the cord, an outlet, or the unit’s wires, or any sound with a burning smell or smoke, is a hazard. Choose that answer.\n\nFrom Gree Livo+ Owner’s Manual, page 18, Fujitsu Operating Manual (9/12/15RLS3), page 10, and LG “How to Identify and Fix Noises from Your LG Air Conditioner,” checked Oct 11, 2026."
+    },
+    "ms.smell.observe": {
+      "title": "What does it smell like?",
+      "section": "What does it smell like?",
+      "caution": "Notice it from the room. Don’t open the unit or put your face up to it.",
+      "notice": "none",
+      "safetyGate": true,
+      "options": {
+        "smell_burning_or_gas": {
+          "id": "smell_burning_or_gas",
+          "label": "Burning, hot plastic, smoke, rotten eggs, or gas",
+          "hint": "Stop. Don’t keep checking.",
+          "next": "@ms_hazard_now",
+          "fact": "Burning, smoke, or gas smell.",
+          "gate": "ms_new_hazard"
+        },
+        "smell_sweet_chemical_sharp": {
+          "id": "smell_sweet_chemical_sharp",
+          "label": "A sweet, chemical, or sharp smell near the indoor unit",
+          "hint": "Leave the room. Don’t reset it.",
+          "next": "@leak",
+          "fact": "Sweet, chemical, or sharp smell near the indoor unit.",
+          "gate": "refrigerant_alarm_or_release"
+        },
+        "smell_musty": {
+          "id": "smell_musty",
+          "label": "Musty, mildew, or “dirty socks",
+          "hint": "Filters first, then a look behind them.",
+          "next": "ms.head.filter_path_ok",
+          "fact": "Musty smell from the indoor unit.",
+          "gate": "—"
+        },
+        "smell_room_odor": {
+          "id": "smell_room_odor",
+          "label": "Like the room: cooking, tobacco smoke, pets, paint, or new furniture",
+          "hint": "",
+          "next": "@ms_smell_room_odor_basic",
+          "fact": "Smell matches room odors.",
+          "gate": "—"
+        },
+        "smell_sewage_or_drain": {
+          "id": "smell_sewage_or_drain",
+          "label": "Sewage or a sour drain smell",
+          "hint": "",
+          "next": "@ms_smell_pro",
+          "fact": "Sewage or drain smell.",
+          "gate": "—"
+        },
+        "smell_not_sure": {
+          "id": "smell_not_sure",
+          "label": "I’m not sure",
+          "hint": "",
+          "next": "@ms_smell_unsure",
+          "fact": "Smell unclear.",
+          "gate": "—"
+        },
+        "hazard_now": {
+          "id": "hazard_now",
+          "label": "",
+          "hint": "",
+          "next": "@ms_hazard_now",
+          "fact": "",
+          "gate": "ms_new_hazard"
+        }
+      },
+      "body": "If it smells like burning, hot plastic, or smoke, or like rotten eggs or gas, choose that first.\n\nA sweet, chemical, or sharp smell near the indoor unit gets its own answer below. \n\nMini-splits can pick up smells from the room, like cooking, tobacco smoke, pets, or fresh paint, and blow them back out later. A musty smell often starts with dirty filters.\n\nFrom Fujitsu Operating Manual (9/12/15RLS3), page 10, and Gree Livo+ Owner’s Manual, pages 18–19, checked Oct 11, 2026."
+    },
+    "ms.controls.remote_app": {
+      "title": "When the remote or app won’t change it",
+      "section": "When the remote or app won’t change it",
+      "caution": "Don’t press buttons on the indoor unit itself, and don’t open it.",
+      "notice": "short",
+      "safetyGate": false,
+      "options": {
+        "remote_works_now_ok": {
+          "id": "remote_works_now_ok",
+          "label": "It responds now, and the room is getting comfortable",
+          "hint": "",
+          "next": "@ms_remote_fixed_basic",
+          "fact": "Remote or app responding again after the remote checks.",
+          "gate": "—"
+        },
+        "remote_works_still_not_cooling": {
+          "id": "remote_works_still_not_cooling",
+          "label": "It responds now, but it still isn’t cooling",
+          "hint": "Next: filters and airflow.",
+          "next": "ms.head.filter_path_ok",
+          "fact": "Remote fixed; still not cooling.",
+          "gate": "—"
+        },
+        "remote_works_still_not_heating": {
+          "id": "remote_works_still_not_heating",
+          "label": "It responds now, but it still isn’t heating",
+          "hint": "Next: check for a defrost pause.",
+          "next": "ms.heat.defrost_indoor",
+          "fact": "Remote fixed; still not heating.",
+          "gate": "—"
+        },
+        "app_only_problem": {
+          "id": "app_only_problem",
+          "label": "The remote works. Only the app won’t connect or control it",
+          "hint": "",
+          "next": "@ms_app_support_info",
+          "fact": "App-only connection or control problem.",
+          "gate": "—"
+        },
+        "remote_still_dead": {
+          "id": "remote_still_dead",
+          "label": "Still no response, or the remote is cracked or leaking, or the cover won’t slide off by hand",
+          "hint": "",
+          "next": "@ms_remote_pro",
+          "fact": "Remote still not working, or damaged, or the cover doesn’t slide off by hand.",
+          "gate": "—"
+        },
+        "hazard_now": {
+          "id": "hazard_now",
+          "label": "",
+          "hint": "",
+          "next": "@ms_hazard_now",
+          "fact": "",
+          "gate": "ms_new_hazard"
+        }
+      },
+      "body": "",
+      "step": {
+        "what": "Checks the everyday reasons a remote or app stops getting through, using only the remote, the app, and your owner’s manual.",
+        "caution": "If you change a remote setting by mistake, the unit may run differently than you expect until you put it back.",
+        "source": "From MRCOOL Remote Controller Owner’s Manual, page 3, Gree Livo+ Owner’s Manual, page 19, Fujitsu Operating Manual (9/12/15RLS3), pages 3 and 5, Lennox Mini-Split User Manual DB68-12580A-00, page 43, and Mitsubishi Electric kumo cloud Technician Manual 2.10, page 35, checked Oct 11, 2026.",
+        "watch": "Press one button and listen for a beep or watch the display, for about a minute.",
+        "stop": "Stop and put things back the way you wrote them down if the remote screen stays blank with new batteries, or a setup menu or a password or access code prompt appears. If that doesn’t fix it, call a licensed HVAC professional.",
+        "undo": "pn-v1 §3 verbatim.",
+        "steps": [
+          "Stand within about 25 feet of the indoor unit, in the same room, and point the remote at it. Many units beep when they get a signal. Curtains, direct sun, and bright fluorescent or neon light can block it.",
+          "Look for a lock symbol on the remote screen. If your manual shows how to unlock it, do that.",
+          "Batteries: only if the battery cover slides off by hand and nothing is cracked or leaking. Use the type your manual lists, all new and all the same kind, and match + and −. If your remote charges by cable, charge it the way the manual shows.",
+          "After new batteries, some remotes go back to their factory signal code and stop talking to the unit. If your owner’s manual shows how to set the remote’s signal code using the remote alone, do it once, word for word. If the unit still doesn’t respond, don’t repeat it. Choose the “Still no response” answer below. If the manual says the code is set on the indoor unit, or to ask your dealer or retailer, stop here. This step only matches the remote to the unit. It doesn’t clear error codes or their history. If a screen asks you to enter a password or access code, stop.",
+          "If you use an app too: the unit follows whichever was changed last. An app schedule, or someone else’s phone, can change it back later. Check the app for schedules."
+        ]
+      }
+    },
+    "ms.controls.feature_check": {
+      "title": "Check the special settings",
+      "section": "Check the special settings",
+      "caution": "Use only the remote or app. Don’t move the louver by hand.",
+      "notice": "short",
+      "safetyGate": false,
+      "options": {
+        "feature_fixed": {
+          "id": "feature_fixed",
+          "label": "I turned a feature off, and now it’s working",
+          "hint": "",
+          "next": "@ms_feature_fixed_basic",
+          "fact": "Turned off a limiting feature (Eco, Quiet, Sleep, Dry, timer, sensor); comfort returned.",
+          "gate": "—"
+        },
+        "louver_sweating": {
+          "id": "louver_sweating",
+          "label": "The louver or front of the unit is sweating or dripping in Cool, and nothing electrical is below it",
+          "hint": "",
+          "next": "@ms_louver_sweat_basic",
+          "fact": "Louver or front sweating in Cool; nothing electrical below.",
+          "gate": "—"
+        },
+        "water_dripping_other": {
+          "id": "water_dripping_other",
+          "label": "Water is dripping onto the floor, furniture, or anything that plugs in",
+          "hint": "",
+          "next": "ms.head.water_observe",
+          "fact": "Water dripping from the indoor unit onto something below.",
+          "gate": "—"
+        },
+        "features_off_still_not_cooling": {
+          "id": "features_off_still_not_cooling",
+          "label": "All off, and it still isn’t cooling",
+          "hint": "Next: filters and airflow.",
+          "next": "ms.head.filter_path_ok",
+          "fact": "Limiting features off; still not cooling.",
+          "gate": "—"
+        },
+        "features_off_still_not_heating": {
+          "id": "features_off_still_not_heating",
+          "label": "All off, and it still isn’t heating",
+          "hint": "Next: check for a defrost pause.",
+          "next": "ms.heat.defrost_indoor",
+          "fact": "Limiting features off; still not heating.",
+          "gate": "—"
+        },
+        "feature_unsure": {
+          "id": "feature_unsure",
+          "label": "I can’t tell which features are on",
+          "hint": "",
+          "next": "@ms_feature_unsure",
+          "fact": "Feature state unclear.",
+          "gate": "—"
+        },
+        "hazard_now": {
+          "id": "hazard_now",
+          "label": "",
+          "hint": "",
+          "next": "@ms_hazard_now",
+          "fact": "",
+          "gate": "ms_new_hazard"
+        }
+      },
+      "body": "",
+      "step": {
+        "what": "Turns off remote or app features that limit how hard the unit works, or where it senses the room, one at a time.",
+        "caution": "With these off, the unit can use more electricity, sound louder, and blow harder.",
+        "source": "From Fujitsu Operating Manual (9/12/15RLS3), pages 2, 4, 7 and 10, Lennox Mini-Split User Manual DB68-12580A-00, pages 27, 30, 31 and 43, and MRCOOL Remote Controller Owner’s Manual, pages 4, 6 and 11, checked Oct 11, 2026.",
+        "watch": "How the room feels after 15 minutes, changing one thing at a time.",
+        "stop": "Stop and put things back the way you wrote them down if the unit starts and stops over and over, or water drips from the louver. If that doesn’t fix it, call a licensed HVAC professional.",
+        "undo": "pn-v1 §3 verbatim.",
+        "steps": [
+          "Eco, Economy, or Gear: turn it off for this check. On some models these cap how hard the unit runs, or limit how cold or warm you can set it. Lennox lists 76°F as the lowest Cool setting with Eco on for one model (Mini-Split User Manual DB68-12580A-00, p. 30). Check your unit’s manual.",
+          "Quiet: turn it off. It slows the fan, so the room can take longer to cool or heat.",
+          "Sleep and timers: turn them off. Sleep shifts the setting slowly during the night. A timer or weekly schedule can switch the unit off or change the setting.",
+          "Dry: if you want cooling, use Cool instead. Dry runs the fan slowly and can pause it. It isn’t a heating mode.",
+          "Follow Me or a room sensor in the remote: the unit reads the temperature where the remote sits. Keep the remote in the same room, out of the sun, and away from lamps, heaters, and blankets. Or turn the feature off.",
+          "A people sensor (Human Sensor, energy saving, or similar) can ease off when it doesn’t see anyone. Turn it off for this check if your manual shows how.",
+          "Air direction: use the air-direction button your manual shows. In Cool or Dry, aiming the louver straight down for a long time can make it sweat and drip. Use the positions your manual shows for cooling."
+        ]
+      }
+    },
+    "ms.heat.defrost_indoor": {
+      "title": "Heat stopped for a few minutes? Check for a defrost from inside",
+      "section": "Heat stopped for a few minutes? Check for a defrost from inside",
+      "caution": "If someone is at risk from the cold and there is no working heat, that comes first.",
+      "notice": "none",
+      "safetyGate": true,
+      "options": {
+        "cold_exposure_risk": {
+          "id": "cold_exposure_risk",
+          "label": "",
+          "hint": "",
+          "next": "@ms_cold_exposure",
+          "fact": "",
+          "gate": "cold_exposure_911"
+        },
+        "pause_then_heat_back": {
+          "id": "pause_then_heat_back",
+          "label": "It paused, then warm air came back on its own",
+          "hint": "",
+          "next": "@ms_defrost_normal_basic",
+          "fact": "Indoor signs matched a defrost pause; heat returned.",
+          "gate": "—"
+        },
+        "pause_long_or_often": {
+          "id": "pause_long_or_often",
+          "label": "It’s been paused more than 15 minutes, or it pauses again and again",
+          "hint": "Next: a look at the outdoor unit from a window or dry ground.",
+          "next": "ms.heat.defrost_sanity",
+          "fact": "Pause over 15 minutes, or repeated pauses.",
+          "gate": "—"
+        },
+        "cold_air_steady": {
+          "id": "cold_air_steady",
+          "label": "It blows cool air steadily in Heat, with no pause",
+          "hint": "Next: filters and airflow.",
+          "next": "ms.head.filter_path_ok",
+          "fact": "Steady cool air in Heat, no pause.",
+          "gate": "—"
+        },
+        "pause_not_sure": {
+          "id": "pause_not_sure",
+          "label": "I’m not sure what I saw",
+          "hint": "",
+          "next": "ms.heat.defrost_sanity",
+          "fact": "Defrost signs unclear.",
+          "gate": "—"
+        },
+        "hazard_now": {
+          "id": "hazard_now",
+          "label": "",
+          "hint": "",
+          "next": "@ms_hazard_now",
+          "fact": "",
+          "gate": "ms_new_hazard"
+        }
+      },
+      "body": "In Heat, a mini-split pauses now and then to melt frost off the outdoor unit. From inside, a normal pause can look like this:\n• The indoor fan stops or slows, and no warm air comes out for a few minutes. Fujitsu lists up to 15 minutes for one model (Operating Manual 9/12/15RLS3, p. 7). Check your unit’s manual.\n• A light on the indoor unit blinks, or the display shows a defrost symbol. Your manual shows which.\n• The louver stops moving or drops to its lowest spot.\n• The remote may not change anything until the pause ends.\n\nThen heat comes back on its own. Leave it in Heat. Don’t switch modes, press buttons on the unit, or turn it off and on to hurry it.\n\nFrom Fujitsu Operating Manual (9/12/15RLS3), pages 7 and 10, Lennox Mini-Split User Manual DB68-12580A-00, page 28, and HVAC School “Info For Homeowners About Heat Pump Defrost,” checked Oct 11, 2026."
+    },
+    "ms.head.coil_face_look": {
+      "title": "Look behind the filters before they go back",
+      "section": "Look behind the filters before they go back",
+      "caution": "Remote Off doesn’t cut the power. Touch only the filters and the cover.",
+      "notice": "short",
+      "safetyGate": true,
+      "options": {
+        "fins_clean_or_light_dust": {
+          "id": "fins_clean_or_light_dust",
+          "label": "Clean, or a light, even dusting",
+          "hint": "",
+          "next": "ms.head.discharge_clear",
+          "fact": "Fins behind filters clean or lightly dusty.",
+          "gate": "—"
+        },
+        "fins_clean_but_musty": {
+          "id": "fins_clean_but_musty",
+          "label": "They look clean or lightly dusty, but the air smells musty",
+          "hint": "",
+          "next": "@ms_musty_dryout_basic",
+          "fact": "Fins look clean; musty smell.",
+          "gate": "—"
+        },
+        "fins_matted_or_growth": {
+          "id": "fins_matted_or_growth",
+          "label": "A gray mat of dust, black spots, slime, or mold",
+          "hint": "",
+          "next": "@ms_head_cleaning_pro",
+          "fact": "Fins matted or growth seen.",
+          "gate": "—"
+        },
+        "fins_damaged_or_loose": {
+          "id": "fins_damaged_or_loose",
+          "label": "Bent or flattened fins, a loose or broken part, or loose wires",
+          "hint": "",
+          "next": "@ms_head_inside_damage_pro",
+          "fact": "Damage or loose parts seen behind filters.",
+          "gate": "—"
+        },
+        "water_inside": {
+          "id": "water_inside",
+          "label": "Water pooling or dripping inside the unit",
+          "hint": "",
+          "next": "ms.head.water_observe",
+          "fact": "Water seen inside the indoor unit.",
+          "gate": "—"
+        },
+        "ice_behind_filters": {
+          "id": "ice_behind_filters",
+          "label": "Ice or frost",
+          "hint": "",
+          "next": "ms.ice.stop_observe",
+          "fact": "Ice or frost behind filters.",
+          "gate": "—"
+        },
+        "filters_still_drying": {
+          "id": "filters_still_drying",
+          "label": "I washed the filters, and they’re still drying",
+          "hint": "",
+          "next": "@ms_filter_drying_basic",
+          "fact": "Filters washed, still drying.",
+          "gate": "—"
+        },
+        "cant_see_from_floor": {
+          "id": "cant_see_from_floor",
+          "label": "I can’t see it well from the floor",
+          "hint": "Don’t climb. Skip this look.",
+          "next": "ms.head.discharge_clear",
+          "fact": "Couldn’t see behind filters from the floor.",
+          "gate": "—"
+        },
+        "hazard_now": {
+          "id": "hazard_now",
+          "label": "",
+          "hint": "",
+          "next": "@ms_hazard_now",
+          "fact": "",
+          "gate": "ms_new_hazard"
+        }
+      },
+      "body": "",
+      "step": {
+        "what": "A quick look at the metal fins behind the filters. You don’t touch or clean anything.",
+        "caution": "Those fins are thin and sharp-edged. Looking is all this step does.",
+        "source": "From Fujitsu Operating Manual (9/12/15RLS3), page 8, Lennox Mini-Split User Manual DB68-12580A-00, page 14, and Gree Livo+ Owner’s Manual, page 18, checked Oct 11, 2026.",
+        "watch": "Only what you can see from where you stand.",
+        "stop": "Stop and put things back the way you wrote them down if the cover won’t close or a filter won’t sit flat. If that doesn’t fix it, call a licensed HVAC professional.",
+        "undo": "pn-v1 §3 verbatim.",
+        "steps": [
+          "The unit stays Off with the remote, and the filters stay out.",
+          "From the floor, look at the metal fins behind where the filters sit. A flashlight held outside the unit can help. Don’t reach in.",
+          "Don’t touch, brush, vacuum, wipe, or spray the fins or anything behind them. Makers say not to touch them, and cleaning inside the unit is a pro job.",
+          "When the filters are fully dry, put them back and close the cover all the way."
+        ]
+      }
+    },
+    "ms.head.condensate_outside": {
+      "title": "Water dripping outside the house?",
+      "section": "Water dripping outside the house?",
+      "caution": "Look from a window or from dry, clear ground. Don’t pull, move, or dig at the hose, and don’t push anything into it.",
+      "notice": "none",
+      "safetyGate": true,
+      "options": {
+        "outdoor_electrical_wet": {
+          "id": "outdoor_electrical_wet",
+          "label": "Water is dripping on or pooling near the outdoor unit’s power box, a cord, or an outlet",
+          "hint": "Don’t touch anything.",
+          "next": "@ms_outdoor_water_electrical",
+          "fact": "Water at or near outdoor electrical parts.",
+          "gate": "water_near_electrical"
+        },
+        "drip_normal_cooling": {
+          "id": "drip_normal_cooling",
+          "label": "A steady drip from the small hose or pipe while it cools or dries, and no water inside",
+          "hint": "",
+          "next": "@ms_condensate_outside_normal_basic",
+          "fact": "Normal condensate drip outside; no water inside.",
+          "gate": "—"
+        },
+        "no_drip_no_inside_water": {
+          "id": "no_drip_no_inside_water",
+          "label": "No drip outside, and no water inside",
+          "hint": "",
+          "next": "@ms_condensate_outside_normal_basic",
+          "fact": "No drip outside and no water inside.",
+          "gate": "—"
+        },
+        "no_drip_but_inside_water": {
+          "id": "no_drip_but_inside_water",
+          "label": "No drip outside, but water at or under the indoor unit",
+          "hint": "",
+          "next": "ms.head.water_observe",
+          "fact": "No outside drip; water at the indoor unit.",
+          "gate": "—"
+        },
+        "drip_bad_spot": {
+          "id": "drip_bad_spot",
+          "label": "It drips onto a walkway, steps, or a deck, freezes into a slick spot, or soaks the foundation",
+          "hint": "Keep people off any ice.",
+          "next": "@ms_condensate_outlet_pro",
+          "fact": "Drain outlet drips onto a walkway, freezes, or soaks the foundation.",
+          "gate": "—"
+        },
+        "hose_damaged": {
+          "id": "hose_damaged",
+          "label": "The hose end is crushed, kinked, buried, split, or came loose",
+          "hint": "",
+          "next": "@ms_condensate_outlet_pro",
+          "fact": "Drain hose end damaged, buried, or loose.",
+          "gate": "—"
+        },
+        "water_from_outdoor_unit_heat": {
+          "id": "water_from_outdoor_unit_heat",
+          "label": "Water is coming from the outdoor unit itself while it heats",
+          "hint": "",
+          "next": "ms.outdoor.safe_observe",
+          "fact": "Water from the outdoor unit in Heat.",
+          "gate": "—"
+        },
+        "hazard_now": {
+          "id": "hazard_now",
+          "label": "",
+          "hint": "",
+          "next": "@ms_hazard_now",
+          "fact": "",
+          "gate": "ms_new_hazard"
+        }
+      },
+      "body": "When a mini-split cools or dries the air, it pulls water out of it. A small hose or pipe usually carries that water outside. A steady drip from that hose on a warm, humid day is normal. No drip on a dry day, or for the first few minutes, can be normal too.\n\nWater coming from the outdoor unit itself while it heats is a different thing. That’s often melted frost.\n\nFrom Trane “Mini-Split Leaking Water,” Gree Livo+ Owner’s Manual, pages 18 and 19, and Fujitsu Operating Manual (9/12/15RLS3), page 10, checked Oct 11, 2026."
+    },
+    "ms.error.manual_lookup": {
+      "title": "Look up the code in your owner’s manual",
+      "section": "Look up the code in your owner’s manual",
+      "caution": "Use only your own model’s manual. No covers, meters, or service menus.",
+      "notice": "short",
+      "safetyGate": true,
+      "options": {
+        "manual_refrigerant_leak": {
+          "id": "manual_refrigerant_leak",
+          "label": "The screen, app, or manual says it’s a refrigerant leak",
+          "hint": "Leave the room. Don’t reset it.",
+          "next": "@leak",
+          "fact": "Mini-split showed a refrigerant leak alert.",
+          "gate": "refrigerant_alarm_or_release"
+        },
+        "manual_serious_fault": {
+          "id": "manual_serious_fault",
+          "label": "It names refrigerant, the compressor, high pressure, or overheating protection, which is pro work",
+          "hint": "",
+          "next": "@ms_error_code_serious_pro",
+          "fact": "Owner reported the manual names refrigerant, the compressor, high pressure, or overheating protection.",
+          "gate": "—"
+        },
+        "manual_normal_status": {
+          "id": "manual_normal_status",
+          "label": "It’s a normal status, like a defrost, a filter-clean reminder, or a timer reset after an outage",
+          "hint": "",
+          "next": "@ms_code_status_basic",
+          "fact": "Manual meaning: normal status.",
+          "gate": "—"
+        },
+        "manual_mode_conflict": {
+          "id": "manual_mode_conflict",
+          "label": "It says mode conflict, on a system with two or more indoor units",
+          "hint": "",
+          "next": "ms.zone.mode_conflict",
+          "fact": "Manual meaning: multi-zone mode conflict.",
+          "gate": "—"
+        },
+        "manual_allows_restart": {
+          "id": "manual_allows_restart",
+          "label": "It says the owner can turn it off with the remote or app, wait, and turn it on once",
+          "hint": "",
+          "next": "ms.error.restart_once",
+          "fact": "Manual allows one owner restart from the remote or app.",
+          "gate": "—"
+        },
+        "manual_says_call_service": {
+          "id": "manual_says_call_service",
+          "label": "It says to call service or the dealer, or the fix needs more than the remote or app",
+          "hint": "",
+          "next": "@ms_error_code_wave1",
+          "fact": "Manual says call service, or its fix is outside what this check guides.",
+          "gate": "—"
+        },
+        "code_not_in_manual": {
+          "id": "code_not_in_manual",
+          "label": "The code isn’t in the manual, or I don’t have the manual",
+          "hint": "",
+          "next": "@ms_error_code_wave1",
+          "fact": "Code not found in manual, or no manual.",
+          "gate": "—"
+        },
+        "hazard_now": {
+          "id": "hazard_now",
+          "label": "",
+          "hint": "",
+          "next": "@ms_hazard_now",
+          "fact": "",
+          "gate": "ms_new_hazard"
+        }
+      },
+      "body": "",
+      "step": {
+        "what": "Matches the code you wrote down against your owner’s manual, so you know if it’s a normal status, a stop-and-call, or a one-time step the manual allows.",
+        "caution": "Codes mean different things on different brands and models. A code list for another model, or from a forum, can send you the wrong way.",
+        "source": "From Lennox Mini-Split User Manual DB68-12580A-00, page 44, and Fujitsu Operating Manual (9/12/15RLS3), page 10, checked Oct 11, 2026.",
+        "watch": "If the code is steady, blinking, or comes and goes, for a few minutes.",
+        "stop": "Stop and put things back the way you wrote them down if the manual sends you to a service menu or anything inside the unit. If that doesn’t fix it, call a licensed HVAC professional.",
+        "undo": "pn-v1 §3 verbatim.",
+        "steps": [
+          "Find where the code shows: the indoor unit’s display, the remote screen, or the app. If your unit only has lights, count the blinks and note which light.",
+          "Use the owner’s manual or the maker’s code page for your exact model. If you don’t have it and can’t read the model from the floor, stop here. Don’t climb or open a cover to find a label.",
+          "Find your code in the table. Write down or photograph the code, what the manual says it means, and what it says to do. Don’t clear the code or its history from any menu.",
+          "Choose the answer below that matches what your manual says.",
+          "Don’t switch a breaker or unplug anything to clear a code."
+        ]
+      }
+    },
+    "ms.error.restart_once": {
+      "title": "Turn it off and on once with the remote, the way your manual says",
+      "section": "Turn it off and on once with the remote, the way your manual says",
+      "caution": "Turning the unit off with the remote stops it running. It doesn’t cut the power.",
+      "notice": "full",
+      "safetyGate": true,
+      "options": {
+        "cold_exposure_risk": {
+          "id": "cold_exposure_risk",
+          "label": "",
+          "hint": "",
+          "next": "@ms_cold_exposure",
+          "fact": "",
+          "gate": "cold_exposure_911"
+        },
+        "restart_cold_or_fragile": {
+          "id": "restart_cold_or_fragile",
+          "label": "I’m using Heat, and it’s 40 °F (4 °C) or colder outside or will be in the next few days, or someone at home is an infant, elderly, or medically fragile",
+          "hint": "",
+          "next": "@ms_cold_weather_stop",
+          "fact": "Cold-weather or vulnerable-occupant guard hit before an off-and-on.",
+          "gate": "—"
+        },
+        "warranty_ask_installer": {
+          "id": "warranty_ask_installer",
+          "label": "Ask my installer first",
+          "hint": "",
+          "next": "@ms_ask_installer",
+          "fact": "Owner chose to ask the installer first.",
+          "gate": "—"
+        },
+        "warranty_not_sure": {
+          "id": "warranty_not_sure",
+          "label": "I’m not sure",
+          "hint": "",
+          "next": "@ms_ask_installer",
+          "fact": "Owner unsure about installer terms.",
+          "gate": "—"
+        },
+        "restart_cleared": {
+          "id": "restart_cleared",
+          "label": "I did it once. It’s running, and the code is gone",
+          "hint": "",
+          "next": "@ms_restart_cleared_basic",
+          "fact": "One owner restart per the manual; code cleared.",
+          "gate": "—"
+        },
+        "restart_code_back": {
+          "id": "restart_code_back",
+          "label": "I did it once, and the code came back or it stopped again",
+          "hint": "Don’t do it again.",
+          "next": "@ms_error_code_returned_pro",
+          "fact": "Code returned after one restart.",
+          "gate": "—"
+        },
+        "restart_already_done": {
+          "id": "restart_already_done",
+          "label": "I already turned it off and on once for this code",
+          "hint": "",
+          "next": "@ms_error_code_returned_pro",
+          "fact": "Owner had already restarted once.",
+          "gate": "—"
+        },
+        "restart_needs_more": {
+          "id": "restart_needs_more",
+          "label": "The manual’s step needs more than the remote, wall control, or app",
+          "hint": "",
+          "next": "@ms_error_code_wave1",
+          "fact": "Manual restart step is outside what this check guides.",
+          "gate": "—"
+        },
+        "hazard_now": {
+          "id": "hazard_now",
+          "label": "",
+          "hint": "",
+          "next": "@ms_hazard_now",
+          "fact": "",
+          "gate": "ms_new_hazard"
+        }
+      },
+      "body": "",
+      "step": {
+        "what": "Turns the unit off with the remote, wall control, or app, waits, and turns it back on once, only because your owner’s manual says the owner can.",
+        "caution": "The room gets no heating or cooling while it’s off. If a safety device stopped it, turning it on again won’t fix the cause.",
+        "source": "From your owner’s manual, the page you wrote down in the last step. One example we checked: Lennox Mini-Split User Manual DB68-12580A-00, page 44, checked Oct 11, 2026.",
+        "watch": "The display and the air coming out, for 15 minutes.",
+        "stop": "Stop and put things back the way you wrote them down if the same code shows again or it stops again. If that doesn’t fix it, call a licensed HVAC professional.",
+        "undo": "pn-v1 §3 verbatim.",
+        "steps": [
+          "Write down or photograph the code, what the unit was doing, and the manual page that tells owners to do this. Don’t clear the code or its history from any menu.",
+          "Turn the unit Off with the remote, wall control, or app you already use. Don’t press buttons on the indoor unit, switch a breaker, or unplug anything.",
+          "Wait as long as your manual says. If it gives no time, wait 5 minutes. Many units also hold off about 3 minutes when they start again.",
+          "Turn it on once, in the mode you need.",
+          "pn-v1 §5 verbatim: Reset once, only once. …"
+        ]
+      }
+    },
+    "ms.zone.mode_conflict": {
+      "title": "Two indoor units asking for opposite things",
+      "section": "Two indoor units asking for opposite things",
+      "caution": "Use only each unit’s own remote or the app. Don’t change addresses, priority, or settings on the outdoor unit.",
+      "notice": "shutting",
+      "safetyGate": true,
+      "options": {
+        "cold_exposure_risk": {
+          "id": "cold_exposure_risk",
+          "label": "",
+          "hint": "",
+          "next": "@ms_cold_exposure",
+          "fact": "",
+          "gate": "cold_exposure_911"
+        },
+        "zone_cold_or_fragile": {
+          "id": "zone_cold_or_fragile",
+          "label": "I’d need to turn a unit Off, and it’s 40 °F (4 °C) or colder or will be in the next few days, or someone at home is an infant, elderly, or medically fragile",
+          "hint": "If you can set every unit to Heat instead, do that and choose another answer.",
+          "next": "@ms_cold_weather_stop",
+          "fact": "Cold guard hit before turning a zone Off.",
+          "gate": "—"
+        },
+        "zone_conflict_cleared": {
+          "id": "zone_conflict_cleared",
+          "label": "Every unit is on one mode or Off, and the conflict cleared",
+          "hint": "",
+          "next": "@ms_zone_mode_match_basic",
+          "fact": "Mode conflict cleared by matching modes.",
+          "gate": "—"
+        },
+        "zone_cannot_set_others": {
+          "id": "zone_cannot_set_others",
+          "label": "I can’t change another unit (locked, a central controller, or no remote)",
+          "hint": "",
+          "next": "@ms_zone_control_pro",
+          "fact": "Couldn’t change another head’s mode.",
+          "gate": "—"
+        },
+        "zone_conflict_persists": {
+          "id": "zone_conflict_persists",
+          "label": "All on one mode, and it still shows a conflict",
+          "hint": "",
+          "next": "@ms_error_code_wave1",
+          "fact": "Conflict persists with all heads matched.",
+          "gate": "—"
+        },
+        "zone_not_sure": {
+          "id": "zone_not_sure",
+          "label": "I’m not sure",
+          "hint": "",
+          "next": "@ms_zone_unsure",
+          "fact": "Mode conflict unclear.",
+          "gate": "—"
+        },
+        "hazard_now": {
+          "id": "hazard_now",
+          "label": "",
+          "hint": "",
+          "next": "@ms_hazard_now",
+          "fact": "",
+          "gate": "ms_new_hazard"
+        }
+      },
+      "body": "",
+      "step": {
+        "what": "Sets every indoor unit on the same outdoor unit to the same mode, or to Off, so the outdoor unit isn’t asked to cool and heat at once.",
+        "caution": "A room you set to Off won’t be heated or cooled until you turn it back on.",
+        "source": "‘--’ on the display: mode conflict (multi zone systems)",
+        "watch": "If the conflict code or blinking clears and the unit starts, for 10 minutes.",
+        "stop": "Stop and put things back the way you wrote them down if units you didn’t touch start acting up, or the conflict still shows with every unit on one mode. If that doesn’t fix it, call a licensed HVAC professional.",
+        "undo": "pn-v1 §3 verbatim.",
+        "steps": [
+          "Check the mode on every indoor unit that shares this outdoor unit, including rooms no one is using.",
+          "Set them all to Cool, or all to Heat. If a room shouldn’t run, turn that unit Off. Don’t set it to the opposite mode.",
+          "Don’t use Auto on any of them for now. Auto can pick the opposite mode on its own.",
+          "Wait 10 minutes."
+        ]
+      }
+    },
+    "ms.zone.which_head": {
+      "title": "Which indoor units have the problem?",
+      "section": "Which indoor units have the problem?",
+      "caution": "Answer from the rooms. Don’t climb up or open a unit to check.",
+      "notice": "none",
+      "safetyGate": false,
+      "options": {
+        "water_or_ice_at_a_unit": {
+          "id": "water_or_ice_at_a_unit",
+          "label": "Water or ice at one of the indoor units",
+          "hint": "Electrical safety question first.",
+          "next": "ms.head.water_observe",
+          "fact": "Zone: water or ice at an indoor unit.",
+          "gate": "—"
+        },
+        "one_unit_problem": {
+          "id": "one_unit_problem",
+          "label": "Only one indoor unit has the problem",
+          "hint": "Next: the other units.",
+          "next": "ms.zone.others_ok",
+          "fact": "Zone: problem on one indoor unit.",
+          "gate": "—"
+        },
+        "several_units_problem": {
+          "id": "several_units_problem",
+          "label": "Some indoor units have it, but not all",
+          "hint": "Next: the other units.",
+          "next": "ms.zone.others_ok",
+          "fact": "Zone: problem on some indoor units, not all.",
+          "gate": "—"
+        },
+        "zone_display_conflict": {
+          "id": "zone_display_conflict",
+          "label": "An indoor unit shows “--”, “PA”, or another code your manual calls a mode conflict",
+          "hint": "Write it down first.",
+          "next": "ms.zone.mode_conflict",
+          "fact": "Zone: mode-conflict code shown.",
+          "gate": "—"
+        },
+        "all_units_problem": {
+          "id": "all_units_problem",
+          "label": "Every indoor unit has the problem",
+          "hint": "Next: what you’re noticing.",
+          "next": "ms.landing.picker",
+          "fact": "Zone: problem on every indoor unit.",
+          "gate": "—"
+        },
+        "not_sure_which": {
+          "id": "not_sure_which",
+          "label": "I’m not sure",
+          "hint": "",
+          "next": "ms.landing.picker",
+          "fact": "Zone: not sure which units.",
+          "gate": "—"
+        },
+        "hazard_now": {
+          "id": "hazard_now",
+          "label": "",
+          "hint": "",
+          "next": "@ms_hazard_now",
+          "fact": "",
+          "gate": "ms_new_hazard"
+        }
+      },
+      "body": "Your system has two or more indoor units on one outdoor unit. Think about every indoor unit, including rooms no one is using.\n\nIf water or ice is at any indoor unit, choose that first."
+    },
+    "ms.zone.others_ok": {
+      "title": "Are the other indoor units working, and on the same mode?",
+      "section": "Are the other indoor units working, and on the same mode?",
+      "caution": "Use each unit’s own remote or the app. Don’t change settings on the outdoor unit.",
+      "notice": "none",
+      "safetyGate": true,
+      "options": {
+        "cold_exposure_risk": {
+          "id": "cold_exposure_risk",
+          "label": "",
+          "hint": "Get them warm first.",
+          "next": "@ms_cold_exposure",
+          "fact": "",
+          "gate": "cold_exposure_911"
+        },
+        "others_work_same_mode": {
+          "id": "others_work_same_mode",
+          "label": "The others work, and they’re all on the same mode as this one",
+          "hint": "Next: what you’re noticing.",
+          "next": "ms.landing.picker",
+          "fact": "Zone: other units work in the same mode.",
+          "gate": "—"
+        },
+        "others_off_or_unused": {
+          "id": "others_off_or_unused",
+          "label": "The others are Off or not in use",
+          "hint": "Next: what you’re noticing.",
+          "next": "ms.landing.picker",
+          "fact": "Zone: other units Off or unused.",
+          "gate": "—"
+        },
+        "others_different_mode_or_auto": {
+          "id": "others_different_mode_or_auto",
+          "label": "At least one other unit is on a different mode, or on Auto",
+          "hint": "Next: put them all on one mode.",
+          "next": "ms.zone.isolate_head",
+          "fact": "Zone: another unit on a different mode or Auto.",
+          "gate": "—"
+        },
+        "not_sure_other_modes": {
+          "id": "not_sure_other_modes",
+          "label": "I’m not sure what mode the others are on",
+          "hint": "Next: put them all on one mode.",
+          "next": "ms.zone.isolate_head",
+          "fact": "Zone: other units’ modes not known.",
+          "gate": "—"
+        },
+        "hazard_now": {
+          "id": "hazard_now",
+          "label": "",
+          "hint": "",
+          "next": "@ms_hazard_now",
+          "fact": "",
+          "gate": "ms_new_hazard"
+        }
+      },
+      "body": "Check the other indoor units with their own remotes or the app. On a system like this, the outdoor unit can’t heat one room and cool another at the same time. Auto can switch a unit to the opposite mode on its own.\n\nIf someone at home is at risk from the cold and there is no working heat, choose that first."
+    },
+    "ms.zone.isolate_head": {
+      "title": "Put every indoor unit on the same mode",
+      "section": "Put every indoor unit on the same mode",
+      "caution": "Use only each unit’s own remote or the app. Don’t change addresses, priority, or settings on the outdoor unit.",
+      "notice": "full",
+      "safetyGate": true,
+      "options": {
+        "cold_exposure_risk": {
+          "id": "cold_exposure_risk",
+          "label": "",
+          "hint": "Get them warm first.",
+          "next": "@ms_cold_exposure",
+          "fact": "",
+          "gate": "cold_exposure_911"
+        },
+        "zone_cold_or_fragile": {
+          "id": "zone_cold_or_fragile",
+          "label": "I’d need to turn a unit Off, and it’s 40 °F (4 °C) or colder or will be in the next few days, or someone at home is an infant, elderly, or medically fragile",
+          "hint": "If you can set every unit to Heat instead, do that and choose another answer.",
+          "next": "@ms_cold_weather_stop",
+          "fact": "Cold guard hit before turning a zone Off.",
+          "gate": "—"
+        },
+        "unit_works_after_matching": {
+          "id": "unit_works_after_matching",
+          "label": "With every unit on one mode, the problem unit works now",
+          "hint": "",
+          "next": "@ms_zone_mode_match_basic",
+          "fact": "User set every indoor unit to the same mode. The problem unit worked after that.",
+          "gate": "—"
+        },
+        "unit_still_problem": {
+          "id": "unit_still_problem",
+          "label": "Every unit is on one mode, and the problem is still there",
+          "hint": "Next: what you’re noticing.",
+          "next": "ms.landing.picker",
+          "fact": "User set every indoor unit to the same mode. The problem remained.",
+          "gate": "—"
+        },
+        "cannot_set_other_units": {
+          "id": "cannot_set_other_units",
+          "label": "I can’t change another unit (locked, a central control, or no remote)",
+          "hint": "",
+          "next": "@ms_zone_control_pro",
+          "fact": "Couldn’t change another indoor unit’s mode.",
+          "gate": "—"
+        },
+        "water_or_ice_now": {
+          "id": "water_or_ice_now",
+          "label": "Now I see water or ice at a unit",
+          "hint": "Electrical safety question first.",
+          "next": "ms.head.water_observe",
+          "fact": "Water or ice seen during the mode check.",
+          "gate": "—"
+        },
+        "not_sure_result": {
+          "id": "not_sure_result",
+          "label": "I’m not sure",
+          "hint": "",
+          "next": "@ms_zone_unsure",
+          "fact": "Mode check result unclear.",
+          "gate": "—"
+        },
+        "hazard_now": {
+          "id": "hazard_now",
+          "label": "",
+          "hint": "",
+          "next": "@ms_hazard_now",
+          "fact": "",
+          "gate": "ms_new_hazard"
+        }
+      },
+      "body": "",
+      "step": {
+        "what": "Sets every indoor unit on this outdoor unit to the same mode as the one with the problem, so the outdoor unit isn’t asked to heat and cool at once.",
+        "caution": "A room you set to Off won’t be heated or cooled until you turn it back on.",
+        "source": "PA Error Code (Multi-Zone Quantum Ultra Series)",
+        "watch": "The unit with the problem, for 10 minutes.",
+        "stop": "Stop and put things back the way you wrote them down if units you didn’t touch start acting up, or a unit won’t change mode. If that doesn’t fix it, call a licensed HVAC professional.",
+        "undo": "pn-v1 §3 verbatim.",
+        "steps": [
+          "Check the mode on every indoor unit that shares this outdoor unit, including rooms no one is using.",
+          "Set each one to the same mode as the unit with the problem: all Heat, or all Cool. If a room shouldn’t run, you can turn that unit Off instead. Don’t set any unit to the opposite mode.",
+          "Don’t use Auto on any of them for now. Auto can pick the opposite mode on its own.",
+          "Wait 10 minutes, then check the unit with the problem."
+        ]
+      }
+    },
+    "ms.context.mode": {
+      "title": "What is the mini-split set to right now?",
+      "section": "What is the mini-split set to right now?",
+      "caution": "Answer from the remote or app. You don’t need to go outside for this.",
+      "notice": "none",
+      "safetyGate": true,
+      "options": {
+        "cold_exposure_risk": {
+          "id": "cold_exposure_risk",
+          "label": "",
+          "hint": "Get them warm first.",
+          "next": "@ms_cold_exposure",
+          "fact": "",
+          "gate": "cold_exposure_911"
+        },
+        "ctx_mode_heat": {
+          "id": "ctx_mode_heat",
+          "label": "Heat, or I want it to heat",
+          "hint": "Next: a look at the outdoor unit from a window or dry ground.",
+          "next": "ms.outdoor.safe_observe",
+          "fact": "Mode answered: heating.",
+          "gate": "—"
+        },
+        "ctx_mode_cool": {
+          "id": "ctx_mode_cool",
+          "label": "Cool or Dry, or I want it to cool",
+          "hint": "Next: a look at the outdoor unit from a window or dry ground.",
+          "next": "ms.outdoor.safe_observe",
+          "fact": "Mode answered: cooling.",
+          "gate": "—"
+        },
+        "ctx_mode_unsure": {
+          "id": "ctx_mode_unsure",
+          "label": "Fan, Auto, Off, or I’m not sure",
+          "hint": "Next: a look at the outdoor unit from a window or dry ground.",
+          "next": "ms.outdoor.safe_observe",
+          "fact": "Mode answered: not sure.",
+          "gate": "—"
+        },
+        "hazard_now": {
+          "id": "hazard_now",
+          "label": "",
+          "hint": "",
+          "next": "@ms_hazard_now",
+          "fact": "",
+          "gate": "ms_new_hazard"
+        }
+      },
+      "body": "Pick what the remote, wall control, or app shows, or what you want it to do.\n\nIf someone at home is at risk from the cold and there is no working heat, choose that first."
+    },
+    "ms.head.shutdown_thaw_check": {
+      "title": "Before you open the cover: is it fully off, with no ice?",
+      "section": "Before you open the cover: is it fully off, with no ice?",
+      "caution": "Remote Off doesn’t cut the power. Touch only the filters and the cover.",
+      "notice": "none",
+      "safetyGate": false,
+      "options": {
+        "thaw_off_stopped_no_ice": {
+          "id": "thaw_off_stopped_no_ice",
+          "label": "It’s Off, the fan has stopped, the louver is closed, and I see no ice, frost, or water",
+          "hint": "Clean the filters next.",
+          "next": "ms.head.filter_clean",
+          "fact": "User turned the unit Off with the remote. The fan stopped and the louver closed. No ice, frost, or water seen.",
+          "gate": "—"
+        },
+        "thaw_ice_or_frost": {
+          "id": "thaw_ice_or_frost",
+          "label": "I see ice or frost on the front or in the air outlet",
+          "hint": "Stop-and-thaw steps next.",
+          "next": "ms.ice.stop_observe",
+          "fact": "Ice or frost seen on the indoor unit before filter cleaning.",
+          "gate": "—"
+        },
+        "thaw_water_dripping": {
+          "id": "thaw_water_dripping",
+          "label": "Water is dripping from the unit",
+          "hint": "Electrical safety question first.",
+          "next": "ms.head.water_observe",
+          "fact": "Water dripping from the indoor unit before filter cleaning.",
+          "gate": "—"
+        },
+        "thaw_wont_stop": {
+          "id": "thaw_wont_stop",
+          "label": "After a few minutes, it still won’t turn off with the remote, or the fan keeps running",
+          "hint": "A pro checks the controls.",
+          "next": "@ms_no_response_wave1",
+          "fact": "Unit would not stop with the remote before filter cleaning.",
+          "gate": "—"
+        },
+        "thaw_code_showing": {
+          "id": "thaw_code_showing",
+          "label": "A code or blinking lights are showing",
+          "hint": "Write it down first.",
+          "next": "ms.error.capture",
+          "fact": "Code or blinking lights before filter cleaning.",
+          "gate": "—"
+        },
+        "hazard_now": {
+          "id": "hazard_now",
+          "label": "",
+          "hint": "",
+          "next": "@ms_hazard_now",
+          "fact": "",
+          "gate": "ms_new_hazard"
+        }
+      },
+      "body": "1. Turn the unit Off with the remote, wall control, or app.\n2. Wait until it has fully stopped: the fan is still and the louver has closed. This can take a minute or two.\n3. From the floor, look at the front of the unit and the air outlet. Check for ice or frost, and for water dripping.\n\nTurning the unit off with the remote stops it running. It doesn’t cut the power. Don’t open the cover until it has fully stopped."
+    }
+  },
+  "results": {
+    "ms_after_outage_normal_basic": {
+      "tier": "Basic homeowner check",
+      "urgency": "Leave it running",
+      "outcome": "next_step",
+      "source": "maintenance",
+      "reason": "ms_after_outage_normal_basic",
+      "title": "That was a normal start-up wait.",
+      "explanation": "Many mini-splits wait a few minutes after power comes back, then start again with the settings they had.",
+      "actions": [
+        "If you used a timer or schedule, check it’s still set. Outages can clear timers.",
+        "If it stops again, or a code shows, start a new check and choose the code option."
+      ],
+      "avoid": "Don’t reset breakers or switches to hurry it.",
+      "diyTier": "basic"
+    },
+    "ms_sound_normal_basic": {
+      "tier": "Basic homeowner check",
+      "urgency": "Nothing to do",
+      "outcome": "next_step",
+      "source": "maintenance",
+      "reason": "ms_sound_normal_basic",
+      "title": "That sounds like a normal mini-split noise.",
+      "explanation": "Gurgles, light cracks, louver clicks, and defrost whooshes are common and usually fade within a few minutes.",
+      "actions": [
+        "Note when you hear it, and in which mode.",
+        "If it gets louder, changes to grinding or rattling, or comes with a smell, start a new check."
+      ],
+      "avoid": "Don’t open the unit to find the sound.",
+      "diyTier": "basic"
+    },
+    "ms_sound_pro": {
+      "tier": "Professional guidance",
+      "urgency": "Arrange HVAC service",
+      "outcome": "call_pro",
+      "source": "maintenance",
+      "reason": "ms_sound_pro",
+      "title": "That sound needs a pro to look at it.",
+      "explanation": "Grinding, scraping, rattling, squealing, a bang, or a sound that keeps getting louder can mean a part is loose or wearing out inside. A hiss that doesn’t stop can mean a leak.",
+      "actions": [
+        "If it’s a hiss that doesn’t stop, turn the unit off with the remote and open a window.",
+        "Turn the unit off with the remote if the sound is loud or getting worse.",
+        "Tell the pro what the sound is like, when it happens, and the mode.",
+        "If you see sparks or smoke, or smell burning, get out and call 911 from outside."
+      ],
+      "avoid": "Don’t open the unit or keep running it to see if the sound goes away.",
+      "diyTier": "pro_only"
+    },
+    "ms_sound_unsure": {
+      "tier": "More information needed",
+      "urgency": "Listen again, or call a pro",
+      "outcome": "insufficient_info",
+      "source": "maintenance",
+      "reason": "ms_sound_unsure",
+      "title": "Hard to tell from here.",
+      "explanation": "Sounds are hard to sort without hearing them.",
+      "actions": [
+        "Record a short video of the sound on your phone from where you stand, and note the mode.",
+        "Share it with a licensed HVAC pro who works on mini-splits.",
+        "If you see sparks or smoke, or smell burning, get out and call 911 from outside."
+      ],
+      "avoid": "Don’t open the unit or put your ear against it.",
+      "diyTier": "pro_only"
+    },
+    "ms_smell_room_odor_basic": {
+      "tier": "Basic homeowner check",
+      "urgency": "Air it out",
+      "outcome": "next_step",
+      "source": "maintenance",
+      "reason": "ms_smell_room_odor_basic",
+      "title": "It’s likely blowing back a smell from the room.",
+      "explanation": "Mini-splits can soak up cooking, tobacco smoke, pet, or paint smells and blow them back later.",
+      "actions": [
+        "Air out the room, and clean the filters if your manual shows how to do it by hand from the floor.",
+        "Run the unit on Fan for a few hours to help dry and air it out.",
+        "If the smell stays after a week, call a licensed HVAC pro for a cleaning."
+      ],
+      "avoid": "Don’t spray air freshener or cleaner into the unit.",
+      "diyTier": "basic"
+    },
+    "ms_smell_pro": {
+      "tier": "Professional guidance",
+      "urgency": "Arrange HVAC service",
+      "outcome": "call_pro",
+      "source": "maintenance",
+      "reason": "ms_smell_pro",
+      "title": "That smell needs a pro.",
+      "explanation": "A sewage or drain smell can come from a drain problem or other trouble inside the unit.",
+      "actions": [
+        "Turn the unit off with the remote and air out the room.",
+        "If anyone feels dizzy, sick, or short of breath, get everyone out and call 911.",
+        "Tell the pro what it smells like and when it started."
+      ],
+      "avoid": "Don’t spray anything into the unit or try to clean the drain yourself.",
+      "diyTier": "pro_only"
+    },
+    "ms_smell_unsure": {
+      "tier": "More information needed",
+      "urgency": "Check again later, or call a pro",
+      "outcome": "insufficient_info",
+      "source": "maintenance",
+      "reason": "ms_smell_unsure",
+      "title": "Hard to tell what the smell is.",
+      "explanation": "If you can’t place it, a pro can check it in person.",
+      "actions": [
+        "Note when you notice it, in which mode, and if it’s stronger right after it starts.",
+        "Call a licensed HVAC pro who works on mini-splits.",
+        "If it starts to smell like burning or gas, get everyone out and call 911 from outside."
+      ],
+      "avoid": "Don’t open the unit or put your face up to it.",
+      "diyTier": "pro_only"
+    },
+    "ms_remote_fixed_basic": {
+      "tier": "Basic homeowner check",
+      "urgency": "Keep it this way",
+      "outcome": "next_step",
+      "source": "maintenance",
+      "reason": "ms_remote_fixed_basic",
+      "title": "The remote or app is getting through again.",
+      "explanation": "One of the everyday causes, like range, a lock, batteries, or the remote’s signal code, was likely the problem.",
+      "actions": [
+        "Keep the remote in the same room, out of direct sun.",
+        "If you use an app, check its schedules so it doesn’t undo what you set.",
+        "If it stops responding again, start a new check."
+      ],
+      "avoid": "Don’t press buttons on the indoor unit or change settings on the unit itself.",
+      "diyTier": "basic"
+    },
+    "ms_remote_pro": {
+      "tier": "Professional guidance",
+      "urgency": "Arrange service or a replacement remote",
+      "outcome": "call_pro",
+      "source": "maintenance",
+      "reason": "ms_remote_pro",
+      "title": "The remote or unit isn’t responding.",
+      "explanation": "If fresh batteries and the steps in your manual don’t help, the remote, the unit’s receiver, or the unit may need service.",
+      "actions": [
+        "Check your manual or the maker’s site for a replacement remote for your model.",
+        "If the unit still won’t respond, call a licensed HVAC pro who works on mini-splits.",
+        "If a battery leaked, don’t touch it with bare skin. Recycle the old batteries the way your local rules say."
+      ],
+      "avoid": "Don’t open the indoor unit, pry the remote open, or press buttons on the indoor unit.",
+      "diyTier": "pro_only"
+    },
+    "ms_app_support_info": {
+      "tier": "More information needed",
+      "urgency": "Check the app, then its support",
+      "outcome": "insufficient_info",
+      "source": "maintenance",
+      "reason": "ms_app_support_info",
+      "title": "The app is the problem, not the unit.",
+      "explanation": "If the remote works, the unit is getting commands. The app depends on your Wi-Fi and the maker’s service.",
+      "actions": [
+        "Use the remote for now.",
+        "Check that the app and your Wi-Fi are working, and look for app updates.",
+        "Contact the app maker’s support for help with connecting.",
+        "Questions about this check: support@secondwrench.co."
+      ],
+      "avoid": "Don’t open the indoor unit or touch its Wi-Fi module or wiring.",
+      "diyTier": "pro_only"
+    },
+    "ms_feature_fixed_basic": {
+      "tier": "Basic homeowner check",
+      "urgency": "Leave it set this way",
+      "outcome": "next_step",
+      "source": "maintenance",
+      "reason": "ms_feature_fixed_basic",
+      "title": "A setting was holding it back.",
+      "explanation": "Features like Eco, Quiet, Sleep, timers, or a room sensor in the remote can limit how hard it works.",
+      "actions": [
+        "Turn features back on one at a time later if you want them, and see which one makes the difference.",
+        "Keep the remote in the room if it has a room sensor.",
+        "If it stops keeping up again, start a new check."
+      ],
+      "avoid": "Don’t change installer or service settings.",
+      "diyTier": "basic"
+    },
+    "ms_louver_sweat_basic": {
+      "tier": "Basic homeowner check",
+      "urgency": "Change the air direction",
+      "outcome": "next_step",
+      "source": "maintenance",
+      "reason": "ms_louver_sweat_basic",
+      "title": "That’s condensation on the louver or front.",
+      "explanation": "In Cool or Dry on humid days, cold air aimed straight down can make the louver and front sweat and drip.",
+      "actions": [
+        "Use the air-direction button on your remote to aim the air more level, the way your manual shows for cooling.",
+        "Close windows and doors to the room while it cools.",
+        "If water keeps dripping, or drips onto anything that plugs in, start a new check and choose water dripping."
+      ],
+      "avoid": "Don’t move the louver by hand.",
+      "diyTier": "basic"
+    },
+    "ms_feature_unsure": {
+      "tier": "More information needed",
+      "urgency": "Check the manual, or call a pro",
+      "outcome": "insufficient_info",
+      "source": "maintenance",
+      "reason": "ms_feature_unsure",
+      "title": "Hard to tell which features are on.",
+      "explanation": "Remotes and apps name these features differently.",
+      "actions": [
+        "Look at the remote screen and the manual’s list of symbols.",
+        "The maker’s support line can tell you how to turn a feature off for your model.",
+        "If it still won’t keep up, call a licensed HVAC pro who works on mini-splits.",
+        "Questions about this check: support@secondwrench.co."
+      ],
+      "avoid": "Don’t press buttons on the indoor unit or open installer menus.",
+      "diyTier": "pro_only"
+    },
+    "ms_musty_dryout_basic": {
+      "tier": "Basic homeowner check",
+      "urgency": "Dry it out",
+      "outcome": "next_step",
+      "source": "maintenance",
+      "reason": "ms_musty_dryout_basic",
+      "title": "Try drying out the unit.",
+      "explanation": "Moisture left inside after cooling can smell musty, even when the part you can see looks clean.",
+      "actions": [
+        "After cooling, run Fan for a few hours to help dry the inside.",
+        "If your manual shows an owner Auto Clean or self-dry button on the remote, you can use it the way the manual says. Skip any cleaning mode that frosts or freezes the inside of the unit.",
+        "If the smell stays after a week, or you see black spots on the louver or fan, call a licensed HVAC pro for a cleaning."
+      ],
+      "avoid": "Don’t spray cleaner, bleach, or anything else into the unit.",
+      "diyTier": "basic"
+    },
+    "ms_head_inside_damage_pro": {
+      "tier": "Professional guidance",
+      "urgency": "Arrange HVAC service",
+      "outcome": "call_pro",
+      "source": "maintenance",
+      "reason": "ms_head_inside_damage_pro",
+      "title": "Something inside the unit is damaged or loose.",
+      "explanation": "Bent fins, loose parts, or loose wires inside need a pro.",
+      "actions": [
+        "Don’t touch anything inside. Close the filter cover only if it closes easily without touching anything behind it, and leave the unit off with the remote.",
+        "Call a licensed HVAC pro who works on mini-splits, and tell them what you saw.",
+        "If you see sparks or smoke, or smell burning, get out and call 911 from outside."
+      ],
+      "avoid": "Don’t touch, straighten, or push anything back inside the unit.",
+      "diyTier": "pro_only"
+    },
+    "ms_condensate_outside_normal_basic": {
+      "tier": "Basic homeowner check",
+      "urgency": "Nothing to do",
+      "outcome": "next_step",
+      "source": "maintenance",
+      "reason": "ms_condensate_outside_normal_basic",
+      "title": "That drip outside is normal.",
+      "explanation": "When it cools or dries the air, the water it removes drains outside. On dry days there may be little or none.",
+      "actions": [
+        "Keep the drip area clear of things that could block it.",
+        "If water ever shows up at or under the indoor unit, start a new check and choose water dripping."
+      ],
+      "avoid": "Don’t move, dig at, or push anything into the drain hose.",
+      "diyTier": "basic"
+    },
+    "ms_condensate_outlet_pro": {
+      "tier": "Professional guidance",
+      "urgency": "Arrange HVAC service",
+      "outcome": "call_pro",
+      "source": "maintenance",
+      "reason": "ms_condensate_outlet_pro",
+      "title": "The drain outlet needs a pro.",
+      "explanation": "A drain hose that’s damaged or buried, or that drips where people walk or near the foundation, can back up into the indoor unit or make an icy spot.",
+      "actions": [
+        "Keep people off any icy patch. If you normally use ice melt on that walkway, keep it off the drain hose and the outdoor unit.",
+        "Call a licensed HVAC pro to reroute or repair the drain outlet.",
+        "If water shows up at the indoor unit, start a new check and choose water dripping."
+      ],
+      "avoid": "Don’t move, cut, dig at, or push anything into the drain hose.",
+      "diyTier": "pro_only"
+    },
+    "ms_code_status_basic": {
+      "tier": "Basic homeowner check",
+      "urgency": "Follow your manual",
+      "outcome": "next_step",
+      "source": "maintenance",
+      "reason": "ms_code_status_basic",
+      "title": "Your manual says that’s a normal status.",
+      "explanation": "Some lights and codes mean the unit is defrosting, reminding you to clean the filters, or showing a timer was reset.",
+      "actions": [
+        "If it’s a filter reminder or a timer, do what the manual says, using only the remote and the filter steps it shows by hand from the floor.",
+        "If the code doesn’t clear, or a different code shows, start a new check."
+      ],
+      "avoid": "Don’t open the unit, clear codes or error history from any menu, or reset breakers.",
+      "diyTier": "basic"
+    },
+    "ms_error_code_serious_pro": {
+      "tier": "Professional guidance",
+      "urgency": "Arrange HVAC service soon",
+      "outcome": "call_pro",
+      "source": "maintenance",
+      "reason": "ms_error_code_serious_pro",
+      "title": "That code is a pro job.",
+      "explanation": "Codes about refrigerant, the compressor, high pressure, or overheating usually mean the unit stopped itself to protect its parts. A pro needs to find out why.",
+      "actions": [
+        "Turn it off with the remote and leave it off.",
+        "Give the pro the code, what your manual says it means, and the model.",
+        "$BACKUP"
+      ],
+      "avoid": "Don’t turn it off and on again to clear the code, don’t clear its history, and don’t reset breakers.",
+      "diyTier": "pro_only"
+    },
+    "ms_restart_cleared_basic": {
+      "tier": "Basic homeowner check",
+      "urgency": "Keep an eye on it",
+      "outcome": "next_step",
+      "source": "maintenance",
+      "reason": "ms_restart_cleared_basic",
+      "title": "The code cleared after one restart.",
+      "explanation": "It’s running now. If the code comes back, that means something needs a pro.",
+      "actions": [
+        "Keep the code and date you wrote down.",
+        "If the same code shows again, don’t restart it again. Call a licensed HVAC pro and tell them the code."
+      ],
+      "avoid": "Don’t restart it again if the code returns.",
+      "diyTier": "basic"
+    },
+    "ms_error_code_returned_pro": {
+      "tier": "Professional guidance",
+      "urgency": "Arrange HVAC service",
+      "outcome": "call_pro",
+      "source": "maintenance",
+      "reason": "ms_error_code_returned_pro",
+      "title": "The code came back. Leave it for a pro.",
+      "explanation": "A code that comes back after one restart usually means a safety device is doing its job.",
+      "actions": [
+        "Turn it off with the remote and leave it off.",
+        "Give the pro the code, what your manual says, and when it came back.",
+        "$BACKUP"
+      ],
+      "avoid": "Don’t restart it again, and don’t reset breakers.",
+      "diyTier": "pro_only"
+    },
+    "ms_cold_weather_stop": {
+      "tier": "Professional guidance",
+      "urgency": "Call a licensed HVAC pro",
+      "outcome": "call_pro",
+      "source": "maintenance",
+      "reason": "ms_cold_weather_stop",
+      "title": "Leave this one to a pro for now.",
+      "explanation": "",
+      "actions": [
+        "Leave the unit running in Heat if it’s heating at all.",
+        "Call a licensed HVAC pro who works on mini-splits.",
+        "If it’s dangerously cold and anyone is at risk, get them somewhere warm first.",
+        "$BACKUP"
+      ],
+      "avoid": "Don’t turn units off or restart them to test them for now.",
+      "diyTier": "pro_only"
+    },
+    "ms_ask_installer": {
+      "tier": "Professional guidance",
+      "urgency": "Ask your installer",
+      "outcome": "call_pro",
+      "source": "maintenance",
+      "reason": "ms_ask_installer",
+      "title": "Check with your installer first.",
+      "explanation": "",
+      "actions": [
+        "Call the company that installed it. Give them the code and what you saw.",
+        "If you can’t reach them, call a licensed HVAC pro who works on mini-splits."
+      ],
+      "avoid": "Don’t make changes until your installer says it’s OK.",
+      "diyTier": "pro_only"
+    },
+    "ms_zone_mode_match_basic": {
+      "tier": "Basic homeowner check",
+      "urgency": "Keep the units on one mode",
+      "outcome": "next_step",
+      "source": "maintenance",
+      "reason": "ms_zone_mode_match_basic",
+      "title": "Mixed modes were the problem.",
+      "explanation": "The outdoor unit can’t heat one room and cool another at the same time. With every indoor unit on the same mode, it can serve them all.",
+      "actions": [
+        "Keep every indoor unit on the same mode, Heat or Cool, while the system is in use.",
+        "Leave Auto off for now. If you use Auto again, watch whether the units end up on different modes.",
+        "If the problem comes back with every unit on one mode, start a new check."
+      ],
+      "avoid": "Don’t change addresses, priority, or settings on the outdoor unit.",
+      "diyTier": "basic"
+    },
+    "ms_zone_control_pro": {
+      "tier": "Professional guidance",
+      "urgency": "Arrange HVAC service",
+      "outcome": "call_pro",
+      "source": "maintenance",
+      "reason": "ms_zone_control_pro",
+      "title": "Your installer or a pro can set the controls.",
+      "explanation": "Some systems lock modes or use a central control. Changing that is a job for your installer or a licensed HVAC professional.",
+      "actions": [
+        "Leave the units you can’t change as they are.",
+        "Call your installer or a licensed HVAC pro who works on mini-splits. Tell them which units are on which mode and what each one shows."
+      ],
+      "avoid": "Don’t try to unlock settings, enter an access code, or change settings on the outdoor unit.",
+      "diyTier": "pro_only"
+    },
+    "ms_zone_unsure": {
+      "tier": "More information needed",
+      "urgency": "Check again when you can",
+      "outcome": "insufficient_info",
+      "source": "maintenance",
+      "reason": "ms_zone_unsure",
+      "title": "The mode check needs a clearer answer.",
+      "explanation": "It’s fine not to know. Leave the units on one mode for now.",
+      "actions": [
+        "Leave every indoor unit on the same mode, with no Auto, and check again in a few hours.",
+        "Start a new check if you’re still not sure, or call a licensed HVAC pro who works on mini-splits and tell them what each unit shows."
+      ],
+      "avoid": "Don’t change settings on the outdoor unit, and don’t climb to check an indoor unit.",
+      "diyTier": "pro_only"
+    }
+  }
+}

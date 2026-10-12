@@ -1,6 +1,6 @@
-/* Thermostat lane helpers for ts.settings.v0.
- * Look-only settings help. No AI. Mirrors stay off until Commander flips the flag.
- * Legal strings are 02-on-page-copy.md rev 4. LC-15 (`ts_power_breaker_pro`) is new in rev 4.
+/* Thermostat lane helpers for ts.settings.v1.
+ * Fixed rules and model-specific steps. Mirror images and advanced repairs stay off.
+ * Copy source: compose-ts-wave2.js and the audit batch 1 operator rulings.
  */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) {
@@ -184,13 +184,10 @@
       .replace('[page or section]', entry.section)
       .replace('[link]', src.url);
   }
-  function recordRenderable(record, opts) {
+  function textCurrent(record, opts) {
     opts = opts || {};
-    var enabled = Object.prototype.hasOwnProperty.call(opts, 'mirrorsEnabled') ? opts.mirrorsEnabled === true : config().mirrorsEnabled === true;
-    if (!enabled || !record) return false;
-    var serve = opts.serve || serveDoc.TS_MIRROR_SERVE;
+    if (!record) return false;
     var hold = opts.hold || serveDoc.TS_MIRROR_HOLD;
-    if (serve.indexOf(record.id) === -1) return false;
     if (hold.some(function (row) { return row.id === record.id; })) return false;
     if (!record.second_check_by || !record.second_check_on) return false;
     if (record.second_check_by === record.verified_by) return false;
@@ -200,6 +197,12 @@
     if (String(today) > String(record.recheck_due || '')) return false;
     if (openReports[record.id]) return false;
     return true;
+  }
+  function recordRenderable(record, opts) {
+    opts = opts || {};
+    var enabled = Object.prototype.hasOwnProperty.call(opts, 'mirrorsEnabled') ? opts.mirrorsEnabled === true : config().mirrorsEnabled === true;
+    var serve = opts.serve || serveDoc.TS_MIRROR_SERVE;
+    return enabled && textCurrent(record, opts) && serve.indexOf(record.id) !== -1;
   }
   function visibleLines(record) {
     return (record.lines || []).filter(function (line) { return line.verified !== 'unverified'; });
@@ -385,10 +388,19 @@
     state = state || {};
     var ui = data.wave2ui || {};
     if (!option) return false;
+    var current = data.nodes[state.node];
+    var fn = data.fnOf[state.node];
+    // A completion answer is evidence about the step that was actually shown.
+    // Pointers and withheld steps cannot produce that evidence, and installer
+    // steps must be revealed through both acknowledgement controls first.
+    if (current && current.options.indexOf(option) !== -1 && fn && data.v1Fns[fn] && ['done_better', 'no_change', 'worse_put_back'].indexOf(option.id) !== -1) {
+      var cell = data.steps[fn] && data.steps[fn][state.tsModel];
+      if (!cell || cell.kind !== 'text' || cell.generic || cell.held || (fn === 'HPLOCK' && state.tsGeo)) return false;
+      if (cell.installer_menu && !(state.tsWarrantyAck && state.tsLc18)) return false;
+    }
     if (option.requiresFlag === 'stageLatchStepsEnabled' && config().stageLatchStepsEnabled !== true) return false;
-    if (option.requires && state.tsModel && data.steps[option.requires]) {
-      var required = data.steps[option.requires][state.tsModel];
-      if (!required || required.kind === 'not_on_model') return false;
+    if (option.requires && state.tsModel && data.caps && data.caps[state.tsModel]) {
+      if (data.caps[state.tsModel][option.requires] === false) return false;
     }
     if (option.hiddenIf && option.hiddenIf.length) {
       if (ui.showHpAirInWshp && option.id === 'hp_air') return true;
@@ -396,6 +408,25 @@
       if (option.hiddenIf.indexOf('wshp') !== -1 && (state.product === 'wshp' || state.tsLane === 'wshp')) return false;
     }
     return true;
+  }
+  // Follow symptom and guard screens to the first step. A model without that
+  // function can still see the choice, but cannot enter an inapplicable panel.
+  function optionDisabled(option, state, visited) {
+    if (!state || !state.tsModel || !option || !option.next) return false;
+    var target = option.next;
+    var fn = data.fnOf[target];
+    if (fn && data.v1Fns[fn]) {
+      var cell = data.steps[fn] && data.steps[fn][state.tsModel];
+      return !cell || cell.kind === 'not_on_model';
+    }
+    if (target.indexOf('ts.') !== 0 || !data.nodes[target]) return false;
+    visited = (visited || []).concat(target);
+    var choices = data.nodes[target].options.filter(function (op) {
+      return ['hazard_now', 'screen_looks_different', 'installer_setting_came_up', 'cold_home_risk'].indexOf(op.id) === -1 && optionVisible(op, state);
+    });
+    return choices.length > 0 && choices.every(function (op) {
+      return visited.indexOf(op.next) === -1 && optionDisabled(op, state, visited);
+    });
   }
   function renderTsPanel(modelKey, nodeId, opts) {
     opts = opts || {};
@@ -420,10 +451,11 @@
     } else if (listed.length) {
       listed.forEach(function (id) {
         var record = (opts.byId || byId)[id];
-        if (record) (record.our_instruction_text || []).forEach(function (line) { steps.push(line); });
+        if (textCurrent(record, opts)) (record.our_instruction_text || []).forEach(function (line) { steps.push(line); });
       });
     }
-    var generic = !!(cell && cell.generic);
+    var withdrawn = !!(listed.length && !steps.length);
+    var generic = !!(cell && cell.generic) || withdrawn;
     var lc10 = generic ? data.lc.lc10 : '';
     var fallbacks = [];
     if (!served.length && cell) {
@@ -460,7 +492,7 @@
     return {
       fn: fn, modelKey: modelKey, cell: cell, served: blocks, steps: steps,
       lc3: fn ? data.lc.lc3 : '', lc3Plain: plainLc3(fn ? data.lc.lc3 : ''),
-      lc10: lc10, fallbacks: fallbacks, lc6: lc6, generic: generic, html: html, text: text
+      lc10: lc10, fallbacks: fallbacks, lc6: lc6, generic: generic, withdrawn: withdrawn, html: html, text: text
     };
   }
   function fillLc5(modelKey) {
@@ -502,40 +534,55 @@
     if (explanation === res.explanation) return res;
     return Object.assign({}, res, { explanation: explanation });
   }
-  function summary(state, extra, contentVersion) {
+  function summary(state, extra, contentVersion, catalog) {
+    extra = extra || {};
+    catalog = catalog || {};
+    var allNodes = catalog.nodes || data.nodes;
+    var allResults = catalog.results || data.results;
+    var clean = function (value, limit) { return String(value || '').replace(/[\r\n\t]+/g, ' ').trim().slice(0, limit || 140); };
     var facts = (state.answers || []).map(function (row) { return row.fact; }).filter(Boolean);
     var model = data.models[state.tsModel];
-    var complaint = (extra && extra.complaint) || facts.filter(function (fact) { return fact.indexOf('Complaint:') === 0; }).slice(-1)[0] || 'Thermostat concern; see reported observations.';
+    var complaint = clean(extra.complaint) || facts.filter(function (fact) { return fact.indexOf('Complaint:') === 0; }).slice(-1)[0] || 'Thermostat concern; see reported observations.';
     var tried = facts.filter(function (fact) { return fact.indexOf('User ') === 0; });
+    var observations = facts.filter(function (fact, index) {
+      return fact.indexOf('User ') !== 0 && fact.indexOf('Complaint:') !== 0 && fact.indexOf('Thermostat model:') !== 0 &&
+        fact !== 'Thermostat safety check: none of the stops reported.' && facts.indexOf(fact) === index;
+    });
+    var startCleared = (state.answers || []).some(function (row) { return row.node === 'ts.gate.safety_stops' && row.choice === 'ts_none_of_these'; });
     var stopFired = (state.answers || []).some(function (row) {
-      var node = data.nodes[row.node];
+      var node = allNodes[row.node];
       var option = node && node.options.filter(function (item) { return item.id === row.choice; })[0];
       return !!(option && option.gate);
     });
     var fns = [];
     (state.answers || []).concat(state.node ? [{ node: state.node }] : []).forEach(function (row) {
       var fn = data.fnOf[row.node];
-      if (fn && fns.indexOf(fn) === -1) fns.push(fn);
+      var label = fn;
+      if (fn && renderTsPanel(state.tsModel, row.node, { state: state }).withdrawn) label += ' (steps withdrawn)';
+      if (fn && fns.indexOf(label) === -1) fns.push(label);
     });
-    var shown = state.result && data.results[state.result];
+    var shown = state.result && allResults[state.result];
     var earlier = (state.priorResults || []).map(function (id) {
-      var row = data.results[id];
+      var row = allResults[id];
       return row ? 'Earlier result: ' + row.title + ' (' + row.tier + ')' : '';
     }).filter(Boolean);
     var lines = [
       'HOMEOWNER SERVICE NOTE — thermostat observations, not a diagnosis',
       'Thermostat: ' + (model ? model.label : 'unconfirmed model') + ' (homeowner reported).',
-      'Problem: ' + complaint,
+      'Problem: ' + clean(complaint).replace(/^Complaint:\s*/i, ''),
+      extra.began ? 'Began (homeowner supplied): ' + clean(extra.began, 100) : '',
+      extra.model ? 'Model (homeowner supplied, unconfirmed): ' + clean(extra.model, 100) : '',
       tried.length ? 'Tried: ' + tried.join(' ') : '',
-      'Codes or messages on the thermostat: ______________________ (write the exact text)',
-      stopFired ? '' : 'Safety check at start: no CO alarm, gas smell, burning smell, repeat breaker trip, water at the indoor unit, or high-voltage thermostat reported.',
-      'This guide did not ask you to open equipment, touch wires, or change installer settings.',
+      extra.codes ? 'Codes or messages on the thermostat (homeowner supplied): ' + clean(extra.codes) : 'Codes or messages on the thermostat: ______________________ (write the exact text)',
+      observations.length ? 'Reported during this check: ' + observations.join(' ') : '',
+      startCleared && !stopFired ? 'Safety check at start: none of the listed thermostat stops reported. This does not establish current conditions.' : '',
+      'This guide did not ask you to open equipment compartments or touch wires. Any reported settings changes are listed above; they are not independently confirmed.',
       'Guide: Second Wrench thermostat check ts.settings.v1, ' + (contentVersion || '') + ', step panels: ' + (fns.join(', ') || 'none') + '.',
-      state.mode === 'test' ? 'TEST SCENARIO — not an actual equipment report.' : '',
       earlier.join('\n'),
       shown ? 'Result: ' + shown.title + ' (' + shown.tier + ')' : '',
       shown && (shown.outcome === 'call_pro' || shown.tier === 'Emergency' || shown.tier === 'Stop / professional') ? 'Stop reason: ' + (shown.reason || '') : '',
-      'Version: ' + (contentVersion || '')
+      'Version: ' + (contentVersion || ''),
+      state.mode === 'test' ? 'TEST SCENARIO — not an actual equipment report.' : ''
     ];
     return lines.filter(Boolean).join('\n');
   }
@@ -710,13 +757,13 @@
     if (cyclic) fail('TS-G8', 'cycle');
     var other = nodes['sw.intake.other_system'];
     var type = nodes['sw.intake.system_type'];
-    if (!other || other.options.map(function (option) { return option.id; }).join('|') !== 'ductless_mini_split|water_source_geo|thermostat_settings|not_listed') fail('TS-G9', 'other order');
+    if (!other || other.options.map(function (option) { return option.id; }).join('|') !== 'water_heater|boiler|ductless_mini_split|water_source_geo|thermostat_settings|not_listed') fail('TS-G9', 'other order');
     var thermo = other && other.options.filter(function (option) { return option.id === 'thermostat_settings'; })[0];
     if (!thermo || thermo.next !== 'ts.gate.safety_stops') fail('TS-G9', 'thermostat edge');
     if (!type || type.options.map(function (option) { return option.id; }).join('|') !== 'cooling_only_ac|heat_pump|furnace|other_heat_or_ductless|not_sure') fail('TS-G9', 'start ids');
     if (type) type.options.forEach(function (option) { if (String(option.next).indexOf('ts.') === 0) fail('TS-G9', option.id); });
     var door = type && type.options.filter(function (option) { return option.id === 'other_heat_or_ductless'; })[0];
-    if (!door || door.label !== 'Something else: mini-split, geothermal, thermostat, other') fail('TS-G9', 'start label');
+    if (!door || door.label !== 'Something else: water heater, boiler, mini-split, geothermal, thermostat, other') fail('TS-G9', 'start label');
     var mirrorIds = [];
     Object.keys(data.steps).forEach(function (fn) {
       Object.keys(data.steps[fn]).forEach(function (key) {
@@ -1180,6 +1227,41 @@
         if (!res.nextAction || res.nextAction.label !== 'Open the early start steps' || res.nextAction.next !== 'ts.step.recovery') fail('TS-G52', 'next action');
       } else if (actions.length || res.avoid || res.nextAction) fail('TS-G52', id);
     });
+    function choice(id, optionId) {
+      return nodes[id] && nodes[id].options.filter(function (op) { return op.id === optionId; })[0];
+    }
+    var emPred = predsOf(nodes, 'ts.settings.em_aux_heat');
+    if (emPred.join('|') !== 'ts.settings.em_aux_check/eh_no_reason') fail('TS-G53', 'emergency heat intent bypass');
+    ['eh_tech_left_on', 'eh_outdoor_problem', 'not_sure'].forEach(function (id) {
+      if (!choice('ts.settings.em_aux_check', id) || choice('ts.settings.em_aux_check', id).next !== '@ts_eheat_keep_pro') fail('TS-G53', id);
+    });
+    if (!choice('ts.landing.picker', 'landing_em_aux_heat') || choice('ts.landing.picker', 'landing_em_aux_heat').next !== 'ts.settings.em_aux_check') fail('TS-G53', 'landing');
+    ['ts.landing.picker', 'ts.power.blank_screen'].forEach(function (id) {
+      if (nodes[id].body.indexOf('refrigerant leak alarm') === -1) fail('TS-G55', id);
+    });
+    var oldNest = choice('ts.model.nest', 'nest_lt12');
+    if (!oldNest || oldNest.next !== '@ts_nest_unsupported' || data.modelOf.nest_lt12) fail('TS-G56', 'unsupported Nest');
+    if (/or older/i.test(JSON.stringify([data.models['NEST-LT3'], choice('ts.model.nest', 'nest_lt3')]))) fail('TS-G56', 'Nest scope');
+    var t9 = data.steps.BATT['HW-T9'];
+    var t9Text = 'The thermostat itself has no batteries. It gets its power from the heating and cooling system. If you have wireless room sensors, they use AAA batteries. If the thermostat shows LOW SENSOR BATTERIES or asks you to change the batteries in a sensor, put 2 fresh AAA alkaline batteries in the sensor it names.';
+    if (!t9 || t9.text !== t9Text || !/p\.30/.test(JSON.stringify(t9.fallback)) || !/p\.26/.test(JSON.stringify(t9.fallback))) fail('TS-G57a', 'T9 sensor batteries and citations');
+    [['ts.landing.picker', 'landing_wifi', 'wifi'], ['ts.alert.capture', 'code_wifi', 'wifi'], ['ts.power.battery', 'battery_fixed', 'batt']].forEach(function (row) {
+      var op = choice(row[0], row[1]);
+      if (!op || op.requires !== row[2]) fail('TS-G58', row.join('/'));
+      V1_MODELS.forEach(function (model) {
+        var expected = row[2] === 'wifi' ? ['HW-FP6', 'HW-RTH76', 'HW-TH4', 'HW-X2P'].indexOf(model) === -1 : ['HW-T5', 'HW-T6', 'AMZ-AST', 'NEST-LT4', 'NEST-LT3', 'NEST-E'].indexOf(model) === -1;
+        if (!data.caps || !data.caps[model] || data.caps[model][row[2]] !== expected || optionVisible(op, { tsModel: model }) !== expected) fail('TS-G58', model + '/' + row[1]);
+      });
+    });
+    collectCopy(nodes, results).forEach(function (pair) {
+      if (/\bOff\b[^.]*\b(nothing runs|nothing will run|won’t run at all|everything stops)\b|In Off, nothing/i.test(pair[1])) fail('TS-G59', pair[0]);
+    });
+    if (data.lc.lc5.indexOf('doesn’t send us anything') === -1 || data.lc.lc5.indexOf('support@secondwrench.co') === -1 || /We’ll review/i.test(data.lc.lc5)) fail('TS-G60', 'feedback promise');
+    Object.keys(nodes).filter(function (id) { return id.indexOf('ts.') === 0; }).forEach(function (id) {
+      nodes[id].options.forEach(function (op) {
+        if (/User checked|checked batteries|saw the furnace switch on/i.test(op.fact || '') && !/I checked|I saw|I replaced/.test(op.label)) fail('TS-G61', id + '/' + op.id);
+      });
+    });
     var pl35 = 'Call a licensed HVAC professional with EPA 608 capability from outside the affected area and follow the equipment\u2019s alarm instructions. For breathing trouble or immediate danger, call 911.';
     var leak = results.ts_refrigerant_alarm;
     var leakOpt = nodes['ts.gate.safety_stops'] && nodes['ts.gate.safety_stops'].options.filter(function (option) { return option.id === 'refrigerant_alarm'; })[0];
@@ -1187,6 +1269,14 @@
     if (!leak || leak.actions[1] !== pl35 || leak.urgency !== 'Leave the affected area' || leak.outcome !== 'emergency_exit') fail('TS-G54', 'result');
     if (!leakOpt || leakOpt.next !== '@ts_refrigerant_alarm' || leakOpt.gate !== 'ts_refrigerant_alarm') fail('TS-G54', 'gate');
     if (!leakCode || leakCode.next !== '@ts_refrigerant_alarm' || leakCode.hint !== 'Leave the area. Don\u2019t reset it.') fail('TS-G54', 'code');
+    ['title', 'explanation', 'actions', 'avoid'].forEach(function (key) {
+      if (JSON.stringify(leak[key]) !== JSON.stringify(results.leak[key])) fail('TS-G54', 'shared leak ' + key);
+    });
+    Object.keys(nodes).filter(function (id) { return id.indexOf('ts.') === 0; }).forEach(function (id) {
+      var hazard = choice(id, 'hazard_now');
+      if (!hazard || hazard.label.indexOf('refrigerant leak alarm') === -1) fail('TS-G54', id);
+    });
+    if (leak.continueTo || leak.stepPanel) fail('TS-G55', 'alarm continuation');
     var t6Power = 'This model has no batteries. It gets its power from the heating and cooling system.';
     ['POWER', 'BATT'].forEach(function (fn) {
       var cell = data.steps[fn] && data.steps[fn]['HW-T6'];
@@ -1201,11 +1291,11 @@
         if (option.requires !== fn) fail('TS-G58', id + '/' + option.id);
         V1_MODELS.forEach(function (model) {
           var cell = data.steps[fn][model];
-          if (cell && cell.kind === 'not_on_model' && optionVisible(option, { tsModel: model })) fail('TS-G58', model + ' ' + option.id);
+          if (cell && cell.kind === 'not_on_model' && !optionDisabled(option, { tsModel: model })) fail('TS-G58', model + ' ' + option.id);
         });
       });
     });
-    var ten = /10 minutes/;
+    var ten = /10[- ]minutes?/;
     collectCopy(nodes, results).forEach(function (pair) {
       if (ten.test(String(pair[1] || ''))) fail('TS-G62', pair[0]);
     });
@@ -1214,7 +1304,8 @@
       [nodes['ts.settings.mode_setpoint'] && nodes['ts.settings.mode_setpoint'].body, '3. Wait 5 minutes.']
     ];
     waitSlots.forEach(function (pair) { if (!pair[0] || pair[0].indexOf(pair[1]) === -1) fail('TS-G62', pair[1]); });
-    if ((data.steps.WAIT['AMZ-AST'].text || '').indexOf('Allow 5 to 7 minutes.') === -1) fail('TS-G62', 'amazon');
+    if (nodes['ts.status.wait_delay'].title !== 'Give it a few minutes') fail('TS-G62', 'wait title');
+    if (data.steps.WAIT['AMZ-AST'].text !== 'A flashing yellow status light can mean the system is in its protection wait. Allow 5 to 7 minutes.') fail('TS-G62', 'amazon');
     var coldNodes = ['ts.settings.em_aux_check', 'ts.settings.mode_setpoint', 'ts.power.blank_screen', 'ts.status.wait_delay', 'ts.settings.em_aux_heat', 'ts.diag.cycling', 'ts.diag.heat_pump_aux', 'ts.diag.recovery'];
     var coldLabel = 'The house is getting cold, and someone at home is at risk from the cold (an infant, an older adult, or someone who is ill or medically fragile)';
     coldNodes.forEach(function (id) {
@@ -1227,6 +1318,7 @@
     if (!hwT6 || hwT6.label !== 'T6 Pro Smart (TH6320WF or TH6220WF)' || hwT6.fact !== 'Thermostat model: Honeywell Home T6 Pro Smart (TH6320WF or TH6220WF).') fail('TS-G65', 'label');
     if (!data.models['HW-T6'] || data.models['HW-T6'].label !== 'Honeywell Home T6 Pro Smart (TH6320WF or TH6220WF)') fail('TS-G65', 'model');
     if (!hwOther || hwOther.label !== 'Another T6 Pro model' || hwOther.next !== '@ts_model_not_in_v0' || hwOther.fact !== 'Honeywell T6 Pro model outside the checked models.') fail('TS-G65', 'other');
+    if (data.steps.POWER['HW-T6'].fallback[0].section !== 'p.29') fail('TS-G65', 'T6 power citation');
     if ((data.steps.BATT['HW-T9'].text || '').indexOf('LOW SENSOR BATTERIES') === -1) fail('TS-G65', 't9');
     var lc23tail = 'If a step would take you to one of these, stop. If a screen asks you to enter a password or access code, stop. That menu is for installers.';
     var tailLabel = 'A step or screen is asking about a setting on the \u201CDon\u2019t change these\u201D list, or asks me to enter a password or access code';
@@ -1269,6 +1361,7 @@
     tsMirrorRenderable: recordRenderable,
     renderTsPanel: renderTsPanel,
     optionVisible: optionVisible,
+    optionDisabled: optionDisabled,
     presentResult: presentResult,
     summary: summary,
     fillLc5: fillLc5,

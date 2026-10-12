@@ -18,7 +18,7 @@ const MODELS = data.modelKeys.slice();
 const T6ISU = 'https://customer.resideo.com/resources/techlit/TechLitDocuments/33-00000s/33-00392EFS.pdf';
 const T5PD = 'https://customer.resideo.com/resources/techlit/TechLitDocuments/33-00000s/33-00474.pdf';
 const FPISU = 'https://customer.resideo.com/resources/techlit/TechLitDocuments/69-0000s/69-1920EFS.pdf';
-const THISU = 'https://customer.resideo.com/resources/techlit/TechLitDocuments/69-0000s/69-1849.pdf';
+const THISU = 'https://customer.resideo.com/resources/techlit/TechLitDocuments/69-0000s/69-1928EFS.pdf';
 const RTH = 'https://customer.resideo.com/resources/techlit/TechLitDocuments/69-0000s/69-2206ES.pdf';
 const TR1 = 'https://www.hvacrschool.com/cycle-rate-settings-a-quick-review/';
 const TR3 = 'https://www.bpa.gov/-/media/Aep/energy-efficiency/residential/residential-ptcs-essentials/notes-on-auxiliary-heat-controls-and-thermostat.pdf';
@@ -74,7 +74,7 @@ Object.assign(data.fallbacks, {
   'F-HW-T5-PD': { title: 'T5+ Smart Product Data 33-00474', url: T5PD },
   'F-HW-T6-ISU': { title: 'T6 Pro Smart Professional Install Guide 33-00392EFS', url: T6ISU },
   'F-HW-FP6-ISU': { title: 'FocusPRO TH6000 Installation Guide 69-1920EFS', url: FPISU },
-  'F-HW-TH4-ISU': { title: 'PRO 4000 Series Installation Guide 69-1849', url: THISU },
+  'F-HW-TH4-ISU': { title: 'PRO 4000 Series Installation Instructions 69-1928EFS (TH4110D / TH4210D)', url: THISU },
   'F-HW-RTH-ISU': { title: 'RTH7600 Installation Instructions 69-2206ES', url: RTH },
   'F-NEST-HPB': { title: 'Google Nest Help: Heat Pump Balance', url: 'https://support.google.com/googlenest/answer/9248719' },
   'F-NEST-EARLY': { title: 'Google Nest Help: Early-On', url: 'https://support.google.com/googlenest/answer/9246532' },
@@ -177,9 +177,9 @@ function homeOpts(resultId) {
 
 const RECOV_TAIL = ' Write down On or Off first. **Watch:** the next few mornings. On: the house should be at temperature at the schedule time, and the screen may show Recovery or In Recovery before it. Off: it should start at the schedule time. It may take a few days to learn. **Stop** if the house stays cold or the bill rises; put it back.';
 const SETBACK_LEAD = 'If you have a heat pump, make the night or away change smaller, one step at a time. Let early start do the work instead of moving the morning time earlier. Watch a few mornings: backup heat should come on less, and the house should be warm on time. If mornings get cold, put your old schedule back. ';
-const CPH_T6_RULES = '4. Too many short cycles: lower it by 1. Furnace or boiler only: if the room swings or overshoots, you can raise the heat number by 1. Never raise 365 or 366. ';
-const CPH_FP_RULES = '4. Too many short cycles: lower it by 1. Furnace or boiler only (Function 5, or Function 6 when it\u2019s a second furnace or boiler stage, not heat pump backup heat): if the room swings or overshoots, you can raise that number by 1. Never raise Function 9 or 10. On a heat pump, leave Functions 6 and 8 alone. ';
-const CPH_TH_RULES = '4. Too many short cycles: lower it by 1. Furnace or boiler only (Function 5 on a TH4110D): if the room swings or overshoots, you can raise that number by 1. Never raise Function 9. On a TH4210D, leave Functions 6 and 8 alone. ';
+const CPH_T6_RULES = '4. Too many short cycles: lower it by 1 only if it is above the manual\u2019s minimum. Furnace or boiler only: if the room swings or overshoots, you can raise the heat number by 1 only if it is below the manual\u2019s maximum. Never raise 365 or 366. Leave a setting at its limit unchanged. ';
+const CPH_FP_RULES = '4. Too many short cycles: lower it by 1 only if it is above the manual\u2019s minimum. Furnace or boiler only (Function 5, or Function 6 when it\u2019s a second furnace or boiler stage, not heat pump backup heat): if the room swings or overshoots, you can raise that number by 1 only if it is below the manual\u2019s maximum. Never raise Function 9 or 10. On a heat pump, leave Functions 6 and 8 alone. Leave a setting at its limit unchanged. ';
+const CPH_TH_RULES = '4. Too many short cycles: lower it by 1 only if it is above the manual\u2019s minimum. Furnace or boiler only (Function 5 on a TH4110D): if the room swings or overshoots, you can raise that number by 1 only if it is below the manual\u2019s maximum. Never raise Function 9. On a TH4210D, leave Functions 6 and 8 alone. Leave a setting at its limit unchanged. ';
 const CPH_WATCH = '**Watch:** count starts for an hour in similar weather, before and after; give it a day. **Stop** if it starts more often, the room gets uncomfortable, or nothing changes after two days. Put back your numbers.';
 
 function blankCell(model, section) {
@@ -219,14 +219,20 @@ steps.DIFF['ECB-PRM'] = textCell('ECB-PRM', diffEcb, { installer_menu: true, fn:
 ['HW-T5', 'HW-T6', 'HW-FP6', 'HW-TH4', 'HW-RTH76'].forEach(function (model) { steps.DIFF[model] = pointerCell(model, diffPointer, 'manual'); });
 MODELS.forEach(function (model) { if (!steps.DIFF[model]) steps.DIFF[model] = blankCell(model, 'manual'); });
 
-const cphT6 = '1. Press and hold **Menu** for 5 seconds, then choose ISU. 2. Furnace or boiler: step to ISU **370 Heat 1 CPH** (and **371 Heat 2 CPH** for a second stage). Heat pump heating or cooling: ISU **365 Cool 1 CPH** (and **366**). Backup heat: **375 Aux Heat CPH**. Change nothing else. 3. Write down each number you\u2019ll change. ' + CPH_T6_RULES + '5. Save and go home. ' + CPH_WATCH;
-const cphFp = '1. Press and hold **\u25B2** and **FAN** until the display changes. 2. Press **NEXT** to Function **5** (Stage 1 heat cycle rate); 6 is stage 2 or aux, 8 is emergency heat; **9** and **10** are compressor. Skip Functions 1, 2, 3 and 15. 3. Write down the number. ' + CPH_FP_RULES + '5. Press **DONE**. ' + CPH_WATCH;
-const cphTh = '1. Press and hold **\u25B2** and **\u25BC** until the display changes. 2. Press \u25B2 to reach Function **5** (Heating cycle rate, TH4110D), **6** (Auxiliary heat, TH4210D), **8** (Emergency heat, TH4210D), or **9** (Compressor). Skip Functions 1 and 15. 3. Write down the number. ' + CPH_TH_RULES + '5. Hold \u25B2 and \u25BC to save and exit. ' + CPH_WATCH;
-const cphCap = [cap26('1 CPH', '12 CPH (heat) and 1 CPH to 6 CPH (compressor)', 'T6 Pro Smart Professional Install Guide 33-00392EFS', 'PDF p.14', T6ISU), cap27('3 CPH for furnace heat', 'HVAC School, Cycle Rate Settings', TR1), cap27('1 CPH for heat pump compressor, only if your current number is higher', 'HVAC School, Cycle Rate Settings', TR1)];
-const cphNums = [{ label: 'MANUAL', item: 'heat CPH', low: 1, high: 12 }, { label: 'MANUAL', item: 'compressor CPH', low: 1, high: 6 }, { label: 'TRADE', item: 'furnace heat CPH', value: 3, low: 1, high: 12 }, { label: 'TRADE', item: 'heat pump compressor CPH', value: 1, low: 1, high: 6, lowerOnly: true }];
-steps.CPH['HW-T6'] = textCell('HW-T6', cphT6, { installer_menu: true, fn: 'CPH', settingName: 'the cycle rate', section: 'PDF p.14', entry: 'Menu', captions: cphCap, num_sources: cphNums });
-steps.CPH['HW-FP6'] = textCell('HW-FP6', cphFp, { installer_menu: true, fn: 'CPH', settingName: 'the cycle rate', section: 'PDF p.6', entry: 'FAN', captions: cphCap, num_sources: cphNums });
-steps.CPH['HW-TH4'] = textCell('HW-TH4', cphTh, { installer_menu: true, fn: 'CPH', settingName: 'the cycle rate', section: 'PDF p.10', entry: 'display changes', captions: cphCap, num_sources: cphNums });
+const cphT6 = '1. Press and hold **Menu** for 5 seconds, then choose ISU. 2. Furnace or boiler: step to ISU **370 Heat 1 CPH** (and **371 Heat 2 CPH** only for a known second stage). Heat pump compressor heating or cooling: ISU **365 Cool 1 CPH** (and **366** only for a known second compressor stage). Leave **375 Aux Heat CPH** and **378 EM Heat CPH** alone. Change nothing else. 3. Write down the number before changing it. ' + CPH_T6_RULES + '5. Save and go home. ' + CPH_WATCH;
+const cphFp = '1. Press and hold **\u25B2** and **FAN** until the display changes. 2. Press **NEXT** to the function for the equipment you already know: **5** is conventional stage 1 heat; **6** is conventional stage 2 heat on a TH6220D, or heat-pump auxiliary heat. **9** is stage 1 compressor; **10** is stage 2 compressor on a TH6220D. On a heat pump, leave **6** and **8** (Emergency Heat) alone. Do not change Functions 1, 2, 3 or 15, and do not enter the installer system test. 3. Write down the function and number. The \u25B2 and \u25BC buttons change that setting. ' + CPH_FP_RULES + '5. Press **DONE**. ' + CPH_WATCH;
+const cphTh = '1. Press and hold **\u25B2** and **\u25BC** until the display changes. 2. Press \u25B2 to reach Function **5** (conventional heating cycle rate, TH4110D only) or **9** (compressor). On a TH4210D, **6** is auxiliary heat and **8** is Emergency Heat; leave both alone. Do not change Functions 1 or 15. Do not keep advancing past the setup functions into the installer system test. 3. Write down the function and number; \u25BC changes the setting and \u25B2 advances to another function. ' + CPH_TH_RULES + '5. Hold \u25B2 and \u25BC to save and exit. ' + CPH_WATCH;
+// The same numeric ranges appear in these manuals, but each model must cite
+// its own table. The older 69-1849 covers TH4110D only, not TH4210D.
+function cphCaptions(title, pages, url) {
+  return [cap26('1 CPH', '12 CPH (heat) and 1 CPH to 6 CPH (compressor)', title, pages, url).replace(CHECKED, 'October 12, 2026'),
+    'These are available settings, not a target for your equipment. The manual lists different defaults for different equipment types. Do not replace your recorded setting with a generic starting value.',
+    'The one-step adjustment and observation period are Second Wrench operator guidance. Observed starts vary with load; a CPH setting does not promise that many starts in every hour.'];
+}
+const cphNums = [{ label: 'MANUAL', item: 'heat CPH', low: 1, high: 12 }, { label: 'MANUAL', item: 'compressor CPH', low: 1, high: 6 }];
+steps.CPH['HW-T6'] = textCell('HW-T6', cphT6, { installer_menu: true, fn: 'CPH', settingName: 'the cycle rate', section: 'PDF pp.14–15', entry: 'Menu', captions: cphCaptions('T6 Pro Smart Professional Install Guide 33-00392EFS', 'PDF pp.14–15', T6ISU), num_sources: cphNums });
+steps.CPH['HW-FP6'] = textCell('HW-FP6', cphFp, { installer_menu: true, fn: 'CPH', settingName: 'the cycle rate', section: 'PDF pp.6–7', entry: 'FAN', captions: cphCaptions('FocusPRO TH6000 Installation Guide 69-1920EFS-03', 'PDF pp.6–7', FPISU), num_sources: cphNums });
+steps.CPH['HW-TH4'] = textCell('HW-TH4', cphTh, { installer_menu: true, fn: 'CPH', settingName: 'the cycle rate', section: 'PDF p.5', entry: 'display changes', captions: cphCaptions('PRO 4000 Series Installation Instructions 69-1928EFS', 'PDF p.5', THISU), num_sources: cphNums });
 steps.CPH['HW-RTH76'] = Object.assign(blankCell('HW-RTH76', 'PDF p.20'), { held_text: 'RTH7600 installer entry: button labels to be confirmed on the mirror check.' });
 steps.CPH['ECB-PRM'] = pointerCell('ECB-PRM', 'ecobee doesn\u2019t have a cycles-per-hour setting. Its Heat and Cool Differential settings do this job.', 'p.109');
 MODELS.forEach(function (model) { if (!steps.CPH[model]) steps.CPH[model] = blankCell(model, 'manual'); });
@@ -250,7 +256,7 @@ recov('NEST-E', 'Nest app > Settings > thermostat > **Early-On** (or ring > Sett
 recov('HW-T6', '**Menu** > arrows to **RECOVERY** > **Select** > **RECOVERY ON** or **RECOVERY OFF** > **Done**.', { installer_menu: false, fn: 'RECOV', settingName: 'recovery', section: 'user guide p.22', fallback: fb('HW-T6', 'p.22', 'F-HW-T6') });
 recov('HW-T9', 'Menu > **Advanced setup** > **modify configuration** > NEXT to ISU **4090 Adaptive Intelligent Recovery** > Yes or No > **Done**. Change nothing else.', { installer_menu: true, fn: 'RECOV', settingName: 'recovery', section: 'p.22', entry: 'Advanced setup' });
 recov('HW-FP6', 'Hold **\u25B2** + **FAN**; NEXT to Function **13**: 1 On, 0 Off; DONE.', { installer_menu: true, fn: 'RECOV', settingName: 'recovery', section: 'PDF p.8', entry: 'FAN' });
-recov('HW-TH4', 'Hold **\u25B2** + **\u25BC**; \u25B2 to Function **13**: 1 On, 0 Off; hold both to save.', { installer_menu: true, fn: 'RECOV', settingName: 'recovery', section: 'PDF p.12', entry: 'display changes' });
+recov('HW-TH4', 'Hold **\u25B2** + **\u25BC**; \u25B2 to Function **13**: 1 On, 0 Off; \u25BC changes the setting. Hold both to save; do not advance into the installer system test.', { installer_menu: true, fn: 'RECOV', settingName: 'recovery', section: 'PDF p.5', entry: 'display changes' });
 recov('HW-X2P', 'Hold bottom-left + **\u2191** 5 seconds; ISU **4090 Smart Response**: 1 Yes, 0 No.', { installer_menu: true, fn: 'RECOV', settingName: 'recovery', section: 'p.12', entry: 'bottom-left' });
 steps.RECOV['HW-RTH76'] = Object.assign(blankCell('HW-RTH76', 'PDF p.22'), { held_text: 'RTH7600 recovery entry: button labels to be confirmed on the mirror check.' });
 MODELS.forEach(function (model) { if (!steps.RECOV[model]) steps.RECOV[model] = blankCell(model, 'manual'); });
@@ -711,6 +717,19 @@ const t6Power = 'This model has no batteries. It gets its power from the heating
   cell.fallback = [{ id: 'F-HW-T6', section: 'p.29' }];
 });
 data.steps.BATT['HW-T9'].text = u('The thermostat itself has no batteries. It gets its power from the heating and cooling system. If you have wireless room sensors, they use AAA batteries. If the thermostat shows LOW SENSOR BATTERIES or asks you to change the batteries in a sensor, put 2 fresh AAA alkaline batteries in the sensor it names.');
+data.steps.BATT['HW-T9'].fallback = [{ id: 'F-HW-T9', section: 'p.30 and p.26' }];
+data.caps = {};
+MODELS.forEach(function (model) {
+  data.caps[model] = {
+    wifi: ['HW-FP6', 'HW-RTH76', 'HW-TH4', 'HW-X2P'].indexOf(model) === -1,
+    batt: ['HW-T5', 'HW-T6', 'AMZ-AST', 'NEST-LT4', 'NEST-LT3', 'NEST-E'].indexOf(model) === -1
+  };
+});
+[['ts.landing.picker', 'landing_wifi', 'wifi'], ['ts.alert.capture', 'code_wifi', 'wifi'], ['ts.power.battery', 'battery_fixed', 'batt']].forEach(function (row) {
+  const option = data.nodes[row[0]].options.find(function (op) { return op.id === row[1]; });
+  if (!option) throw new Error('Missing capability choice: ' + row.join('/'));
+  option.requires = row[2];
+});
 const fnByNode = {};
 Object.keys(data.v1Fns).forEach(function (fn) { fnByNode[data.v1Fns[fn]] = fn; });
 Object.keys(data.nodes).forEach(function (id) {

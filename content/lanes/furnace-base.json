@@ -1,0 +1,744 @@
+{
+  "nodes": {
+    "fn.gate.combustion_co": {
+      "section": "Furnace safety",
+      "title": "Is any of this true right now, or have you already noticed it?",
+      "body": "Answer from what you already know. Don't open any furnace door or panel, and don't go look at the flame, to answer this.\n\nNot sure you have a gas furnace? Answer for the whole home.\n\nFor immediate danger, get outside and call 911.",
+      "options": [
+        {
+          "id": "gas_smell_or_unknown_smell",
+          "label": "Gas or rotten-egg smell, or a strong smell I can't place",
+          "next": "@fn_gas_smell",
+          "hint": "Leave now. Call from outside.",
+          "fact": "Gas, rotten-egg, or unknown strong smell reported.",
+          "gate": "gas_co"
+        },
+        {
+          "id": "co_alarm_or_symptoms",
+          "label": "CO alarm sounding, or headache, dizziness, nausea, or drowsiness, especially in more than one person or pet",
+          "next": "@fn_co_alarm",
+          "hint": "Get to fresh air. Call from outside.",
+          "fact": "CO alarm or possible CO symptoms reported.",
+          "gate": "co_alarm_or_symptoms"
+        },
+        {
+          "id": "rollout_soot_scorch",
+          "label": "Soot or scorch marks on the furnace, or flame where it shouldn't be",
+          "next": "@fn_rollout_soot",
+          "hint": "Stop using the furnace.",
+          "fact": "Soot, scorch marks, or flame outside the burner area reported.",
+          "gate": "flame_rollout_soot"
+        },
+        {
+          "id": "burning_smoke_sparks",
+          "label": "Burning-plastic or electrical smell, smoke, or sparks",
+          "next": "@fn_burning_sparks",
+          "hint": "Move away. Call 911.",
+          "fact": "Burning or electrical smell, smoke, or sparks reported.",
+          "gate": "smoke_fire_sparks_burn"
+        },
+        {
+          "id": "cold_exposure_risk",
+          "label": "Someone's at risk from the cold (a baby, an older adult, or a medical need) ",
+          "next": "@fn_cold_exposure",
+          "hint": "Get them warm first.",
+          "fact": "Someone at risk from the cold .",
+          "gate": "cold_exposure_911"
+        },
+        {
+          "id": "flame_yellow_orange",
+          "label": "I've already noticed the flame looks yellow or orange",
+          "next": "@fn_flame_abnormal",
+          "hint": "Only if you already saw it. Don't go look.",
+          "fact": "Homeowner already noticed a yellow or orange flame.",
+          "gate": "combustion_flame_abnormal"
+        },
+        {
+          "id": "boom_at_ignition",
+          "label": "A bang or boom when the furnace starts",
+          "next": "@fn_ignition_bang",
+          "hint": "Stop using the furnace.",
+          "fact": "Bang or boom when the furnace starts reported.",
+          "gate": "delayed_ignition_bang"
+        },
+        {
+          "id": "unsure",
+          "label": "I'm not sure",
+          "next": "@fn_gate_unsure",
+          "hint": "Not sure means stop.",
+          "fact": "Homeowner was not sure whether a furnace hazard was present.",
+          "gate": "unsure_hazard"
+        },
+        {
+          "id": "none_of_these",
+          "label": "None of these",
+          "next": {
+            "hpDualFuel": "hp.landing.picker",
+            "default": "fn.intake.system_confirm"
+          },
+          "hint": "Continue with look-only checks.",
+          "fact": "",
+          "gate": null
+        }
+      ],
+      "caution": "",
+      "diyTier": "basic",
+      "safetyGate": true
+    },
+    "fn.intake.system_confirm": {
+      "section": "Your furnace",
+      "title": "What kind of furnace is it?",
+      "body": "Use what you already know, a manual, or a label you can read without opening anything. Don't remove a panel to find out.\n\nPropane counts as gas.",
+      "options": [
+        {
+          "id": "gas_furnace",
+          "label": "Gas furnace (natural gas or propane)",
+          "next": "fn.landing.picker",
+          "hint": "",
+          "fact": "Gas furnace reported.",
+          "gate": null
+        },
+        {
+          "id": "electric_furnace",
+          "label": "Electric furnace (no gas line to it)",
+          "next": "fn.landing.picker",
+          "hint": "",
+          "fact": "Electric furnace reported.",
+          "gate": null
+        },
+        {
+          "id": "furnace_plus_heat_pump",
+          "label": "Gas furnace plus an outdoor heat pump (dual-fuel)",
+          "next": "hp.intake.system_confirm",
+          "hint": "The heat-pump check takes it from here.",
+          "fact": "Gas furnace plus heat pump (dual-fuel) reported.",
+          "gate": null
+        },
+        {
+          "id": "boiler_radiators",
+          "label": "Boiler, radiators, or radiant floor heat",
+          "next": "@fn_out_of_scope_equipment",
+          "hint": "Not covered yet.",
+          "fact": "Boiler or radiant heat reported.",
+          "gate": null
+        },
+        {
+          "id": "oil_or_other",
+          "label": "Oil, wood, pellet, wall or floor furnace, rooftop unit, or something else",
+          "next": "@fn_out_of_scope_equipment",
+          "hint": "Not covered yet.",
+          "fact": "Oil, wood, pellet, wall, floor, rooftop, or other heat reported.",
+          "gate": null
+        },
+        {
+          "id": "mini_split",
+          "label": "Ductless mini-split",
+          "next": "@fn_mini_split_oos",
+          "hint": "Use the mini-split check.",
+          "fact": "Ductless mini-split reported on the furnace check.",
+          "gate": null
+        },
+        {
+          "id": "not_sure",
+          "label": "I'm not sure",
+          "next": "@fn_system_unconfirmed",
+          "hint": "Don't open panels to find out.",
+          "fact": "",
+          "gate": null
+        },
+        {
+          "id": "hazard_now",
+          "label": "New gas smell, CO alarm, refrigerant leak alarm, smoke, sparks, or burning smell right now",
+          "next": "@fn_hazard_now",
+          "hint": "Stop. Get to safety.",
+          "fact": "New hazard reported during the furnace check.",
+          "gate": "fn_new_hazard"
+        }
+      ],
+      "caution": "",
+      "diyTier": "basic",
+      "safetyGate": false
+    },
+    "fn.landing.picker": {
+      "section": "What you noticed",
+      "title": "What's going on with the heat?",
+      "body": "Pick the closest match. If anything new shows up, like a gas smell, CO alarm, smoke, or a burning smell, pick the last choice.",
+      "options": [
+        {
+          "id": "landing_no_heat",
+          "label": "No heat: nothing seems to happen",
+          "next": "fn.tstat.mode_setpoint",
+          "hint": "",
+          "fact": "Complaint: No heat from the furnace.",
+          "gate": null
+        },
+        {
+          "id": "landing_cold_air",
+          "label": "Blower runs, but the air isn't warm",
+          "next": "fn.tstat.mode_setpoint",
+          "hint": "",
+          "fact": "Complaint: Blower runs but the air is not warm.",
+          "gate": null
+        },
+        {
+          "id": "landing_not_enough_heat",
+          "label": "Some heat, but not enough",
+          "next": "fn.tstat.mode_setpoint",
+          "hint": "",
+          "fact": "Complaint: Some heat, but not enough.",
+          "gate": null
+        },
+        {
+          "id": "landing_short_cycle",
+          "label": "Starts, then shuts off quickly or keeps retrying",
+          "next": "fn.tstat.mode_setpoint",
+          "hint": "",
+          "fact": "Complaint: Furnace starts, then shuts off quickly.",
+          "gate": null
+        },
+        {
+          "id": "landing_blank_tstat",
+          "label": "Thermostat screen is blank",
+          "next": "ac.tstat.blank.batteries",
+          "hint": "",
+          "fact": "Complaint: Thermostat screen is blank.",
+          "gate": null
+        },
+        {
+          "id": "landing_water_near_furnace",
+          "label": "Water on the floor near the furnace",
+          "next": "ac.gate.water_near_electrical",
+          "hint": "Safety check first.",
+          "fact": "Complaint: Water near the furnace.",
+          "gate": null
+        },
+        {
+          "id": "landing_unusual_noise",
+          "label": "An unusual noise",
+          "next": "ac.noise.hazard_screen",
+          "hint": "Safety check first.",
+          "fact": "Complaint: Unusual noise from the furnace.",
+          "gate": null
+        },
+        {
+          "id": "landing_cooling_problem",
+          "label": "It's actually a cooling problem with my central AC",
+          "next": "ac.cool.intake.system_confirm",
+          "hint": "The central AC check takes it from here.",
+          "fact": "Cooling problem on a furnace home. Switching to the AC check.",
+          "gate": null
+        },
+        {
+          "id": "hazard_now",
+          "label": "New gas smell, CO alarm, refrigerant leak alarm, smoke, sparks, or burning smell right now",
+          "next": "@fn_hazard_now",
+          "hint": "Stop. Get to safety.",
+          "fact": "New hazard reported during the furnace check.",
+          "gate": "fn_new_hazard"
+        }
+      ],
+      "caution": "",
+      "diyTier": "basic",
+      "safetyGate": false
+    },
+    "fn.tstat.mode_setpoint": {
+      "section": "Thermostat",
+      "title": "Is the thermostat calling for heat?",
+      "body": "Look at the thermostat you already use. Don't take it off the wall.\n\n1. Mode is Heat.\n2. Setpoint is a few degrees above the room temperature.\n3. Fan is Auto. On blows room-temperature air between heating cycles, which can feel cold.\n\nSome thermostats wait a few minutes before starting heat.",
+      "options": [
+        {
+          "id": "tstat_not_calling",
+          "label": "It wasn't on Heat, or the setpoint was at or below room temperature",
+          "next": "@fn_tstat_set_heat_basic",
+          "hint": "Easy fix first.",
+          "fact": "Thermostat was not calling for heat.",
+          "gate": null
+        },
+        {
+          "id": "fan_on_not_auto",
+          "label": "Fan was set to On",
+          "next": "@fn_fan_auto_basic",
+          "hint": "Set it to Auto.",
+          "fact": "Thermostat fan was set to On.",
+          "gate": null
+        },
+        {
+          "id": "settings_ok_still_problem",
+          "label": "Heat, setpoint above room, fan Auto, and the problem's still there",
+          "next": "ac.cool.filter.check",
+          "hint": "Next: the filter.",
+          "fact": "Thermostat set to Heat, setpoint above room, fan Auto; problem remains.",
+          "gate": null
+        },
+        {
+          "id": "tstat_blank",
+          "label": "The screen is blank or I can't read it",
+          "next": "ac.tstat.blank.batteries",
+          "hint": "Battery check next.",
+          "fact": "Thermostat screen blank or unreadable.",
+          "gate": null
+        },
+        {
+          "id": "cannot_change_settings",
+          "label": "I can't change the settings",
+          "next": "fn.conclude.call_pro",
+          "hint": "Don't pull it off the wall.",
+          "fact": "Thermostat settings could not be changed.",
+          "gate": null
+        },
+        {
+          "id": "not_sure",
+          "label": "I'm not sure",
+          "next": "@fn_tstat_unsure",
+          "hint": "Don't guess.",
+          "fact": "",
+          "gate": null
+        },
+        {
+          "id": "hazard_now",
+          "label": "New gas smell, CO alarm, refrigerant leak alarm, smoke, sparks, or burning smell right now",
+          "next": "@fn_hazard_now",
+          "hint": "Stop. Get to safety.",
+          "fact": "New hazard reported during the furnace check.",
+          "gate": "fn_new_hazard"
+        }
+      ],
+      "caution": "",
+      "diyTier": "basic",
+      "safetyGate": false
+    },
+    "fn.conclude.call_pro": {
+      "section": "Call a professional",
+      "title": "Time for a licensed pro",
+      "body": "You've done the homeowner checks this guide offers. What's left is inside the furnace, and that's work for a licensed HVAC pro.\n\nDon't press reset buttons, keep restarting the furnace, or open any furnace door or panel. If it's acting strangely, set the thermostat to Off.\n\nThe next screen has a note to share with the pro.",
+      "options": [
+        {
+          "id": "ack_call_pro",
+          "label": "Got it, I'll call a pro",
+          "next": "@fn_call_pro",
+          "hint": "",
+          "fact": "",
+          "gate": null
+        },
+        {
+          "id": "want_diy_anyway",
+          "label": "I want to fix it myself",
+          "next": "@fn_call_pro",
+          "hint": "This guide doesn't offer furnace repairs.",
+          "fact": "",
+          "gate": null
+        },
+        {
+          "id": "hazard_now",
+          "label": "New gas smell, CO alarm, refrigerant leak alarm, smoke, sparks, or burning smell right now",
+          "next": "@fn_hazard_now",
+          "hint": "Stop. Get to safety.",
+          "fact": "New hazard reported during the furnace check.",
+          "gate": "fn_new_hazard"
+        }
+      ],
+      "caution": "",
+      "diyTier": "pro_only",
+      "safetyGate": false
+    }
+  },
+  "results": {
+    "fn_gas_smell": {
+      "tier": "Emergency",
+      "urgency": "Leave now · call from outside",
+      "title": "Leave the house now.",
+      "explanation": "A gas smell comes before anything else.",
+      "actions": [
+        "Get everyone, and pets, out now.",
+        "Don't touch light switches, the thermostat, phones, or anything that could spark while you're inside.",
+        "Don't try to find the leak.",
+        "From outside or a neighbor's, call the gas utility's emergency line or 911.",
+        "Don't go back in until they say you can go back in.",
+        "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+      ],
+      "avoid": "Don't try to shut off the gas yourself.",
+      "source": "gas",
+      "outcome": "emergency_exit",
+      "reason": "gas_co",
+      "diyTier": null,
+      "gate": "gas_co",
+      "continueTo": null
+    },
+    "fn_co_alarm": {
+      "tier": "Emergency",
+      "urgency": "Get to fresh air · call 911",
+      "title": "Get everyone out to fresh air now.",
+      "explanation": "A CO alarm or these symptoms can mean carbon monoxide. You can't see or smell it.",
+      "actions": [
+        "Get everyone, and pets, outside to fresh air now.",
+        "From outside, call 911 or the fire department.",
+        "Don't go back in until responders say you can go back in.",
+        "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+      ],
+      "avoid": "Don't silence the alarm and stay inside, and don't open windows instead of leaving.",
+      "source": "gas",
+      "outcome": "emergency_exit",
+      "reason": "co_alarm_or_symptoms",
+      "diyTier": null,
+      "gate": "co_alarm_or_symptoms",
+      "continueTo": null
+    },
+    "fn_rollout_soot": {
+      "tier": "Emergency",
+      "urgency": "Stop · keep away from the furnace",
+      "title": "Stop using the furnace.",
+      "explanation": "Soot, scorch marks, or flame outside the burner can mean unsafe burning and carbon monoxide.",
+      "actions": [
+        "If you're at the thermostat and smell no gas, set it to Off.",
+        "If you smell gas, a CO alarm sounds, or anyone feels sick, get everyone out and call 911 from outside.",
+        "Call a licensed HVAC pro before using the furnace again.",
+        "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+      ],
+      "avoid": "Don't open, reset, or restart the furnace.",
+      "source": "gas",
+      "outcome": "emergency_exit",
+      "reason": "flame_rollout_soot",
+      "diyTier": null,
+      "gate": "flame_rollout_soot",
+      "continueTo": null
+    },
+    "fn_burning_sparks": {
+      "tier": "Emergency",
+      "urgency": "Move away · call 911",
+      "title": "Stop. Treat this as a fire risk.",
+      "explanation": "Smoke, sparks, or a burning-plastic or electrical smell can't be checked from here.",
+      "actions": [
+        "Get everyone away from the furnace. If there's smoke or fire, leave and call 911 from outside.",
+        "Don't use the furnace until a licensed HVAC pro checks it.",
+        "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+      ],
+      "avoid": "Don't stay to troubleshoot, open the furnace, or flip switches or breakers.",
+      "source": "fire",
+      "outcome": "emergency_exit",
+      "reason": "smoke_fire_sparks_burn",
+      "diyTier": null,
+      "gate": "smoke_fire_sparks_burn",
+      "continueTo": null
+    },
+    "fn_cold_exposure": {
+      "tier": "Emergency",
+      "urgency": "Get warm now · call 911 if needed",
+      "title": "Get the person warm first.",
+      "explanation": "Someone at risk from the cold matters more than the furnace.",
+      "actions": [
+        "If anyone is confused, very drowsy, or hard to wake, call 911 now.",
+        "Otherwise, get them somewhere warm: a neighbor, family, or a warming center.",
+        "Add blankets and dry layers in the meantime.",
+        "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn.",
+        "Call a licensed HVAC pro for the furnace once everyone is warm."
+      ],
+      "avoid": "Don't wait on a furnace repair to get someone warm.",
+      "source": "safety",
+      "outcome": "emergency_exit",
+      "reason": "cold_exposure_911",
+      "diyTier": null,
+      "gate": "cold_exposure_911",
+      "continueTo": null
+    },
+    "fn_flame_abnormal": {
+      "tier": "Stop / professional",
+      "urgency": "Stop · call a pro",
+      "title": "Stop using the furnace and call a pro.",
+      "explanation": "A yellow or orange flame can mean the furnace isn't burning cleanly. That can make carbon monoxide.",
+      "actions": [
+        "Set the thermostat to Off.",
+        "Don't use the furnace until a licensed HVAC pro checks it.",
+        "Make sure your CO alarms work. If one sounds or anyone feels sick, get everyone out and call 911 from outside.",
+        "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+      ],
+      "avoid": "Don't open the furnace or go look at the flame again.",
+      "source": "gas",
+      "outcome": "call_pro",
+      "reason": "combustion_flame_abnormal",
+      "diyTier": null,
+      "gate": "combustion_flame_abnormal",
+      "continueTo": null
+    },
+    "fn_ignition_bang": {
+      "tier": "Stop / professional",
+      "urgency": "Stop · call a pro",
+      "title": "Stop using the furnace and call a pro.",
+      "explanation": "A bang when it starts can mean gas is building up before it lights.",
+      "actions": [
+        "Set the thermostat to Off.",
+        "Don't keep restarting it to see if it happens again.",
+        "Call a licensed HVAC pro. If you smell gas, leave and call from outside.",
+        "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+      ],
+      "avoid": "Don't open the furnace, press reset buttons, or try to relight anything.",
+      "source": "gas",
+      "outcome": "call_pro",
+      "reason": "delayed_ignition_bang",
+      "diyTier": null,
+      "gate": "delayed_ignition_bang",
+      "continueTo": null
+    },
+    "fn_gate_unsure": {
+      "tier": "Stop / professional",
+      "urgency": "Stop here",
+      "title": "Not sure is a good reason to stop.",
+      "explanation": "You don't need to check the furnace to answer. Stopping is the right stop.",
+      "actions": [
+        "If you smell gas or a CO alarm sounds, get everyone out and call 911 from outside.",
+        "If not, set the thermostat to Off if you're already there, and call a licensed HVAC pro.",
+        "Tell them what you noticed.",
+        "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+      ],
+      "avoid": "Don't open the furnace or look at the flame to find out.",
+      "source": "safety",
+      "outcome": "emergency_exit",
+      "reason": "unsure_hazard",
+      "diyTier": null,
+      "gate": "unsure_hazard",
+      "continueTo": null
+    },
+    "fn_hazard_now": {
+      "tier": "Emergency",
+      "urgency": "Stop · get to safety",
+      "title": "A new hazard ends this check.",
+      "explanation": "Safety comes before the furnace.",
+      "actions": [
+        "Gas smell: leave now. Don't touch switches, phones, or anything that could spark. From outside, call the gas utility or 911.",
+        "CO alarm or feeling sick: get everyone and pets out to fresh air. Call 911 from outside.",
+        "Smoke, sparks, or burning smell: get away and call 911 from outside.",
+        "If a refrigerant leak alarm is going off, move people out of the affected area to fresh air without operating switches or creating ignition sources. Don’t reset the alarm, cycle power, or turn off a blower that’s running. Call a licensed HVAC professional from outside the affected area, and for breathing trouble or immediate danger, call 911.",
+        "Don't go back in until responders say you can go back in.",
+        "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+      ],
+      "avoid": "Don't keep troubleshooting.",
+      "source": "safety",
+      "outcome": "emergency_exit",
+      "reason": "fn_new_hazard",
+      "diyTier": null,
+      "gate": "fn_new_hazard",
+      "continueTo": null
+    },
+    "fn_tstat_set_heat_basic": {
+      "tier": "Basic homeowner check",
+      "urgency": "Adjust the thermostat, then wait",
+      "title": "Set Heat and a higher setpoint.",
+      "explanation": "The thermostat wasn't asking for heat. That's an easy fix.",
+      "actions": [
+        "Set the mode to Heat.",
+        "Raise the setpoint a few degrees above the room temperature. Fan on Auto.",
+        "Still no heat after 10 minutes? Start a new check and answer that heat still won't come on.",
+        "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+      ],
+      "avoid": "Don't take the thermostat off the wall or change wiring or installer settings.",
+      "source": "maintenance",
+      "outcome": "next_step",
+      "reason": "fn_tstat_set_heat_basic",
+      "diyTier": "basic",
+      "gate": null,
+      "continueTo": null
+    },
+    "fn_fan_auto_basic": {
+      "tier": "Basic homeowner check",
+      "urgency": "Change one setting, then wait",
+      "title": "Set the fan to Auto.",
+      "explanation": "With the fan on On, the blower runs between heating cycles and moves room-temperature air. That can feel cold.",
+      "actions": [
+        "Set the fan to Auto. Leave the mode on Heat.",
+        "Wait for the next heating cycle. The air should feel warm while the heat runs.",
+        "Still cool air while the heat runs? Start a new check and pick Furnace.",
+        "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+      ],
+      "avoid": "Don't change wiring or installer settings.",
+      "source": "maintenance",
+      "outcome": "next_step",
+      "reason": "fn_fan_auto_basic",
+      "diyTier": "basic",
+      "gate": null,
+      "continueTo": null
+    },
+    "fn_tstat_unsure": {
+      "tier": "More information needed",
+      "urgency": "Check the display first",
+      "title": "Read the thermostat, then try again.",
+      "explanation": "The next step depends on the mode and setpoint.",
+      "actions": [
+        "Read the mode, setpoint, and fan setting on the screen, or check the thermostat manual.",
+        "Start a new check when you can.",
+        "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+      ],
+      "avoid": "Don't take the thermostat off the wall or open the furnace to find out.",
+      "source": "maintenance",
+      "outcome": "insufficient_info",
+      "reason": "fn_tstat_unsure",
+      "diyTier": null,
+      "gate": null,
+      "continueTo": null
+    },
+    "fn_filter_replace_basic": {
+      "tier": "Basic homeowner check",
+      "urgency": "Replace the filter, then retest",
+      "title": "The filter looks dirty or clogged.",
+      "explanation": "A clogged filter chokes airflow, and a furnace can shut itself off.",
+      "actions": [
+        "Put in the right size and type. Match the airflow arrow.",
+        "Put any filter door or cover back fully. Don't run the furnace with it off.",
+        "Set Heat and retest in 15 to 30 minutes. No better? Call a licensed HVAC pro.",
+        "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+      ],
+      "avoid": "Don't run it without a filter or reach into the blower.",
+      "source": "maintenance",
+      "outcome": "next_step",
+      "reason": "fn_filter_dirty_clogged",
+      "diyTier": "basic",
+      "gate": null,
+      "continueTo": null
+    },
+    "fn_filter_missing_basic": {
+      "tier": "Basic homeowner check",
+      "urgency": "Install a filter, then retest",
+      "title": "No filter is installed.",
+      "explanation": "Running without a filter lets dust build up inside the furnace.",
+      "actions": [
+        "Install the right size and type. Match the airflow arrow.",
+        "Put any filter door or cover back fully before running heat.",
+        "Set Heat and retest in 15 to 30 minutes. No better? Call a licensed HVAC pro.",
+        "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+      ],
+      "avoid": "Don't guess the size, stack filters, or force a fit.",
+      "source": "maintenance",
+      "outcome": "next_step",
+      "reason": "fn_filter_missing",
+      "diyTier": "basic",
+      "gate": null,
+      "continueTo": null
+    },
+    "fn_batteries_display_back": {
+      "tier": "Basic homeowner check",
+      "urgency": "Display's back · retest heat",
+      "title": "Fresh batteries brought the screen back.",
+      "explanation": "That doesn't prove the rest of the system is fine.",
+      "actions": [
+        "Set Heat, with the setpoint a few degrees above room temperature and the fan on Auto.",
+        "Give it 5 to 10 minutes. Still no heat? Start a new check and pick Furnace.",
+        "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+      ],
+      "avoid": "Don't pull thermostat wires or open the furnace.",
+      "source": "maintenance",
+      "outcome": "next_step",
+      "reason": "fn_batteries_display_back",
+      "diyTier": "basic",
+      "gate": null,
+      "continueTo": null
+    },
+    "fn_returns_supplies_cleared": {
+      "tier": "Basic homeowner check",
+      "urgency": "Keep vents clear · retest",
+      "title": "A blocked vent was cleared, and airflow's better.",
+      "explanation": "Blocked returns and closed registers can leave rooms short on heat.",
+      "actions": [
+        "Keep returns and registers clear of furniture, rugs, and curtains.",
+        "Stay on Heat and retest in 15 to 30 minutes.",
+        "If rooms are still short on heat, call a licensed HVAC pro.",
+        "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+      ],
+      "avoid": "Don't cut ducts, open a chase, or remove the blower panel.",
+      "source": "maintenance",
+      "outcome": "next_step",
+      "reason": "fn_returns_supplies_cleared",
+      "diyTier": "basic",
+      "gate": null,
+      "continueTo": null
+    },
+    "fn_out_of_scope_equipment": {
+      "tier": "More information needed",
+      "urgency": "Outside this beta",
+      "title": "This guide doesn't cover that heating system yet.",
+      "explanation": "Boilers, radiant floors, oil and wood heat, wall and floor furnaces, and rooftop units aren't covered.",
+      "actions": [
+        "Call a licensed pro who works on your type of system.",
+        "Fuel-burning heat needs working CO alarms. If one sounds, get everyone out and call 911 from outside.",
+        "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+      ],
+      "avoid": "Don't open the equipment or relight anything to find out what's wrong.",
+      "source": "scope",
+      "outcome": "insufficient_info",
+      "reason": "fn_out_of_scope_equipment",
+      "diyTier": null,
+      "gate": null,
+      "continueTo": null
+    },
+    "fn_mini_split_oos": {
+      "tier": "More information needed",
+      "urgency": "Use the mini-split check",
+      "title": "A ductless mini-split has its own check.",
+      "explanation": "This furnace check is for ducted furnaces. Cooling problems on one indoor unit start on the Something else screen.",
+      "actions": [
+        "Go back home, press Start, and choose “Something else: mini-split, geothermal, thermostat, other”, then “Ductless mini-split”.",
+        "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+      ],
+      "avoid": "Don't remove covers to identify the equipment.",
+      "source": "scope",
+      "outcome": "insufficient_info",
+      "reason": "fn_mini_split_oos",
+      "diyTier": null,
+      "gate": null,
+      "continueTo": null
+    },
+    "fn_system_unconfirmed": {
+      "tier": "More information needed",
+      "urgency": "Confirm the furnace first",
+      "title": "We need to know the furnace type.",
+      "explanation": "Gas and electric furnaces need different checks.",
+      "actions": [
+        "Check the manual, a label you can read without opening anything, or ask someone who knows the system.",
+        "Start a new check when you know. If you can't tell, call a licensed HVAC pro.",
+        "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+      ],
+      "avoid": "Don't remove panels or climb to read a label.",
+      "source": "scope",
+      "outcome": "insufficient_info",
+      "reason": "fn_system_unconfirmed",
+      "diyTier": null,
+      "gate": null,
+      "continueTo": null
+    },
+    "fn_call_pro": {
+      "tier": "Professional guidance",
+      "urgency": "Call a licensed HVAC pro",
+      "title": "Call a licensed HVAC pro.",
+      "explanation": "The homeowner checks are done. The next checks are inside the furnace.",
+      "actions": [
+        "If the furnace acts strangely, set the thermostat to Off.",
+        "Tell the pro what you checked. Your note below lists it.",
+        "If you smell gas or a CO alarm sounds, get everyone out and call 911 from outside.",
+        "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+      ],
+      "avoid": "Don't press reset buttons, keep restarting, open panels, or relight anything.",
+      "source": "safety",
+      "outcome": "call_pro",
+      "reason": "fn_call_pro",
+      "diyTier": "pro_only",
+      "gate": null,
+      "continueTo": null
+    },
+    "fn_water_electrical": {
+      "tier": "Stop / professional",
+      "urgency": "Keep away · urgent help",
+      "title": "Don't touch the furnace or stand in the water.",
+      "explanation": "Water is at or near the furnace's electrical parts.",
+      "actions": [
+        "Don't touch the furnace, any switch, or the breaker panel, and don't stand in the water.",
+        "Leave the area, keep others and pets away, and call a licensed HVAC pro or an electrician.",
+        "If you see sparks, smoke, or smell burning, get out and call 911 from outside.",
+        "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+      ],
+      "avoid": "Don't touch the furnace, any switch, or the breaker panel.",
+      "source": "electrical",
+      "outcome": "emergency_exit",
+      "reason": "water_near_electrical",
+      "diyTier": null,
+      "gate": "water_near_electrical",
+      "continueTo": null
+    }
+  }
+}

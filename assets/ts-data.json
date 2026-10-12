@@ -515,7 +515,8 @@
           "next": "ts.settings.wifi",
           "hint": "Wi-Fi models only.",
           "fact": "Complaint: Thermostat offline or app can’t connect.",
-          "gate": null
+          "gate": null,
+          "requires": "wifi"
         },
         {
           "id": "landing_em_aux_heat",
@@ -1155,7 +1156,8 @@
           "next": "@ts_battery_fixed_basic",
           "hint": "",
           "fact": "User replaced the thermostat batteries.",
-          "gate": null
+          "gate": null,
+          "requires": "batt"
         },
         {
           "id": "still_low_or_blank",
@@ -1213,7 +1215,8 @@
           "next": "ts.settings.wifi",
           "hint": "",
           "fact": "Thermostat showed a Wi-Fi or internet message.",
-          "gate": null
+          "gate": null,
+          "requires": "wifi"
         },
         {
           "id": "code_battery",
@@ -4478,8 +4481,8 @@
       "url": "https://customer.resideo.com/resources/techlit/TechLitDocuments/69-0000s/69-1920EFS.pdf"
     },
     "F-HW-TH4-ISU": {
-      "title": "PRO 4000 Series Installation Guide 69-1849",
-      "url": "https://customer.resideo.com/resources/techlit/TechLitDocuments/69-0000s/69-1849.pdf"
+      "title": "PRO 4000 Series Installation Instructions 69-1928EFS (TH4110D / TH4210D)",
+      "url": "https://customer.resideo.com/resources/techlit/TechLitDocuments/69-0000s/69-1928EFS.pdf"
     },
     "F-HW-RTH-ISU": {
       "title": "RTH7600 Installation Instructions 69-2206ES",
@@ -6602,7 +6605,7 @@
         "fallback": [
           {
             "id": "F-HW-T9",
-            "section": "p.33"
+            "section": "p.30 and p.26"
           }
         ],
         "lc6_inline": false
@@ -7491,12 +7494,12 @@
           "U"
         ],
         "mirrors": [],
-        "text": "1. Press and hold **Menu** for 5 seconds, then choose ISU. 2. Furnace or boiler: step to ISU **370 Heat 1 CPH** (and **371 Heat 2 CPH** for a second stage). Heat pump heating or cooling: ISU **365 Cool 1 CPH** (and **366**). Backup heat: **375 Aux Heat CPH**. Change nothing else. 3. Write down each number you’ll change. 4. Too many short cycles: lower it by 1. Furnace or boiler only: if the room swings or overshoots, you can raise the heat number by 1. Never raise 365 or 366. 5. Save and go home. **Watch:** count starts for an hour in similar weather, before and after; give it a day. **Stop** if it starts more often, the room gets uncomfortable, or nothing changes after two days. Put back your numbers.",
+        "text": "1. Press and hold **Menu** for 5 seconds, then choose ISU. 2. Furnace or boiler: step to ISU **370 Heat 1 CPH** (and **371 Heat 2 CPH** only for a known second stage). Heat pump compressor heating or cooling: ISU **365 Cool 1 CPH** (and **366** only for a known second compressor stage). Leave **375 Aux Heat CPH** and **378 EM Heat CPH** alone. Change nothing else. 3. Write down the number before changing it. 4. Too many short cycles: lower it by 1 only if it is above the manual’s minimum. Furnace or boiler only: if the room swings or overshoots, you can raise the heat number by 1 only if it is below the manual’s maximum. Never raise 365 or 366. Leave a setting at its limit unchanged. 5. Save and go home. **Watch:** count starts for an hour in similar weather, before and after; give it a day. **Stop** if it starts more often, the room gets uncomfortable, or nothing changes after two days. Put back your numbers.",
         "generic": false,
         "fallback": [
           {
             "id": "F-HW-T6-ISU",
-            "section": "PDF p.14"
+            "section": "PDF pp.14–15"
           }
         ],
         "lc6_inline": false,
@@ -7508,9 +7511,9 @@
         "record_original": true,
         "undo": true,
         "captions": [
-          "Your thermostat’s range for this setting: 1 CPH to 12 CPH (heat) and 1 CPH to 6 CPH (compressor). Source: T6 Pro Smart Professional Install Guide 33-00392EFS, PDF p.14 (https://customer.resideo.com/resources/techlit/TechLitDocuments/33-00000s/33-00392EFS.pdf). Checked October 11, 2026.",
-          "Typical starting point: 3 CPH for furnace heat (HVAC School, Cycle Rate Settings, https://www.hvacrschool.com/cycle-rate-settings-a-quick-review/). This is a common starting value, not a setting chosen for your home or equipment. Stay within your thermostat’s range, and put back your old value if anything gets worse.",
-          "Typical starting point: 1 CPH for heat pump compressor, only if your current number is higher (HVAC School, Cycle Rate Settings, https://www.hvacrschool.com/cycle-rate-settings-a-quick-review/). This is a common starting value, not a setting chosen for your home or equipment. Stay within your thermostat’s range, and put back your old value if anything gets worse."
+          "Your thermostat’s range for this setting: 1 CPH to 12 CPH (heat) and 1 CPH to 6 CPH (compressor). Source: T6 Pro Smart Professional Install Guide 33-00392EFS, PDF pp.14–15 (https://customer.resideo.com/resources/techlit/TechLitDocuments/33-00000s/33-00392EFS.pdf). Checked October 12, 2026.",
+          "These are available settings, not a target for your equipment. The manual lists different defaults for different equipment types. Do not replace your recorded setting with a generic starting value.",
+          "The one-step adjustment and observation period are Second Wrench operator guidance. Observed starts vary with load; a CPH setting does not promise that many starts in every hour."
         ],
         "num_sources": [
           {
@@ -7524,21 +7527,6 @@
             "item": "compressor CPH",
             "low": 1,
             "high": 6
-          },
-          {
-            "label": "TRADE",
-            "item": "furnace heat CPH",
-            "value": 3,
-            "low": 1,
-            "high": 12
-          },
-          {
-            "label": "TRADE",
-            "item": "heat pump compressor CPH",
-            "value": 1,
-            "low": 1,
-            "high": 6,
-            "lowerOnly": true
           }
         ],
         "ratedMinText": "",
@@ -7553,12 +7541,12 @@
           "U"
         ],
         "mirrors": [],
-        "text": "1. Press and hold **▲** and **FAN** until the display changes. 2. Press **NEXT** to Function **5** (Stage 1 heat cycle rate); 6 is stage 2 or aux, 8 is emergency heat; **9** and **10** are compressor. Skip Functions 1, 2, 3 and 15. 3. Write down the number. 4. Too many short cycles: lower it by 1. Furnace or boiler only (Function 5, or Function 6 when it’s a second furnace or boiler stage, not heat pump backup heat): if the room swings or overshoots, you can raise that number by 1. Never raise Function 9 or 10. On a heat pump, leave Functions 6 and 8 alone. 5. Press **DONE**. **Watch:** count starts for an hour in similar weather, before and after; give it a day. **Stop** if it starts more often, the room gets uncomfortable, or nothing changes after two days. Put back your numbers.",
+        "text": "1. Press and hold **▲** and **FAN** until the display changes. 2. Press **NEXT** to the function for the equipment you already know: **5** is conventional stage 1 heat; **6** is conventional stage 2 heat on a TH6220D, or heat-pump auxiliary heat. **9** is stage 1 compressor; **10** is stage 2 compressor on a TH6220D. On a heat pump, leave **6** and **8** (Emergency Heat) alone. Do not change Functions 1, 2, 3 or 15, and do not enter the installer system test. 3. Write down the function and number. The ▲ and ▼ buttons change that setting. 4. Too many short cycles: lower it by 1 only if it is above the manual’s minimum. Furnace or boiler only (Function 5, or Function 6 when it’s a second furnace or boiler stage, not heat pump backup heat): if the room swings or overshoots, you can raise that number by 1 only if it is below the manual’s maximum. Never raise Function 9 or 10. On a heat pump, leave Functions 6 and 8 alone. Leave a setting at its limit unchanged. 5. Press **DONE**. **Watch:** count starts for an hour in similar weather, before and after; give it a day. **Stop** if it starts more often, the room gets uncomfortable, or nothing changes after two days. Put back your numbers.",
         "generic": false,
         "fallback": [
           {
             "id": "F-HW-FP6-ISU",
-            "section": "PDF p.6"
+            "section": "PDF pp.6–7"
           }
         ],
         "lc6_inline": false,
@@ -7570,9 +7558,9 @@
         "record_original": true,
         "undo": true,
         "captions": [
-          "Your thermostat’s range for this setting: 1 CPH to 12 CPH (heat) and 1 CPH to 6 CPH (compressor). Source: T6 Pro Smart Professional Install Guide 33-00392EFS, PDF p.14 (https://customer.resideo.com/resources/techlit/TechLitDocuments/33-00000s/33-00392EFS.pdf). Checked October 11, 2026.",
-          "Typical starting point: 3 CPH for furnace heat (HVAC School, Cycle Rate Settings, https://www.hvacrschool.com/cycle-rate-settings-a-quick-review/). This is a common starting value, not a setting chosen for your home or equipment. Stay within your thermostat’s range, and put back your old value if anything gets worse.",
-          "Typical starting point: 1 CPH for heat pump compressor, only if your current number is higher (HVAC School, Cycle Rate Settings, https://www.hvacrschool.com/cycle-rate-settings-a-quick-review/). This is a common starting value, not a setting chosen for your home or equipment. Stay within your thermostat’s range, and put back your old value if anything gets worse."
+          "Your thermostat’s range for this setting: 1 CPH to 12 CPH (heat) and 1 CPH to 6 CPH (compressor). Source: FocusPRO TH6000 Installation Guide 69-1920EFS-03, PDF pp.6–7 (https://customer.resideo.com/resources/techlit/TechLitDocuments/69-0000s/69-1920EFS.pdf). Checked October 12, 2026.",
+          "These are available settings, not a target for your equipment. The manual lists different defaults for different equipment types. Do not replace your recorded setting with a generic starting value.",
+          "The one-step adjustment and observation period are Second Wrench operator guidance. Observed starts vary with load; a CPH setting does not promise that many starts in every hour."
         ],
         "num_sources": [
           {
@@ -7586,21 +7574,6 @@
             "item": "compressor CPH",
             "low": 1,
             "high": 6
-          },
-          {
-            "label": "TRADE",
-            "item": "furnace heat CPH",
-            "value": 3,
-            "low": 1,
-            "high": 12
-          },
-          {
-            "label": "TRADE",
-            "item": "heat pump compressor CPH",
-            "value": 1,
-            "low": 1,
-            "high": 6,
-            "lowerOnly": true
           }
         ],
         "ratedMinText": "",
@@ -7615,12 +7588,12 @@
           "U"
         ],
         "mirrors": [],
-        "text": "1. Press and hold **▲** and **▼** until the display changes. 2. Press ▲ to reach Function **5** (Heating cycle rate, TH4110D), **6** (Auxiliary heat, TH4210D), **8** (Emergency heat, TH4210D), or **9** (Compressor). Skip Functions 1 and 15. 3. Write down the number. 4. Too many short cycles: lower it by 1. Furnace or boiler only (Function 5 on a TH4110D): if the room swings or overshoots, you can raise that number by 1. Never raise Function 9. On a TH4210D, leave Functions 6 and 8 alone. 5. Hold ▲ and ▼ to save and exit. **Watch:** count starts for an hour in similar weather, before and after; give it a day. **Stop** if it starts more often, the room gets uncomfortable, or nothing changes after two days. Put back your numbers.",
+        "text": "1. Press and hold **▲** and **▼** until the display changes. 2. Press ▲ to reach Function **5** (conventional heating cycle rate, TH4110D only) or **9** (compressor). On a TH4210D, **6** is auxiliary heat and **8** is Emergency Heat; leave both alone. Do not change Functions 1 or 15. Do not keep advancing past the setup functions into the installer system test. 3. Write down the function and number; ▼ changes the setting and ▲ advances to another function. 4. Too many short cycles: lower it by 1 only if it is above the manual’s minimum. Furnace or boiler only (Function 5 on a TH4110D): if the room swings or overshoots, you can raise that number by 1 only if it is below the manual’s maximum. Never raise Function 9. On a TH4210D, leave Functions 6 and 8 alone. Leave a setting at its limit unchanged. 5. Hold ▲ and ▼ to save and exit. **Watch:** count starts for an hour in similar weather, before and after; give it a day. **Stop** if it starts more often, the room gets uncomfortable, or nothing changes after two days. Put back your numbers.",
         "generic": false,
         "fallback": [
           {
             "id": "F-HW-TH4-ISU",
-            "section": "PDF p.10"
+            "section": "PDF p.5"
           }
         ],
         "lc6_inline": false,
@@ -7632,9 +7605,9 @@
         "record_original": true,
         "undo": true,
         "captions": [
-          "Your thermostat’s range for this setting: 1 CPH to 12 CPH (heat) and 1 CPH to 6 CPH (compressor). Source: T6 Pro Smart Professional Install Guide 33-00392EFS, PDF p.14 (https://customer.resideo.com/resources/techlit/TechLitDocuments/33-00000s/33-00392EFS.pdf). Checked October 11, 2026.",
-          "Typical starting point: 3 CPH for furnace heat (HVAC School, Cycle Rate Settings, https://www.hvacrschool.com/cycle-rate-settings-a-quick-review/). This is a common starting value, not a setting chosen for your home or equipment. Stay within your thermostat’s range, and put back your old value if anything gets worse.",
-          "Typical starting point: 1 CPH for heat pump compressor, only if your current number is higher (HVAC School, Cycle Rate Settings, https://www.hvacrschool.com/cycle-rate-settings-a-quick-review/). This is a common starting value, not a setting chosen for your home or equipment. Stay within your thermostat’s range, and put back your old value if anything gets worse."
+          "Your thermostat’s range for this setting: 1 CPH to 12 CPH (heat) and 1 CPH to 6 CPH (compressor). Source: PRO 4000 Series Installation Instructions 69-1928EFS, PDF p.5 (https://customer.resideo.com/resources/techlit/TechLitDocuments/69-0000s/69-1928EFS.pdf). Checked October 12, 2026.",
+          "These are available settings, not a target for your equipment. The manual lists different defaults for different equipment types. Do not replace your recorded setting with a generic starting value.",
+          "The one-step adjustment and observation period are Second Wrench operator guidance. Observed starts vary with load; a CPH setting does not promise that many starts in every hour."
         ],
         "num_sources": [
           {
@@ -7648,21 +7621,6 @@
             "item": "compressor CPH",
             "low": 1,
             "high": 6
-          },
-          {
-            "label": "TRADE",
-            "item": "furnace heat CPH",
-            "value": 3,
-            "low": 1,
-            "high": 12
-          },
-          {
-            "label": "TRADE",
-            "item": "heat pump compressor CPH",
-            "value": 1,
-            "low": 1,
-            "high": 6,
-            "lowerOnly": true
           }
         ],
         "ratedMinText": "",
@@ -8447,12 +8405,12 @@
           "U"
         ],
         "mirrors": [],
-        "text": "Hold **▲** + **▼**; ▲ to Function **13**: 1 On, 0 Off; hold both to save. Write down On or Off first. **Watch:** the next few mornings. On: the house should be at temperature at the schedule time, and the screen may show Recovery or In Recovery before it. Off: it should start at the schedule time. It may take a few days to learn. **Stop** if the house stays cold or the bill rises; put it back.",
+        "text": "Hold **▲** + **▼**; ▲ to Function **13**: 1 On, 0 Off; ▼ changes the setting. Hold both to save; do not advance into the installer system test. Write down On or Off first. **Watch:** the next few mornings. On: the house should be at temperature at the schedule time, and the screen may show Recovery or In Recovery before it. Off: it should start at the schedule time. It may take a few days to learn. **Stop** if the house stays cold or the bill rises; put it back.",
         "generic": false,
         "fallback": [
           {
             "id": "F-HW-TH4-ISU",
-            "section": "PDF p.12"
+            "section": "PDF p.5"
           }
         ],
         "lc6_inline": false,
@@ -11014,5 +10972,63 @@
     "GEO|HW-TH4",
     "GEO|HW-X2P",
     "GEO|AMZ-AST"
-  ]
+  ],
+  "caps": {
+    "NEST-LT4": {
+      "wifi": true,
+      "batt": false
+    },
+    "NEST-NT": {
+      "wifi": true,
+      "batt": true
+    },
+    "NEST-LT3": {
+      "wifi": true,
+      "batt": false
+    },
+    "NEST-E": {
+      "wifi": true,
+      "batt": false
+    },
+    "HW-T5": {
+      "wifi": true,
+      "batt": false
+    },
+    "HW-T6": {
+      "wifi": true,
+      "batt": false
+    },
+    "HW-T9": {
+      "wifi": true,
+      "batt": true
+    },
+    "ECB-PRM": {
+      "wifi": true,
+      "batt": true
+    },
+    "ECB-ESS": {
+      "wifi": true,
+      "batt": true
+    },
+    "HW-FP6": {
+      "wifi": false,
+      "batt": true
+    },
+    "HW-RTH76": {
+      "wifi": false,
+      "batt": true
+    },
+    "HW-TH4": {
+      "wifi": false,
+      "batt": true
+    },
+    "HW-X2P": {
+      "wifi": false,
+      "batt": true
+    },
+    "AMZ-AST": {
+      "wifi": true,
+      "batt": false
+    }
+  }
 }
