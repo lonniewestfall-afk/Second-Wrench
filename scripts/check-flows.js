@@ -1,6 +1,6 @@
 /* Local sanity for AC Wave-2 and HP Wave-1. No network. */
 'use strict';
-globalThis.SW_CONFIG = { advancedRepairsEnabled: false, aiThermostatEnabled: false, mirrorsEnabled: false, stageLatchStepsEnabled: false, contentVersion: '2026-10-12.1' };
+globalThis.SW_CONFIG = { advancedRepairsEnabled: false, aiThermostatEnabled: false, mirrorsEnabled: false, stageLatchStepsEnabled: false, contentVersion: '2026-10-12.2' };
 const fs = require('fs');
 const path = require('path');
 const F = require('../assets/flow.js');
@@ -85,7 +85,7 @@ function assertNoCap(state, msg) {
 const gate = ['none_of_these', 'agree_18_terms'];
 
 assert(/advancedRepairsEnabled:\s*false/.test(configText), 'public advanced flag must stay false');
-const SHIP = '2026-10-12.1';
+const SHIP = '2026-10-12.2';
 assert(configText.includes("contentVersion: '" + SHIP + "'"), 'content version must be ' + SHIP);
 assert(['config', 'flow', 'app'].every(f => indexText.includes(f + '.js?v=' + SHIP)), 'script cache-bust must match content version');
 assert(indexText.includes('HOME HVAC CHECKS') && !indexText.includes('AC + HEAT PUMP'), 'header lockup is HOME HVAC CHECKS');
@@ -472,7 +472,7 @@ assert(/if\(selected\.disabled\)return;/.test(appText), 'a disabled continue con
 assert(/agreeing&&!accepted/.test(appText), 'agree cannot continue while the checkbox is unchecked');
 assert(/agreed:\s*agreeing&&accepted/.test(appText), 'the acceptance flag follows the checkbox');
 assert(/termsVersion:\s*C\.termsVersion/.test(appText), 'the session records the configured terms version');
-assert((appText.match(/F\.answer\(/g) || []).length === 1, 'the UI has one answer path');
+assert(appText.includes("(state.node === 'sw.intake.system_type' ? F.selectSystem : F.answer)(state, selected.dataset.answer,"), 'the UI dispatches menu choices and question answers through the gated engine');
 assert(!/agreed:\s*true/.test(appText), 'the UI never hard-codes acceptance');
 assert(!/localStorage|sessionStorage/.test(appText), 'acceptance is not written to browser storage');
 const feedbackFn = appText.slice(appText.indexOf('function feedbackData'), appText.indexOf('function feedbackText'));
@@ -577,8 +577,8 @@ const HAZARDS = [
   ['hazard_refrigerant_alarm', 'Do not reset a refrigerant-leak alarm.'],
   ['hazard_unsure', 'Uncertainty is a good reason to stop.']
 ];
-const TERMS_BODY_SHA256 = '24b8395a9d06449cb161f9365c0cd9ffb7a23e6862d95197c555611eb88c6bde';
-const PRIVACY_BODY_SHA256 = 'b667f65dc46041aa5431f0908c2e63b3153ee581e5830c86f1200145c1e31d0d';
+const TERMS_BODY_SHA256 = 'd023f441e4332cc43405bf14704dfc2dd55819221f75919021a2d5a5afdda279';
+const PRIVACY_BODY_SHA256 = 'd1966ef7156a5cca489070d872fb78e66627843e06e82943f70b8f1d67ed8552';
 
 // ---- WSHP Wave-1 PR-1 (A-1..A-28, T-1..T-26) ----
 const WSHP_IDS = ['wshp.hazard.flood_electrical', 'wshp.entry.equipment_gate', 'wshp.heat.cold_home_screen', 'wshp.openloop.complaint', 'wshp.openloop.chemistry_gate', 'wshp.handback.call_pro'];
@@ -821,7 +821,7 @@ assert(F.summary(t17).indexOf(scopedEquipment) === -1, 'N8 oversize divert omits
 assert(F.results.gas.avoid === 'Do not search for the leak, reset an alarm, or re-enter to switch the AC off.', 'AC gas avoid stays unchanged');
 assert(F.presentResult(t6).avoid === 'Do not search for the leak, reset an alarm, or re-enter to switch the system off.', 'N9 WSHP gas avoid says the system');
 assert(F.presentResult(t6) !== F.results.gas, 'N9 WSHP gas copy is a swap, not the shared result');
-const pointer = 'Start again, choose Something else: water heater, boiler, mini-split, geothermal, thermostat, other, then Water-source / geothermal heat pump.';
+const pointer = 'Start again, choose Water-source / geothermal heat pump.';
 const hpWater = F.results.hp_water_source_oos;
 assert(!/later phase/i.test([hpWater.title, hpWater.explanation, hpWater.avoid].concat(hpWater.actions).join(' ')), 'hp water-source result drops later phase');
 assert(!/geothermal/i.test(hpWater.title + ' ' + hpWater.explanation + ' ' + hpWater.avoid), 'hp water-source result drops geothermal from the out-of-scope wording');
@@ -848,11 +848,11 @@ assert(/For water-source systems, this beta gives safety screens and a service n
 assert(!/water-source and geothermal equipment/.test(appText), 'safety page no longer lists water-source equipment as out of scope');
 const geoOption = F.nodes['ac.cool.intake.system_confirm'].options.find(op => op.id === 'geo_packaged_other');
 assert(geoOption && geoOption.next === '@out_of_scope_equipment', 'geothermal packaged option keeps its route');
-assert(geoOption.hint === 'Geothermal or water-source: start again, choose Something else: water heater, boiler, mini-split, geothermal, thermostat, other, then Water-source / geothermal heat pump. Packaged or other systems are not covered yet.', 'geothermal packaged hint points back to the water-source check');
+assert(geoOption.hint === 'Geothermal or water-source: start again, choose Water-source / geothermal heat pump. Packaged or other systems are not covered yet.', 'geothermal packaged hint points back to the water-source check');
 assert(F.results.out_of_scope_equipment.urgency === 'Not covered in this beta yet', 'out-of-scope equipment urgency is not a hard outside-the-beta title');
 const geoMention = /water[-\s]?source|geothermal/i;
 const oosClaim = /out of scope|outside this beta|outside these checks|not diagnosed|not covered|not part of this beta/i;
-const redirect = /start again, choose Something else: water heater, boiler, mini-split, geothermal, thermostat, other, then Water-source \/ geothermal heat pump/i;
+const redirect = /start again, choose Water-source \/ geothermal heat pump/i;
 function sentencesOf(text) {
   return String(text || '').split(/(?<=[.!?])\s+/).map(s => s.trim()).filter(Boolean);
 }
@@ -934,7 +934,7 @@ const w2note = F.summary(w2);
 assert(w2note.indexOf('HOMEOWNER SERVICE NOTE — mini-split observations, not a diagnosis') === 0, 'MS-A13 header');
 assert(w2note.indexOf('Equipment: ductless mini-split, one indoor unit (homeowner reported).') !== -1, 'MS-A13 equipment');
 assert(w2note.indexOf('Tried:') !== -1 && w2note.indexOf('User cleaned the indoor-unit filters. They were dusty or dirty.') !== -1, 'MS-A13 tried');
-assert(w2note.indexOf('Something else reported at system type.') !== -1, 'weak-air note keeps the Something else system-type line');
+assert(w2note.includes('Ductless mini-split reported at Start.') && !w2note.includes('Something else reported at system type.'), 'weak-air note records the equipment, not an internal routing step');
 const w3 = walk('ask', ms1.concat(['landing_water_at_head', 'water_on_electrical']));
 assert(w3.result === 'ms_water_electrical' && F.results[w3.result].outcome === 'emergency_exit' && !F.results[w3.result].continueTo, 'W3 water/electrical stop');
 assertNoShutOff([F.results.ms_water_electrical.title, F.results.ms_water_electrical.explanation, F.results.ms_water_electrical.avoid].concat(F.results.ms_water_electrical.actions).join('\n'), 'W3 shut-off instruction');
@@ -1017,7 +1017,7 @@ assert(openMs.node === openAc.node && openMs.node === 'ac.gate.cluster_entry' &&
 const agreeEdges = [];
 Object.keys(F.nodes).forEach(id => F.nodes[id].options.forEach(op => { if (op.id === 'agree_18_terms') agreeEdges.push(id + ':' + op.next); }));
 assert(agreeEdges.length === 1 && agreeEdges[0] === 'ac.session.consent:ac.cool.intake.system_confirm', 'consent is not forked');
-assert(F.results.hp_mini_split_oos.actions[0] === 'Go back home, press Start, and choose “Something else: water heater, boiler, mini-split, geothermal, thermostat, other”, then “Ductless mini-split”. It covers cooling and heating problems on one or several indoor units.', 'MS-C14');
+assert(F.results.hp_mini_split_oos.actions[0] === 'Go back home, press Start, and choose “Ductless mini-split”. It covers cooling and heating problems on one or several indoor units.', 'MS-C14');
 assert(F.results.hp_mini_split_oos.actions[1] === 'Choose the number of indoor units you already know about. Do not open equipment to identify the system.', 'HP mini-split pointer includes multiple indoor units');
 assert(F.results.out_of_scope_equipment.explanation === 'Window and portable units, packaged systems, and other types are not diagnosed here.', 'MS-C15');
 assert(/do not climb or open equipment/i.test(F.nodes['ms.intake.system_confirm'].body), 'MS-C16');
@@ -1888,7 +1888,8 @@ function expectTs(label, fn) {
     fs.mkdirSync(path.join(root, 'scripts'), { recursive: true });
     fs.mkdirSync(path.join(root, 'assets'), { recursive: true });
     fs.mkdirSync(path.join(root, 'content/mirrors'), { recursive: true });
-    const v0 = execFileSync('git', ['show', 'origin/main:assets/ts-data.json'], { cwd: reproRoot });
+    // Rebuild from the immutable Wave 1 baseline; main now contains Wave 2.
+    const v0 = execFileSync('git', ['show', '7f9203fda353e7b973033f571e7a41c273bc162c:assets/ts-data.json'], { cwd: reproRoot });
     fs.writeFileSync(path.join(root, 'assets/ts-data.json'), v0);
     fs.copyFileSync(path.join(__dirname, 'compose-ts-wave2.js'), path.join(root, 'scripts/compose-ts-wave2.js'));
     fs.copyFileSync(path.join(reproRoot, 'content/mirrors/compiled.json'), path.join(root, 'content/mirrors/compiled.json'));
@@ -2067,7 +2068,7 @@ function pageChecks() {
     assert(window.location.hash === '#/check', 'Continue stays on the check route');
     assert(doc.querySelector('h1').textContent === 'A guide, not an equipment inspection.', 'Continue re-checks the checkbox and does not advance');
     assert(doc.getElementById('flow-error').textContent === 'Please read and accept the Terms and Privacy notes to continue.', 'Continue explains that the checkbox is required');
-    assert(doc.querySelector('main h1').textContent !== 'What kind of system is this?', 'an unticked Continue does not open system type');
+    assert(doc.querySelector('main h1').textContent !== 'What would you like help with?', 'an unticked Continue does not open system type');
     async function acceptAndContinue() {
       const box = doc.getElementById('agree');
       box.checked = true;
@@ -2085,9 +2086,7 @@ function pageChecks() {
     click(doc.querySelector('[data-answer="none_of_these"]'));
     await flush();
     await acceptAndContinue();
-    assert(doc.querySelector('h1').textContent === 'What kind of system is this?', 'consent opens system type');
-    answer('other_heat_or_ductless');
-    await flush();
+    assert(doc.querySelector('h1').textContent === 'What would you like help with?', 'consent opens system type');
     answer('water_source_geo');
     await flush();
     answer('wshp_hz_none');
@@ -2174,7 +2173,7 @@ function pageChecks() {
     click(doc.querySelector('[data-answer="none_of_these"]'));
     await flush();
     await acceptAndContinue();
-    await clickPath(['other_heat_or_ductless', 'ductless_mini_split', 'ductless_single_zone', 'landing_no_cool', 'settings_fixed_now_cooling']);
+    await clickPath(['ductless_mini_split', 'ductless_single_zone', 'landing_no_cool', 'settings_fixed_now_cooling']);
     assert(window.location.hash === '#/result', 'mini-split basic path reaches a result');
     assert(doc.querySelector('h1').textContent === 'A setting was the problem.', 'mini-split basic success title');
     assert(doc.querySelector('.pill').textContent === 'Basic homeowner check', 'mini-split basic tier renders');
@@ -2184,7 +2183,7 @@ function pageChecks() {
     click(doc.querySelector('[data-answer="none_of_these"]'));
     await flush();
     await acceptAndContinue();
-    await clickPath(['other_heat_or_ductless', 'ductless_mini_split', 'ductless_single_zone', 'landing_water_at_head', 'water_on_electrical']);
+    await clickPath(['ductless_mini_split', 'ductless_single_zone', 'landing_water_at_head', 'water_on_electrical']);
     assert(window.location.hash === '#/result', 'mini-split water/electrical reaches a result');
     assert(doc.querySelector('h1').textContent === 'Don’t touch the indoor unit or stand in the water.', 'mini-split water/electrical title');
     assert(doc.querySelector('.result-heading.emergency'), 'mini-split water/electrical renders an emergency result');
@@ -2194,7 +2193,7 @@ function pageChecks() {
     click(doc.querySelector('[data-answer="none_of_these"]'));
     await flush();
     await acceptAndContinue();
-    await clickPath(['other_heat_or_ductless', 'ductless_mini_split', 'ductless_single_zone', 'landing_no_heat']);
+    await clickPath(['ductless_mini_split', 'ductless_single_zone', 'landing_no_heat']);
     assert(doc.querySelector('h1').textContent === 'Set Heat and give it time to warm up', 'heat-mode question is on screen');
     assert(norm(doc.querySelector('.sidebar')).indexOf('Look at the outdoor unit only from a window or dry ground.') !== -1, 'heat path sidebar keeps the outdoor look limit');
     answer('heat_fixed_after_setting');
@@ -2208,7 +2207,7 @@ function pageChecks() {
     click(doc.querySelector('[data-answer="none_of_these"]'));
     await flush();
     await acceptAndContinue();
-    await clickPath(['other_heat_or_ductless', 'ductless_mini_split', 'ductless_single_zone', 'landing_no_heat', 'mode_was_auto', 'forced_heat_still_problem', 'defrost_then_heat_fine']);
+    await clickPath(['ductless_mini_split', 'ductless_single_zone', 'landing_no_heat', 'mode_was_auto', 'forced_heat_still_problem', 'defrost_then_heat_fine']);
     assert(window.location.hash === '#/result', 'normal defrost reaches a result');
     assert(doc.querySelector('h1').textContent === 'That pause was a normal defrost.', 'normal defrost title');
     assert(doc.querySelector('.pill').textContent === 'Basic homeowner check', 'normal defrost tier renders');
@@ -2219,7 +2218,7 @@ function pageChecks() {
     click(doc.querySelector('[data-answer="none_of_these"]'));
     await flush();
     await acceptAndContinue();
-    await clickPath(['other_heat_or_ductless', 'ductless_mini_split', 'ductless_single_zone', 'landing_no_heat', 'heat_settings_right_still_problem', 'outdoor_iced_solid_no_recover']);
+    await clickPath(['ductless_mini_split', 'ductless_single_zone', 'landing_no_heat', 'heat_settings_right_still_problem', 'outdoor_iced_solid_no_recover']);
     assert(window.location.hash === '#/result', 'ice that keeps building reaches a result');
     assert(doc.querySelector('h1').textContent === 'Stop. Turn it off. Thick ice won’t clear by running it.', 'ice that keeps building title');
     assert(doc.querySelector('.pill').textContent === 'Stop / professional', 'ice that keeps building is a stop');
@@ -2232,7 +2231,7 @@ function pageChecks() {
     click(doc.querySelector('[data-answer="none_of_these"]'));
     await flush();
     await acceptAndContinue();
-    await clickPath(['other_heat_or_ductless', 'ductless_mini_split', 'ductless_single_zone', 'landing_no_heat', 'cold_exposure_risk']);
+    await clickPath(['ductless_mini_split', 'ductless_single_zone', 'landing_no_heat', 'cold_exposure_risk']);
     assert(window.location.hash === '#/result', 'cold exposure reaches a result');
     assert(doc.querySelector('h1').textContent === 'Get the person warm first.', 'cold exposure title');
     assert(doc.querySelector('.result-heading.emergency'), 'cold exposure renders an emergency result');
@@ -2253,7 +2252,7 @@ function pageChecks() {
     click(doc.querySelector('[data-answer="none_of_these"]'));
     await flush();
     await acceptAndContinue();
-    await clickPath(['other_heat_or_ductless', 'thermostat_settings', 'ts_none_of_these', 'brand_honeywell_smart', 'hw_t9', 'landing_no_heat_cool']);
+    await clickPath(['thermostat_settings', 'ts_none_of_these', 'brand_honeywell_smart', 'hw_t9', 'landing_no_heat_cool']);
     assert(doc.querySelector('h1').textContent === 'Check the mode and temperature', 'thermostat mode question is on screen');
     assert(doc.title.indexOf('Guided thermostat check') === 0, 'thermostat route title');
     assert(norm(doc.querySelector('.sidebar')).indexOf('Settings only. No wires, no covers. Some installer settings have steps; the ones that protect your equipment don’t. Low-voltage thermostats only.') !== -1, 'thermostat sidebar limit');
@@ -2273,7 +2272,7 @@ function pageChecks() {
     answer('none_of_these');
     await flush();
     await acceptAndContinue();
-    await clickPath(['other_heat_or_ductless', 'thermostat_settings', 'ts_none_of_these', 'brand_nest', 'nest_nt']);
+    await clickPath(['thermostat_settings', 'ts_none_of_these', 'brand_nest', 'nest_nt']);
     const offModel = doc.querySelector('[data-answer="landing_auto_mode"]');
     assert(offModel && offModel.disabled && offModel.getAttribute('aria-disabled') === 'true', 'TS-A36 unsupported model choice is visibly disabled');
     const beforeDisabled = doc.querySelector('main').textContent;
@@ -2284,13 +2283,13 @@ function pageChecks() {
     answer('none_of_these');
     await flush();
     await acceptAndContinue();
-    await clickPath(['other_heat_or_ductless', 'thermostat_settings', 'ts_none_of_these', 'brand_honeywell_buttons', 'hw_focuspro']);
+    await clickPath(['thermostat_settings', 'ts_none_of_these', 'brand_honeywell_buttons', 'hw_focuspro']);
     assert(!doc.querySelector('[data-answer="landing_wifi"]'), 'TS-G58 non-Wi-Fi thermostat hides Wi-Fi complaint');
     await home();
     click(doc.querySelector('[data-answer="none_of_these"]'));
     await flush();
     await acceptAndContinue();
-    await clickPath(['other_heat_or_ductless', 'thermostat_settings', 'ts_none_of_these', 'brand_ecobee', 'ecb_premium']);
+    await clickPath(['thermostat_settings', 'ts_none_of_these', 'brand_ecobee', 'ecb_premium']);
     assert(rendered().indexOf('Once it gets louder and blows harder, it stays that way until it shuts off') !== -1, 'stages landing label is on screen');
     answer('landing_stages');
     await flush();
@@ -2303,7 +2302,7 @@ function pageChecks() {
     click(doc.querySelector('[data-answer="none_of_these"]'));
     await flush();
     await acceptAndContinue();
-    await clickPath(['other_heat_or_ductless', 'thermostat_settings', 'ts_none_of_these', 'brand_ecobee', 'ecb_premium', 'landing_backup_heat_cost', 'aux_mild_weather', 'hp_air', 'guard_ok', 'only_backup_heat']);
+    await clickPath(['thermostat_settings', 'ts_none_of_these', 'brand_ecobee', 'ecb_premium', 'landing_backup_heat_cost', 'aux_mild_weather', 'hp_air', 'guard_ok', 'only_backup_heat']);
     assert(rendered().indexOf('If the house is getting cold and neither the heat pump nor backup heat is running') === -1, 'lockout steps stay hidden before the notices');
     assert(!doc.querySelector('[data-ts-ack="lc18"]'), 'LC-18 checkbox waits for the warranty choice');
     const warranty = doc.querySelector('[data-ts-ack="warranty"]');
@@ -2323,7 +2322,7 @@ function pageChecks() {
     click(doc.querySelector('[data-answer="none_of_these"]'));
     await flush();
     await acceptAndContinue();
-    await clickPath(['other_heat_or_ductless', 'thermostat_settings', 'ts_none_of_these', 'brand_ecobee', 'ecb_premium', 'landing_humid', 'ice_seen']);
+    await clickPath(['thermostat_settings', 'ts_none_of_these', 'brand_ecobee', 'ecb_premium', 'landing_humid', 'ice_seen']);
     assert(doc.querySelector('h1').textContent === 'Ice on the cooling system', 'TS-A35 ice title');
     assert(![...doc.querySelectorAll('h2')].some(el => el.textContent === 'What to do now'), 'TS-A35 ice omits empty actions');
     assert(rendered().indexOf('What not to do') === -1, 'TS-A35 ice omits empty avoid');
@@ -2331,7 +2330,7 @@ function pageChecks() {
     click(doc.querySelector('[data-answer="none_of_these"]'));
     await flush();
     await acceptAndContinue();
-    await clickPath(['other_heat_or_ductless', 'thermostat_settings', 'ts_none_of_these', 'brand_honeywell_smart', 'hw_t6', 'landing_wrong_reading', 'reading_off_steady', 'location_ok_steady_difference']);
+    await clickPath(['thermostat_settings', 'ts_none_of_these', 'brand_honeywell_smart', 'hw_t6', 'landing_wrong_reading', 'reading_off_steady', 'location_ok_steady_difference']);
     click(doc.querySelector('[data-ts-ack="warranty"]'));
     await flush();
     const offsetBox = doc.querySelector('[data-ts-ack="lc18"]');
@@ -2347,7 +2346,7 @@ function pageChecks() {
     click(doc.querySelector('[data-answer="none_of_these"]'));
     await flush();
     await acceptAndContinue();
-    await clickPath(['other_heat_or_ductless', 'thermostat_settings', 'ts_none_of_these', 'brand_honeywell_smart', 'hw_t6', 'landing_never_catches_up', 'early_start_ok']);
+    await clickPath(['thermostat_settings', 'ts_none_of_these', 'brand_honeywell_smart', 'hw_t6', 'landing_never_catches_up', 'early_start_ok']);
     const early = [...doc.querySelectorAll('[data-action="ts-next"]')].find(el => el.textContent === 'Open the early start steps');
     assert(early, 'recovery result offers the early start steps');
     click(early);

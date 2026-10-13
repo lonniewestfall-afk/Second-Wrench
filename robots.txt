@@ -1,5 +1,12 @@
 # Public beta is indexable. Crawlers may fetch the site.
 # This is NOT access control. Anyone with a link can open the beta.
+# Allow user-requested Claude audits and Claude search retrieval explicitly.
+User-agent: Claude-User
+Allow: /
+
+User-agent: Claude-SearchBot
+Allow: /
+
 User-agent: *
 Allow: /
 
