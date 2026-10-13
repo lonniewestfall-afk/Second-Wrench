@@ -118,5 +118,14 @@ module.exports=function(base,draft,CO){
  nodes['ms.error.manual_lookup'].step.stop='Stop if the manual requires an installer menu, equipment access, a reset, or electrical or refrigerant work. Keep the code and call a professional.';
  for(const id of ['ms.zone.isolate_head','ms.zone.mode_conflict'])nodes[id].step.source='Senville mode-conflict guidance and Pioneer Quantum Ultra PA guidance; checked October 12, 2026. The ten-minute observation period is Second Wrench policy.';
  nodes['ms.heat.defrost_indoor'].body=nodes['ms.heat.defrost_indoor'].body.replace(/From Fujitsu[^]*$/, 'Lennox DB68-12580A-00, page 28, describes a 3–5 minute warm-up fan delay and defrost lasting 5–12 minutes for that model; checked October 12, 2026. Other models differ.');
+ const somethingElse=nodes['ms.landing.picker'].options.find(o=>o.id==='landing_something_else');
+ if(somethingElse){somethingElse.next='ms.landing.noise_or_smell';somethingElse.hint='A noise or a smell has its own short check.';somethingElse.label='Something else (a noise or a smell)';}
+ nodes['ms.landing.noise_or_smell']={section:'What you noticed',title:'Is it a noise or a smell?',body:'Pick the closer match. If you notice both, start with the smell. If anything is burning, smoking, or alarming, use the hazard choice.',owner:'ms',diyTier:'basic',safetyGate:true,caution:'',options:[
+  {id:'noise',label:'A noise',hint:'Next: what the sound is like.',fact:'Complaint: a noise from the mini-split.',next:'ms.sound.observe'},
+  {id:'smell',label:'A smell',hint:'Next: what the smell is like.',fact:'Complaint: a smell from the mini-split.',next:'ms.smell.observe'},
+  {...hazard}
+ ]};
+ if(results.ms_ice_cooling_wave1)results.ms_ice_cooling_wave1.avoid='Don’t chip or pick at the ice, or use a hair dryer, heat gun, hot water, a hose, or salt, or cover the unit. Don’t restart cooling while any ice remains.';
+ if(results.ms_ice_keep_running)results.ms_ice_keep_running.avoid='Don’t chip or pick at the ice, use a hair dryer, heat gun, hot water, a hose, or salt, cover the unit, or keep restarting it.';
  return {nodes,results,backup,policy};
 };

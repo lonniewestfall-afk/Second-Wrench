@@ -41,7 +41,10 @@ for (const [id, s0] of Object.entries(R.results).concat(Object.entries(R.nodes))
   const s = JSON.parse(JSON.stringify(s0)); const wasUrgent = !!(s.result && URGENT.includes(F.results[s.result].tier));
   F.stop(s);
   const v = s.node && F.viewNode(s.node, s);
-  assert(!s.result && s.node === 'ac.gate.cluster_entry' && v && ['hazard_gas_co', 'hazard_refrigerant_alarm', 'hazard_smoke_fire_sparks_burn'].every(h => v.options.some(o => o.id === h)), 'B1-A01', 'stop() from ' + id + ' did not reach hazard choices');
+  const boilerStop = s.product === 'bl';
+  const expectNode = boilerStop ? 'bl.gate.safety' : 'ac.gate.cluster_entry';
+  const hazards = boilerStop ? ['gas_smell_or_unknown_smell', 'refrigerant_alarm', 'water_steam_release', 'steam_glass_empty', 'bang_or_puffback', 'soot_scorch_flame'] : ['hazard_gas_co', 'hazard_refrigerant_alarm', 'hazard_smoke_fire_sparks_burn'];
+  assert(!s.result && s.node === expectNode && v && hazards.every(h => v.options.some(o => o.id === h)), 'B1-A01', 'stop() from ' + id + ' did not reach hazard choices');
   if (wasUrgent && s.node === 'ac.gate.cluster_entry') { const t = JSON.parse(JSON.stringify(s)); F.answer(t, 'none_of_these', META); assert(t.result && t.result !== null && !t.node, 'B1-A01b', 'after urgent ' + id + ', none_of_these must end at a no-DIY result, got node ' + t.node); }
 }
 // B1-A02 No string claims Aux stops the outdoor unit / no "Emergency or Aux Heat" instruction.
@@ -61,7 +64,7 @@ REACH_TEXT.forEach(([id, t]) => assert(!/\bkill (outdoor )?power\b|\bverify off\
   for (const [c, want] of [['breaker_off_on_purpose_or_unknown', 'breaker_off_unexplained_pro'], ['breaker_already_reset', 'breaker_retrip_pro'], ['breaker_tripped_first_time', 'breaker_off_unexplained_pro'], ['breaker_panel_warning', 'breaker_unsafe_stop']]) { const t = tryGo(base.concat([c])); assert(t.result === want, 'B1-A05', c + ' -> ' + want + ', got ' + (t.result || t.error)); }
   const seasonal=go(base.concat(['breaker_off_seasonal_by_me']));assert(seasonal.node==='ac.cool.power.seasonal_restore_step'&&F.viewNode(seasonal.node,seasonal).warrantyPrompt,'B1-A05s','seasonal restoration requires installer question before notice and steps');
   const once = F.results.breaker_reset_basic; assert(once && /trips again/i.test(textOf(once)) && /only once|one time/i.test(textOf(once)), 'B1-A05b', 'one-reset result must say once only and re-trip -> pro');
-  const hp = tryGo(GATE.concat(['heat_pump', 'air_source_ducted_hp', 'landing_no_heat', 'mode_matches_complaint', 'emergency_already_off', 'band_mild_warm', 'no_heat_at_all', 'outdoor_not_running_when_should', 'breaker_tripped_or_off']));
+  const hp = tryGo(GATE.concat(['heat_pump', 'air_source_ducted_hp', 'landing_no_heat', 'mode_matches_complaint', 'emergency_already_off', 'band_mild_warm', 'cold_home_holding', 'no_heat_at_all', 'outdoor_not_running_when_should', 'breaker_tripped_or_off']));
   assert(hp.node === 'ac.cool.power.breaker_reset_gate', 'B1-A05c', 'HP path must reach the same breaker gate, got ' + (hp.node || hp.result || hp.error)); }
 // B1-A06 Mode/context preservation.
 { const heat = go(GATE.concat(MS, ['landing_no_heat', 'heat_settings_right_still_problem', 'defrost_seen_heat_still_weak', 'filter_cleaned_recently', 'blocker_moved', 'not_sure_result']));
@@ -70,7 +73,7 @@ REACH_TEXT.forEach(([id, t]) => assert(!/\bkill (outdoor )?power\b|\bverify off\
   assert(!F.viewNode(cool.node, cool).options.some(o => o.id === 'air_ok_not_heating'), 'B1-A06b', 'cooling landing must not offer air_ok_not_heating');
   const out = go(GATE.concat(MS, ['landing_outdoor_unit', 'ctx_mode_unsure', 'outdoor_running_still_problem']));
   assert(!/basic checks are done/i.test(textOf(F.presentResult(out))), 'B1-A06c', 'direct outdoor path must not claim basic checks were done');
-  const hp = tryGo(GATE.concat(['heat_pump', 'air_source_ducted_hp', 'landing_no_heat', 'mode_matches_complaint', 'emergency_already_off', 'band_mild_warm', 'no_heat_at_all', 'outdoor_not_running_when_should']));
+  const hp = tryGo(GATE.concat(['heat_pump', 'air_source_ducted_hp', 'landing_no_heat', 'mode_matches_complaint', 'emergency_already_off', 'band_mild_warm', 'cold_home_holding', 'no_heat_at_all', 'outdoor_not_running_when_should']));
   const hv = hp.node ? F.viewNode(hp.node, hp) : null; assert(hv && !hv.options.some(o => /Cool is calling/.test((o.label || '') + (o.fact || ''))), 'B1-A06d', 'HP heating context must not record "Cool is calling"'); }
 // B1-A07 Heavy persistent ice in heat = same stop tier everywhere, unconditional off/EM.
 { const ms = F.results.ms_outdoor_freeze_heat_wave1; assert(ms && URGENT.includes(ms.tier) && !/If no useful heat is coming/.test(ms.actions[0]), 'B1-A07', 'ms_outdoor_freeze_heat_wave1 must be Stop tier with unconditional Off');
@@ -90,7 +93,7 @@ REACH_TEXT.forEach(([id, t]) => assert(!/\bkill (outdoor )?power\b|\bverify off\
   const u = tryGo(base.concat(['cold_home_falling'])); assert(u.result === 'hp_cold_home_falling', 'B1-A09d', 'falling indoor temp -> hp_cold_home_falling, got ' + (u.result || u.error));
   Object.values(R.results).filter(x => x.result === 'hp_weak_heat_deep_cold').forEach(x => assert(x.answers.some(a => a.node === 'hp.heat.cold_home_screen' && a.choice === 'cold_home_holding'), 'B1-A09e', 'hp_weak_heat_deep_cold reached without cold_home_holding')); }
 // B1-A10 Refrigerant alarm in every "New hazard now" option and in the thermostat alert branch.
-for (const id in F.nodes) for (const o of F.nodes[id].options) if (o.id === 'hazard_now') assert(/refrigerant/i.test(o.label), 'B1-A10', id + ' hazard_now label lacks refrigerant');
+for (const id in F.nodes) for (const o of F.nodes[id].options) if (o.id === 'hazard_now') assert(/refrigerant/i.test(o.label) || (id.startsWith('sd.') && /an alarm/.test(o.label)), 'B1-A10', id + ' hazard_now label lacks refrigerant');
 { const n = F.nodes['ts.alert.capture']; const o = n && n.options.find(x => x.id === 'code_refrigerant_alarm'); assert(o && o.next === '@ts_refrigerant_alarm' && F.results.ts_refrigerant_alarm && URGENT.includes(F.results.ts_refrigerant_alarm.tier), 'B1-A10b', 'ts.alert.capture needs code_refrigerant_alarm -> ts_refrigerant_alarm (urgent)'); }
 // B1-A11 Service-note factuality.
 for (const c of ['cool_only_split_ac', 'mini_split_ductless', 'water_source_geo', 'packaged_or_other', 'not_sure']) { const s = go(GATE.concat(['heat_pump', c])); assert(!/Equipment: air-source ducted heat pump\./.test(F.summary(s, {})), 'B1-A11', 'HP confirm=' + c + ' note still asserts air-source ducted'); }

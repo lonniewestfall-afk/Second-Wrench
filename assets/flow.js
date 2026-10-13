@@ -4,11 +4,11 @@
  *
  * Trees:
  * - ac.cool.v2 for cooling-only central AC sessions.
- * - hp.air_source.v1 for air-source ducted heat-pump sessions (Wave-1 Basic).
+ * - hp.air_source.v1 for air-source ducted heat-pump sessions (Basic).
  * - wshp.water_to_air.v0 for residential water-to-air water-source / geothermal
- *   sessions (Wave-1 PR-1). Safety screen, equipment gate, open-loop chemistry
+ *   sessions (PR-1). Safety screen, equipment gate, open-loop chemistry
  *   gate, and a call-pro handback. No loop, well, refrigerant, or electrical steps.
- * - fn.furnace.v0 for gas and electric furnace sessions (Wave-1 Basic, look-only).
+ * - fn.furnace.v0 for gas and electric furnace sessions (Basic, look-only).
  *   fn.gate.combustion_co runs before any furnace diagnosis, and before further
  *   heat-pump diagnosis when the heat pump has a gas furnace (or not sure).
  * - ms.ductless.v1 for a residential single-zone ductless mini-split (cooling
@@ -42,7 +42,7 @@
  * capacitor/contactor conclude. HP handback never auto-enters outdoor
  * fan, debris, or ice.
  *
- * Wave-2 Basic (2026-09-23), public:
+ * Basic (2026-09-23), public:
  * - filter_clean_ok + landing weak_airflow → ac.cool.airflow.returns_supplies.
  *   Not cooling + clean filter → ac.cool.outdoor.fan_spinning.
  * - fan_spinning → ac.cool.outdoor.debris_clearance → ice.
@@ -107,16 +107,7 @@
     'ac.noise.hazard_screen',
     'ac.noise.clarify_outdoor_hum'
   ];
-  const ADVANCED = [
-    'ac.adv.cap.prereq_gate_cluster',
-    'ac.adv.cap.confirm_pattern',
-    'ac.adv.cap.lockout_verify',
-    'ac.adv.cap.access_compartment',
-    'ac.adv.cap.identify_label',
-    'ac.adv.cap.discharge',
-    'ac.adv.cap.replace_like_for_like',
-    'ac.adv.cap.reassemble_restore_test'
-  ];
+  const ADVANCED = [];
   const HP_WAVE1 = [
     'hp.intake.system_confirm',
     'hp.landing.picker',
@@ -390,10 +381,7 @@
     'ac.cool.conclude.call_pro_capacitor_contactor': n('Call a professional', 'Suspected start components',
       'Based on your answers (outdoor hum / buzz while the fan is not spinning, or equivalent start evidence while cool is calling), a common professional check is the outdoor contactor and/or capacitor.\n\nAdvanced DIY is OFF in this beta. Do not attempt capacitor discharge, capacitor replacement, contactor replacement, or any cover-off electrical work from this guide.\n\nWhat to do:\n\n1. Set the thermostat to Off and leave it Off until a licensed HVAC professional has checked the system.\n2. Call a licensed HVAC tech.\n3. You may tell them: outdoor unit hummed or showed start symptoms while the condenser fan was not spinning; homeowner Basic checks only (no covers removed).\n\nThis is not a confirmed parts diagnosis — it is a ranked reason to stop DIY and get service.', [
         o('ack_call_pro', 'Understood — call a professional', '@suspected_capacitor_contactor_advanced_off', 'Terminal acknowledgment.'),
-        o('want_diy_capacitor_anyway', 'I want to replace the capacitor myself', {
-          whenAdvanced: 'ac.adv.cap.prereq_gate_cluster',
-          default: '@suspected_capacitor_contactor_advanced_off'
-        }, 'Not offered as live DIY while Advanced is off.')
+        o('want_diy_capacitor_anyway', 'I want to replace the capacitor myself', '@suspected_capacitor_contactor_advanced_off', 'Not offered as live DIY while Advanced is off.')
       ], { diyTier: 'pro_only' }),
 
     'ac.noise.hazard_screen': n('Unusual noise', 'Hazard screen first',
@@ -491,7 +479,7 @@
       'A breaker can be Off for a reason. Answer from what you already know; do not touch it while deciding. A first trip, an unknown or intentional shutdown, a prior reset, or an uncertain panel condition needs a professional. A known seasonal Off position has a separate notice before any restoration instructions.', [
         o('breaker_panel_warning', 'There\u2019s a burning smell, smoke, scorch marks, buzzing, or heat at the panel, or water near the panel or where I\u2019d stand', '@breaker_unsafe_stop', 'Stop. Don\u2019t touch it.', 'Panel warning sign reported: burning smell, smoke, scorch marks, buzzing, heat, or water.', { gate: 'breaker_panel_hazard' }),
         o('breaker_tripped_first_time', 'It tripped by itself. Nobody turned it off on purpose, nobody has reset it, and none of the warning signs above are there', '@breaker_off_unexplained_pro', 'A pro takes a first trip until the maker\u2019s own reset caption is on file.', 'Outdoor/AC breaker tripped by itself. Not reset on this check. No panel warning signs reported.'),
-        o('breaker_off_seasonal_by_me', 'I turned it off myself for the season or a trip, and nothing was wrong', 'ac.cool.power.seasonal_restore_step', 'Review the installer question and notice before any instructions.', 'Homeowner had turned the outdoor/AC breaker off for the season or a trip.'),
+        o('breaker_off_seasonal_by_me', 'I turned it off myself for the season, and nothing else is going on', 'ac.cool.power.seasonal_restore_step', 'Review the installer question and notice before any instructions. This is not a reset of a breaker that tripped.', 'Homeowner had turned the outdoor/AC breaker off for the season, and nothing else was going on.'),
         o('breaker_off_on_purpose_or_unknown', 'It\u2019s Off and I don\u2019t know why, or someone turned it off for a reason (a technician, a tag or lock, a storm, a leak, or a smell)', '@breaker_off_unexplained_pro', 'Leave it Off. A pro checks first.', 'Outdoor/AC breaker Off for an unknown or deliberate reason. Left Off.'),
         o('breaker_already_reset', 'Someone already reset it, or it has tripped before, including the last time the equipment started', '@breaker_retrip_pro', 'Don\u2019t reset it again. A pro takes it from here.', 'Outdoor/AC breaker already reset or has tripped before. Not reset again.'),
         o('panel_has_fuses', 'My home has fuses, not breaker handles', '@fuse_panel_pro', 'Leave the fuses alone.', 'Home has a fuse panel. Fuses not touched.'),
@@ -562,10 +550,11 @@
         o('band_mild_warm', 'Mild / warm — well above freezing', {
           byHpLanding: {
             ice_outdoor: 'hp.defrost.sanity',
-            no_heat: 'hp.heat.capacity_vs_dead'
+            no_heat: 'hp.heat.cold_home_screen',
+            both_modes_fail: 'hp.heat.cold_home_screen'
           },
           default: 'hp.observe.leaving_air_vs_mode'
-        }, 'Ice still gets a defrost check. Mild no-heat skips the defrost wait. Cooling complaints go to the leaving-air check.', 'Outdoor band: mild / warm.'),
+        }, 'Ice still gets a defrost check. A no-heat or both-modes complaint asks about the house first. Cooling complaints go to the leaving-air check.', 'Outdoor band: mild / warm.'),
         o('band_near_freezing', 'Near freezing — frost possible', {
           byHpLanding: { no_heat: 'hp.heat.cold_home_screen', both_modes_fail: 'hp.heat.cold_home_screen' },
           default: 'hp.defrost.sanity'
@@ -576,15 +565,16 @@
         }, 'A heating complaint asks about the house first.', 'Outdoor band: well below freezing.'),
         o('not_sure_ambient', 'I am not sure', {
           byHpLanding: {
-            no_heat: 'hp.defrost.sanity',
+            no_heat: 'hp.heat.cold_home_screen',
+            both_modes_fail: 'hp.heat.cold_home_screen',
             ice_outdoor: 'hp.defrost.sanity'
           },
           default: 'hp.observe.leaving_air_vs_mode'
-        }, 'Heat or ice complaints get a conservative defrost check. A cooling complaint continues to the leaving-air check.', 'Outdoor temperature band unknown.')
+        }, 'A no-heat or both-modes complaint asks about the house first. Ice gets a defrost check. A cooling complaint continues to the leaving-air check.', 'Outdoor temperature band unknown.')
       ]),
 
     'hp.defrost.sanity': n('Cold weather', 'Could this be a normal defrost?',
-      'In heat mode when outdoor air is cold, frost on the outdoor coil can be normal. During automatic defrost, many heat pumps temporarily stop the outdoor fan, make a whoosh, hiss, or steam sound, blow cooler air indoors for a short time, and turn on auxiliary heat while the outdoor coil clears.\n\nFrom where you already stand only:\n\nDo not reach into the grille.\nDo not chip ice with tools, screwdrivers, hammers, or hot water.\nDo not remove panels or jump defrost sensors.\n\nNormal frost is light and white, and it clears during a defrost (about 5–15 minutes, often every 30–90 minutes). Not normal: a solid block where you cannot see the coil fins, ice on the top or fan grille, ice building up from the base, or the fan scraping ice.\n\nWatch about 5–15 minutes. Does the outdoor unit recover into normal heat afterward (fan resumes, steam settles, heat returns)?\n\nHeavy ice plus keeping the system running to force heat is not a DIY continue. That can damage the system.\n\nBurning smell, smoke, sparks, or standing water at electrical equipment: Stop / get help.', [
+      'In heat mode when outdoor air is cold, frost on the outdoor coil can be normal. During automatic defrost, many heat pumps temporarily stop the outdoor fan, make a whoosh, hiss, or steam sound, blow cooler air indoors for a short time, and turn on auxiliary heat while the outdoor coil clears.\n\nA normal defrost usually lasts about 5 to 15 minutes, and some models finish sooner. Ice that is still there after about an hour of running is not normal. Call a licensed HVAC professional.\n\nFrom where you already stand only:\n\nDo not reach into the grille.\nDo not chip ice with tools, screwdrivers, hammers, or hot water.\nDo not remove panels or jump defrost sensors.\n\nNormal frost is light and white, and it clears during a defrost. Not normal: a solid block where you cannot see the coil fins, ice on the top or fan grille, ice building up from the base, or the fan scraping ice.\n\nDoes the outdoor unit recover into normal heat afterward (fan resumes, steam settles, heat returns)?\n\nHeavy ice plus keeping the system running to force heat is not a DIY continue. That can damage the system.\n\nBurning smell, smoke, sparks, or standing water at electrical equipment: Stop / get help.', [
         o('looks_like_defrost_then_recover', 'Looked like defrost, then returned toward normal, and the original problem is gone', '@hp_defrost_recovered_ok', 'Occasional defrost in cold weather can be normal.', 'Defrost-like behavior, then the original problem was gone.'),
         o('defrost_recovered_complaint_remains', 'Looked like defrost and recovered, but the original problem is still there', {
           byHpLanding: { no_cool: 'hp.observe.leaving_air_vs_mode' },
@@ -613,7 +603,12 @@
         o('cold_person_at_risk', 'The house is getting cold, and someone at home is at risk from the cold (an infant, an older adult, or someone who is ill or medically fragile)', '@cold_exposure', 'Get them warm first.', 'Someone at risk from the cold is at home, and the house is getting cold.', { gate: 'cold_exposure_911' }),
         o('cold_home_falling', 'The house keeps getting colder, or it can\u2019t stay above about 64 \u00b0F (18 \u00b0C)', '@hp_cold_home_falling', 'Backup heat, and a pro today.', 'Indoor temperature falling, or below about 64 \u00b0F (18 \u00b0C).'),
         o('cold_home_holding', 'The house is holding steady or slowly warming, and no one is at risk', {
-          byHpAmbient: { near_freezing: '@hp_weak_heat_deep_cold', well_below: '@hp_weak_heat_deep_cold' },
+          byHpAmbient: {
+            near_freezing: '@hp_weak_heat_deep_cold',
+            well_below: '@hp_weak_heat_deep_cold',
+            mild_warm: { byHpLanding: { no_heat: 'hp.heat.capacity_vs_dead', both_modes_fail: 'hp.observe.leaving_air_vs_mode' }, default: 'hp.defrost.sanity' },
+            unknown: { byHpLanding: { no_heat: 'hp.defrost.sanity', both_modes_fail: 'hp.observe.leaving_air_vs_mode' }, default: 'hp.observe.leaving_air_vs_mode' }
+          },
           default: 'hp.defrost.sanity'
         }, 'Continue the heat pump checks.', 'Indoor temperature holding steady. No one at risk from the cold.'),
         o('cold_home_not_sure', 'I\u2019m not sure', '@hp_cold_home_falling', 'We\u2019ll treat it as getting colder.', 'Indoor temperature trend not known.')
@@ -726,7 +721,7 @@
         o('co_alarm_or_symptoms', 'CO alarm sounding, or headache, dizziness, nausea, or drowsiness, especially in more than one person or pet', '@fn_co_alarm', 'Get to fresh air. Call from outside.', 'CO alarm or possible CO symptoms reported.', { gate: 'co_alarm_or_symptoms' }),
         o('rollout_soot_scorch', "Soot or scorch marks on the furnace, or flame where it shouldn't be", '@fn_rollout_soot', 'Stop using the furnace.', 'Soot, scorch marks, or flame outside the burner area reported.', { gate: 'flame_rollout_soot' }),
         o('burning_smoke_sparks', 'Burning-plastic or electrical smell, smoke, or sparks', '@fn_burning_sparks', 'Move away. Call 911.', 'Burning or electrical smell, smoke, or sparks reported.', { gate: 'smoke_fire_sparks_burn' }),
-        o('cold_exposure_risk', "Someone's at risk from the cold (a baby, an older adult, or a medical need) ", '@fn_cold_exposure', 'Get them warm first.', 'Someone at risk from the cold .', { gate: 'cold_exposure_911' }),
+        o('cold_exposure_risk', "Someone's at risk from the cold (a baby, an older adult, or a medical need)", '@fn_cold_exposure', 'Get them warm first.', 'Someone at risk from the cold.', { gate: 'cold_exposure_911' }),
         o('flame_yellow_orange', "I've already noticed the flame looks yellow or orange", '@fn_flame_abnormal', "Only if you already saw it. Don't go look.", 'Homeowner already noticed a yellow or orange flame.', { gate: 'combustion_flame_abnormal' }),
         o('boom_at_ignition', 'A bang or boom when the furnace starts', '@fn_ignition_bang', 'Stop using the furnace.', 'Bang or boom when the furnace starts reported.', { gate: 'delayed_ignition_bang' }),
         o('unsure', "I'm not sure", '@fn_gate_unsure', 'Not sure means stop.', 'Homeowner was not sure whether a furnace hazard was present.', { gate: 'unsure_hazard' }),
@@ -738,8 +733,8 @@
         o('gas_furnace', 'Gas furnace (natural gas or propane)', 'fn.landing.picker', '', 'Gas furnace reported.'),
         o('electric_furnace', 'Electric furnace (no gas line to it)', 'fn.landing.picker', '', 'Electric furnace reported.'),
         o('furnace_plus_heat_pump', 'Gas furnace plus an outdoor heat pump (dual-fuel)', 'hp.intake.system_confirm', 'The heat-pump check takes it from here.', 'Gas furnace plus heat pump (dual-fuel) reported.'),
-        o('boiler_radiators', 'Boiler, radiators, or radiant floor heat', '@fn_out_of_scope_equipment', 'Not covered yet.', 'Boiler or radiant heat reported.'),
-        o('oil_or_other', 'Oil, wood, pellet, wall or floor furnace, rooftop unit, or something else', '@fn_out_of_scope_equipment', 'Not covered yet.', 'Oil, wood, pellet, wall, floor, rooftop, or other heat reported.'),
+        o('boiler_radiators', 'Boiler, radiators, or radiant floor heat', 'bl.gate.safety', 'The boiler hazard check comes first.', 'Boiler or radiant heat reported.'),
+        o('oil_or_other', 'Oil furnace', 'fn.landing.picker', 'Oil heat stays in this check. Wood, pellet, wall, floor, and rooftop equipment need a professional for that equipment.', 'Oil furnace reported.'),
         o('mini_split', 'Ductless mini-split', '@fn_mini_split_oos', 'Use the mini-split check.', 'Ductless mini-split reported on the furnace check.'),
         o('not_sure', "I'm not sure", '@fn_system_unconfirmed', "Don't open panels to find out."),
         FN_HAZARD
@@ -795,7 +790,7 @@
         o('landing_error_code', 'A code or blinking lights on the indoor unit, remote, or app', 'ms.error.capture', 'Write it down. A pro reads it.', 'Complaint: Error code or blinking lights shown.'),
         o('landing_ice_seen', 'Ice or frost on the indoor unit or its pipes', 'ms.ice.stop_observe', 'Stop-and-thaw steps. Don’t chip ice.', 'Complaint: Ice or frost seen on the mini-split.'),
         o('landing_outdoor_unit', 'The outdoor unit: quiet, iced, or still not comfortable', 'ms.outdoor.safe_observe', 'Look from a window or dry ground only.', 'Complaint: Outdoor unit on a ductless mini-split.'),
-        o('landing_something_else', 'Something else (a noise or a smell)', '@ms_landing_not_in_pr1', 'Not covered in this check.', 'Complaint: A noise or a smell from the mini-split.'),
+        o('landing_something_else', 'Something else (a noise or a smell)', 'ms.landing.noise_or_smell', 'Noise and smell have their own look-only questions.', 'Complaint: A noise or a smell from the mini-split.'),
         MS_HAZARD
       ]),
 
@@ -969,12 +964,12 @@
       'emergency_exit', 'unsure_water_electrical', { gate: 'unsure_water_electrical' }),
     ice_keep_running: r('Stop / professional', 'Hard stop · call a pro', 'Stop. Turn it off and let the ice melt.',
       'Running on ice, or restarting too soon, can hurt the compressor. Melt can cause water damage.',
-      ['Set the system to Off at the thermostat.', "No overflow, drips, or ceiling stains? Set the fan to On to thaw faster. Otherwise, use Auto. A fan that won't run may be a safety switch. That's OK.", "Put towels down. Watch the drain pan if visible, and the ceiling below. Don't open panels.", 'Leave cooling off and call a pro.', 'Heat pump only: If your thermostat has an Emergency Heat setting, switch to it to keep heat on without the outdoor unit while you wait for a pro. It usually costs more to run. It may be labeled EM Heat, E-Heat, or Aux Heat Only. An AUX light that comes on by itself isn’t the same thing.'],
+      ['Set the system to Off at the thermostat.', "No overflow, drips, or ceiling stains? Set the fan to On to thaw faster. Otherwise, use Auto. A fan that won't run may be a safety switch. That's OK.", "Put towels down. Watch the drain pan if visible, and the ceiling below. Don't open panels.", 'Leave cooling off and call a pro.', 'Heat pump only: If your thermostat has an Emergency Heat setting, switch to it to keep heat on without the outdoor unit while you wait for a pro. It usually costs more to run.'],
       "Don't chip or pick at the ice, or use a heat gun or hair dryer.", 'ice',
       'emergency_exit', 'ice_keep_running', { gate: 'ice_keep_running' }),
     hp_ice_heat_outdoor: r('Stop / professional', 'Hard stop · call a pro', 'Stop. Switch to backup heat and call a pro.',
       "Solid ice isn't normal frost. Running on it can cause damage.",
-      ['If your thermostat has an Emergency Heat setting, switch to it to keep heat on without the outdoor unit while you wait for a pro. It usually costs more to run. It may be labeled EM Heat, E-Heat, or Aux Heat Only. An AUX light that comes on by itself isn’t the same thing and doesn’t stop the outdoor unit.', 'No such setting, no warm air in 15 minutes, or water dripping indoors? Turn the system Off.', 'Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn.', 'You may brush snow off the base. Never touch the coil or grille.', 'Call a pro. Mention any roof drip above it.'],
+      ['If your thermostat has an Emergency Heat setting, switch to it to keep heat on without the outdoor unit while you wait for a pro. It usually costs more to run.', 'Otherwise, or if there is no warm air in 15 minutes, set the thermostat Off.', 'If the house is getting cold, call a licensed HVAC professional. If it’s dangerously cold and anyone is at risk, get them somewhere warm first.', 'Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn.', 'You may brush snow off the base. Never touch the coil or grille.', 'Call a licensed HVAC professional. Mention any roof drip above it. If water is dripping indoors, leave the system Off.'],
       "Don't chip or pick at ice, use hot water, a hose, a heat gun, a hair dryer, or salt, or cover the unit.", 'ice',
       'emergency_exit', 'hp_ice_heat_outdoor', { gate: 'ice_keep_running' }),
     consent_declined: r('More information needed', 'Session ended', 'The check stops without agreement.',
@@ -1112,7 +1107,7 @@
       ['Set the thermostat to Off first.',
        'Stand on a dry floor with dry hands. Leave the panel’s cover on, and touch only the handle of that one breaker.',
        'Push the handle fully to Off, then fully to On. Do this once.',
-       'Wait 5 minutes. Then set the thermostat back to the mode you were using and listen for the outdoor unit.',
+       'Wait 15 minutes. Then set the thermostat back to the mode you were using and listen for the outdoor unit.',
        'If the breaker trips again, right away or the next time the equipment starts, don’t reset it again. Leave it Off and call a licensed HVAC professional or electrician.',
        'If it stays On and the outdoor unit is still silent, continue to the outdoor disconnect check. That step only asks what you can already see. Don’t touch the disconnect or any fuses.'],
       'Don’t reset it more than once, hold the handle On, swap breakers, remove the panel cover, reset a breaker you can’t identify, or touch fuses or the outdoor disconnect.', 'electrical',
@@ -1524,12 +1519,12 @@
       'emergency_exit', 'breaker_wont_reset', { gate: 'breaker_wont_reset' }),
     wshp_openloop_water_quality_pro: r('Professional guidance', 'Call a pro who works on open-loop systems', 'Open-loop water care needs a professional.',
       'Well, lake, or pond water can leave minerals or iron inside the unit’s water coil over time. Checking and cleaning it takes special equipment and chemicals. This is a reason to call, not a confirmed diagnosis.',
-      ['Leave covers on. Leave water valves, the well, the well pump, and the pressure tank alone.', 'If the system isn’t heating and it’s cold out, and your thermostat has an Emergency Heat setting, you can switch to it to keep heat on with backup heat while you wait for a pro. It usually costs more to run. It may be labeled EM Heat, E-Heat, or Aux Heat Only. Otherwise set the thermostat to Off. If it’s dangerously cold and anyone is at risk, get them somewhere warm first. Never heat with an oven, stove, grill, or generator indoors.', 'If the well water is also out for the house, tell the pro. Keep the heat pump off or on Emergency Heat until the well is working again.', 'Call a geothermal or water-source heat pump pro who services open-loop systems. Copy the note below for them.', 'If water starts flooding or reaches wiring, use Stop / get help.'],
+      ['Leave covers on. Leave water valves, the well, the well pump, and the pressure tank alone.', 'If the house is still getting some heat, leave the thermostat on Heat.', 'If your thermostat has an Emergency Heat setting, switch to it to keep heat on with backup heat while you wait for a pro. It usually costs more to run.', 'If the house is getting cold, call a licensed HVAC professional. If it’s dangerously cold and anyone is at risk, get them somewhere warm first.', 'Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn.', 'If the well water is also out for the house, tell the pro. Keep the heat pump off or on Emergency Heat until the well is working again.', 'Call a geothermal or water-source heat pump pro who services open-loop systems. Copy the note below for them.', 'If water starts flooding or reaches wiring, use Stop / get help.'],
       'Do not add acid, bleach, chlorine, descaler, or any chemical to the well, the water lines, or the unit. Do not try to clean the unit’s coil, and do not work on the well, pump, or pressure tank.', 'maintenance',
       'call_pro', 'wshp_openloop_water_quality_pro', { diyTier: 'pro_only' }),
     wshp_handback_call_pro: r('Professional guidance', 'Arrange service · geothermal / water-source pro', 'Call a pro who works on geothermal or water-source heat pumps.',
       'This beta does not yet guide homeowner checks for this system. The water loop, pump, refrigerant, and controls need a trained technician. This is a next step, not a diagnosis.',
-      ['Leave covers on. Leave loop valves, the pump box, and any well equipment alone.', 'If the home is getting too cold and your thermostat has an Emergency Heat setting, you can switch to it to keep heat on with backup heat until the pro comes. It usually costs more to run. It may be labeled EM Heat, E-Heat, or Aux Heat Only. If there’s no warm air in 15 minutes, set the system to Off. If it’s dangerously cold and anyone is at risk, get them somewhere warm first. Never heat with an oven, stove, grill, or generator indoors.', 'If the system keeps stopping or shows a lockout, set it to Off. Do not reset it again and again.', 'Write down any light, code, or water temperature that is already showing.', 'Call a technician who services geothermal or water-source heat pumps. Copy the note below for them.'],
+      ['Leave covers on. Leave loop valves, the pump box, and any well equipment alone.', 'If the house is still getting some heat, leave the thermostat on Heat.', 'If your thermostat has an Emergency Heat setting, switch to it to keep heat on with backup heat while you wait for a pro. It usually costs more to run.', 'If the house is getting cold, call a licensed HVAC professional. If it’s dangerously cold and anyone is at risk, get them somewhere warm first.', 'Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn.', 'If the system keeps stopping or shows a lockout, leave it as it is. Do not reset it again and again.', 'Write down any light, code, or water temperature that is already showing.', 'Call a technician who services geothermal or water-source heat pumps. Copy the note below for them.'],
       'Do not open panels, add refrigerant or antifreeze, drain or refill the loop, open loop pipes, jump or bypass a safety switch, or work inside the electrical panel.', 'safety',
       'call_pro', 'wshp_handback_call_pro', { diyTier: 'pro_only' }),
     wshp_out_of_scope_call_pro: r('Professional guidance', 'Outside this beta · call a pro', 'This system is outside this check.',
@@ -1765,12 +1760,12 @@
     ms_ice_cooling_wave1: r('Stop / professional', 'Turn it off · call a pro', 'Turn it off and let the ice melt.',
       'Running a mini-split with ice on it can damage it, and the melt can drip. A dirty filter can cause ice, and so can problems only a pro can check.',
       ['Turn the unit Off with the remote or app.', 'Put towels or a bucket under the indoor unit. Keep water away from outlets and cords.', 'Let the ice melt on its own. It can take a few hours.', 'Call a licensed HVAC pro. Tell them where you saw ice and when the filters were last cleaned.', 'If water reaches an outlet, cord, or light, stay clear and call a pro or electrician.', 'If you see sparks or smoke, or smell burning, get out and call 911 from outside.'],
-      'Don’t chip or pick at the ice, or use a hair dryer, heat gun, or hot water. Don’t restart cooling while any ice remains.', 'ice',
+      'Don’t chip or pick at the ice, or use a hair dryer, heat gun, hot water, a hose, or salt, or cover the unit. Don’t restart cooling while any ice remains.', 'ice',
       'call_pro', 'ms_ice_cooling_wave1'),
     ms_ice_keep_running: r('Stop / professional', 'Hard stop · call a pro', 'Stop. Turn it off and let the ice melt.',
       'Running a mini-split with ice on it, or restarting it too soon, can damage it. Melting ice can drip from the indoor unit.',
       ['Turn the unit Off with the remote or app.', 'Put towels or a bucket under the indoor unit. Keep water away from outlets and cords.', 'Don’t open the front cover or any panel to check the ice.', 'Leave it off and call a licensed HVAC pro.', 'If water reaches an outlet or cord, stay clear and call a pro or electrician.'],
-      'Don’t chip or pick at the ice, use a hair dryer, heat gun, or hot water, or keep restarting it.', 'ice',
+      'Don’t chip or pick at the ice, use a hair dryer, heat gun, hot water, a hose, or salt, cover the unit, or keep restarting it.', 'ice',
       'emergency_exit', 'ice_keep_running', { gate: 'ice_keep_running' }),
     ms_ice_unclear_or_heat: r('More information needed', 'Look only', 'This check can’t sort out this ice yet.',
       'Light frost on the outdoor unit while heating can be normal for a short time. A normal defrost can show steam, a pause in heating, and a whoosh, then heat returns. Thick ice that keeps building isn’t normal.',
@@ -2299,7 +2294,7 @@
       if (colorCallout.test(blob)) throw new Error('WSHP color callout in result ' + id);
     });
     const overlayProbe = { product: 'wshp' };
-    ['ac.adv.cap.discharge', '@next_step_advanced', '@suspected_capacitor_contactor_advanced_off', CONCLUDE].forEach(target => {
+    ['ac.adv.cap.', '@next_step_advanced', '@suspected_capacitor_contactor_advanced_off', CONCLUDE].forEach(target => {
       if (applySessionOverlay(overlayProbe, 'wshp.handback.call_pro', 'probe', target) !== '@wshp_advanced_off') {
         throw new Error('WSHP overlay must map advanced targets to @wshp_advanced_off');
       }
@@ -2453,7 +2448,7 @@
       nodes[id].options.forEach(op => {
         if (op.id !== 'hazard_now') return;
         const res = typeof op.next === 'string' && op.next.charAt(0) === '@' ? results[op.next.slice(1)] : null;
-        const receivingGate = HEAT.owns(id) && nodes[op.next] && nodes[op.next].safetyGate;
+        const receivingGate = op.next === ENTRY || (HEAT.owns(id) && nodes[op.next] && nodes[op.next].safetyGate);
         if ((!res || res.outcome !== 'emergency_exit') && !receivingGate) throw new Error('hazard_now must emergency-exit or re-triage: ' + id);
       });
     });
@@ -2464,7 +2459,7 @@
         }
       });
     });
-    ['@next_step_advanced', '@suspected_capacitor_contactor_advanced_off', CONCLUDE, 'ac.adv.cap.discharge'].forEach(target => {
+    ['@next_step_advanced', '@suspected_capacitor_contactor_advanced_off', CONCLUDE, 'ac.adv.cap.'].forEach(target => {
       if (applySessionOverlay({ product: 'ms' }, 'ms.landing.picker', 'probe', target) !== '@ms_advanced_off') {
         throw new Error('Mini-split overlay must map advanced targets to @ms_advanced_off');
       }
@@ -2520,21 +2515,21 @@
   const sideEntry=()=>o('fan_on_side','My outdoor unit’s fan is on the side and blows air out sideways (not up)','sd.entry.outdoor','Start with mode and hazards before outdoor observations.','Side-discharge outdoor unit reported.');
   nodes['ac.cool.outdoor.fan_spinning'].options.splice(3,0,sideEntry());
   nodes['ac.start.outdoor_silent_vs_hum'].options.splice(2,0,sideEntry());
-  nodes['ac.cool.outdoor.debris_clearance'].options.splice(0,0,sideEntry());
-  nodes['hp.landing.picker'].options.push(o('landing_side_discharge','Snow or something close around the outdoor unit, ice under it, or it looks tilted, and its fan is on the side (it blows out sideways)','sd.entry.outdoor','For no heat, weak heat, ice on the unit itself, or an outdoor unit that won’t run, pick one of the choices above first.','Complaint: Side-discharge outdoor unit.'));
+  nodes['hp.landing.picker'].options.push(o('landing_outdoor_side_unit','Snow or something close around the outdoor unit, ice under it, or it looks tilted, and its fan is on the side (it blows out sideways)','sd.entry.outdoor','For no heat, weak heat, ice on the unit itself, or an outdoor unit that won’t run, pick one of the choices above first.','Complaint: Side-discharge outdoor unit.'));
   Object.assign(nodes['ac.cool.outdoor.debris_clearance'],{notice:'pn-short',step:{what:'Moves loose ground debris and ordinary stored items away from the outdoor air path.',caution:'The fan can start automatically. Fins are sharp and easily damaged; thermostat Off does not disconnect electricity.',source:'LG outdoor-obstruction guidance, CH61; checked October 12, 2026. Ground-only access limits are Second Wrench policy.',steps:['Record the thermostat settings and set the thermostat to Off for this brief task. If the home cannot tolerate a pause in heating or cooling, call a professional.','From dry, level ground, move only ordinary items and loose ground debris away from the cabinet. Follow the exact installation manual for clearance. Do not brush the unit, touch fins, reach through a grille, use a hose, or prune plants with tools.','Step back. Restore the recorded thermostat settings only if no ice, water near electrical parts, smell, or abnormal fan noise is present. Otherwise leave the request Off and call for help.'],watch:'Observe from a few steps back for about ten minutes only while everyone has enough cooling. Stop for new noise, rubbing, struggling, smoke, or another warning.',stop:'Debris on the unit, damaged wiring, wet or icy access, or anything requiring equipment contact is a professional job.',undo:'If you cannot restore the settings you recorded, leave the request Off and call for help. Do not return to equipment during a hazard.',locked:'No covers, grilles, fins, electrical boxes, disconnects, refrigerant pipes or valves, mounting, or drainage work.'}});
-  nodes['ac.cool.outdoor.debris_clearance'].options.push(o('hazard_now','New hazard now (gas smell, CO or refrigerant leak alarm, smoke, sparks, or water at electrical parts)','@hp_hazard_now','Stop the check.','New hazard reported during outdoor clearing.',{gate:'new_hazard'}));
+  nodes['ac.cool.outdoor.debris_clearance'].options.push(sideEntry());
+  nodes['ac.cool.outdoor.debris_clearance'].options.push(o('hazard_now','New hazard now (gas smell, CO or refrigerant leak alarm, smoke, sparks, or water at electrical parts)','ac.gate.cluster_entry','Stop the check.','New hazard reported during outdoor clearing.',{gate:'new_hazard'}));
   results.hp_mini_split_oos.actions=['Go back home, press Start, and choose “Ductless mini-split”. It covers cooling and heating problems on one or several indoor units.','Choose the number of indoor units you already know about. Do not open equipment to identify the system.'];
   nodes['wshp.hazard.flood_electrical'].options.find(o=>o.id==='wshp_hz_none').next='wshp.heat.cold_home_screen';
   nodes['wshp.entry.equipment_gate'].options.find(o=>o.id==='wshp_open_loop').next='wshp.openloop.complaint';
   results.owner_ask_installer=r('Professional guidance','Ask your installer first.','The optional step can wait.','Check the equipment instructions and any active installer agreement before changing it.', ['Ask your installer or licensed HVAC professional whether this step applies to the equipment.','For any new hazard, use Stop / get help.'], 'Do not change equipment while its condition or instructions are uncertain.', 'professional', 'call_pro','installer_first');
   results.breaker_seasonal_restore_basic.title='Power restored · keep the start-up wait';
   results.breaker_seasonal_restore_basic.explanation='You reported one seasonal power restoration. Equipment operation has not been confirmed.';
-  results.breaker_seasonal_restore_basic.actions=['Keep the thermostat Off for the exact manual’s start-up wait. Second Wrench uses 24 hours before cooling after seasonal power restoration.','After the required wait, restore your normal thermostat settings only if no hazard or fault has appeared.','If the breaker trips immediately or at the next start, do not reset it; leave it stopped and call a licensed HVAC professional or electrician.'];
+  results.breaker_seasonal_restore_basic.actions=['Keep the thermostat Off for the exact manual’s start-up wait. Second Wrench uses 24 hours before cooling after seasonal power restoration. If it’s urgent, wait as long as you can.','After the required wait, restore your normal thermostat settings only if no hazard or fault has appeared.','If the outdoor unit is still silent about 15 minutes after you start it, leave it Off and call a licensed HVAC professional.','If the breaker trips immediately or at the next start, do not reset it; leave it stopped and call a licensed HVAC professional or electrician.'];
   results.filter_replace_basic.title='Observe after the filter change';
   results.filter_replace_basic.explanation='The filter change and closed access are reported; operation has not yet been confirmed.';
   results.filter_replace_basic.actions=['With no warning signs, the specified filter in place, and its access closed, restore the thermostat settings you recorded.','Observe from where you normally stand for 10–15 minutes, only if the home has enough heating or cooling and nobody is at risk.','If ice, water, an alarm, an unusual noise, or a smell appears, stop the check and use Stop / get help. If airflow or comfort stays poor, call a licensed HVAC professional.'];
-  results.hot_water_steam = r('Stop / professional','Stay away from hot water and steam.','Escaping hot water or steam can cause severe burns.','The source and cause have not been confirmed.', ['Keep everyone away from the equipment, water, steam, and discharge pipe. Do not touch a valve or try to plug the pipe.','For a gas smell, CO alarm, smoke, or illness, leave immediately and call 911 from outside. Do not operate switches on the way out.','Otherwise move away and call a licensed heating professional or plumber urgently for this equipment. A room thermostat set to Off may not stop water heating or other zones.'], 'Do not approach the equipment to investigate or attempt a reset.', 'hot_water_steam', 'call_pro', 'hot_water_steam');
+  results.hot_water_steam = r('Emergency','Stay away from hot water and steam.','Escaping hot water or steam can cause severe burns.','The source and cause have not been confirmed.', ['Keep everyone away from the equipment, water, steam, and discharge pipe. Do not touch a valve or try to plug the pipe.','For a gas smell, CO alarm, smoke, or illness, leave immediately and call 911 from outside. Do not operate switches on the way out.','Otherwise move away and call a licensed heating professional or plumber urgently for this equipment. A room thermostat set to Off may not stop water heating or other zones.'], 'Do not approach the equipment to investigate or attempt a reset.', 'hot_water_steam', 'emergency_exit', 'hot_water_steam', { gate: 'hot_water_steam' });
   nodes[ENTRY].options.splice(-1,0,o('hazard_hot_water_steam','Spraying hot water, escaping steam, or a relief pipe discharging','@hot_water_steam','Stay back from the discharge.','Hot water or steam release reported.',{gate:'hot_water_steam'}));
   nodes['sw.intake.other_system'].options.unshift(
     o('water_heater', 'Water heater or no hot water', 'wh.gate.safety', 'Tank, tankless, or heat pump water heater. A safety check comes first.', 'Water heater concern reported.'),
@@ -2659,17 +2654,22 @@
         state.defrostReturns = 1;
         return next.default;
       }
+      let picked = null;
       if (state.product === 'hp' && next.byHpLanding) {
         const key = state.hpLanding || '';
-        if (next.byHpLanding[key]) return next.byHpLanding[key];
+        if (next.byHpLanding[key]) picked = next.byHpLanding[key];
       }
-      if (state.product === 'hp' && next.byHpAmbient) {
+      if (picked == null && state.product === 'hp' && next.byHpAmbient) {
         const key = state.hpAmbient || 'unknown';
-        if (next.byHpAmbient[key]) return next.byHpAmbient[key];
+        if (next.byHpAmbient[key]) picked = next.byHpAmbient[key];
       }
-      const landing = state.landing || '';
-      if (next.byLanding && next.byLanding[landing]) return next.byLanding[landing];
-      return next.default;
+      if (picked == null) {
+        const landing = state.landing || '';
+        if (next.byLanding && next.byLanding[landing]) picked = next.byLanding[landing];
+        else picked = next.default;
+      }
+      if (picked && typeof picked === 'object') return resolveTarget({ next: picked }, state);
+      return picked;
     }
     return next;
   }
@@ -2696,31 +2696,22 @@
     return state.answers.some(a => a.node === 'ac.cool.power.breaker_visual' &&
       (a.choice === 'breaker_on_confirmed' || a.choice === 'breaker_reset_ok_still_silent'));
   }
-  function concludeBody(on) {
-    if (!on) return nodes[CONCLUDE].body;
-    return 'Based on your answers (outdoor hum or buzz while the fan is not spinning, or the same start evidence while cool is calling), a common professional check is the outdoor contactor and/or capacitor.\n\nYou can call a licensed HVAC technician and stop here. This copy can also offer a gated Advanced path for a like-for-like outdoor run/dual capacitor only. The contactor is not replaced on that path.\n\nAdvanced work stops unless every gate passes: kill power and verify Off, no terminal contact before discharge, discharge only by the manufacturer method or a proper insulated bleed tool (never a screwdriver or bare-metal short), and covers on before power is restored. Unsure means stop.\n\nThis is not a confirmed parts diagnosis.';
+  function concludeBody() {
+    return nodes[CONCLUDE].body;
   }
   function viewNode(id, state) {
     const node = nodes[id];
     if (!node) return null;
     let view = node;
     if (id === CONCLUDE) {
-      const on = advancedEnabled();
       view = {
         section: node.section,
         title: node.title,
-        body: concludeBody(on),
-        caution: on ? 'Call-pro stays available. The gated path does not include the contactor.' : node.caution,
+        body: concludeBody(),
+        caution: node.caution,
         diyTier: node.diyTier,
         safetyGate: node.safetyGate,
-        options: node.options.map(op => {
-          if (op.id !== 'want_diy_capacitor_anyway') return op;
-          return Object.assign({}, op, {
-            hint: on
-              ? 'Gated capacitor path only. Lockout, discharge, and covers-on rules apply. You can still stop and call a pro.'
-              : op.hint
-          });
-        })
+        options: node.options
       };
     }
     if (id === 'ac.cool.filter.check') {
@@ -2786,6 +2777,11 @@
   }
   function answer(state, choice, meta = {}) {
     if (!state || state.result || !nodes[state.node]) throw new Error('This check has ended or is invalid.');
+    if (state.node === 'sw.intake.system_type') {
+      const onNode = nodes[state.node].options.some(op => op.id === choice);
+      const menuChoice = systemMenu().flatMap(group => group.choices).some(item => item.id === choice);
+      if (menuChoice && !onNode) return selectSystem(state, choice, meta);
+    }
     if (nodes[state.node].diyTier === 'advanced' && !advancedEnabled()) {
       throw new Error('Advanced DIY is not available in this beta.');
     }
@@ -2796,7 +2792,7 @@
     const rendered = viewNode(nodeId, state);
     const option = rendered && rendered.options.find(x => x.id === choice);
     if (!option || option.disabled || (choice === 'filter_clean_weak_airflow' && state.product !== 'hp')) throw new Error('Choose an answer shown on the current screen.');
-    if (nodeId !== ENTRY && nodeId !== CONSENT && (!state.safetyCleared || !state.consent)) {
+    if (nodeId !== ENTRY && nodeId !== CONSENT && !(state.stopping && nodeId === 'bl.gate.safety') && (!state.safetyCleared || !state.consent)) {
       throw new Error('Safety and consent are required before troubleshooting.');
     }
     if (HEAT.before(state, nodeId, option)) { HEAT.entered(state, state.node); return state; }
@@ -2807,7 +2803,7 @@
       state.termsVersion = String(meta.termsVersion);
       state.telemetry = false;
     }
-    if (nodeId === ENTRY) state.safetyCleared = choice === 'none_of_these';
+    if (nodeId === ENTRY || (state.stopping && nodeId === 'bl.gate.safety')) state.safetyCleared = choice === 'none_of_these';
     if (nodeId === 'ac.cool.landing.picker' && LANDING[choice]) state.landing = LANDING[choice];
     if (nodeId === 'hp.landing.picker' && HP_LANDING[choice]) state.hpLanding = HP_LANDING[choice];
     if (nodeId === 'hp.ambient.outdoor_band' && HP_BAND[choice]) state.hpAmbient = HP_BAND[choice];
@@ -2945,6 +2941,9 @@
       throw new Error('That step is not part of this check.');
     }
     if (nodeId === ENTRY && state.stopping && state.noDiyLock && (choice === 'none_of_these' || choice === 'hazard_unsure')) target = '@professional';
+    if (state.product === 'sd' && ['@breaker_reset_basic', 'ac.cool.power.breaker_reset_gate', 'ac.cool.power.seasonal_restore_step', '@breaker_seasonal_restore_basic'].indexOf(target) !== -1) {
+      target = '@sd_breaker_not_guided';
+    }
     if (choice === 'breaker_reset_ok_still_silent') state.reset_count = 1;
     if (target === '@breaker_reset_basic' && (state.reset_count || 0) >= 1) target = '@breaker_retrip_pro';
     if (target === '@breaker_reset_basic') state.reset_count = 1;
@@ -3017,10 +3016,6 @@
       }
       if (nodes[target].diyTier === 'advanced') {
         pushAudit(state, 'diy_tier_shown:advanced');
-        if (target === 'ac.adv.cap.prereq_gate_cluster') pushAudit(state, 'advanced_path_entered');
-      }
-      if (nodeId === 'ac.adv.cap.identify_label' && choice === 'label_readable_recorded') {
-        pushAudit(state, 'capacitor_label_recorded');
       }
       pushAudit(state, 'node_entered:' + target);
       if (state.product === 'ts' && TS.fnOf[target] && state.tsModel) {
@@ -3063,12 +3058,20 @@
       hpGasFurnace: state.hpGasFurnace, fnLanding: state.fnLanding, answers: state.answers, audit: state.audit
     };
     const fresh = create(keep.seed, keep.mode);
+    const boilerStop = keep.product === 'bl';
+    const reopen = boilerStop ? 'bl.gate.safety' : ENTRY;
+    const hadConsent = !!state.consent;
+    const consentAt = state.consentAt;
+    const termsVersion = state.termsVersion;
     Object.assign(state, fresh, keep, {
-      stopping: true, node: ENTRY, result: null, safetyCleared: false,
-      consent: false, telemetry: false, preselectChoice: null
+      stopping: true, node: reopen, result: null, safetyCleared: false,
+      consent: boilerStop ? hadConsent : false,
+      consentAt: boilerStop ? consentAt : null,
+      termsVersion: boilerStop ? termsVersion : null,
+      telemetry: false, preselectChoice: null, heatingHazardReported: false
     });
     pushAudit(state, 'exit_ramp:stop_get_help');
-    pushAudit(state, 'node_entered:' + ENTRY);
+    pushAudit(state, 'node_entered:' + reopen);
     return state;
   }
   function summary(state, extra = {}) {
@@ -3199,6 +3202,16 @@
       .replace('If the system still will not cool or start, start a new check and choose Not cooling or Will not start.', 'If the system still will not heat or cool, start a new heat pump check.')
       .replace('Set Cool with the setpoint below the room temperature and see whether the outdoor unit starts.', 'Set Heat or Cool so the thermostat is calling, and see whether the outdoor unit starts.');
     const copy = Object.assign({}, res, { actions: (res.actions || []).map(swap) });
+    if (state.result === 'ice_keep_running') {
+      const lead = [
+        'If your thermostat has an Emergency Heat setting, switch to it to keep heat on without the outdoor unit while you wait for a pro. It usually costs more to run.',
+        'Otherwise, or if there is no warm air in 15 minutes, set the thermostat Off.',
+        'If the house is getting cold, call a licensed HVAC professional. If it’s dangerously cold and anyone is at risk, get them somewhere warm first.',
+        FN_CO_LINE
+      ];
+      const rest = copy.actions.filter(a => !/^Heat pump only:/.test(a) && a !== 'Set the system to Off at the thermostat.' && lead.indexOf(a) === -1);
+      copy.actions = lead.concat(rest);
+    }
     if (state.result === 'hp_defrost_valve_ob_control' && state.hpConcludeFrom) {
       const note = {
         defrost_failure_suspected: 'Outdoor coil stayed iced and did not recover.',

@@ -19,6 +19,8 @@ const replacements = [
   ['with no safe heat', 'without enough heat'], ['with no safe heat.', 'without enough heat.'],
   ['I can’t get to the boiler safely', 'I can’t reach the boiler from dry, level ground'],
   ['Boiler could not be reached safely.', 'Boiler could not be reached from dry, level ground.'],
+  ['couldn’t be reached safely', 'couldn’t be reached without opening anything'],
+  ["couldn't be reached safely", "couldn't be reached without opening anything"],
   ['from safety', 'from outside'], ['licensed heating pro', 'licensed heating professional']
 ];
 function copy(value) {
@@ -94,16 +96,16 @@ option('bl.zone.look','gurgle_or_cold_top').next = 'bl.conclude.call_pro';
 option('bl.zone.look','gurgle_or_cold_top').reason = {steam:'steam_distribution_after_basics',default:'air_in_system'};
 for (const id of ['bl.pn.notice','bl.pn.warranty','bl.bleed.step','bl.reset.do']) delete B[id];
 for (const id of ['bl_bleed_done_basic','bl_reset_ok_basic','bl_vent_wont_close']) delete R[id];
-// No temperature-by-touch instructions or inference that “not sure” means cold.
-B['sw.handoff.hydronic_coil'] = question('Hot-water coil: what have you noticed?', 'A boiler or water heater supplies hot water to a coil in the air handler. The blower moves room air across that coil. Either side can cause a heat problem.\n\nDo not touch pipes, valves, fittings, coil fins, or hot surfaces to test temperature. An existing display or gauge is only a clue; it does not prove water is circulating through the coil.', [
-  op('pipe_hot_no_air','Little or no air comes from the vents','>bl_to_fn','Check the air side.','Little or no airflow at a hot-water air handler reported.',{hydroPipe:'unsure'}),
-  op('pipe_hot_air_warm','Warm air comes out, but rooms fall behind','>bl_to_fn','Check the filter and air path.','Warm air reported, but rooms fall behind.',{hydroPipe:'unsure'}),
-  op('pipe_cold','Air moves, but it stays cool','sw.handoff.hydronic_coil.source','Check the heat source.','Air moves but stays cool; water temperature unconfirmed.',{hydroPipe:'unsure'}),
-  op('unsure','I’m not sure','sw.handoff.hydronic_both','You can choose either side.','Hydronic-coil temperature and airflow unconfirmed.',{hydroPipe:'unsure'})
-],{owner:'shared'});
-B['sw.handoff.hydronic_both'] = question('Which side would you like to check?', 'We have not confirmed whether the coil has hot water or normal airflow. The water-side check covers the heat source. The air-side check covers the blower, filter, and ducts. Each system starts with its own hazard questions.', [
-  op('water_side','Check the boiler or water heater','sw.handoff.hydronic_coil.source'),
-  op('air_side','Check the air handler','>bl_to_fn')
+// Shared pipe check (handoffs.md). Ids describe the pipe, not the airflow.
+B['sw.handoff.hydronic_coil'] = question('Is the pipe into the air handler hot?', 'With the heat calling for at least 5 minutes, find the pipe that carries hot water into the air handler. Check it without grabbing: hold your hand near it, or touch it briefly with the back of your hand. These pipes can be hotter than 160 °F and can burn you. Don’t grab the pipe. Don’t touch bare copper fittings near valves, and don’t open anything.', [
+  op('pipe_cold','It’s cold or barely warm',{waterHeaterSource:'>coil_to_wh',sourceKnown:{fromBl:'bl.landing.picker',default:'>fn_to_bl'},fromBl:'sw.handoff.hydronic_coil.source',default:'>fn_to_bl'},'Water side.','Coil supply pipe is cold or barely warm.',{hydroPipe:'cold'}),
+  op('pipe_hot_no_air','It’s hot, but little or no warm air comes out',{fromBl:'>bl_to_fn',default:'fn.hydro.air_side'},'Air side.','Coil supply pipe is hot, with little or no warm air.',{hydroPipe:'hot'}),
+  op('pipe_hot_air_warm','It’s hot, and warm air comes out, but rooms fall behind',{fromBl:'>bl_to_fn',default:'fn.hydro.air_side'},'Air side.','Coil supply pipe is hot and warm air comes out, but rooms fall behind.',{hydroPipe:'hot'}),
+  op('unsure','I’m not sure, or I can’t reach it without climbing or reaching past other equipment','sw.handoff.hydronic_both','We’ll treat the pipe as not hot.','Hydronic-coil pipe temperature unconfirmed.',{hydroPipe:'unsure'})
+],{owner:'shared',safetyGate:true});
+B['sw.handoff.hydronic_both'] = question('Let’s check the water side first', 'We’ll treat the pipe as not hot. You can check the heat source first, or go straight to the air handler.', [
+  op('water_side','Check the boiler or water heater',{waterHeaterSource:'>coil_to_wh',sourceKnown:'>fn_to_bl',fromBl:'bl.landing.picker',default:'sw.handoff.hydronic_coil.source'}),
+  op('air_side','Check the air handler',{fromBl:'>bl_to_fn',default:'fn.hydro.air_side'})
 ],{owner:'shared'});
 delete B['sw.handoff.hydronic_coil.both'];
 B['sw.handoff.hydronic_coil.source'].owner = 'shared';
@@ -147,6 +149,23 @@ for(const node of Object.values(B)) {
   node.options.forEach(o=>{delete o.legal;delete o.cond;});
 }
 boiler.review = {date:'2026-10-12',type:'operator content review',notAttorneyReviewed:true,notLicensedHvacReviewed:true,held:['Model-specific boiler resets pending exact-model source verification','Radiator bleeding pending an exact homeowner procedure and tool exception'],sourceArchive:'second-wrench-handoff-supplement.zip'};
+R.bl_refrigerant_alarm = {
+  title: 'Leave the affected area',
+  explanation: 'A refrigerant leak alarm needs people out of the affected area. This boiler check does not identify the refrigerant or the cause.',
+  actions: [
+    'Move people out of the affected area to fresh air without operating switches or creating ignition sources.',
+    'Call a licensed HVAC professional with EPA 608 capability from outside the affected area and follow the equipment’s alarm instructions. For breathing trouble or immediate danger, call 911.',
+    'Do not DIY-seal a leak or add refrigerant.'
+  ],
+  avoid: 'Do not turn off a mitigation blower, cycle power, bypass a sensor, use flames, or open refrigerant lines.',
+  tier: 'Emergency',
+  outcome: 'emergency_exit',
+  diyTier: 'pro_only',
+  reason: 'refrigerant_alarm_or_release',
+  urgency: 'Leave the affected area',
+  owner: 'bl',
+  gate: 'refrigerant_alarm_or_release'
+};
 const furnace = require('./compose-furnace')(read('content/lanes/furnace-base.json'), read('content/lanes/furnace-draft.json'), CO);
 // Publish only reviewed runtime fields. Raw reset instructions, routing notes,
 // review packets and authoring metadata stay out of the delivered bundle.
@@ -154,7 +173,12 @@ const waterHeater = require('./compose-water-heater')(CO);
 for (const group of [{nodes:B},furnace,waterHeater]) {
   for (const [id,node] of Object.entries(group.nodes)) {
     for (const option of node.options) if(option.id === 'hazard_now') option.label = 'New gas smell, CO alarm, refrigerant leak alarm, smoke, sparks, leaking hot water or steam, or another hazard';
-    if (node.safetyGate && ['fn.gate.combustion_co','bl.gate.safety','bl.gate.carryover','wh.gate.safety'].includes(id)) node.options.splice(-1,0,op('refrigerant_alarm','A refrigerant leak alarm is sounding','@leak','','Refrigerant leak alarm reported.'));
+    if (node.safetyGate && ['fn.gate.combustion_co','bl.gate.safety','bl.gate.carryover','wh.gate.safety'].includes(id) && !node.options.some(o => o.id === 'refrigerant_alarm')) {
+      const refrigerantNext = id.startsWith('bl.') ? '@bl_refrigerant_alarm' : '@leak';
+      const unsureAt = node.options.findIndex(o => o.id === 'unsure' || o.id === 'none_of_these');
+      const at = unsureAt === -1 ? node.options.length - 1 : unsureAt;
+      node.options.splice(at, 0, op('refrigerant_alarm','A refrigerant leak alarm is sounding',refrigerantNext,'Leave the affected area.','Refrigerant leak alarm reported.'));
+    }
   }
 }
 const basic = require('./compose-basic-steps')();
