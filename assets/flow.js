@@ -263,7 +263,7 @@
         o('cooling_only_ac', 'Cooling-only AC', 'ac.cool.intake.system_confirm', 'The outdoor unit is for cooling. A furnace, boiler, or other heater provides heat.', 'Cooling-only central AC reported.'),
         o('heat_pump', 'Heat pump (heats and cools with the outdoor unit)', 'hp.intake.system_confirm', 'The outdoor unit runs for heat and for cooling.', 'Heat pump reported at system type.'),
         o('furnace', 'Furnace or air handler (gas, oil, electric, or hot water)', 'fn.gate.combustion_co', 'Includes manufactured homes and hydronic coils. A furnace and air-handler safety check comes first.', 'Furnace or air handler reported at system type.'),
-        o('other_heat_or_ductless', 'Something else: water heater, boiler, mini-split, geothermal, thermostat, other', 'sw.intake.other_system', 'Boilers, water heaters, ductless mini-splits, geothermal, thermostat controls, or another system.', 'Something else reported at system type.'),
+        o('other_heat_or_ductless', 'Something else: water heater, boiler, mini-split, geothermal, thermostat, other', 'sw.intake.other_system', 'Boilers, water heaters, ductless mini-splits, geothermal, thermostat controls, or another system.', ''),
         o('not_sure', 'Not sure', 'sw.identify.winter_outdoor', 'Up to three plain questions. If it is still unclear, the check uses the heat-pump path.')
       ]),
 
@@ -276,7 +276,7 @@
         o('thermostat_settings', 'Thermostat or settings problem', 'ts.gate.safety_stops',
           'Screen, mode, schedule, fan, Wi-Fi, or a message on a Nest, Honeywell Home, ecobee, or Amazon thermostat.',
           'Thermostat or settings problem reported at Start.'),
-        o('not_listed', 'None of these', '@sw_other_not_listed', 'This beta does not check that equipment yet.', 'Equipment not listed on the Something else screen.')
+        o('not_listed', 'None of these', '@sw_other_not_listed', 'This beta does not check that equipment yet.', 'Equipment not listed in the system menu.')
       ]),
 
     'sw.identify.winter_outdoor': n('Your system', 'Does the outdoor unit run in winter to heat the house?',
@@ -309,7 +309,7 @@
         o('heat_pump', 'A heat pump', 'hp.intake.system_confirm', 'A heat pump heats and cools. Leave this cooling-only check and continue on the air-source heat pump check.', 'Heat pump reported. Switching to the heat pump tree.'),
         o('ductless_mini_split', 'A ductless mini-split', 'ms.intake.system_confirm', 'Indoor unit on the wall, floor, or ceiling, no vents. Continue on the mini-split check.', 'Ductless mini-split reported. Switching to the mini-split check.'),
         o('window_portable', 'A window or portable unit', '@out_of_scope_equipment', 'Out of scope for this beta.', 'Window or portable equipment reported.'),
-        o('geo_packaged_other', 'Geothermal, packaged, or another system', '@out_of_scope_equipment', 'Geothermal or water-source: start again, choose Something else: water heater, boiler, mini-split, geothermal, thermostat, other, then Water-source / geothermal heat pump. Packaged or other systems are not covered yet.', 'Geothermal, packaged, or another system reported.'),
+        o('geo_packaged_other', 'Geothermal, packaged, or another system', '@out_of_scope_equipment', 'Geothermal or water-source: start again, choose Water-source / geothermal heat pump. Packaged or other systems are not covered yet.', 'Geothermal, packaged, or another system reported.'),
         o('not_sure', 'I am not sure', '@system_unconfirmed', 'Do not open covers to find out.')
       ]),
 
@@ -500,7 +500,7 @@
       ], { caution: 'Panel door only. The panel\u2019s cover stays on. Use the handle only, and don\u2019t touch anything else inside.', diyTier: 'basic' }),
 
     'hp.intake.system_confirm': n('Your system', 'Is this an air-source ducted heat pump?',
-      'Use what you already know or the equipment manual. Do not remove covers, climb on the outdoor unit, or open the air-handler cabinet to identify it.\n\nThis path covers an air-source heat pump with a separate outdoor unit that can heat and cool, and ducted indoor air through a furnace or air handler.\n\nIt does not cover cooling-only central AC (use the central AC check), water-source or geothermal heat pumps, or packaged rooftop units you cannot confirm as an air-source ducted heat pump. A ductless mini-split has its own check: go back home, press Start, and choose Something else, then Ductless mini-split.\n\nDo you also have a gas furnace for backup heat? Pick the choice that says so, or the not-sure choice. A short furnace safety check comes first, then the heat-pump check. Gas smell, a carbon monoxide alarm, or furnace combustion work is not DIY. Use Stop / get help.', [
+      'Use what you already know or the equipment manual. Do not remove covers, climb on the outdoor unit, or open the air-handler cabinet to identify it.\n\nThis path covers an air-source heat pump with a separate outdoor unit that can heat and cool, and ducted indoor air through a furnace or air handler.\n\nIt does not cover cooling-only central AC (use the central AC check), water-source or geothermal heat pumps, or packaged rooftop units you cannot confirm as an air-source ducted heat pump. A ductless mini-split has its own check: go back home, press Start, and choose Ductless mini-split.\n\nDo you also have a gas furnace for backup heat? Pick the choice that says so, or the not-sure choice. A short furnace safety check comes first, then the heat-pump check. Gas smell, a carbon monoxide alarm, or furnace combustion work is not DIY. Use Stop / get help.', [
         o('air_source_ducted_hp', 'Air-source ducted heat pump, no gas furnace', 'hp.landing.picker', 'Outdoor unit heats and cools. Air moves through ducts. Backup heat, if any, is electric.', 'Air-source ducted heat pump reported.'),
         o('air_source_hp_gas_furnace', 'Air-source ducted heat pump with a gas furnace for backup heat', { fnGateDone: 'hp.landing.picker', default: 'fn.gate.combustion_co' }, 'Dual-fuel or hybrid. A short furnace safety check comes first, then back to the heat pump.', 'Air-source ducted heat pump with a gas furnace for backup heat reported.'),
         o('air_source_hp_gas_unsure', "Air-source ducted heat pump, and I'm not sure if there's a gas furnace", { fnGateDone: 'hp.landing.picker', default: 'fn.gate.combustion_co' }, 'The furnace safety check comes first, then back to the heat pump.', 'Air-source ducted heat pump; gas furnace backup not confirmed.'),
@@ -693,7 +693,7 @@
         o('wshp_loop_unsure', 'Water-source or geothermal, but I am not sure which loop', 'wshp.handback.call_pro', 'That is OK. A pro can tell.', 'Loop type: homeowner not sure.'),
         o('wshp_air_source', 'Actually, there is an outdoor unit with a big fan', 'hp.intake.system_confirm', 'That is an air-source heat pump. Use the heat pump check.', 'Outdoor unit with a fan reported; switched to the air-source heat pump check.'),
         o('wshp_ductless', 'Actually, it is a ductless mini-split (wall or ceiling units in rooms)', '@wshp_divert_mini_split', 'That is a different check.', 'Ductless mini-split reported at the water-source equipment question.'),
-        o('wshp_furnace_combustion', 'The problem is a gas, oil, or propane furnace or boiler', '@wshp_divert_furnace', 'Start again: choose Furnace or air handler for gas, oil, or electric heat; choose Something else, then Boiler, for boiler heat.', 'Fuel-burning furnace or boiler problem reported at the water-source equipment question.'),
+        o('wshp_furnace_combustion', 'The problem is a gas, oil, or propane furnace or boiler', '@wshp_divert_furnace', 'Start again: choose Furnace or air handler for gas, oil, or electric heat; choose Boiler & hydronic heat, for boiler heat.', 'Fuel-burning furnace or boiler problem reported at the water-source equipment question.'),
         o('wshp_out_of_scope_size', 'Something bigger or different: over 6 tons, a business or large building, or it heats water for floors or radiators', '@wshp_out_of_scope_call_pro', 'Outside this beta. A pro is the right next step.', 'Over 6 tons, commercial, or water-to-water system reported.'),
         o('wshp_system_unsure', 'I am not sure what kind of system I have', '@wshp_system_unconfirmed', 'Do not open covers to find out.', 'Homeowner unsure of system type at the water-source equipment question.'),
         o('hazard_now', 'New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, flooding, or water at electrical parts)', '@wshp_hazard_now', 'Stop. Do not keep going.', 'New hazard reported during the water-source check.', { gate: 'wshp_new_hazard' })
@@ -989,7 +989,7 @@
       'insufficient_info', 'heat_pump_out_of_scope'),
     out_of_scope_equipment: r('More information needed', 'Not covered in this beta yet', 'This equipment is outside the cooling-only split central AC check.',
       'Window and portable units, packaged systems, and other types are not diagnosed here.',
-      ['Hire a technician who works on that type of equipment, or use that manufacturer’s owner guidance.', 'If this is a water-source or geothermal heat pump: Start again, choose Something else: water heater, boiler, mini-split, geothermal, thermostat, other, then Water-source / geothermal heat pump.', 'You can write down an already-known model number yourself. Do not remove a cover or climb to find it.'],
+      ['Hire a technician who works on that type of equipment, or use that manufacturer’s owner guidance.', 'If this is a water-source or geothermal heat pump: Start again, choose Water-source / geothermal heat pump.', 'You can write down an already-known model number yourself. Do not remove a cover or climb to find it.'],
       'Do not apply this central-AC guide to other equipment.', 'scope',
       'insufficient_info', 'out_of_scope_equipment'),
     system_unconfirmed: r('More information needed', 'Confirm the system first', 'This check needs a confirmed split central air conditioner.',
@@ -1389,12 +1389,12 @@
       'insufficient_info', 'hp_cool_only_use_ac'),
     hp_mini_split_oos: r('More information needed', 'Outside this heat-pump check', 'Use the mini-split check instead.',
       'This ducted heat-pump check will not guess a mini-split diagnosis. Second Wrench has a separate mini-split check for cooling and heating on one indoor unit.',
-      ['Go back home, press Start, and choose “Something else: water heater, boiler, mini-split, geothermal, thermostat, other”, then “Ductless mini-split”. It covers cooling and heating problems on a single indoor unit.', 'For a system with more than one indoor unit, use a technician who works on mini-splits or the manufacturer owner guidance.', 'Do not remove a cover to force an identification.'],
+      ['Go back home, press Start, and choose “Ductless mini-split”. It covers cooling and heating problems on a single indoor unit.', 'For a system with more than one indoor unit, use a technician who works on mini-splits or the manufacturer owner guidance.', 'Do not remove a cover to force an identification.'],
       'Do not apply this ducted heat-pump guide to a mini-split.', 'scope',
       'insufficient_info', 'hp_mini_split_oos'),
     hp_water_source_oos: r('More information needed', 'Outside this heat-pump check', 'This air-source check does not cover a water-source heat pump.',
       'Loop water and related work are not part of this check.',
-      ['Start again, choose Something else: water heater, boiler, mini-split, geothermal, thermostat, other, then Water-source / geothermal heat pump.', 'Use a technician who works on that system.', 'Do not open covers or service a ground loop from this result.'],
+      ['Start again, choose Water-source / geothermal heat pump.', 'Use a technician who works on that system.', 'Do not open covers or service a ground loop from this result.'],
       'Do not apply this air-source guide to a water-source heat pump.', 'scope',
       'insufficient_info', 'hp_water_source_oos'),
     hp_packaged_oos: r('More information needed', 'Outside this heat-pump check', 'Packaged or unconfirmed equipment is not covered in this check.',
@@ -1544,12 +1544,12 @@
       'insufficient_info', 'wshp_system_unconfirmed'),
     wshp_divert_mini_split: r('More information needed', 'Use the right check', 'A ductless mini-split has its own check.',
       'This check is for water-source and geothermal heat pumps. Mini-split heating and cooling concerns, on one indoor unit or several rooms, start from the home screen.',
-      ['Go back home, press Start, and choose “Something else: water heater, boiler, mini-split, geothermal, thermostat, other”, then “Ductless mini-split”.', 'If anything is unsafe, use Stop / get help.'],
+      ['Go back home, press Start, and choose “Ductless mini-split”.', 'If anything is unsafe, use Stop / get help.'],
       'Do not use these water-source steps on a mini-split.', 'scope',
       'insufficient_info', 'wshp_divert_mini_split'),
     wshp_divert_furnace: r('Professional guidance', 'Use the furnace or boiler check', 'Furnaces, air handlers, and boilers have their own questions.',
-      'For gas, oil, electric, or hydronic air heat, use Furnace or air handler on the system-type screen. For a boiler, choose Something else, then Boiler.',
-      ['If you smell gas or a carbon monoxide alarm is sounding, leave the building now and call 911 or your gas company from outside.', 'For gas, oil, electric, or hydronic air heat, start again and choose Furnace or air handler.', 'For a boiler, start again and choose Something else, then Boiler. Each receiving check starts with its own hazard questions.', 'Leave covers on. Do not relight or reset fuel-burning equipment from this guide.'],
+      'For gas, oil, electric, or hydronic air heat, use Furnace or air handler on the system-type screen. For a boiler, choose Boiler & hydronic heat.',
+      ['If you smell gas or a carbon monoxide alarm is sounding, leave the building now and call 911 or your gas company from outside.', 'For gas, oil, electric, or hydronic air heat, start again and choose Furnace or air handler.', 'For a boiler, start again and choose Boiler & hydronic heat. Each receiving check starts with its own hazard questions.', 'Leave covers on. Do not relight or reset fuel-burning equipment from this guide.'],
       'Do not open the furnace or boiler, relight a burner, or bypass a safety switch.', 'gas',
       'call_pro', 'wshp_divert_furnace', { diyTier: 'pro_only' }),
     wshp_advanced_off: r('Professional guidance', 'Repair steps are off for this system', 'Parts and electrical repairs are not offered for water-source heat pumps.',
@@ -1643,8 +1643,8 @@
       "Don't open the equipment or relight anything to find out what's wrong.", 'scope',
       'insufficient_info', 'fn_out_of_scope_equipment'),
     fn_mini_split_oos: r('More information needed', 'Use the mini-split check', 'A ductless mini-split has its own check.',
-      'This furnace check is for ducted furnaces and air handlers. Mini-split heating and cooling concerns, on one indoor unit or several rooms, start on the Something else screen.',
-      ['Go back home, press Start, and choose “Something else: water heater, boiler, mini-split, geothermal, thermostat, other”, then “Ductless mini-split”.', FN_CO_LINE],
+      'This furnace check is for ducted furnaces and air handlers. Mini-split heating and cooling concerns, on one indoor unit or several rooms, start with Ductless mini-split in the system menu.',
+      ['Go back home, press Start, and choose “Ductless mini-split”.', FN_CO_LINE],
       "Don't remove covers to identify the equipment.", 'scope',
       'insufficient_info', 'fn_mini_split_oos'),
     fn_system_unconfirmed: r('More information needed', 'Confirm the furnace first', 'We need to know the furnace type.',
@@ -2524,7 +2524,7 @@
   nodes['hp.landing.picker'].options.push(o('landing_side_discharge','Snow or something close around the outdoor unit, ice under it, or it looks tilted, and its fan is on the side (it blows out sideways)','sd.entry.outdoor','For no heat, weak heat, ice on the unit itself, or an outdoor unit that won’t run, pick one of the choices above first.','Complaint: Side-discharge outdoor unit.'));
   Object.assign(nodes['ac.cool.outdoor.debris_clearance'],{notice:'pn-short',step:{what:'Moves loose ground debris and ordinary stored items away from the outdoor air path.',caution:'The fan can start automatically. Fins are sharp and easily damaged; thermostat Off does not disconnect electricity.',source:'LG outdoor-obstruction guidance, CH61; checked October 12, 2026. Ground-only access limits are Second Wrench policy.',steps:['Record the thermostat settings and set the thermostat to Off for this brief task. If the home cannot tolerate a pause in heating or cooling, call a professional.','From dry, level ground, move only ordinary items and loose ground debris away from the cabinet. Follow the exact installation manual for clearance. Do not brush the unit, touch fins, reach through a grille, use a hose, or prune plants with tools.','Step back. Restore the recorded thermostat settings only if no ice, water near electrical parts, smell, or abnormal fan noise is present. Otherwise leave the request Off and call for help.'],watch:'Observe from a few steps back for about ten minutes only while everyone has enough cooling. Stop for new noise, rubbing, struggling, smoke, or another warning.',stop:'Debris on the unit, damaged wiring, wet or icy access, or anything requiring equipment contact is a professional job.',undo:'If you cannot restore the settings you recorded, leave the request Off and call for help. Do not return to equipment during a hazard.',locked:'No covers, grilles, fins, electrical boxes, disconnects, refrigerant pipes or valves, mounting, or drainage work.'}});
   nodes['ac.cool.outdoor.debris_clearance'].options.push(o('hazard_now','New hazard now (gas smell, CO or refrigerant leak alarm, smoke, sparks, or water at electrical parts)','@hp_hazard_now','Stop the check.','New hazard reported during outdoor clearing.',{gate:'new_hazard'}));
-  results.hp_mini_split_oos.actions=['Go back home, press Start, and choose “Something else: water heater, boiler, mini-split, geothermal, thermostat, other”, then “Ductless mini-split”. It covers cooling and heating problems on one or several indoor units.','Choose the number of indoor units you already know about. Do not open equipment to identify the system.'];
+  results.hp_mini_split_oos.actions=['Go back home, press Start, and choose “Ductless mini-split”. It covers cooling and heating problems on one or several indoor units.','Choose the number of indoor units you already know about. Do not open equipment to identify the system.'];
   nodes['wshp.hazard.flood_electrical'].options.find(o=>o.id==='wshp_hz_none').next='wshp.heat.cold_home_screen';
   nodes['wshp.entry.equipment_gate'].options.find(o=>o.id==='wshp_open_loop').next='wshp.openloop.complaint';
   results.owner_ask_installer=r('Professional guidance','Ask your installer first.','The optional step can wait.','Check the equipment instructions and any active installer agreement before changing it.', ['Ask your installer or licensed HVAC professional whether this step applies to the equipment.','For any new hazard, use Stop / get help.'], 'Do not change equipment while its condition or instructions are uncertain.', 'professional', 'call_pro','installer_first');
@@ -2542,6 +2542,41 @@
   );
   nodes['sw.intake.other_system'].options.find(x => x.id === 'not_listed').label = 'None of these';
   assertGraph();
+
+  function systemMenu() {
+    const direct = id => [id];
+    const other = id => ['other_heat_or_ductless', id];
+    const choice = (id, label, hint, route) => ({ id, label, hint, route });
+    return [
+      { id: 'controls', title: 'Thermostat & controls', choices: [
+        choice('thermostat_settings', 'Thermostat or settings problem', 'Blank screen, schedules, temperature settings, fan, Wi-Fi, or a message on the display.', other('thermostat_settings'))
+      ] },
+      { id: 'comfort', title: 'Heating & cooling', choices: [
+        choice('cooling_only_ac', 'Central air conditioner', 'Cooling-only AC. Heat comes from a separate furnace, boiler, or other heater.', direct('cooling_only_ac')),
+        choice('heat_pump', 'Ducted heat pump', 'An outdoor unit that heats and cools, with air coming through vents.', direct('heat_pump')),
+        choice('furnace', 'Furnace or air handler', 'Gas, oil, electric, or hot-water coil. Includes manufactured homes and hydronic air handlers.', direct('furnace')),
+        choice('ductless_mini_split', 'Ductless mini-split', 'Indoor units on a wall, floor, or ceiling, serving one room or several.', other('ductless_mini_split')),
+        choice('boiler', 'Boiler & hydronic heat', 'Radiators, hot-water baseboard, radiant floors, steam, or the water side of an air-handler coil.', other('boiler')),
+        choice('water_source_geo', 'Water-source / geothermal heat pump', 'An indoor heat pump connected to water or ground-loop pipes.', other('water_source_geo'))
+      ] },
+      { id: 'hot-water', title: 'Hot water', choices: [
+        choice('water_heater', 'Water heater or no hot water', 'Tank, tankless, heat pump water heater, or a boiler that also heats tap water.', other('water_heater'))
+      ] },
+      { id: 'identify', title: 'Need help choosing?', choices: [
+        choice('not_sure', 'Not sure what I have', 'A few questions about what you already know. No covers off or climbing.', direct('not_sure')),
+        choice('not_listed', 'My equipment is not listed', 'Get the limits of this beta and a note for a professional.', other('not_listed'))
+      ] }
+    ];
+  }
+  function selectSystem(state, id, meta = {}) {
+    if (!state || state.result || state.node !== 'sw.intake.system_type') throw new Error('Choose a system only from the system menu.');
+    const selected = systemMenu().flatMap(group => group.choices).find(choice => choice.id === id);
+    if (!selected) throw new Error('That system choice is not available.');
+    const next = JSON.parse(JSON.stringify(state));
+    selected.route.forEach(choice => answer(next, choice, meta));
+    Object.assign(state, next);
+    return state;
+  }
 
   function create(seed = '', mode = 'real') {
     const state = {
@@ -3176,7 +3211,7 @@
   }
   return {
     acknowledgeStep: state => { HEAT.acknowledge(state); HEAT.entered(state, state.node); return state; },
-    nodes, results, create, answer, stop, resume, summary, activity, viewNode, presentResult, advancedEnabled,
+    nodes, results, create, answer, selectSystem, systemMenu, stop, resume, summary, activity, viewNode, presentResult, advancedEnabled,
     treeVersion: TREE_VERSION, treeVersionHp: TREE_HP, treeVersionWshp: TREE_WSHP, treeVersionMs: TREE_MS, treeVersionTs: TREE_TS, tsV0: TS_V0, tsV1: TS_V1, msPr1: MS_PR1, msV1: MS_V1, wave1: WAVE1, wave2: WAVE2, advanced: ADVANCED,
     tsSteps: TS.steps, tsModels: TS.models, tsLc: TS.lc, tsFallbacks: TS.fallbacks, tsMirrors: { records: TS.records, byId: TS.byId, serve: TS.serve, hold: TS.hold },
     tsMirrorRenderable: TS.tsMirrorRenderable, renderTsPanel: TS.renderTsPanel, assertTs: TS.assertTs, assertGraph: assertGraph,

@@ -1,7 +1,7 @@
 {
   "private": true,
   "scripts": {
-    "test": "node scripts/check-flows.js && node scripts/check-thermostat-regressions.js && node scripts/check-thermostat-audit.js && node scripts/check-audit-batch1.js && node scripts/check-heating.js && node scripts/check-expanded-lanes.js",
+    "test": "node scripts/check-flows.js && node scripts/check-thermostat-regressions.js && node scripts/check-thermostat-audit.js && node scripts/check-audit-batch1.js && node scripts/check-heating.js && node scripts/check-expanded-lanes.js && node scripts/check-system-menu.js",
     "build": "node scripts/build-public.js",
     "test:heating": "node scripts/check-heating.js"
   },

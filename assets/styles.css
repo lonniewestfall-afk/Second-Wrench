@@ -121,3 +121,14 @@ input::placeholder,textarea::placeholder{color:#aaaab4;opacity:1}
 .social-follow svg{width:15px;height:15px;display:block;flex-shrink:0}
 .site-footer .social-follow{grid-column:1/-1;margin:0;padding-top:2px;border-top:0}
 @media print{.social-follow{display:none!important}}
+
+/* Visible entry points share the existing gated decision-tree routes. */
+.system-menu{display:grid;gap:26px;margin-top:28px}
+.system-group h2{font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted,#b9b6b3);margin:0 0 11px}
+.system-options{grid-template-columns:repeat(2,minmax(0,1fr))}
+.system-options .option{height:100%;align-items:flex-start}
+.system-options .option small{line-height:1.5}
+.system-group--controls .system-options,.system-group--hot-water .system-options{grid-template-columns:1fr}
+.system-group--controls .option{border-color:#ad7965;background:rgba(173,121,101,.08)}
+.system-group--identify{padding-top:22px;border-top:1px solid rgba(255,255,255,.12)}
+@media(max-width:680px){.system-options{grid-template-columns:1fr}.system-menu{gap:24px}}
