@@ -39,10 +39,10 @@
         },
         {
           "id": "cold_exposure_risk",
-          "label": "Someone's at risk from the cold (a baby, an older adult, or a medical need) ",
+          "label": "Someone's at risk from the cold (a baby, an older adult, or a medical need)",
           "next": "@fn_cold_exposure",
           "hint": "Get them warm first.",
-          "fact": "Someone at risk from the cold .",
+          "fact": "Someone at risk from the cold.",
           "gate": "cold_exposure_911"
         },
         {

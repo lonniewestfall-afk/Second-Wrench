@@ -410,8 +410,8 @@
     "nodes": {
       "sd.entry.outdoor": {
         "section": "Side-discharge outdoor unit",
-        "title": "What was the system supposed to be doing?",
-        "body": "Pick the mode you selected or wanted when you noticed the problem.",
+        "title": "What was the system supposed to be doing when you noticed this?",
+        "body": "Pick what you set it to, or what you wanted it to do.",
         "owner": "sd",
         "diyTier": "basic",
         "safetyGate": false,
@@ -448,7 +448,7 @@
           },
           {
             "id": "hazard_now",
-            "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, water at electrical parts, or someone at risk)",
+            "label": "Something unsafe is happening now (burning smell, smoke, sparks, gas smell, an alarm, water or ice at electrical parts, or someone at risk)",
             "hint": "Stop checking. We’ll show you where to get help.",
             "fact": "New hazard reported during the outdoor-unit check.",
             "next": "sd.gate.outdoor_hazard_screen"
@@ -457,8 +457,8 @@
       },
       "sd.heat.cold_home_screen": {
         "section": "Side-discharge outdoor unit",
-        "title": "Is the house getting too cold?",
-        "body": "People come first. A baby, an older adult, or someone with a medical need may need a warmer home. The WHO housing guideline uses 18°C (64°F) as a minimum during cold seasons; reaching that number does not rule out risk.",
+        "title": "Before we look at the outdoor unit",
+        "body": "Before we look at the outdoor unit: is the house getting too cold for anyone in it? If anyone at home is a baby, an older adult, or has a medical need, or the indoor temperature keeps dropping, getting them warm comes first.",
         "owner": "sd",
         "diyTier": "basic",
         "safetyGate": true,
@@ -492,15 +492,8 @@
             "fact": "House warm enough for now reported."
           },
           {
-            "id": "temperature_unknown",
-            "label": "I do not know the indoor temperature",
-            "hint": "Arrange help instead of waiting.",
-            "next": "@sd_no_heat_urgent_pro",
-            "fact": "Indoor temperature unconfirmed."
-          },
-          {
             "id": "hazard_now",
-            "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, water at electrical parts, or someone at risk)",
+            "label": "Something unsafe is happening now (burning smell, smoke, sparks, gas smell, an alarm, water or ice at electrical parts, or someone at risk)",
             "hint": "Stop checking. We’ll show you where to get help.",
             "fact": "New hazard reported during the outdoor-unit check.",
             "next": "sd.gate.outdoor_hazard_screen"
@@ -509,8 +502,8 @@
       },
       "sd.gate.outdoor_hazard_screen": {
         "section": "Side-discharge outdoor unit",
-        "title": "Do you notice any of these hazards?",
-        "body": "Answer from a few steps back or a window. Do not touch the unit, its disconnect, or its wiring.",
+        "title": "Do you see or notice any of these at the outdoor unit or in the home right now?",
+        "body": "Answer from a few steps back. Don’t touch the unit, the disconnect box on the wall, or the wiring.",
         "owner": "sd",
         "diyTier": "basic",
         "safetyGate": true,
@@ -617,8 +610,8 @@
       },
       "sd.intake.cabinet_confirm": {
         "section": "Side-discharge outdoor unit",
-        "title": "Where is the outdoor fan?",
-        "body": "Look from a window or dry ground. A side fan blows sideways; a top fan blows upward. Do not approach moving parts to identify it.",
+        "title": "Where’s the fan on your outdoor unit?",
+        "body": "Answer from where you’re standing or from a window. Don’t open or touch anything to find out.",
         "owner": "sd",
         "diyTier": "basic",
         "safetyGate": false,
@@ -626,7 +619,7 @@
           {
             "id": "side_fan_confirmed",
             "label": "The fan is on the side and blows out sideways",
-            "hint": "The fan on this kind of unit blows air out sideways. Some of the checks are different, so we’ll use the checks made for it.",
+            "hint": "The fan on the outdoor unit blows air out sideways. Some of the checks are different, so we’ll use the checks made for it.",
             "next": "sd.landing.picker",
             "fact": "",
             "set": {
@@ -663,7 +656,7 @@
           },
           {
             "id": "hazard_now",
-            "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, water at electrical parts, or someone at risk)",
+            "label": "Something unsafe is happening now (burning smell, smoke, sparks, gas smell, an alarm, water or ice at electrical parts, or someone at risk)",
             "hint": "Stop checking. We’ll show you where to get help.",
             "fact": "New hazard reported during the outdoor-unit check.",
             "next": "sd.gate.outdoor_hazard_screen"
@@ -672,8 +665,8 @@
       },
       "sd.landing.picker": {
         "section": "Side-discharge outdoor unit",
-        "title": "What did you notice outside?",
-        "body": "Use observations from a window or dry, level ground. You can choose not sure without going closer.",
+        "title": "Outdoor unit",
+        "body": "Answer from what you can already see. Don’t open or touch the unit.",
         "owner": "sd",
         "diyTier": "basic",
         "safetyGate": false,
@@ -736,7 +729,7 @@
           },
           {
             "id": "hazard_now",
-            "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, water at electrical parts, or someone at risk)",
+            "label": "Something unsafe is happening now (burning smell, smoke, sparks, gas smell, an alarm, water or ice at electrical parts, or someone at risk)",
             "hint": "Stop checking. We’ll show you where to get help.",
             "fact": "New hazard reported during the outdoor-unit check.",
             "next": "sd.gate.outdoor_hazard_screen"
@@ -745,8 +738,8 @@
       },
       "sd.look.discharge_clearance": {
         "section": "Side-discharge outdoor unit",
-        "title": "Is the space in front of the fan open?",
-        "body": "Air blows sideways out of this unit. Walls, fences, decks, and another unit can obstruct or recirculate air. Installation clearances depend on the exact model and arrangement. Compare your paperwork with the exact installation manual; do not move or modify the unit.",
+        "title": "Outdoor unit",
+        "body": "For example, Carrier lists at least 24 in. in front of the fan for its 38MURA models (IM-38MURA-02, p. 8). Daikin lists a wall on the fan side as no taller than 47 in. for its Fit models (3P515859-5S, p. 4). Check your unit’s manual.",
         "owner": "sd",
         "diyTier": "basic",
         "safetyGate": false,
@@ -788,7 +781,7 @@
           },
           {
             "id": "hazard_now",
-            "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, water at electrical parts, or someone at risk)",
+            "label": "Something unsafe is happening now (burning smell, smoke, sparks, gas smell, an alarm, water or ice at electrical parts, or someone at risk)",
             "hint": "Stop checking. We’ll show you where to get help.",
             "fact": "New hazard reported during the outdoor-unit check.",
             "next": "sd.gate.outdoor_hazard_screen"
@@ -797,11 +790,11 @@
       },
       "sd.look.intake_clearance": {
         "section": "Side-discharge outdoor unit",
-        "title": "Look at the back and sides",
-        "body": "From a step back, look for crowding, debris on the fins, or a dryer vent or grill aimed at the unit. Do not touch fins, put anything through a grille, or turn the fan by hand, even with the thermostat Off. Stored electrical energy may remain.",
+        "title": "Outdoor unit",
+        "body": "Don’t put hands, sticks, or tools through the grille or into the fins, even with the power off. Parts inside the outdoor unit can stay charged after the power is off, and wind turning the fan can charge them again.",
         "owner": "sd",
         "diyTier": "basic",
-        "safetyGate": false,
+        "safetyGate": true,
         "options": [
           {
             "id": "back_clear",
@@ -832,15 +825,8 @@
             "fact": "Exhaust source aimed at the unit."
           },
           {
-            "id": "not_sure",
-            "label": "I’m not sure",
-            "hint": "",
-            "fact": "Outdoor observation unconfirmed.",
-            "next": "@sd_unsure"
-          },
-          {
             "id": "hazard_now",
-            "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, water at electrical parts, or someone at risk)",
+            "label": "Something unsafe is happening now (burning smell, smoke, sparks, gas smell, an alarm, water or ice at electrical parts, or someone at risk)",
             "hint": "Stop checking. We’ll show you where to get help.",
             "fact": "New hazard reported during the outdoor-unit check.",
             "next": "sd.gate.outdoor_hazard_screen"
@@ -849,11 +835,11 @@
       },
       "sd.look.snow_height": {
         "section": "Side-discharge outdoor unit",
-        "title": "Where is the snow around the unit?",
-        "body": "Look from a window or cleared, level ground. Do not climb a snowbank or walk on ice. The unit must remain above the expected snow level as its installation manual requires. Raising it, changing its stand, or directing roof runoff is an installer’s job.",
+        "title": "Outdoor unit",
+        "body": "For example, Carrier lists at least 2 in. above the deepest expected snow for its 38MURA models (IM-38MURA-02, p. 8). Daikin lists the bottom frame at more than 19-3/4 in. above expected snowfall for its Fit models (3P515859-5S, p. 6). Check your unit’s manual.",
         "owner": "sd",
         "diyTier": "basic",
-        "safetyGate": false,
+        "safetyGate": true,
         "options": [
           {
             "id": "clear_and_high",
@@ -905,15 +891,8 @@
             "fact": "Ice on outdoor unit."
           },
           {
-            "id": "not_sure",
-            "label": "I’m not sure",
-            "hint": "",
-            "fact": "Outdoor observation unconfirmed.",
-            "next": "@sd_unsure"
-          },
-          {
             "id": "hazard_now",
-            "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, water at electrical parts, or someone at risk)",
+            "label": "Something unsafe is happening now (burning smell, smoke, sparks, gas smell, an alarm, water or ice at electrical parts, or someone at risk)",
             "hint": "Stop checking. We’ll show you where to get help.",
             "fact": "New hazard reported during the outdoor-unit check.",
             "next": "sd.gate.outdoor_hazard_screen"
@@ -922,8 +901,8 @@
       },
       "sd.observe.defrost_or_ice": {
         "section": "Side-discharge outdoor unit",
-        "title": "Does the ice clear during defrost?",
-        "body": "A normal defrost usually lasts about 5 to 15 minutes, and some models finish sooner. Ice that is still there after about an hour of running is not normal. Call a licensed HVAC professional.\n\nA pause, stopped outdoor fan, whoosh, and steam may occur during defrost. If you cannot distinguish steam from smoke, or smell burning, treat it as smoke. A solid block of ice, a grille iced shut, or ice that keeps growing is a stop now; do not keep running it to time an hour. Do not chip ice or use water, heat, or tools to speed defrost.",
+        "title": "Outdoor unit",
+        "body": "A normal defrost usually lasts about 5 to 15 minutes, and some models finish sooner. Ice that is still there after about an hour of running is not normal. Call a licensed HVAC professional.",
         "owner": "sd",
         "diyTier": "basic",
         "safetyGate": true,
@@ -1000,7 +979,7 @@
           },
           {
             "id": "hazard_now",
-            "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, water at electrical parts, or someone at risk)",
+            "label": "Something unsafe is happening now (burning smell, smoke, sparks, gas smell, an alarm, water or ice at electrical parts, or someone at risk)",
             "hint": "Stop checking. We’ll show you where to get help.",
             "fact": "New hazard reported during the outdoor-unit check.",
             "next": "sd.gate.outdoor_hazard_screen"
@@ -1009,8 +988,8 @@
       },
       "sd.look.base_ice_drain": {
         "section": "Side-discharge outdoor unit",
-        "title": "Is meltwater making ice below the unit?",
-        "body": "Defrost water can refreeze under the unit or on a path. Stay off icy footing. Drain holes, base-pan heaters, mounting height, and drainage changes are for the installer.",
+        "title": "Outdoor unit",
+        "body": "Look from cleared ground or a window. Don’t walk on ice or climb snowbanks to get closer.",
         "owner": "sd",
         "diyTier": "basic",
         "safetyGate": false,
@@ -1044,15 +1023,8 @@
             "fact": ""
           },
           {
-            "id": "not_sure",
-            "label": "I’m not sure",
-            "hint": "",
-            "fact": "Outdoor observation unconfirmed.",
-            "next": "@sd_unsure"
-          },
-          {
             "id": "hazard_now",
-            "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, water at electrical parts, or someone at risk)",
+            "label": "Something unsafe is happening now (burning smell, smoke, sparks, gas smell, an alarm, water or ice at electrical parts, or someone at risk)",
             "hint": "Stop checking. We’ll show you where to get help.",
             "fact": "New hazard reported during the outdoor-unit check.",
             "next": "sd.gate.outdoor_hazard_screen"
@@ -1061,8 +1033,8 @@
       },
       "sd.look.mount_condition": {
         "section": "Side-discharge outdoor unit",
-        "title": "Does the mounting look damaged?",
-        "body": "Look from a few steps back. Do not push, lean on, prop, or try to level the unit. A visible tilt does not show whether the support is sound.",
+        "title": "Outdoor unit",
+        "body": "Don’t push, lean on, or try to level the unit.",
         "owner": "sd",
         "diyTier": "basic",
         "safetyGate": false,
@@ -1104,15 +1076,8 @@
             "fact": ""
           },
           {
-            "id": "not_sure",
-            "label": "I’m not sure",
-            "hint": "",
-            "fact": "Outdoor observation unconfirmed.",
-            "next": "@sd_unsure"
-          },
-          {
             "id": "hazard_now",
-            "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, water at electrical parts, or someone at risk)",
+            "label": "Something unsafe is happening now (burning smell, smoke, sparks, gas smell, an alarm, water or ice at electrical parts, or someone at risk)",
             "hint": "Stop checking. We’ll show you where to get help.",
             "fact": "New hazard reported during the outdoor-unit check.",
             "next": "sd.gate.outdoor_hazard_screen"
@@ -1121,8 +1086,8 @@
       },
       "sd.observe.fan_state": {
         "section": "Side-discharge outdoor unit",
-        "title": "What does the outdoor fan do?",
-        "body": "Observe only from a few steps back. Do not put hands, sticks, or tools through the grille, touch fins, or try to free the fan. It can start without warning.",
+        "title": "Outdoor unit",
+        "body": "Don’t put hands, sticks, or tools through the grille or into the fins, even with the power off. Parts inside the outdoor unit can stay charged after the power is off, and wind turning the fan can charge them again.",
         "owner": "sd",
         "diyTier": "basic",
         "safetyGate": false,
@@ -1208,7 +1173,7 @@
           },
           {
             "id": "hazard_now",
-            "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, water at electrical parts, or someone at risk)",
+            "label": "Something unsafe is happening now (burning smell, smoke, sparks, gas smell, an alarm, water or ice at electrical parts, or someone at risk)",
             "hint": "Stop checking. We’ll show you where to get help.",
             "fact": "New hazard reported during the outdoor-unit check.",
             "next": "sd.gate.outdoor_hazard_screen"
@@ -1217,8 +1182,8 @@
       },
       "sd.read.code_capture": {
         "section": "Side-discharge outdoor unit",
-        "title": "Record a code already showing",
-        "body": "Write down the full code and where it appears, or take a photo. Observe a repeating blink pattern without opening a cover. Use only the thermostat, remote, wall control, app, or an already-visible indoor display. Do not clear code history, enter service menus, or cycle power to erase a code.",
+        "title": "Outdoor unit",
+        "body": "Write the code down exactly as it’s shown, or take a photo of it. For a blinking light, count the blinks for a full minute. A short phone video helps.",
         "owner": "sd",
         "diyTier": "basic",
         "safetyGate": false,
@@ -1246,7 +1211,7 @@
           },
           {
             "id": "hazard_now",
-            "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, water at electrical parts, or someone at risk)",
+            "label": "Something unsafe is happening now (burning smell, smoke, sparks, gas smell, an alarm, water or ice at electrical parts, or someone at risk)",
             "hint": "Stop checking. We’ll show you where to get help.",
             "fact": "New hazard reported during the outdoor-unit check.",
             "next": "sd.gate.outdoor_hazard_screen"
@@ -1255,22 +1220,22 @@
       },
       "sd.read.code_compare": {
         "section": "Side-discharge outdoor unit",
-        "title": "What does your exact manual say?",
-        "body": "Use the owner’s manual for the exact model and control. Code meanings differ by model. A code describes a detected condition, not a failed part. If you cannot match it, choose not listed. Do not open the outdoor unit, run a self-test, clear history, or reset it.",
+        "title": "Outdoor unit",
+        "body": "These code meanings come from manufacturers’ documents for some models. Your model may differ. A code explains what the unit detected. It isn’t a diagnosis.",
         "owner": "sd",
         "diyTier": "basic",
-        "safetyGate": false,
+        "safetyGate": true,
         "options": [
           {
             "id": "listed_info_only",
-            "label": "My exact manual says normal operation, defrost, or limited output",
+            "label": "The manual or list says it’s normal, defrosting, or running in a limited range",
             "hint": "",
             "next": "@sd_code_info_pro",
             "fact": ""
           },
           {
             "id": "listed_refrigerant",
-            "label": "My exact manual says low refrigerant or pressure",
+            "label": "The manual or list says low refrigerant or pressure",
             "hint": "",
             "next": "@sd_refrigerant_pro",
             "fact": ""
@@ -1284,7 +1249,7 @@
           },
           {
             "id": "listed_other",
-            "label": "My exact manual lists another meaning",
+            "label": "It’s listed, with another meaning",
             "hint": "",
             "next": "@sd_code_recorded_pro",
             "fact": ""
@@ -1298,7 +1263,7 @@
           },
           {
             "id": "hazard_now",
-            "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, water at electrical parts, or someone at risk)",
+            "label": "Something unsafe is happening now (burning smell, smoke, sparks, gas smell, an alarm, water or ice at electrical parts, or someone at risk)",
             "hint": "Stop checking. We’ll show you where to get help.",
             "fact": "New hazard reported during the outdoor-unit check.",
             "next": "sd.gate.outdoor_hazard_screen"
@@ -1307,8 +1272,8 @@
       },
       "sd.gate.intent_screen": {
         "section": "Side-discharge outdoor unit",
-        "title": "What are you considering doing?",
-        "body": "Choose an intended action before touching the equipment. These choices explain when a professional is needed.",
+        "title": "Outdoor unit",
+        "body": "Answer from what you can already see. Don’t open or touch the unit.",
         "owner": "sd",
         "diyTier": "basic",
         "safetyGate": true,
@@ -1385,7 +1350,7 @@
           },
           {
             "id": "hazard_now",
-            "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, water at electrical parts, or someone at risk)",
+            "label": "Something unsafe is happening now (burning smell, smoke, sparks, gas smell, an alarm, water or ice at electrical parts, or someone at risk)",
             "hint": "Stop checking. We’ll show you where to get help.",
             "fact": "New hazard reported during the outdoor-unit check.",
             "next": "sd.gate.outdoor_hazard_screen"
@@ -1394,15 +1359,15 @@
       },
       "sd.step.clear_outside": {
         "section": "Side-discharge outdoor unit",
-        "title": "Clear only around the outside",
-        "body": "Keep hands and tools outside the grilles and away from the coil and fins. Stop if you cannot keep clear.",
+        "title": "Outdoor unit",
+        "body": "Do only the step shown. If anything looks different or you see a hazard sign, stop. You can always call a licensed HVAC professional.",
         "owner": "sd",
         "diyTier": "basic",
-        "safetyGate": false,
+        "safetyGate": true,
         "options": [
           {
             "id": "done",
-            "label": "The area is clear, and the fan runs without new noise or struggle",
+            "label": "Done. The area around the unit is clear, and the fan runs with no new noise or struggling",
             "hint": "",
             "next": "@sd_cleared_basic",
             "fact": "Homeowner reported moving items and trimming plants around the unit (outside the grille only)."
@@ -1436,22 +1401,8 @@
             "fact": "Fixed obstacle remains close."
           },
           {
-            "id": "fan_noise_after",
-            "label": "After restoring the thermostat, the fan scrapes, rubs, struggles, or makes a new noise",
-            "hint": "",
-            "fact": "Homeowner reported new fan noise or struggling after clearing.",
-            "next": {
-              "bySd": {
-                "hp:*": "@sd_fan_damage_hp_pro",
-                "*:heat": "@sd_fan_damage_heat_pro",
-                "*:unsure": "@sd_fan_damage_heat_pro"
-              },
-              "default": "@sd_fan_damage_pro"
-            }
-          },
-          {
             "id": "hazard_now",
-            "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, water at electrical parts, or someone at risk)",
+            "label": "Something unsafe is happening now (burning smell, smoke, sparks, gas smell, an alarm, water or ice at electrical parts, or someone at risk)",
             "hint": "Stop checking. We’ll show you where to get help.",
             "fact": "New hazard reported during the outdoor-unit check.",
             "next": "sd.gate.outdoor_hazard_screen"
@@ -1459,28 +1410,25 @@
         ],
         "notice": "pn-short",
         "step": {
-          "what": "Moves ordinary stored items and loose ground debris away from the air path.",
-          "caution": "The fan may start automatically. Fins bend easily, and snow or ice can cause a fall.",
-          "source": "LG Guide to Error Codes, CH61: clear obstacles around the outdoor unit; checked October 12, 2026. No power-cycle or unit work is included.",
+          "what": "What this does: Keeps stored items, covers, and plants away from the outside of the unit so it can breathe. Caution: The fins bend easily, and the fan can start on its own at any time.",
+          "caution": "The fan may start automatically. Fins bend easily.",
+          "source": "LG Guide to Error Codes, CH61: clear obstacles around the outdoor unit; checked October 12, 2026.",
           "steps": [
-            "Use only dry or cleared, level ground in daylight. Do not use a ladder, stool, roof, or snowbank.",
-            "Record the thermostat settings and set the system to Off for this brief task. This is not electrical isolation. If someone needs uninterrupted heat, leave the task to a professional.",
-            "Move ordinary planters, toys, and loose ground debris away from the unit. Leave plants that need tools, fixed obstacles, anything on the fins, and anything behind a grille to a professional.",
-            "Step away from the unit. Restore the recorded thermostat settings only if no hazard, ice on the unit, or abnormal fan noise has appeared. Otherwise leave the request Off and call a professional."
+            "1. Write down how the thermostat is set, then turn the system Off at the thermostat. This doesn’t cut power to the unit, so stay outside the grilles. 2. Move planters, toys, covers, and stored items away from the unit. 3. Trim plants back by hand or with hand pruners, keeping the pruners and clippings away from the unit. 4. Pick up loose leaves and clippings from the ground around the unit. Don’t touch the coil or fins at all, by hand or with any tool. Don’t reach through the grille, use a pressure washer, or spray water near the electrical side. Leave anything on the fins, stuck in them, or behind the grille for a professional. 5. Put the thermostat back the way you wrote it down."
           ],
-          "watch": "Observe from a few steps back for about 10 minutes. If the fan scrapes, rubs, struggles, or makes a new noise, set the thermostat to Off and call a professional.",
-          "stop": "Stop for wet or icy electrical equipment, icy footing, ice on the unit, moving equipment, or any need to reach through a grille. Do not go back to equipment during a hazard.",
-          "undo": "If you are unsure what you changed, restore only the thermostat settings you recorded when no hazard is present. Otherwise stop and call a professional.",
-          "locked": "Do not remove a cover, open electrical controls, operate a disconnect or fuse, touch a fan, coil, fin, pipe or refrigerant valve, adjust a stand or bracket, or clear code history. Stop at installer passwords or access codes."
+          "watch": "",
+          "stop": "",
+          "undo": "If you’re not sure what you changed, put back the thermostat settings you wrote down. If you can’t, leave it and call a licensed HVAC professional.",
+          "locked": "Don’t change these. They protect your equipment and your safety, and they’re for professionals only: any side, top, or front panel or cover; the electrical or control box; the disconnect box and its handle or fuses; buttons, switches, or displays on the board inside the unit; the fan blade and fan motor; refrigerant valves, caps, and pipes; the pipe cover and insulation; the stand, wall bracket, and their bolts; any heater, sensor, or wire on the unit; service menus and anything that clears or deletes stored codes or error history. If a step would take you to one of these, stop. If a screen asks you to enter a password or access code, stop. That’s for installers. Writing down an error code that’s already showing is fine."
         }
       },
       "sd.step.clear_snow": {
         "section": "Side-discharge outdoor unit",
-        "title": "Clear loose snow from the ground around it",
-        "body": "Do not clear snow off the coil or fins. Do not remove ice. If the home cannot tolerate a brief pause in heat, call a professional.",
+        "title": "Outdoor unit",
+        "body": "Do only the step shown. If anything looks different or you see a hazard sign, stop. You can always call a licensed HVAC professional.",
         "owner": "sd",
         "diyTier": "basic",
-        "safetyGate": false,
+        "safetyGate": true,
         "options": [
           {
             "id": "done",
@@ -1554,7 +1502,7 @@
           },
           {
             "id": "hazard_now",
-            "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, water at electrical parts, or someone at risk)",
+            "label": "Something unsafe is happening now (burning smell, smoke, sparks, gas smell, an alarm, water or ice at electrical parts, or someone at risk)",
             "hint": "Stop checking. We’ll show you where to get help.",
             "fact": "New hazard reported during the outdoor-unit check.",
             "next": "sd.gate.outdoor_hazard_screen"
@@ -1562,19 +1510,16 @@
         ],
         "notice": "pn-short",
         "step": {
-          "what": "Moves loose ground snow away from the air path.",
-          "caution": "The fan may start automatically. Fins bend easily, and snow or ice can cause a fall.",
-          "source": "Carrier IM-38MURA-02, pages 8–9: snow and clearance requirements; checked October 12, 2026. Ground-only clearing limits are Second Wrench policy.",
+          "what": "What this does: Moves loose snow away from the unit so it can breathe and defrost water can drain. Caution: Snow and ice around the unit are slippery, and the fins bend easily.",
+          "caution": "Snow and ice around the unit are slippery, and the fins bend easily.",
+          "source": "From Daikin 3P515859-5S (p. 6), Bosch BOVA20 IOM (§2.3), and NEEP’s cold-climate install guide, checked October 11, 2026.",
           "steps": [
-            "Use only dry or cleared, level ground in daylight. Do not use a ladder, stool, roof, or snowbank.",
-            "Record the thermostat settings and set the system to Off for this brief task. This is not electrical isolation. If someone needs uninterrupted heat, leave the task to a professional.",
-            "Move only loose snow on the ground around and in front of the unit, using a soft broom away from the unit. Do not brush the coil or fins, touch an electrical box, use a shovel near the unit, or remove ice.",
-            "Step away from the unit. Restore the recorded thermostat settings only if no hazard, ice on the unit, or abnormal fan noise has appeared. Otherwise leave the request Off and call a professional."
+            "1. Only go out if you can stand on cleared, level ground in daylight. Don’t use a ladder or climb a snowbank. 2. Write down how the thermostat is set, then turn the system Off at the thermostat. 3. Clear loose snow from the ground around the unit and in front of the fan, by hand or with a soft broom, so air can move and defrost water can drain. Don’t clear snow off the coil or fins, and don’t touch them at all, by hand or with any tool. They bend easily. 4. Don’t use a shovel or snowblower near the unit, and don’t pile snow against it. 5. Leave ice alone: don’t chip, pry, or hit it, and don’t use hot water, a heat gun, or a torch. 6. Put the thermostat back the way you wrote it down."
           ],
-          "watch": "Observe from inside for up to 15 minutes, only while the home has enough heat. Steam and a stopped fan may be defrost; uncertainty about smoke means leave and get help.",
-          "stop": "Stop for wet or icy electrical equipment, icy footing, ice on the unit, moving equipment, or any need to reach through a grille. Do not go back to equipment during a hazard.",
-          "undo": "If you are unsure what you changed, restore only the thermostat settings you recorded when no hazard is present. Otherwise stop and call a professional.",
-          "locked": "Do not remove a cover, open electrical controls, operate a disconnect or fuse, touch a fan, coil, fin, pipe or refrigerant valve, adjust a stand or bracket, or clear code history. Stop at installer passwords or access codes."
+          "watch": "After you set the thermostat back, watch from inside for up to 15 minutes. A cloud of steam and a stopped outdoor fan can be part of a normal defrost.",
+          "stop": "Stop if snow or ice is packed against the electrical box or disconnect, if there’s ice inside the grille, or if the footing is icy, and call a licensed HVAC professional. If ice is building up on the coil or the unit is encased in ice, leave the system Off at the thermostat, don’t chip the ice, and call a licensed HVAC professional.",
+          "undo": "If you’re not sure what you changed, put back the thermostat settings you wrote down. If you can’t, leave it and call a licensed HVAC professional.",
+          "locked": "Don’t change these. They protect your equipment and your safety, and they’re for professionals only: any side, top, or front panel or cover; the electrical or control box; the disconnect box and its handle or fuses; buttons, switches, or displays on the board inside the unit; the fan blade and fan motor; refrigerant valves, caps, and pipes; the pipe cover and insulation; the stand, wall bracket, and their bolts; any heater, sensor, or wire on the unit; service menus and anything that clears or deletes stored codes or error history. If a step would take you to one of these, stop. If a screen asks you to enter a password or access code, stop. That’s for installers. Writing down an error code that’s already showing is fine."
         }
       }
     },
@@ -1601,8 +1546,7 @@
         "explanation": "These are homeowner-reported observations; the cause has not been confirmed.",
         "actions": [
           "If your thermostat has an Emergency Heat setting, switch to it to keep heat on without the outdoor unit while you wait for a pro. It usually costs more to run.",
-          "An automatic AUX indicator is not that setting. If no backup-only mode is available, set the thermostat to Off. Do not keep running an iced outdoor unit for heat.",
-          "If the house is getting cold, call a licensed HVAC professional. If it’s dangerously cold and anyone is at risk, get them somewhere warm first.",
+          "Stop. Running an iced-up outdoor unit can damage it. If your thermostat doesn’t have an Emergency Heat setting, turn the system Off at the thermostat. Let the ice melt on its own. Don’t chip ice, pour hot water on it, or try to speed up the defrost. If the house is getting cold, call a licensed HVAC professional. If it’s dangerously cold and anyone is at risk, get them somewhere warm first.",
           "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
         ],
         "avoid": "Do not touch fins, reach through grilles, open equipment, or clear a stored code.",
@@ -1674,8 +1618,7 @@
         "urgency": "",
         "explanation": "These are homeowner-reported observations; the cause has not been confirmed.",
         "actions": [
-          "For steady outdoor hissing, set the thermostat to Off and call a qualified refrigerant technician. Do not touch pipes, valves, or caps.",
-          "For an indoor chemical smell or a refrigerant leak alarm, move outside the affected area and use Stop / get help."
+          "Refrigerant work needs an EPA-certified technician. If you hear hissing, turn the system Off at the thermostat. Don’t touch the pipes, valves, or caps."
         ],
         "avoid": "Do not touch fins, reach through grilles, open equipment, or clear a stored code.",
         "reason": "sd_refrigerant",
@@ -1714,8 +1657,7 @@
         "urgency": "",
         "explanation": "These are homeowner-reported observations; the cause has not been confirmed.",
         "actions": [
-          "If the house is getting cold, call a licensed HVAC professional. If it’s dangerously cold and anyone is at risk, get them somewhere warm first.",
-          "Call a licensed HVAC professional now and report the indoor temperature or that it is unknown.",
+          "The house is getting cold. Call a licensed HVAC professional now and tell them so.",
           "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
         ],
         "avoid": "Do not touch fins, reach through grilles, open equipment, or clear a stored code.",
@@ -1742,8 +1684,7 @@
         "urgency": "",
         "explanation": "These are homeowner-reported observations; the cause has not been confirmed.",
         "actions": [
-          "Ask the installer to compare the observed clearance, snow height, drainage, or mounting with the exact installation manual.",
-          "Describe only what you observed. Do not move, modify, or enter the unit."
+          "Call a licensed HVAC professional and describe only what you could already see. Do not move, modify, or open the unit."
         ],
         "avoid": "Do not touch fins, reach through grilles, open equipment, or clear a stored code.",
         "reason": "sd_clearance_fixed_obstacle",
@@ -1756,8 +1697,7 @@
         "urgency": "",
         "explanation": "These are homeowner-reported observations; the cause has not been confirmed.",
         "actions": [
-          "Ask the installer to compare the observed clearance, snow height, drainage, or mounting with the exact installation manual.",
-          "Describe only what you observed. Do not move, modify, or enter the unit."
+          "Call a licensed HVAC professional and describe only what you could already see. Do not move, modify, or open the unit."
         ],
         "avoid": "Do not touch fins, reach through grilles, open equipment, or clear a stored code.",
         "reason": "sd_recirculation",
@@ -1822,8 +1762,7 @@
         "urgency": "",
         "explanation": "These are homeowner-reported observations; the cause has not been confirmed.",
         "actions": [
-          "Ask the installer to compare the observed clearance, snow height, drainage, or mounting with the exact installation manual.",
-          "Describe only what you observed. Do not move, modify, or enter the unit."
+          "Call a licensed HVAC professional and describe only what you could already see. Do not move, modify, or open the unit."
         ],
         "avoid": "Do not touch fins, reach through grilles, open equipment, or clear a stored code.",
         "reason": "sd_base_ice_drainage",
@@ -1849,8 +1788,7 @@
         "urgency": "",
         "explanation": "These are homeowner-reported observations; the cause has not been confirmed.",
         "actions": [
-          "Ask the installer to compare the observed clearance, snow height, drainage, or mounting with the exact installation manual.",
-          "Describe only what you observed. Do not move, modify, or enter the unit."
+          "Call a licensed HVAC professional and describe only what you could already see. Do not move, modify, or open the unit."
         ],
         "avoid": "Do not touch fins, reach through grilles, open equipment, or clear a stored code.",
         "reason": "sd_mount_service",
@@ -1863,8 +1801,9 @@
         "urgency": "",
         "explanation": "These are homeowner-reported observations; the cause has not been confirmed.",
         "actions": [
-          "You reported ice clearing and the fan returning. That observation alone does not confirm adequate heating.",
-          "If ice remains or grows, the home gets colder, or defrost repeatedly fails to finish, stop the check and arrange service."
+          "From what you saw, that sounds like a normal defrost. If the ice comes back and stays, the unit stops clearing, or the house gets cold, call a licensed HVAC professional.",
+          "A normal defrost usually lasts about 5 to 15 minutes, and some models finish sooner. Ice that is still there after about an hour of running is not normal. Call a licensed HVAC professional.",
+          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
         ],
         "avoid": "Do not touch fins, reach through grilles, open equipment, or clear a stored code.",
         "reason": "sd_defrost_looked_normal",
@@ -1978,8 +1917,8 @@
         "urgency": "",
         "explanation": "These are homeowner-reported observations; the cause has not been confirmed.",
         "actions": [
-          "Share the exact code and where it appears with a licensed HVAC professional. No code meaning or cause has been confirmed here.",
-          "Do not clear history or cycle power to erase a code. Leaving a hazard and getting help takes priority over preserving a code."
+          "You’ve written down the code. Tell your technician the code, how it was shown, and what you saw. Don’t clear or reset it before the visit.",
+          "Don’t clear the code, delete the error history, reset the unit, or switch the power off and on to make the code go away. The code and its history help your technician."
         ],
         "avoid": "Do not touch fins, reach through grilles, open equipment, or clear a stored code.",
         "reason": "sd_code_recorded",
@@ -1992,9 +1931,10 @@
         "urgency": "",
         "explanation": "These are homeowner-reported observations; the cause has not been confirmed.",
         "actions": [
-          "You reported a normal-status or limited-output meaning in your manual. That does not confirm the equipment is working.",
-          "If the system is not maintaining needed heating or cooling, arrange service.",
-          "Do not clear history or cycle power to erase a code."
+          "The manufacturer describes this code as normal operation or as running in a limited range. If heating or cooling has stopped, or the house is getting uncomfortable, call a licensed HVAC professional now. If not, tell your technician about it.",
+          "If the code means the unit is defrosting (for example, DF on some Carrier models):",
+          "A normal defrost usually lasts about 5 to 15 minutes, and some models finish sooner. Ice that is still there after about an hour of running is not normal. Call a licensed HVAC professional.",
+          "Don’t clear the code, delete the error history, reset the unit, or switch the power off and on to make the code go away. The code and its history help your technician."
         ],
         "avoid": "Do not touch fins, reach through grilles, open equipment, or clear a stored code.",
         "reason": "sd_code_info_only",
@@ -2007,8 +1947,7 @@
         "urgency": "",
         "explanation": "These are homeowner-reported observations; the cause has not been confirmed.",
         "actions": [
-          "You reported moving items outside the grille and normal fan operation after the change. Heating and cooling performance have not been confirmed.",
-          "If performance stays poor or a new noise appears, arrange service. For rubbing or grinding, set the thermostat to Off."
+          "You’ve cleared around the outside of the unit and set the thermostat back. If it still isn’t heating or cooling the way it should after it’s run for a while, or the same problem comes back, call a licensed HVAC professional."
         ],
         "avoid": "Do not touch fins, reach through grilles, open equipment, or clear a stored code.",
         "reason": "sd_cleared_outside",
@@ -2021,8 +1960,7 @@
         "urgency": "",
         "explanation": "These are homeowner-reported observations; the cause has not been confirmed.",
         "actions": [
-          "You reported clearing loose snow from the ground around the unit. Heating performance has not been confirmed.",
-          "If ice grows, the unit stays buried, or heat falls behind, arrange service. Do not chip ice or brush the coil or fins."
+          "You’ve cleared the snow around the unit and set the thermostat back. After more snow, check again from cleared ground in daylight. If ice builds up on the unit, it keeps getting buried, or it still isn’t heating the way it should, call a licensed HVAC professional."
         ],
         "avoid": "Do not touch fins, reach through grilles, open equipment, or clear a stored code.",
         "reason": "sd_snow_cleared",
@@ -2211,9 +2149,9 @@
           },
           {
             "id": "landing_something_else",
-            "label": "Something else",
-            "next": "@ms_landing_not_in_pr1",
-            "hint": "Not covered in this check.",
+            "label": "Something else (a noise or a smell)",
+            "next": "ms.landing.noise_or_smell",
+            "hint": "A noise or a smell has its own short check.",
             "fact": "Complaint: Something else on the mini-split."
           },
           {
@@ -4214,6 +4152,39 @@
             "gate": "ms_new_hazard"
           }
         ]
+      },
+      "ms.landing.noise_or_smell": {
+        "section": "What you noticed",
+        "title": "Is it a noise or a smell?",
+        "body": "Pick the closer match. If you notice both, start with the smell. If anything is burning, smoking, or alarming, use the hazard choice.",
+        "owner": "ms",
+        "diyTier": "basic",
+        "safetyGate": true,
+        "caution": "",
+        "options": [
+          {
+            "id": "noise",
+            "label": "A noise",
+            "hint": "Next: what the sound is like.",
+            "fact": "Complaint: a noise from the mini-split.",
+            "next": "ms.sound.observe"
+          },
+          {
+            "id": "smell",
+            "label": "A smell",
+            "hint": "Next: what the smell is like.",
+            "fact": "Complaint: a smell from the mini-split.",
+            "next": "ms.smell.observe"
+          },
+          {
+            "id": "hazard_now",
+            "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
+            "next": "@ms_hazard_now",
+            "hint": "Stop. Don’t keep checking.",
+            "fact": "New hazard reported during the mini-split check.",
+            "gate": "ms_new_hazard"
+          }
+        ]
       }
     },
     "results": {
@@ -4567,7 +4538,7 @@
           "If water reaches an outlet, cord, or light, stay clear and call a pro or electrician.",
           "If you see sparks or smoke, or smell burning, get out and call 911 from outside."
         ],
-        "avoid": "Don’t chip or pick at the ice, or use a hair dryer, heat gun, or hot water. Don’t restart cooling while any ice remains.",
+        "avoid": "Don’t chip or pick at the ice, or use a hair dryer, heat gun, hot water, a hose, or salt, or cover the unit. Don’t restart cooling while any ice remains.",
         "source": "ice",
         "outcome": "call_pro",
         "reason": "ms_ice_cooling_wave1",
@@ -4587,7 +4558,7 @@
           "Leave it off and call a licensed HVAC pro.",
           "If water reaches an outlet or cord, stay clear and call a pro or electrician."
         ],
-        "avoid": "Don’t chip or pick at the ice, use a hair dryer, heat gun, or hot water, or keep restarting it.",
+        "avoid": "Don’t chip or pick at the ice, use a hair dryer, heat gun, hot water, a hose, or salt, cover the unit, or keep restarting it.",
         "source": "ice",
         "outcome": "emergency_exit",
         "reason": "ice_keep_running",
@@ -5444,6 +5415,15 @@
             "reason": null
           },
           {
+            "id": "refrigerant_alarm",
+            "label": "A refrigerant leak alarm is sounding",
+            "next": "@bl_refrigerant_alarm",
+            "hint": "Leave the affected area.",
+            "fact": "Refrigerant leak alarm reported.",
+            "set": {},
+            "gate": null
+          },
+          {
             "id": "unsure",
             "label": "I’m not sure",
             "next": "@bl_gate_unsure",
@@ -5452,15 +5432,6 @@
             "gate": "unsure_hazard",
             "set": {},
             "reason": null
-          },
-          {
-            "id": "refrigerant_alarm",
-            "label": "A refrigerant leak alarm is sounding",
-            "next": "@leak",
-            "hint": "",
-            "fact": "Refrigerant leak alarm reported.",
-            "set": {},
-            "gate": null
           },
           {
             "id": "none_of_these",
@@ -5597,6 +5568,15 @@
             "reason": null
           },
           {
+            "id": "refrigerant_alarm",
+            "label": "A refrigerant leak alarm is sounding",
+            "next": "@bl_refrigerant_alarm",
+            "hint": "Leave the affected area.",
+            "fact": "Refrigerant leak alarm reported.",
+            "set": {},
+            "gate": null
+          },
+          {
             "id": "unsure",
             "label": "I’m not sure",
             "next": "@bl_gate_unsure",
@@ -5605,15 +5585,6 @@
             "gate": "unsure_hazard",
             "set": {},
             "reason": null
-          },
-          {
-            "id": "refrigerant_alarm",
-            "label": "A refrigerant leak alarm is sounding",
-            "next": "@leak",
-            "hint": "",
-            "fact": "Refrigerant leak alarm reported.",
-            "set": {},
-            "gate": null
           },
           {
             "id": "none_of_these",
@@ -7593,48 +7564,62 @@
       },
       "sw.handoff.hydronic_coil": {
         "section": "Boiler and hot-water heat",
-        "title": "Hot-water coil: what have you noticed?",
-        "body": "A boiler or water heater supplies hot water to a coil in the air handler. The blower moves room air across that coil. Either side can cause a heat problem.\n\nDo not touch pipes, valves, fittings, coil fins, or hot surfaces to test temperature. An existing display or gauge is only a clue; it does not prove water is circulating through the coil.",
+        "title": "Is the pipe into the air handler hot?",
+        "body": "With the heat calling for at least 5 minutes, find the pipe that carries hot water into the air handler. Check it without grabbing: hold your hand near it, or touch it briefly with the back of your hand. These pipes can be hotter than 160 °F and can burn you. Don’t grab the pipe. Don’t touch bare copper fittings near valves, and don’t open anything.",
         "options": [
           {
-            "id": "pipe_hot_no_air",
-            "label": "Little or no air comes from the vents",
-            "next": ">bl_to_fn",
-            "hint": "Check the air side.",
-            "fact": "Little or no airflow at a hot-water air handler reported.",
+            "id": "pipe_cold",
+            "label": "It’s cold or barely warm",
+            "next": {
+              "waterHeaterSource": ">coil_to_wh",
+              "sourceKnown": {
+                "fromBl": "bl.landing.picker",
+                "default": ">fn_to_bl"
+              },
+              "fromBl": "sw.handoff.hydronic_coil.source",
+              "default": ">fn_to_bl"
+            },
+            "hint": "Water side.",
+            "fact": "Coil supply pipe is cold or barely warm.",
             "set": {
-              "hydroPipe": "unsure"
+              "hydroPipe": "cold"
+            },
+            "gate": null
+          },
+          {
+            "id": "pipe_hot_no_air",
+            "label": "It’s hot, but little or no warm air comes out",
+            "next": {
+              "fromBl": ">bl_to_fn",
+              "default": "fn.hydro.air_side"
+            },
+            "hint": "Air side.",
+            "fact": "Coil supply pipe is hot, with little or no warm air.",
+            "set": {
+              "hydroPipe": "hot"
             },
             "gate": null
           },
           {
             "id": "pipe_hot_air_warm",
-            "label": "Warm air comes out, but rooms fall behind",
-            "next": ">bl_to_fn",
-            "hint": "Check the filter and air path.",
-            "fact": "Warm air reported, but rooms fall behind.",
-            "set": {
-              "hydroPipe": "unsure"
+            "label": "It’s hot, and warm air comes out, but rooms fall behind",
+            "next": {
+              "fromBl": ">bl_to_fn",
+              "default": "fn.hydro.air_side"
             },
-            "gate": null
-          },
-          {
-            "id": "pipe_cold",
-            "label": "Air moves, but it stays cool",
-            "next": "sw.handoff.hydronic_coil.source",
-            "hint": "Check the heat source.",
-            "fact": "Air moves but stays cool; water temperature unconfirmed.",
+            "hint": "Air side.",
+            "fact": "Coil supply pipe is hot and warm air comes out, but rooms fall behind.",
             "set": {
-              "hydroPipe": "unsure"
+              "hydroPipe": "hot"
             },
             "gate": null
           },
           {
             "id": "unsure",
-            "label": "I’m not sure",
+            "label": "I’m not sure, or I can’t reach it without climbing or reaching past other equipment",
             "next": "sw.handoff.hydronic_both",
-            "hint": "You can choose either side.",
-            "fact": "Hydronic-coil temperature and airflow unconfirmed.",
+            "hint": "We’ll treat the pipe as not hot.",
+            "fact": "Hydronic-coil pipe temperature unconfirmed.",
             "set": {
               "hydroPipe": "unsure"
             },
@@ -7653,7 +7638,7 @@
           }
         ],
         "diyTier": "basic",
-        "safetyGate": false,
+        "safetyGate": true,
         "owner": "shared",
         "modes": [
           "heat",
@@ -7838,13 +7823,18 @@
       },
       "sw.handoff.hydronic_both": {
         "section": "Boiler and hot-water heat",
-        "title": "Which side would you like to check?",
-        "body": "We have not confirmed whether the coil has hot water or normal airflow. The water-side check covers the heat source. The air-side check covers the blower, filter, and ducts. Each system starts with its own hazard questions.",
+        "title": "Let’s check the water side first",
+        "body": "We’ll treat the pipe as not hot. You can check the heat source first, or go straight to the air handler.",
         "options": [
           {
             "id": "water_side",
             "label": "Check the boiler or water heater",
-            "next": "sw.handoff.hydronic_coil.source",
+            "next": {
+              "waterHeaterSource": ">coil_to_wh",
+              "sourceKnown": ">fn_to_bl",
+              "fromBl": "bl.landing.picker",
+              "default": "sw.handoff.hydronic_coil.source"
+            },
             "hint": "",
             "fact": "",
             "set": {},
@@ -7853,7 +7843,10 @@
           {
             "id": "air_side",
             "label": "Check the air handler",
-            "next": ">bl_to_fn",
+            "next": {
+              "fromBl": ">bl_to_fn",
+              "default": "fn.hydro.air_side"
+            },
             "hint": "",
             "fact": "",
             "set": {},
@@ -8483,6 +8476,23 @@
         "reason": "cold_home_deteriorating_or_uncertain",
         "urgency": "Urgent heating service",
         "owner": "bl"
+      },
+      "bl_refrigerant_alarm": {
+        "title": "Leave the affected area",
+        "explanation": "A refrigerant leak alarm needs people out of the affected area. This boiler check does not identify the refrigerant or the cause.",
+        "actions": [
+          "Move people out of the affected area to fresh air without operating switches or creating ignition sources.",
+          "Call a licensed HVAC professional with EPA 608 capability from outside the affected area and follow the equipment’s alarm instructions. For breathing trouble or immediate danger, call 911.",
+          "Do not DIY-seal a leak or add refrigerant."
+        ],
+        "avoid": "Do not turn off a mitigation blower, cycle power, bypass a sensor, use flames, or open refrigerant lines.",
+        "tier": "Emergency",
+        "outcome": "emergency_exit",
+        "diyTier": "pro_only",
+        "reason": "refrigerant_alarm_or_release",
+        "urgency": "Leave the affected area",
+        "owner": "bl",
+        "gate": "refrigerant_alarm_or_release"
       }
     },
     "reasons": {
@@ -8511,7 +8521,7 @@
         "Tell them: blank thermostat, no batteries."
       ],
       "tstat_inaccessible": [
-        "The thermostat batteries couldn’t be reached safely.",
+        "The thermostat batteries couldn’t be reached without opening anything.",
         "Tell them: the thermostat screen is blank."
       ],
       "display_dark": [
@@ -8519,7 +8529,7 @@
         "Tell them: display dark, switches looked on."
       ],
       "boiler_inaccessible": [
-        "The boiler couldn’t be reached safely.",
+        "The boiler couldn’t be reached without opening anything.",
         "Tell them: what blocks the way."
       ],
       "low_pressure": [
@@ -8749,10 +8759,10 @@
           },
           {
             "id": "cold_exposure_risk",
-            "label": "Someone's at risk from the cold (a baby, an older adult, or a medical need) ",
+            "label": "Someone's at risk from the cold (a baby, an older adult, or a medical need)",
             "next": "@fn_cold_exposure",
             "hint": "Get them warm first.",
-            "fact": "Someone at risk from the cold .",
+            "fact": "Someone at risk from the cold.",
             "gate": "cold_exposure_911"
           },
           {
@@ -8772,21 +8782,21 @@
             "gate": "delayed_ignition_bang"
           },
           {
+            "id": "refrigerant_alarm",
+            "label": "A refrigerant leak alarm is sounding",
+            "next": "@leak",
+            "hint": "Leave the affected area.",
+            "fact": "Refrigerant leak alarm reported.",
+            "set": {},
+            "gate": null
+          },
+          {
             "id": "unsure",
             "label": "I'm not sure",
             "next": "@fn_gate_unsure",
             "hint": "Not sure means stop.",
             "fact": "Homeowner was not sure whether a furnace hazard was present.",
             "gate": "unsure_hazard"
-          },
-          {
-            "id": "refrigerant_alarm",
-            "label": "A refrigerant leak alarm is sounding",
-            "next": "@leak",
-            "hint": "",
-            "fact": "Refrigerant leak alarm reported.",
-            "set": {},
-            "gate": null
           },
           {
             "id": "none_of_these",
@@ -10326,9 +10336,23 @@
         "options": [
           {
             "id": "rollout",
-            "label": "Rollout, flame out of sequence, or flame without a heat call",
+            "label": "Rollout or flame out of sequence",
             "next": "@fn_code_rollout_stop",
             "fact": "Homeowner reports a flame-related warning in the matching manual.",
+            "hint": ""
+          },
+          {
+            "id": "flame_no_call",
+            "label": "Flame without a heat call",
+            "next": "@fn_code_flame_no_call_stop",
+            "fact": "Homeowner reports a code meaning of flame without a heat call.",
+            "hint": ""
+          },
+          {
+            "id": "recorded_call_pro",
+            "label": "I recorded the code and want to call a professional",
+            "next": "@fn_code_to_pro",
+            "fact": "Homeowner recorded a visible code and is calling a professional.",
             "hint": ""
           },
           {
@@ -11457,10 +11481,10 @@
             "hint": ""
           },
           {
-            "id": "unsure",
-            "label": "Not sure",
-            "next": "@wh_gate_unsure",
-            "fact": "",
+            "id": "hot_water_or_steam",
+            "label": "Leaking hot water or steam",
+            "next": "@hot_water_steam",
+            "fact": "Escaping hot water or steam reported.",
             "set": {},
             "hint": ""
           },
@@ -11468,10 +11492,17 @@
             "id": "refrigerant_alarm",
             "label": "A refrigerant leak alarm is sounding",
             "next": "@leak",
-            "hint": "",
             "fact": "Refrigerant leak alarm reported.",
             "set": {},
-            "gate": null
+            "hint": ""
+          },
+          {
+            "id": "unsure",
+            "label": "Not sure",
+            "next": "@wh_gate_unsure",
+            "fact": "",
+            "set": {},
+            "hint": ""
           },
           {
             "id": "none_of_these",
@@ -12351,7 +12382,7 @@
       },
       "wh.conclude.call_pro": {
         "section": "Water heater",
-        "title": "Call a licensed plumber or water-heater professional",
+        "title": "Call a licensed plumber or water heater professional",
         "body": "The cause is unconfirmed. The next checks need equipment-specific inspection. Your note will preserve observations and unknowns.",
         "options": [
           {
@@ -12440,7 +12471,7 @@
         "actions": [
           "Stay out of the water and away from the appliance.",
           "For sparks, rising water, or immediate danger, leave and call 911 from outside.",
-          "Call a licensed water-heater professional before any use resumes."
+          "Call a licensed water heater professional before any use resumes."
         ],
         "avoid": "Do not touch switches, cords, breakers, or the wet equipment.",
         "tier": "Stop / professional",
@@ -12455,7 +12486,7 @@
         "explanation": "Soot, exhaust fumes, scorching, or a damaged vent can indicate combustion or venting problems.",
         "actions": [
           "If there are fumes, a CO alarm, gas smell, smoke, or illness, get everyone out and call 911 from outside.",
-          "Keep away from the appliance and call a licensed water-heater professional for urgent guidance."
+          "Keep away from the appliance and call a licensed water heater professional for urgent guidance."
         ],
         "avoid": "Do not touch vents, open covers, relight a pilot, or operate gas controls.",
         "tier": "Stop / professional",
@@ -12486,7 +12517,7 @@
         "explanation": "A hazard has not been ruled out.",
         "actions": [
           "For possible gas, fumes, CO, fire, or illness, get outside and call for emergency help.",
-          "Otherwise stay away and contact a licensed plumber or water-heater professional."
+          "Otherwise stay away and contact a licensed plumber or water heater professional."
         ],
         "avoid": "Do not approach equipment to prove an answer.",
         "tier": "Stop / professional",
@@ -12501,7 +12532,7 @@
         "explanation": "A drip needs inspection; escaping hot water or steam can scald. The cause is unconfirmed.",
         "actions": [
           "Keep people away and leave the outlet unobstructed.",
-          "Call a licensed plumber or water-heater professional now. For uncontrolled steam, spraying hot water, or immediate danger, move away and call emergency services."
+          "Call a licensed plumber or water heater professional now. For uncontrolled steam, spraying hot water, or immediate danger, move away and call emergency services."
         ],
         "avoid": "Do not lift the lever, cap the pipe, close appliance valves, or drain the heater.",
         "tier": "Stop / professional",
@@ -12516,7 +12547,7 @@
         "explanation": "The source and extent of the leak need inspection.",
         "actions": [
           "Stay away from water and electrical equipment.",
-          "Call a licensed plumber or water-heater professional promptly. Tell them whether water is spreading."
+          "Call a licensed plumber or water heater professional promptly. Tell them whether water is spreading."
         ],
         "avoid": "Do not open covers, use the drain valve, or operate the heater’s water valves.",
         "tier": "Stop / professional",
@@ -12530,7 +12561,7 @@
         "title": "Leave frozen equipment stopped",
         "explanation": "Freeze damage can affect pipes and internal components even when no crack is visible.",
         "actions": [
-          "Call a licensed plumber or water-heater professional urgently.",
+          "Call a licensed plumber or water heater professional urgently.",
           "Keep people away from leaks and electrical equipment."
         ],
         "avoid": "Do not thaw with a torch, heat gun, or boiling water, and do not restart the appliance.",
@@ -12545,7 +12576,7 @@
         "title": "Report the unusual noise",
         "explanation": "A noise alone does not confirm sediment or another particular cause.",
         "actions": [
-          "Stop this check and call a licensed water-heater professional.",
+          "Stop this check and call a licensed water heater professional.",
           "For a bang with smoke, gas, or fumes, leave and call from outside."
         ],
         "avoid": "Do not drain, flush, or reset the heater to investigate.",
@@ -12577,7 +12608,7 @@
         "title": "Stop using unexpectedly hot water",
         "explanation": "There is a scalding risk. A displayed setting does not prove the temperature at the tap.",
         "actions": [
-          "Keep people away from the hot water and call a licensed plumber or water-heater professional.",
+          "Keep people away from the hot water and call a licensed plumber or water heater professional.",
           "If anyone is burned, care for them first and seek medical help."
         ],
         "avoid": "Do not open covers, work on gas or wiring, adjust appliance valves, lift a relief-valve lever, drain or flush, or reset a breaker or safety control.",
@@ -12666,7 +12697,7 @@
         "title": "Leave power controls as they are",
         "explanation": "A dark display or possible trip needs professional investigation.",
         "actions": [
-          "Call a licensed water-heater professional or electrician. Report whether a breaker or GFCI appeared tripped."
+          "Call a licensed water heater professional or electrician. Report whether a breaker or GFCI appeared tripped."
         ],
         "avoid": "Do not open covers, work on gas or wiring, adjust appliance valves, lift a relief-valve lever, drain or flush, or reset a breaker or safety control.",
         "tier": "Professional guidance",
@@ -12680,7 +12711,7 @@
         "title": "Have the pilot problem checked",
         "explanation": "An extinguished pilot needs an equipment-specific inspection.",
         "actions": [
-          "Call the gas utility or a licensed water-heater professional.",
+          "Call the gas utility or a licensed water heater professional.",
           "If a smell appears, leave and call from outside. Do not relight it."
         ],
         "avoid": "Do not open covers, work on gas or wiring, adjust appliance valves, lift a relief-valve lever, drain or flush, or reset a breaker or safety control.",

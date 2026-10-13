@@ -1,6 +1,6 @@
 /* Local sanity for AC Wave-2 and HP Wave-1. No network. */
 'use strict';
-globalThis.SW_CONFIG = { advancedRepairsEnabled: false, aiThermostatEnabled: false, mirrorsEnabled: false, stageLatchStepsEnabled: false, contentVersion: '2026-10-12.2' };
+globalThis.SW_CONFIG = { advancedRepairsEnabled: false, aiThermostatEnabled: false, mirrorsEnabled: false, stageLatchStepsEnabled: false, contentVersion: '2026-10-13.1' };
 const fs = require('fs');
 const path = require('path');
 const F = require('../assets/flow.js');
@@ -85,7 +85,7 @@ function assertNoCap(state, msg) {
 const gate = ['none_of_these', 'agree_18_terms'];
 
 assert(/advancedRepairsEnabled:\s*false/.test(configText), 'public advanced flag must stay false');
-const SHIP = '2026-10-12.2';
+const SHIP = '2026-10-13.1';
 assert(configText.includes("contentVersion: '" + SHIP + "'"), 'content version must be ' + SHIP);
 assert(['config', 'flow', 'app'].every(f => indexText.includes(f + '.js?v=' + SHIP)), 'script cache-bust must match content version');
 assert(indexText.includes('HOME HVAC CHECKS') && !indexText.includes('AC + HEAT PUMP'), 'header lockup is HOME HVAC CHECKS');
@@ -198,7 +198,7 @@ assert(hpIntake.answers[0].node === 'ac.gate.cluster_entry' && hpIntake.answers[
 
 const noHeat = walk('hp', gate.concat([
   'air_source_ducted_hp', 'landing_no_heat', 'mode_matches_complaint', 'emergency_already_off',
-  'band_mild_warm', 'no_heat_at_all', 'outdoor_not_running_when_should',
+  'band_mild_warm', 'cold_home_holding', 'no_heat_at_all', 'outdoor_not_running_when_should',
   'breaker_on_confirmed', 'disconnect_appears_on'
 ]));
 assert(noHeat.result === 'hp_outdoor_not_running_wave1', 'outdoor silent ends hp_outdoor_not_running_wave1, got ' + noHeat.result);
@@ -215,9 +215,13 @@ assert(noiseHazard.result === 'noise_burning_sparks_smoke' && F.results[noiseHaz
 // ---- Ice keep-running split (hp.air_source.v1) ----
 const ICE_ROUTER = 'hp.ice.mode_location';
 const flat = n => (n && typeof n === 'object') ? Object.keys(n).reduce((a, k) => a.concat(flat(n[k])), []) : [n];
-const iceWalk = (band, routerChoice, landing) => walk('hp', gate.concat([
-  'air_source_ducted_hp', landing || 'landing_ice_outdoor', 'mode_matches_complaint', 'emergency_already_off',
-  band, 'want_keep_running_despite_ice'].concat(routerChoice ? [routerChoice] : [])));
+const iceWalk = (band, routerChoice, landing) => {
+  const land = landing || 'landing_ice_outdoor';
+  const needsHome = (land === 'landing_no_heat' || land === 'landing_both_modes_fail') && (band === 'band_mild_warm' || band === 'not_sure_ambient');
+  return walk('hp', gate.concat([
+    'air_source_ducted_hp', land, 'mode_matches_complaint', 'emergency_already_off', band
+  ].concat(needsHome ? ['cold_home_holding'] : [], ['want_keep_running_despite_ice'], routerChoice ? [routerChoice] : [])));
+};
 
 // I1 inbound edge: defrost keep-running now enters the router; gate kept; hint no longer says Off
 const dkr = F.nodes['hp.defrost.sanity'].options.find(o => o.id === 'want_keep_running_despite_ice');
@@ -265,8 +269,10 @@ assert(F.results.ice_keep_running.outcome === 'emergency_exit' && F.results.ice_
 assert(!!F.results.hp_ice_heat_outdoor && F.results.hp_ice_heat_outdoor.outcome === 'emergency_exit' && F.results.hp_ice_heat_outdoor.reason === 'hp_ice_heat_outdoor' && F.results.hp_ice_heat_outdoor.tier === 'Stop / professional', 'I5 HEAT emergency_exit / hp_ice_heat_outdoor');
 // I6 copy guards
 const H = F.results.hp_ice_heat_outdoor || { actions: [], avoid: '' }, C = F.results.ice_keep_running;
-assert(/Emergency Heat/.test(H.actions[0] || '') && /costs more to run/.test(H.actions[0]) && /doesn’t stop the outdoor unit/.test(H.actions[0]), 'I6 HEAT action 1 Emergency Heat and AUX does not stop the outdoor unit');
-assert(H.actions.some(a => /water dripping indoors\? Turn the system Off/i.test(a)), 'I6 HEAT indoor-water cross-check to Off');
+assert(H.actions[0] === 'If your thermostat has an Emergency Heat setting, switch to it to keep heat on without the outdoor unit while you wait for a pro. It usually costs more to run.', 'I6 HEAT action 1 is Emergency Heat without the outdoor unit');
+assert(!/Aux|AUX/.test(H.actions[0] || ''), 'I6 HEAT action 1 has no Aux advice');
+assert(H.actions[1] === 'Otherwise, or if there is no warm air in 15 minutes, set the thermostat Off.', 'I6 HEAT action 2 is Off after Emergency Heat');
+assert(H.actions.some(a => /water is dripping indoors, leave the system Off/i.test(a)), 'I6 HEAT indoor-water line leaves the system Off');
 assert(H.actions.some(a => /carbon monoxide/.test(a) && /generator indoors/.test(a)), 'I6 HEAT CO line');
 assert(H.actions.some(a => /Never touch the coil or grille/.test(a)), 'I6 HEAT coil/grille line');
 assert(/chip/.test(H.avoid) && /hot water/.test(H.avoid) && /hose/.test(H.avoid), 'I6 HEAT avoid: chip, hot water, hose');
@@ -318,7 +324,7 @@ assert(!handback.answers.some(a => a.node === 'ac.cool.outdoor.fan_spinning' || 
 
 const weak = walk('hp', gate.concat([
   'air_source_ducted_hp', 'landing_both_modes_fail', 'mode_matches_complaint', 'emergency_already_off',
-  'band_mild_warm', 'leaving_air_matches_mode', 'proceed_ac_filter', 'filter_clean_weak_airflow', 'clean_restart_ready', 'filter_settings_restored',
+  'band_mild_warm', 'cold_home_holding', 'leaving_air_matches_mode', 'proceed_ac_filter', 'filter_clean_weak_airflow', 'clean_restart_ready', 'filter_settings_restored',
   'blocked_cleared_still_weak'
 ]));
 assert(weak.answers.some(a => a.node === 'ac.cool.airflow.returns_supplies'), 'weak airflow visits returns');
@@ -343,13 +349,13 @@ assert(weakRemains.result === 'hp_weak_heat_deep_cold', 'deep-cold weak heat is 
 
 const mildWeak = walk('hp', gate.concat([
   'air_source_ducted_hp', 'landing_no_heat', 'mode_auto', 'forced_problem_remains', 'emergency_already_off',
-  'band_mild_warm', 'weak_but_some_heat'
+  'band_mild_warm', 'cold_home_holding', 'weak_but_some_heat'
 ]));
 assert(mildWeak.node === 'hp.observe.leaving_air_vs_mode', 'mild weak heat continues to observe, got ' + mildWeak.node + ' ' + mildWeak.result);
 
 const valve = walk('hp', gate.concat([
   'air_source_ducted_hp', 'landing_no_heat', 'mode_matches_complaint', 'emergency_already_off',
-  'band_mild_warm', 'no_heat_at_all', 'mode_asymmetric_feel', 'asymmetric_pattern_confirmed', 'want_diy_valve_or_electrical_anyway'
+  'band_mild_warm', 'cold_home_holding', 'no_heat_at_all', 'mode_asymmetric_feel', 'asymmetric_pattern_confirmed', 'want_diy_valve_or_electrical_anyway'
 ]));
 assert(valve.result === 'hp_defrost_valve_ob_control', 'valve DIY request stays call_pro, got ' + valve.result);
 assert(F.results[valve.result].outcome === 'call_pro', 'valve outcome');
@@ -362,12 +368,12 @@ const gauges = walk('hp', gate.concat([
 assert(gauges.result === 'hp_refrigerant_intent' && F.results[gauges.result].outcome === 'call_pro', 'refrigerant intent is call_pro');
 
 const loop2 = F.create('', 'test');
-['none_of_these', 'agree_18_terms', 'heat_pump', 'air_source_ducted_hp', 'landing_no_heat', 'mode_matches_complaint', 'emergency_already_off', 'not_sure_ambient', 'not_cold_or_not_applicable', 'no_heat_at_all', 'still_in_defrost_or_weird'].forEach(c => F.answer(loop2, c, { agreed: true, termsVersion: 'beta-2026-09-13' }));
+['none_of_these', 'agree_18_terms', 'heat_pump', 'air_source_ducted_hp', 'landing_no_heat', 'mode_matches_complaint', 'emergency_already_off', 'not_sure_ambient', 'cold_home_holding', 'not_cold_or_not_applicable', 'no_heat_at_all', 'still_in_defrost_or_weird'].forEach(c => F.answer(loop2, c, { agreed: true, termsVersion: 'beta-2026-09-13' }));
 assert(loop2.node === 'hp.defrost.sanity', 'first defrost loop returns to defrost, got ' + loop2.node);
 F.answer(loop2, 'not_sure', { agreed: true, termsVersion: 'beta-2026-09-13' });
 /* not_sure on defrost is insufficient. Use a path that returns to observe. */
 const loop3 = F.create('', 'test');
-['none_of_these', 'agree_18_terms', 'heat_pump', 'air_source_ducted_hp', 'landing_no_heat', 'mode_matches_complaint', 'emergency_already_off', 'band_mild_warm', 'no_heat_at_all', 'still_in_defrost_or_weird', 'not_cold_or_not_applicable', 'no_heat_at_all', 'still_in_defrost_or_weird'].forEach(c => F.answer(loop3, c, { agreed: true, termsVersion: 'beta-2026-09-13' }));
+['none_of_these', 'agree_18_terms', 'heat_pump', 'air_source_ducted_hp', 'landing_no_heat', 'mode_matches_complaint', 'emergency_already_off', 'band_mild_warm', 'cold_home_holding', 'no_heat_at_all', 'still_in_defrost_or_weird', 'not_cold_or_not_applicable', 'no_heat_at_all', 'still_in_defrost_or_weird'].forEach(c => F.answer(loop3, c, { agreed: true, termsVersion: 'beta-2026-09-13' }));
 assert(loop3.node === 'hp.conclude.call_pro_defrost_valve_control', 'second defrost loop goes to conclude, got ' + loop3.node + ' ' + loop3.result);
 
 const fromAc = walk('ac', gate.concat(['heat_pump']));
@@ -393,7 +399,7 @@ assert(coolingOnly.answers[2].choice === 'cooling_only_ac' && coolingOnly.answer
 
 const hpSilent = walk('ask', gate.concat([
   'heat_pump', 'air_source_ducted_hp', 'landing_no_heat', 'mode_matches_complaint', 'emergency_already_off',
-  'band_mild_warm', 'no_heat_at_all', 'outdoor_not_running_when_should',
+  'band_mild_warm', 'cold_home_holding', 'no_heat_at_all', 'outdoor_not_running_when_should',
   'breaker_on_confirmed', 'disconnect_appears_on'
 ]));
 assert(hpSilent.result === 'hp_outdoor_not_running_wave1', 'heat pump outdoor-silent still ends call_pro, got ' + hpSilent.result);
@@ -437,7 +443,7 @@ assert(acFromIdentify.node === 'ac.noise.clarify_outdoor_hum', 'identified cooli
 const unsureSilent = walk('ask', gate.concat([
   'not_sure', 'winter_outdoor_unsure', 'em_aux_unsure', 'heat_source_unsure',
   'air_source_ducted_hp', 'landing_no_heat', 'mode_matches_complaint', 'emergency_already_off',
-  'band_mild_warm', 'no_heat_at_all', 'outdoor_not_running_when_should',
+  'band_mild_warm', 'cold_home_holding', 'no_heat_at_all', 'outdoor_not_running_when_should',
   'breaker_on_confirmed', 'disconnect_appears_on'
 ]));
 assert(unsureSilent.product === 'hp' && unsureSilent.result === 'hp_outdoor_not_running_wave1', 'still-unsure outdoor silent is the HP call_pro, got ' + unsureSilent.result);
@@ -448,7 +454,7 @@ assert(!JSON.stringify(F.nodes).includes('2W'), 'no 2W brand');
 const joined = JSON.stringify(F.hpWave1.map(id => F.nodes[id]));
 assert(!/replace the capacitor/i.test(joined), 'HP nodes do not instruct capacitor replacement');
 
-assert(/termsVersion:\s*'public-beta-2026-10-12.1'/.test(configText), 'termsVersion matches expanded owner-step release');
+assert(/termsVersion:\s*'public-beta-2026-10-13.1'/.test(configText), 'termsVersion matches expanded owner-step release');
 assert(/advancedRepairsEnabled:\s*false/.test(configText) && !/advancedRepairsEnabled:\s*true/.test(configText), 'public advanced flag must stay false');
 assert(appText.includes("'/terms'") && appText.includes("'/privacy'"), 'terms and privacy routes exist');
 const termsRoute = appText.slice(appText.indexOf("'/terms':"), appText.indexOf("'/privacy':"));
@@ -472,7 +478,8 @@ assert(/if\(selected\.disabled\)return;/.test(appText), 'a disabled continue con
 assert(/agreeing&&!accepted/.test(appText), 'agree cannot continue while the checkbox is unchecked');
 assert(/agreed:\s*agreeing&&accepted/.test(appText), 'the acceptance flag follows the checkbox');
 assert(/termsVersion:\s*C\.termsVersion/.test(appText), 'the session records the configured terms version');
-assert(appText.includes("(state.node === 'sw.intake.system_type' ? F.selectSystem : F.answer)(state, selected.dataset.answer,"), 'the UI dispatches menu choices and question answers through the gated engine');
+assert((appText.match(/F\.answer\(/g) || []).length === 1, 'the UI has one answer path');
+assert(!appText.includes('F.selectSystem'), 'menu choices and question answers share that answer path');
 assert(!/agreed:\s*true/.test(appText), 'the UI never hard-codes acceptance');
 assert(!/localStorage|sessionStorage/.test(appText), 'acceptance is not written to browser storage');
 const feedbackFn = appText.slice(appText.indexOf('function feedbackData'), appText.indexOf('function feedbackText'));
@@ -577,7 +584,7 @@ const HAZARDS = [
   ['hazard_refrigerant_alarm', 'Do not reset a refrigerant-leak alarm.'],
   ['hazard_unsure', 'Uncertainty is a good reason to stop.']
 ];
-const TERMS_BODY_SHA256 = 'd023f441e4332cc43405bf14704dfc2dd55819221f75919021a2d5a5afdda279';
+const TERMS_BODY_SHA256 = '506cb47986a88f2d62d390556d127d802eb418ebe24fe0600dcdea3a98c00354';
 const PRIVACY_BODY_SHA256 = 'd1966ef7156a5cca489070d872fb78e66627843e06e82943f70b8f1d67ed8552';
 
 // ---- WSHP Wave-1 PR-1 (A-1..A-28, T-1..T-26) ----
@@ -912,8 +919,8 @@ const words = t => String(t || '').split(/\s+/).filter(Boolean).length;
 assert(F.treeVersionMs === 'ms.ductless.v2', 'MS-A1 mini-split tree version');
 assert(Array.isArray(F.msPr1) && F.msPr1.length === 10, 'MS-G1 ten original mini-split nodes exported');
 assert(Array.isArray(F.msV1) && F.msV1.join('|') === 'ms.heat.mode_setpoint|ms.heat.force_heat|ms.heat.defrost_sanity|ms.outdoor.safe_observe', 'MS-G1 heat and outdoor nodes');
-assert(Object.keys(F.nodes).length === 218, 'node count is ' + Object.keys(F.nodes).length);
-assert(Object.keys(F.results).length === 390, 'result count is ' + Object.keys(F.results).length);
+assert(Object.keys(F.nodes).length === 219, 'node count is ' + Object.keys(F.nodes).length);
+assert(Object.keys(F.results).length === 391, 'result count is ' + Object.keys(F.results).length);
 assert(!Object.keys(F.nodes).some(id => id.indexOf('ac.adv.cap.') === 0), 'advanced capacitor nodes are absent from the public bundle');
 const ms1 = ['none_of_these', 'agree_18_terms', 'other_heat_or_ductless', 'ductless_mini_split', 'ductless_single_zone'];
 const msGate = ms1.slice(0, 4);
@@ -1030,8 +1037,8 @@ assert(F.nodes['ms.head.discharge_clear'].body.indexOf('Don’t move it by hand.
 assert(F.nodes['ms.head.water_observe'].caution === 'Water and electricity together is a stop, not a cleanup job.', 'MS-C7');
 assert(F.nodes['ms.ice.stop_observe'].caution === 'No chipping ice, no covers, and no refrigerant or electrical work.', 'MS-C8');
 assert(F.results.ms_ice_keep_running.title === 'Stop. Turn it off and let the ice melt.', 'MS-C9');
-assert(F.results.ms_ice_keep_running.avoid === 'Don’t chip or pick at the ice, use a hair dryer, heat gun, or hot water, or keep restarting it.', 'MS-C10');
-assert(F.results.ms_ice_cooling_wave1.avoid.indexOf('Don’t chip or pick at the ice') !== -1, 'MS-C11');
+assert(F.results.ms_ice_keep_running.avoid === 'Don’t chip or pick at the ice, use a hair dryer, heat gun, hot water, a hose, or salt, cover the unit, or keep restarting it.', 'MS-C10');
+assert(/Don’t chip or pick at the ice/.test(F.results.ms_ice_cooling_wave1.avoid) && /hose/.test(F.results.ms_ice_cooling_wave1.avoid) && /salt/.test(F.results.ms_ice_cooling_wave1.avoid) && /cover the unit/.test(F.results.ms_ice_cooling_wave1.avoid), 'MS-C11');
 assert(F.results.ms_condensate_leak_wave1.actions[0] === 'Turn the unit Off with the remote to stop new water. Remote Off doesn’t cut the power, so stay away from the unit’s wiring.', 'MS-C12');
 assert(F.results.ms_condensate_leak_wave1.actions.some(action => action === 'If you see sparks or smoke, or smell burning, get out and call 911 from outside.'), 'condensate call_pro says to call 911 for sparks or smoke');
 assert(F.results.ms_ice_cooling_wave1.actions.some(action => action === 'If you see sparks or smoke, or smell burning, get out and call 911 from outside.'), 'ice call_pro says to call 911 for sparks or smoke');
@@ -1194,7 +1201,7 @@ Object.keys(F.nodes).filter(id => id.indexOf('hp.') === 0).sort().forEach(id => 
   });
 });
 hpDigestLines.sort();
-assert(require('crypto').createHash('sha256').update(hpDigestLines.join('\n')).digest('hex').slice(0, 16) === '8031a25d068cf18e', 'HP edge digest ' + require('crypto').createHash('sha256').update(hpDigestLines.join('\n')).digest('hex').slice(0, 16));
+assert(require('crypto').createHash('sha256').update(hpDigestLines.join('\n')).digest('hex').slice(0, 16) === 'dde664bdd154e1b6', 'HP edge digest ' + require('crypto').createHash('sha256').update(hpDigestLines.join('\n')).digest('hex').slice(0, 16));
 assert(hpDigestLines.length === 71, 'HP edge digest line count ' + hpDigestLines.length);
 
 // ---- Thermostat ts.settings.v0 (TS-A1–TS-A21, mutations M1–M17) ----

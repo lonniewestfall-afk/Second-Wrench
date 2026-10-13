@@ -14,8 +14,8 @@ assert.equal(boiler().node,'bl.gate.safety');assert.equal(boiler().product,'bl')
 assert.equal(water().node,'wh.gate.safety');assert.equal(water().product,'wh');
 assert.equal(F.nodes['sw.intake.system_type'].options.length,5);
 // Water / air handoffs always start at the receiving gate; uncertainty survives.
-let s=act(furnace(),'none_of_these','air_handler_hot_water','boiler','pipe_cold','src_boiler');
-assert.equal(s.node,'bl.gate.carryover');assert.equal(s.product,'bl');assert.equal(s.bl.hydroPipe,'unsure');
+let s=act(furnace(),'none_of_these','air_handler_hot_water','boiler','pipe_cold');
+assert.equal(s.node,'bl.gate.carryover');assert.equal(s.product,'bl');assert.equal(s.bl.hydroPipe,'cold');
 act(s,'none_of_these');assert.equal(s.node,'bl.coil.type');
 s=act(boiler(),'none_of_these','hydro_air','pipe_hot_no_air');assert.equal(s.node,'fn.gate.combustion_co');assert.equal(s.product,'fn');
 act(s,'none_of_these');assert.equal(s.node,'fn.hydro.air_side');
@@ -36,7 +36,7 @@ for(const fromBoiler of [false,true]){
  assert.equal(s.answers.filter(a=>a.node==='wh.intake.type').length,1,'combi identification does not repeat');
 }
 // Coil-fed heating is not silently converted into a complaint about tap water.
-const coilWater=fromBoiler=>fromBoiler?act(boiler(),'none_of_these','hydro_air','pipe_cold','src_water_heater'):act(furnace(),'none_of_these','air_handler_hot_water','water_heater_tank','pipe_cold','src_water_heater');
+const coilWater=fromBoiler=>fromBoiler?act(boiler(),'none_of_these','hydro_air','pipe_cold','src_water_heater'):act(furnace(),'none_of_these','air_handler_hot_water','water_heater_tank','pipe_cold');
 for(const fromBoiler of [false,true]){
  s=coilWater(fromBoiler);assert.equal(s.node,'wh.gate.safety');assert.equal(s.whCoil,true);
  act(s,'none_of_these','none_of_these');assert.equal(s.node,'wh.hydro.cold_home');
@@ -96,10 +96,10 @@ for(const n of Object.values(H.nodes))for(const o of n.options)assert.doesNotMat
 // State walk includes all new lanes. Dedupe only on route-affecting state;
 // timestamps and repeated narrative history cannot create infinite cycles.
 function key(s){if(s.result)return JSON.stringify([s.result,s.product,s.fnFuel,s.fnReason,(s.bl||{}).reason,s.whFuel]);const b={};for(const k of ['type','fuel','landing','mode','entry','coil','fragile','cold','sawCode','retriage'])b[k]=(s.bl||{})[k];const selected={node:s.node,result:s.result,product:s.product,fnFuel:s.fnFuel,fnGas:s.fnGas,fnHome:s.fnHome,fnLanding:s.fnLanding,fnHandoff:s.fnHandoff,fnFilterUnchanged:s.fnFilterUnchanged,fnFilterChecked:s.fnFilterChecked,whType:s.whType,whFuel:s.whFuel,whFrom:s.whFrom,whCoil:s.whCoil,bl:b,reset:s.reset_count,notice:!!(s.notices&&s.notices.fn),warranty:Object.keys(s.warrantyAck||{}).sort(),reserved:s.switchStepReserved,hazard:s.heatingHazardReported,codeSeen:s.answers.some(x=>x.node==='fn.code.window_look')};return JSON.stringify(selected);}
-const queue=[furnace(),boiler(),water(),coilWater(false),coilWater(true),act(water(),'none_of_these','none_of_these','combi','continue'),act(water(),'none_of_these','none_of_these','tank','indirect','continue'),act(boiler(),'none_of_these','hydro_air','pipe_hot_no_air'),act(furnace(),'none_of_these','air_handler_hot_water','boiler','pipe_cold','src_boiler')].map(s=>Object.assign(s,{walkLane:s.product})),seen=new Set(),visited=new Set(),leaves=new Set();
+const queue=[furnace(),boiler(),water(),coilWater(false),coilWater(true),act(water(),'none_of_these','none_of_these','combi','continue'),act(water(),'none_of_these','none_of_these','tank','indirect','continue'),act(boiler(),'none_of_these','hydro_air','pipe_hot_no_air'),act(furnace(),'none_of_these','air_handler_hot_water','boiler','pipe_cold')].map(s=>Object.assign(s,{walkLane:s.product})),seen=new Set(),visited=new Set(),leaves=new Set();
 while(queue.length){
  const a=queue.shift(),k=key(a);if(seen.has(k))continue;seen.add(k);if(seen.size%10000===0)console.log('Heating walk',seen.size,a.product,a.node,a.answers.length,queue.length);assert.ok(seen.size<100000,'bounded state walk');
- if(a.result){leaves.add(a.result);assert.match(F.summary(a),/TEST SCENARIO/);const stopped=clone(a);F.stop(stopped);assert.equal(stopped.node,'ac.gate.cluster_entry');assert.equal(stopped.result,null);continue;}
+ if(a.result){leaves.add(a.result);assert.match(F.summary(a),/TEST SCENARIO/);const stopped=clone(a);F.stop(stopped);assert.equal(stopped.node,a.product==='bl'?'bl.gate.safety':'ac.gate.cluster_entry');assert.equal(stopped.result,null);continue;}
  if(!H.owns(a.node)||a.product!==a.walkLane)continue;
  visited.add(a.node);const view=F.viewNode(a.node,a);
  if(view.noticePrompt){const t=clone(a);F.acknowledgeStep(t);queue.push(t);}

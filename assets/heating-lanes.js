@@ -12,7 +12,7 @@
     if(!next||typeof next!=='object')return next;
     if(next.bySd&&s.product==='sd'){const from=s.sdFrom||'none',mode=s.sdMode||'unsure';for(const k of [from+':'+mode,from+':*','*:'+mode])if(next.bySd[k])return choose(next.bySd[k],s);}
     const b=s.bl||{};
-    const checks={filterUnchanged:s.fnFilterUnchanged,afterHazardNow:b.retriage==='hazard_now',fromWhIndirect:b.entry==='wh_indirect',fromWhCode:b.entry==='wh_code',fromWhHeat:b.entry==='wh_heat',fromFnCoil:b.entry==='fn_coil',fromBl:s.product==='bl',coil:b.coil,steam:b.type==='steam',oil:s.product==='bl'?b.fuel==='oil':s.fnFuel==='oil',propane:s.fnGas==='propane',electric:s.fnFuel==='electric',hydronic:s.fnFuel==='hydronic',manufactured:s.fnHome==='manufactured_home',oneArea:s.fnLanding==='one_area_cold',codeUnseen:!(s.answers||[]).some(a=>a.node==='fn.code.window_look'),fragileNoHeat:b.fragile&&b.cold&&b.mode!=='dhw',resetEligible:b.fuel==='gas'&&b.type!=='steam'&&!(s.reset_count>=1),fuelGas:b.fuel==='gas',highEffGas:b.fuel==='gas'&&(b.type==='he'||b.type==='combi'),landingPressure:b.landing==='landing_pressure',dhw:b.mode==='dhw',viaCode:b.sawCode};
+    const checks={filterUnchanged:s.fnFilterUnchanged,afterHazardNow:b.retriage==='hazard_now',fromWhIndirect:b.entry==='wh_indirect',fromWhCode:b.entry==='wh_code',fromWhHeat:b.entry==='wh_heat',fromFnCoil:b.entry==='fn_coil',fromBl:s.product==='bl',waterHeaterSource:s.fnHydroSource==='water_heater_tank'||s.fnHydroSource==='tankless_or_combi',sourceKnown:['boiler','water_heater_tank','tankless_or_combi'].includes(s.fnHydroSource),coil:b.coil,steam:b.type==='steam',oil:s.product==='bl'?b.fuel==='oil':s.fnFuel==='oil',propane:s.fnGas==='propane',electric:s.fnFuel==='electric',hydronic:s.fnFuel==='hydronic',manufactured:s.fnHome==='manufactured_home',oneArea:s.fnLanding==='one_area_cold',codeUnseen:!(s.answers||[]).some(a=>a.node==='fn.code.window_look'),fragileNoHeat:b.fragile&&b.cold&&b.mode!=='dhw',resetEligible:b.fuel==='gas'&&b.type!=='steam'&&!(s.reset_count>=1),fuelGas:b.fuel==='gas',highEffGas:b.fuel==='gas'&&(b.type==='he'||b.type==='combi'),landingPressure:b.landing==='landing_pressure',dhw:b.mode==='dhw',viaCode:b.sawCode};
     for(const k of Object.keys(next)){if(k==='default')continue;if(k==='byLanding'&&next[k][b.landing])return choose(next[k][b.landing],s);if(checks[k])return choose(next[k],s);}
     return choose(next.default,s);
   }
@@ -66,8 +66,8 @@
     if(s.product==='fn'&&t==='fn.airflow.filter_fit'&&s.fnFilterChecked){t='fn.conclude.call_pro';s.fnReason='airflow_after_filter';}
     if(t==='sd.entry.outdoor'){
       s.sdFrom=['ms','hp','ac'].includes(s.product)?s.product:'none';
-      s.sdModeHint=s.product==='ms'?s.msMode:s.product==='ac'?'cool':s.hpLanding==='no_cool'?'cool':s.hpLanding==='no_heat'?'heat':undefined;
-      s.sdSideConfirmed=s.product==='ac'||s.product==='ms';s.product='sd';s.treeVersion='sd.outdoor.v1';audit(s,'handoff:'+s.sdFrom+'_to_sd');
+      s.sdModeHint=s.product==='ms'?s.msMode:s.product==='ac'?'cool':undefined;
+      s.sdSideConfirmed=s.product==='ac'||s.product==='ms';s.product='sd';s.treeVersion='sd.outdoor.v0';audit(s,'handoff:'+s.sdFrom+'_to_sd');
     }
     if(id.startsWith('sd.')&&s.heatingHazardReported&&o.id==='none_of_these')t='@uncertain';
     if(id.startsWith('sd.')&&(t.startsWith('ms.')||t.startsWith('@ms_'))){s.product='ms';s.msMode=s.sdMode==='unsure'?'unknown':s.sdMode;s.treeVersion='ms.ductless.v2';audit(s,'handoff:sd_to_ms');}

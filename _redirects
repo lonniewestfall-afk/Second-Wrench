@@ -1,2 +1,8 @@
 # Keep root + www on one HTTPS origin, after configuring both domains in Netlify.
 https://www.secondwrench.co/* https://secondwrench.co/:splat 301!
+/safety /#/safety 302
+/sources /#/sources 302
+/terms /#/terms 302
+/privacy /#/privacy 302
+/about /#/about 302
+/feedback /#/feedback 302

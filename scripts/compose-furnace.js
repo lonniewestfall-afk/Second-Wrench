@@ -43,7 +43,9 @@ module.exports = function buildFurnace(base, draft, CO) {
   // A brand name does not identify a control board. Read the exact equipment
   // manual's interpretation instead of exposing unverified brand-wide tables.
   n('fn.code.brand_picker','What does the matching code chart say?', 'Use only the chart for the exact model and control in your owner’s manual, or a label already visible with every equipment cover closed. Record the full code first. A code identifies a condition to investigate, not a failed part. If the chart is behind a panel, leave it there.',[
-    op('rollout','Rollout, flame out of sequence, or flame without a heat call','@fn_code_rollout_stop','Homeowner reports a flame-related warning in the matching manual.'),
+    op('rollout','Rollout or flame out of sequence','@fn_code_rollout_stop','Homeowner reports a flame-related warning in the matching manual.'),
+    op('flame_no_call','Flame without a heat call','@fn_code_flame_no_call_stop','Homeowner reports a code meaning of flame without a heat call.'),
+    op('recorded_call_pro','I recorded the code and want to call a professional','@fn_code_to_pro','Homeowner recorded a visible code and is calling a professional.'),
     op('limit_unsure','Limit or rollout — the chart lists both','@fn_code_rollout_stop','Code may include rollout; cause unconfirmed.'),
     op('airflow','Airflow or high limit only','fn.airflow.filter_fit','Matching manual reportedly lists airflow or high limit, not rollout.'),
     op('vent','Vent, pressure switch, or condensate fault','fn.vent.outdoor_gate','Matching manual reportedly lists vent, pressure-switch, or condensate condition.'),

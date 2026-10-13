@@ -6,7 +6,7 @@ const copy=s=>JSON.parse(JSON.stringify(s)),meta={agreed:true,termsVersion:'test
 function act(s,...cs){for(const c of cs)F.answer(s,c,meta);return s;}
 function start(...cs){return act(F.create('','test'),'none_of_these','agree_18_terms',...cs);}
 const mini=(multi=false)=>start('other_heat_or_ductless','ductless_mini_split',multi?'ductless_multi_zone':'ductless_single_zone');
-const hp=()=>start('heat_pump','air_source_ducted_hp','landing_side_discharge');
+const hp=()=>start('heat_pump','air_source_ducted_hp','landing_outdoor_side_unit');
 const ac=()=>start('cooling_only_ac','split_central_cool_only','landing_not_cooling','mode_cool_setpoint_ok','filter_clean_ok', 'clean_restart_ready', 'filter_settings_restored','fan_on_side');
 // Mini-split: cooling mode survives the side-discharge handback and cannot
 // inherit a ducted system's Emergency Heat instruction.
