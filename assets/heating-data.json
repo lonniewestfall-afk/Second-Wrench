@@ -465,7 +465,7 @@
         "options": [
           {
             "id": "someone_at_risk",
-            "label": "The house is getting cold, and someone at home is at risk from the cold (an infant, an older adult, or someone who is ill or medically fragile)",
+            "label": "Someone at home is getting too cold (a baby, an older adult, or someone with a medical need)",
             "hint": "",
             "next": {
               "bySd": {
@@ -559,7 +559,7 @@
           },
           {
             "id": "cold_exposure",
-            "label": "The house is getting cold, and someone at home is at risk from the cold (an infant, an older adult, or someone who is ill or medically fragile)",
+            "label": "Someone at home is getting too cold (a baby, an older adult, or someone with a medical need)",
             "hint": "",
             "next": {
               "bySd": {
@@ -619,7 +619,7 @@
           {
             "id": "side_fan_confirmed",
             "label": "The fan is on the side and blows out sideways",
-            "hint": "The fan on the outdoor unit blows air out sideways. Some of the checks are different, so we’ll use the checks made for it.",
+            "hint": "The fan on this kind of unit blows air out sideways. Some of the checks are different, so we’ll use the checks made for it.",
             "next": "sd.landing.picker",
             "fact": "",
             "set": {
@@ -709,7 +709,7 @@
           {
             "id": "landing_code",
             "label": "A code or blinking light on the thermostat, remote, wall control, or app",
-            "hint": "",
+            "hint": "If a code is already showing on the thermostat, remote, wall control, or app, write it down or take a photo. Don’t open the outdoor unit to look for a code, and don’t open service menus or clear codes.",
             "next": "sd.read.code_capture",
             "fact": ""
           },
@@ -739,7 +739,7 @@
       "sd.look.discharge_clearance": {
         "section": "Side-discharge outdoor unit",
         "title": "Outdoor unit",
-        "body": "For example, Carrier lists at least 24 in. in front of the fan for its 38MURA models (IM-38MURA-02, p. 8). Daikin lists a wall on the fan side as no taller than 47 in. for its Fit models (3P515859-5S, p. 4). Check your unit’s manual.",
+        "body": "For example, Carrier lists at least 24 in. in front of the fan for its 38MURA models (IM-38MURA-02, p. 8). Daikin lists a wall on the fan side as no taller than 47 in. for its Fit models (3P515859-5S, p. 4). Check your unit’s manual. These numbers are only for the models named. Your unit’s installation manual lists its own numbers. Check your unit’s manual. They describe how the unit should be installed. They aren’t a check of your unit. Look from where you’re standing or from a window. Don’t open, touch, climb on, or reach into the unit.",
         "owner": "sd",
         "diyTier": "basic",
         "safetyGate": false,
@@ -791,7 +791,7 @@
       "sd.look.intake_clearance": {
         "section": "Side-discharge outdoor unit",
         "title": "Outdoor unit",
-        "body": "Don’t put hands, sticks, or tools through the grille or into the fins, even with the power off. Parts inside the outdoor unit can stay charged after the power is off, and wind turning the fan can charge them again.",
+        "body": "Don’t put hands, sticks, or tools through the grille or into the fins, even with the power off. Parts inside the outdoor unit can stay charged after the power is off, and wind turning the fan can charge them again. Look from where you’re standing or from a window. Don’t open, touch, climb on, or reach into the unit.",
         "owner": "sd",
         "diyTier": "basic",
         "safetyGate": true,
@@ -836,7 +836,7 @@
       "sd.look.snow_height": {
         "section": "Side-discharge outdoor unit",
         "title": "Outdoor unit",
-        "body": "For example, Carrier lists at least 2 in. above the deepest expected snow for its 38MURA models (IM-38MURA-02, p. 8). Daikin lists the bottom frame at more than 19-3/4 in. above expected snowfall for its Fit models (3P515859-5S, p. 6). Check your unit’s manual.",
+        "body": "For example, Carrier lists at least 2 in. above the deepest expected snow for its 38MURA models (IM-38MURA-02, p. 8). Daikin lists the bottom frame at more than 19-3/4 in. above expected snowfall for its Fit models (3P515859-5S, p. 6). Check your unit’s manual. These numbers are only for the models named. Your unit’s installation manual lists its own numbers. Check your unit’s manual. They describe how the unit should be installed. They aren’t a check of your unit. Look from where you’re standing or from a window. Don’t open, touch, climb on, or reach into the unit.",
         "owner": "sd",
         "diyTier": "basic",
         "safetyGate": true,
@@ -902,7 +902,7 @@
       "sd.observe.defrost_or_ice": {
         "section": "Side-discharge outdoor unit",
         "title": "Outdoor unit",
-        "body": "A normal defrost usually lasts about 5 to 15 minutes, and some models finish sooner. Ice that is still there after about an hour of running is not normal. Call a licensed HVAC professional.",
+        "body": "A normal defrost usually lasts about 5 to 15 minutes, and some models finish sooner. Ice that is still there after about an hour of running is not normal. Call a licensed HVAC professional. In cold weather, a cloud of steam from the outdoor unit during defrost can be normal. If you’re not sure it’s steam, or you smell burning, treat it as smoke. Don’t try to speed it up, and don’t chip, pry, or pour water on the ice. Not normal: a solid block of ice that keeps growing, or a grille iced shut. Look from where you’re standing or from a window. Don’t open, touch, climb on, or reach into the unit.",
         "owner": "sd",
         "diyTier": "basic",
         "safetyGate": true,
@@ -989,7 +989,7 @@
       "sd.look.base_ice_drain": {
         "section": "Side-discharge outdoor unit",
         "title": "Outdoor unit",
-        "body": "Look from cleared ground or a window. Don’t walk on ice or climb snowbanks to get closer.",
+        "body": "Look from cleared ground or a window. Don’t walk on ice or climb snowbanks to get closer. Look from where you’re standing or from a window. Don’t open, touch, climb on, or reach into the unit.",
         "owner": "sd",
         "diyTier": "basic",
         "safetyGate": false,
@@ -1034,7 +1034,7 @@
       "sd.look.mount_condition": {
         "section": "Side-discharge outdoor unit",
         "title": "Outdoor unit",
-        "body": "Don’t push, lean on, or try to level the unit.",
+        "body": "Don’t push, lean on, or try to level the unit. Look from where you’re standing or from a window. Don’t open, touch, climb on, or reach into the unit.",
         "owner": "sd",
         "diyTier": "basic",
         "safetyGate": false,
@@ -1087,7 +1087,7 @@
       "sd.observe.fan_state": {
         "section": "Side-discharge outdoor unit",
         "title": "Outdoor unit",
-        "body": "Don’t put hands, sticks, or tools through the grille or into the fins, even with the power off. Parts inside the outdoor unit can stay charged after the power is off, and wind turning the fan can charge them again.",
+        "body": "Don’t put hands, sticks, or tools through the grille or into the fins, even with the power off. Parts inside the outdoor unit can stay charged after the power is off, and wind turning the fan can charge them again. Look from where you’re standing or from a window. Don’t open, touch, climb on, or reach into the unit.",
         "owner": "sd",
         "diyTier": "basic",
         "safetyGate": false,
@@ -1183,7 +1183,7 @@
       "sd.read.code_capture": {
         "section": "Side-discharge outdoor unit",
         "title": "Outdoor unit",
-        "body": "Write the code down exactly as it’s shown, or take a photo of it. For a blinking light, count the blinks for a full minute. A short phone video helps.",
+        "body": "Write the code down exactly as it’s shown, or take a photo of it. For a blinking light, count the blinks for a full minute. A short phone video helps. The display on the board inside the outdoor unit is for technicians. Reaching it means removing panels.",
         "owner": "sd",
         "diyTier": "basic",
         "safetyGate": false,
@@ -1416,8 +1416,8 @@
           "steps": [
             "1. Write down how the thermostat is set, then turn the system Off at the thermostat. This doesn’t cut power to the unit, so stay outside the grilles. 2. Move planters, toys, covers, and stored items away from the unit. 3. Trim plants back by hand or with hand pruners, keeping the pruners and clippings away from the unit. 4. Pick up loose leaves and clippings from the ground around the unit. Don’t touch the coil or fins at all, by hand or with any tool. Don’t reach through the grille, use a pressure washer, or spray water near the electrical side. Leave anything on the fins, stuck in them, or behind the grille for a professional. 5. Put the thermostat back the way you wrote it down."
           ],
-          "watch": "",
-          "stop": "",
+          "watch": "After you set the thermostat back, watch from a few steps back for about 10 minutes.",
+          "stop": "Stop and put the thermostat back the way you wrote it down if anything near the electrical box is wet or icy, if you’d have to reach inside the grille, or if the fan starts while you’re close. If that doesn’t fix it, call a licensed HVAC professional.",
           "undo": "If you’re not sure what you changed, put back the thermostat settings you wrote down. If you can’t, leave it and call a licensed HVAC professional.",
           "locked": "Don’t change these. They protect your equipment and your safety, and they’re for professionals only: any side, top, or front panel or cover; the electrical or control box; the disconnect box and its handle or fuses; buttons, switches, or displays on the board inside the unit; the fan blade and fan motor; refrigerant valves, caps, and pipes; the pipe cover and insulation; the stand, wall bracket, and their bolts; any heater, sensor, or wire on the unit; service menus and anything that clears or deletes stored codes or error history. If a step would take you to one of these, stop. If a screen asks you to enter a password or access code, stop. That’s for installers. Writing down an error code that’s already showing is fine."
         }
@@ -2384,7 +2384,7 @@
       "ms.heat.defrost_sanity": {
         "section": "Heat",
         "title": "Is this a normal defrost, or ice that stays?",
-        "body": "In Heat, a mini-split sometimes pauses to clear frost from the outdoor unit. From inside, heating stops for a while, the indoor fan stops or slows, and a light may blink. You may hear a whoosh. The remote may not change the mode until that pause ends. Leave it in Heat. Don’t switch modes during the pause.\n\n A normal defrost usually lasts about 5 to 15 minutes, and some models finish sooner. Ice that is still there after about an hour of running is not normal. Call a licensed HVAC professional.\n\n While it defrosts, the outdoor fan often stops and steam can rise from the unit. Don’t try to speed it up.\n In cold weather, a cloud of steam from the outdoor unit during defrost can be normal. If you’re not sure it’s steam, or you smell burning, treat it as smoke.\n If so, choose that option. A cloud from the indoor unit in Heat isn’t a defrost. Choose that option too.\n Not normal: a solid block of ice that keeps growing, a grille iced shut, or ice that never clears.\n\n Don’t chip or pick at ice, use hot water, a hose, a heat gun, a hair dryer, or salt, or cover the unit.\n\n Look from a window or from dry, cleared ground. Don’t reach into the grille. Don’t go out in ice, deep snow, or the dark to get a closer look.\n\nIf ice is thick, growing, or closes the grille, stop now. Do not keep the system running to time an hour.",
+        "body": "In Heat, a mini-split sometimes pauses to clear frost from the outdoor unit. From inside, heating stops for a while, the indoor fan stops or slows, and a light may blink. You may hear a whoosh. The remote may not change the mode until that pause ends. Leave it in Heat. Don’t switch modes during the pause.\n\n A normal defrost usually lasts about 5 to 15 minutes, and some models finish sooner. Ice that is still there after about an hour of running is not normal. Call a licensed HVAC professional.\n\n While it defrosts, the outdoor fan often stops and steam can rise from the unit. Don’t try to speed it up.\n In cold weather, a cloud of steam from the outdoor unit during defrost can be normal. If you’re not sure it’s steam, or you smell burning, treat it as smoke.\n If so, choose that option. A cloud from the indoor unit in Heat isn’t a defrost. Choose that option too.\n Not normal: a solid block of ice that keeps growing, a grille iced shut, or ice that never clears.\n\n Don’t chip or pick at ice, use hot water, a hose, a heat gun, a hair dryer, or salt, or cover the unit.\n\n Look from a window or from dry, cleared ground. Don’t reach into the grille. Don’t go out in ice, deep snow, or the dark to get a closer look.\n\nIf ice is thick, growing, or closes the grille, stop now. Do not keep the system running to time an hour.\n\nOutside, a cloud of steam can rise from the outdoor unit while it defrosts, and that can be normal. Ice that stays on the outdoor unit and keeps building isn’t a normal defrost. Look from a step back, and don’t touch the unit.",
         "options": [
           {
             "id": "cold_exposure_risk",

@@ -3121,7 +3121,13 @@
       : state.product === 'ms' && state.msSingleZone ? 'Equipment: ductless mini-split, one indoor unit (homeowner reported).'
       : state.product === 'ms' ? (state.msMultiZone?'Equipment: ductless mini-split, multiple indoor units (homeowner reported).':'Equipment: ductless mini-split not confirmed.')
       : '';
+    const sdDisclosure = state.product === 'sd'
+      ? (state.mode === 'test'
+        ? 'Test session: these answers were made up for practice. This isn’t a record of real equipment.'
+        : 'Homeowner-reported answers only. Not confirmed by a technician, and not an inspection.')
+      : '';
     return [header,
+      sdDisclosure,
       equipment,
       state.product==='sd' ? 'Outdoor fan position (reported): '+(state.sdSideConfirmed?'side-discharge':'not confirmed')+'. Mode: '+(state.sdMode||'not confirmed')+'. Incoming check: '+(state.sdFrom||'not stated')+'.' : '',
       state.fnHome ? 'Home type (reported): ' + state.fnHome.replace(/_/g,' ') : '',
@@ -3133,7 +3139,9 @@
       'Complaint: ' + clean(complaint).replace(/^Complaint:\s*/i, ''),
       extra.began ? 'Began: ' + clean(extra.began) : '',
       extra.model ? 'Model (homeowner supplied): ' + clean(extra.model) : '',
-      codes ? 'Codes / lights / water temps already showing (homeowner supplied): ' + codes : '',
+      codes ? (state.product === 'sd'
+        ? 'Code (homeowner typed): ' + String(codes).replace(/[^A-Za-z0-9 .:\/-]/g, '')
+        : 'Codes / lights / water temps already showing (homeowner supplied): ' + codes) : '',
       observations.length ? 'Observed: ' + observations.join(' ') : '',
       actions.length ? 'Tried: ' + actions.join(' ') : '',
       checked,

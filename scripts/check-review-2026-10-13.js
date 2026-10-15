@@ -2,7 +2,7 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-global.SW_CONFIG = { advancedRepairsEnabled: false, aiThermostatEnabled: false, mirrorsEnabled: false, stageLatchStepsEnabled: false, contentVersion: '2026-10-13.1' };
+global.SW_CONFIG = { advancedRepairsEnabled: false, aiThermostatEnabled: false, mirrorsEnabled: false, stageLatchStepsEnabled: false, contentVersion: '2026-10-13.2' };
 const F = require('../assets/flow');
 const meta = { agreed: true, termsVersion: 'test' };
 function go(choices) {
@@ -110,5 +110,58 @@ walk(sd, 0, new Set());
 // Filter restart stays reachable from a clean filter answer.
 const filter = go(gate.concat(['cooling_only_ac', 'split_central_cool_only', 'landing_not_cooling', 'mode_cool_setpoint_ok', 'filter_clean_ok']));
 assert.equal(filter.node, 'ac.cool.filter.clean_restart');
+
+// Every Legal-cleared side-discharge string has to show up in a node, a result,
+// a step, the service note, or the shared code field.
+const LEGAL = JSON.parse(fs.readFileSync(path.join(__dirname, 'sd-legal-cleared.json'), 'utf8'));
+assert.equal(Object.keys(LEGAL).length, 68);
+function flatten(value, out) {
+  if (typeof value === 'string') out.push(value);
+  else if (Array.isArray(value)) value.forEach(v => flatten(v, out));
+  else if (value && typeof value === 'object') Object.values(value).forEach(v => flatten(v, out));
+}
+const rendered = [];
+flatten(F.nodes, rendered);
+flatten(F.results, rendered);
+const sdLive = F.create('', 'real');
+sdLive.product = 'sd';
+sdLive.result = 'sd_unsure';
+rendered.push(F.summary(sdLive, {}));
+const sdTest = F.create('', 'test');
+sdTest.product = 'sd';
+sdTest.result = 'sd_unsure';
+rendered.push(F.summary(sdTest, { codes: 'DF/E59' }));
+rendered.push(fs.readFileSync(path.join(__dirname, '../assets/app.js'), 'utf8'));
+rendered.push(fs.readFileSync(path.join(__dirname, '../assets/flow.js'), 'utf8'));
+const shown = rendered.join('\n');
+for (const [id, line] of Object.entries(LEGAL)) {
+  assert.ok(shown.includes(line), 'sd.legal.' + id + ' renders');
+}
+const defrost = F.nodes['sd.observe.defrost_or_ice'].body;
+const at021 = defrost.indexOf(LEGAL['021']);
+const at056 = defrost.indexOf(LEGAL['056']);
+const at063 = defrost.indexOf(LEGAL['063']);
+assert.ok(defrost.indexOf(PL) !== -1 && at021 > defrost.indexOf(PL) && at021 < at056 && at056 < at063, 'defrost body order');
+for (const id of ['sd.look.discharge_clearance', 'sd.look.intake_clearance', 'sd.look.snow_height', 'sd.observe.defrost_or_ice', 'sd.look.base_ice_drain', 'sd.look.mount_condition', 'sd.observe.fan_state']) {
+  assert.ok(F.nodes[id].body.includes(LEGAL['005']), id + ' carries 005');
+}
+assert.equal(F.nodes['sd.heat.cold_home_screen'].options.find(o => o.id === 'someone_at_risk').label, LEGAL['020']);
+assert.equal(F.nodes['sd.gate.outdoor_hazard_screen'].options.find(o => o.id === 'cold_exposure').label, LEGAL['020']);
+assert.ok(F.nodes['sd.read.code_capture'].body.includes(LEGAL['025']));
+assert.ok(F.nodes['sd.look.discharge_clearance'].body.includes(LEGAL['029']));
+assert.ok(F.nodes['sd.look.snow_height'].body.includes(LEGAL['029']));
+assert.equal(F.nodes['sd.intake.cabinet_confirm'].options.find(o => o.id === 'side_fan_confirmed').hint, LEGAL['045']);
+assert.equal(F.nodes['sd.landing.picker'].options.find(o => o.id === 'landing_code').hint, LEGAL['047']);
+assert.equal(F.nodes['sd.step.clear_outside'].step.watch, LEGAL['108']);
+assert.equal(F.nodes['sd.step.clear_outside'].step.stop, LEGAL['103']);
+assert.ok(F.nodes['ms.heat.defrost_sanity'].body.includes(LEGAL['055']));
+assert.ok(F.summary(sdLive, {}).includes(LEGAL['043']));
+assert.ok(!F.summary(sdLive, {}).includes(LEGAL['042']));
+assert.ok(F.summary(sdTest, { codes: 'DF/E59' }).includes(LEGAL['042']));
+assert.ok(F.summary(sdTest, { codes: 'DF/E59' }).includes('Code (homeowner typed): DF/E59'));
+assert.ok(F.summary(sdTest, { codes: 'DF;E59' }).includes('Code (homeowner typed): DFE59'));
+const appSrc = fs.readFileSync(path.join(__dirname, '../assets/app.js'), 'utf8');
+assert.ok(appSrc.includes(LEGAL['059']) && appSrc.includes(LEGAL['060']));
+assert.ok(JSON.stringify(F.results.breaker_reset_basic).includes('Reset that breaker one time only.'), 'AC reset-once copy stays');
 
 console.log('review 2026-10-13 regressions passed');
