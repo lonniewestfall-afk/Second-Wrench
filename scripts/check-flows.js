@@ -22,6 +22,8 @@ const SHUT_OFF_ALLOW = new Set([
   'Don’t restart it again, and don’t reset breakers.',
   'Don’t turn it off and on again to clear the code, don’t clear its history, and don’t reset breakers.',
   'If it says to switch off power at a breaker or switch, stop here.',
+  'If it says to switch power off at a breaker, outdoor disconnect, or service switch, choose that option.',
+  'My manual says to switch the breaker, outdoor disconnect, or service switch off first',
   'It doesn’t cut the power.',
   'My manual says to switch off power at a breaker or switch first',
   'Remote Off doesn’t cut the power.',
@@ -126,15 +128,42 @@ assert(!/X-Robots-Tag/i.test(headersText) && !/noindex/i.test(headersText), '_he
 assert(headersText.includes('X-Content-Type-Options: nosniff') && headersText.includes('X-Frame-Options: DENY') && headersText.includes('Content-Security-Policy:'), 'security headers stay');
 const robotsText = fs.readFileSync(path.join(__dirname, '../robots.txt'), 'utf8');
 assert(/User-agent:\s*\*/.test(robotsText) && /Allow:\s*\//.test(robotsText), 'robots.txt allows crawling');
-assert(robotsText.includes('Sitemap: https://beta-secondwrench.netlify.app/sitemap.xml'), 'robots.txt points at the sitemap');
+assert(robotsText.includes('Sitemap: https://secondwrench.co/sitemap.xml') && robotsText.includes('Disallow: /.netlify/'), 'robots.txt points at the apex sitemap');
 const sitemapText = fs.readFileSync(path.join(__dirname, '../sitemap.xml'), 'utf8');
-assert(sitemapText.includes('<loc>https://beta-secondwrench.netlify.app/</loc>') && !/thanks\.html/.test(sitemapText), 'sitemap lists the home page and excludes thanks.html');
-assert(indexText.includes('<link rel="canonical" href="https://beta-secondwrench.netlify.app/">'), 'canonical home URL');
+assert(sitemapText.includes('<loc>https://secondwrench.co/</loc>') && !/thanks\.html/.test(sitemapText) && !/beta-secondwrench/.test(sitemapText), 'sitemap lists the home page and excludes thanks.html');
+assert(indexText.includes('<link rel="canonical" href="https://secondwrench.co/">'), 'canonical home URL');
 const shareTitle = 'Second Wrench — free home HVAC checks';
 const shareDesc = 'Free guided checks for thermostats, heating, cooling, boilers, air handlers, and hot water. Know what to check, when to stop, and when to call a pro.';
 assert(indexText.includes('property="og:title" content="' + shareTitle + '"'), 'og title');
 assert(indexText.includes('property="og:description" content="' + shareDesc + '"'), 'og description');
-assert(indexText.includes('property="og:image" content="https://beta-secondwrench.netlify.app/assets/icons/icon-512.png"'), 'og image is the 512 icon');
+assert(indexText.includes('property="og:url" content="https://secondwrench.co/"'), 'og url is the apex');
+assert(indexText.includes('property="og:image" content="https://secondwrench.co/assets/icons/icon-512.png"'), 'og image is the 512 icon');
+assert(indexText.includes('name="twitter:image" content="https://secondwrench.co/assets/icons/icon-512.png"'), 'twitter image is the 512 icon');
+assert(indexText.includes('"@type":"Organization"') && indexText.includes('"@type":"WebSite"'), 'home JSON-LD has Organization and WebSite');
+assert(indexText.includes('class="nav-maintenance" href="/maintenance/"') && indexText.includes('Free home maintenance checklists'), 'static Free Maintenance link and hero line');
+const redirectsText = fs.readFileSync(path.join(__dirname, '../_redirects'), 'utf8');
+assert(redirectsText.includes('https://beta-secondwrench.netlify.app/* https://secondwrench.co/:splat 301!'), 'beta host 301');
+assert(/https:\/\/www\.secondwrench\.co\/\*\s+https:\/\/secondwrench\.co\/:splat\s+301!/.test(redirectsText), 'www to apex 301');
+const sitemapLocs = [...sitemapText.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => m[1]);
+assert(sitemapLocs.length >= 17 && sitemapLocs.every(loc => loc.startsWith('https://secondwrench.co/')), 'sitemap hosts are the apex');
+['/about/', '/sources/', '/safety/', '/terms/', '/privacy/', '/answers/ac-running-not-cooling/'].forEach(dropped => {
+  assert(!sitemapLocs.includes('https://secondwrench.co' + dropped), 'sitemap omits ' + dropped);
+});
+sitemapLocs.forEach(loc => {
+  const rel = loc.slice('https://secondwrench.co/'.length);
+  const file = path.join(__dirname, '..', rel === '' ? 'index.html' : path.join(rel, 'index.html'));
+  assert(fs.existsSync(file), 'sitemap file exists ' + loc);
+  if (rel === '') return;
+  const html = fs.readFileSync(file, 'utf8');
+  assert(html.includes('<link rel="canonical" href="' + loc + '">'), 'canonical matches sitemap ' + loc);
+  assert(html.includes('property="og:url" content="' + loc + '"'), 'og url matches sitemap ' + loc);
+  assert(html.includes('property="og:image" content="https://secondwrench.co/assets/icons/icon-512.png"') && html.includes('name="twitter:image" content="https://secondwrench.co/assets/icons/icon-512.png"'), 'images use the apex ' + loc);
+  assert(!/assets\/(app|flow|heating-data|heating-lanes|ts-runtime|ts-lane|config)\.js/.test(html), 'static page skips the app bundle ' + loc);
+  assert(html.includes('"@type":"Article"') || html.includes('"@type": "Article"') || loc.endsWith('/answers/') || loc.endsWith('/maintenance/'), 'article JSON-LD ' + loc);
+  assert(html.includes('BreadcrumbList'), 'breadcrumb JSON-LD ' + loc);
+  const cc5 = html.match(/<section id="brand-cc5">[\s\S]*?<\/section>/);
+  if (cc5) assert(!/garden hose|coil cleaner|pump sprayer/i.test(cc5[0]), 'CC-5 has no water or chemical steps ' + loc);
+});
 assert(indexText.includes('name="twitter:card" content="summary"'), 'twitter card is summary');
 assert(indexText.includes('name="twitter:title" content="' + shareTitle + '"') && indexText.includes('name="twitter:description" content="' + shareDesc + '"'), 'twitter title and description');
 const thanksText = fs.readFileSync(path.join(__dirname, '../thanks.html'), 'utf8');
@@ -454,7 +483,7 @@ assert(!JSON.stringify(F.nodes).includes('2W'), 'no 2W brand');
 const joined = JSON.stringify(F.hpWave1.map(id => F.nodes[id]));
 assert(!/replace the capacitor/i.test(joined), 'HP nodes do not instruct capacitor replacement');
 
-assert(/termsVersion:\s*'public-beta-2026-10-13.1'/.test(configText), 'termsVersion matches expanded owner-step release');
+assert(/termsVersion:\s*'public-beta-2026-10-15.1'/.test(configText), 'termsVersion matches the October 15 terms');
 assert(/advancedRepairsEnabled:\s*false/.test(configText) && !/advancedRepairsEnabled:\s*true/.test(configText), 'public advanced flag must stay false');
 assert(appText.includes("'/terms'") && appText.includes("'/privacy'"), 'terms and privacy routes exist');
 const termsRoute = appText.slice(appText.indexOf("'/terms':"), appText.indexOf("'/privacy':"));
@@ -584,7 +613,7 @@ const HAZARDS = [
   ['hazard_refrigerant_alarm', 'Do not reset a refrigerant-leak alarm.'],
   ['hazard_unsure', 'Uncertainty is a good reason to stop.']
 ];
-const TERMS_BODY_SHA256 = '506cb47986a88f2d62d390556d127d802eb418ebe24fe0600dcdea3a98c00354';
+const TERMS_BODY_SHA256 = 'd257cd01987232e4a882d405c4da7f0f57dd4616659c07ba5efc9dd876d10e50';
 const PRIVACY_BODY_SHA256 = 'd1966ef7156a5cca489070d872fb78e66627843e06e82943f70b8f1d67ed8552';
 
 // ---- WSHP Wave-1 PR-1 (A-1..A-28, T-1..T-26) ----
@@ -919,7 +948,7 @@ const words = t => String(t || '').split(/\s+/).filter(Boolean).length;
 assert(F.treeVersionMs === 'ms.ductless.v2', 'MS-A1 mini-split tree version');
 assert(Array.isArray(F.msPr1) && F.msPr1.length === 10, 'MS-G1 ten original mini-split nodes exported');
 assert(Array.isArray(F.msV1) && F.msV1.join('|') === 'ms.heat.mode_setpoint|ms.heat.force_heat|ms.heat.defrost_sanity|ms.outdoor.safe_observe', 'MS-G1 heat and outdoor nodes');
-assert(Object.keys(F.nodes).length === 219, 'node count is ' + Object.keys(F.nodes).length);
+assert(Object.keys(F.nodes).length === 220, 'node count is ' + Object.keys(F.nodes).length);
 assert(Object.keys(F.results).length === 391, 'result count is ' + Object.keys(F.results).length);
 assert(!Object.keys(F.nodes).some(id => id.indexOf('ac.adv.cap.') === 0), 'advanced capacitor nodes are absent from the public bundle');
 const ms1 = ['none_of_these', 'agree_18_terms', 'other_heat_or_ductless', 'ductless_mini_split', 'ductless_single_zone'];
@@ -965,10 +994,13 @@ const w6 = walk('ask', ms1.concat(['landing_no_cool', 'settings_right_still_prob
 assert(w6.result === 'ms_louver_stuck' && F.results[w6.result].outcome === 'call_pro', 'W6 louver');
 const w7 = walk('ask', ms1.concat(['landing_weak_airflow', 'settings_right_still_problem', 'filter_needs_ladder']));
 assert(w7.result === 'ms_filter_inaccessible' && F.results[w7.result].outcome === 'call_pro', 'W7 ladder is call_pro');
-['filter_needs_tools_or_force', 'manual_says_cut_power'].forEach(id => {
+['filter_needs_tools_or_force', 'manual_unplug_or_unsure'].forEach(id => {
   const stepped = walk('ask', ms1.concat(['landing_weak_airflow', 'settings_right_still_problem', id]));
-  assert(stepped.result === 'ms_filter_inaccessible' && F.results[stepped.result].outcome === 'call_pro', 'unsafe filter access ' + id);
+  assert(stepped.result === 'ms_filter_inaccessible' && F.results[stepped.result].outcome === 'call_pro', 'inaccessible filter access ' + id);
 });
+const powerOff = walk('ask', ms1.concat(['landing_weak_airflow', 'settings_right_still_problem', 'manual_says_cut_power']));
+assert(powerOff.node === 'ms.head.filter_power_off', 'breaker filter path shows the power-off screen');
+assert(F.nodes['ms.head.filter_power_off'].body === "Turn the system Off at the thermostat. Then switch off its breaker (or the outdoor disconnect or service switch near the unit). When you're done and everything is dry, switch it back on. If a breaker trips again or keeps tripping, leave it off and call a licensed HVAC professional. Never open the breaker panel cover or the disconnect box.", 'PO-2 verbatim');
 const w8 = walk('ac', gate.concat(['ductless_mini_split', 'ductless_single_zone', 'landing_ice_seen', 'ice_want_keep_running']));
 assert(w8.result === 'ms_ice_keep_running' && w8.treeVersion === 'ms.ductless.v2' && eventsOf(w8).filter(e => e === 'product_lane:ms').length === 1, 'W8 AC intake switches to the mini-split lane');
 const wh1 = walk('ask', ms1.concat(['landing_no_heat', 'heat_fixed_after_setting']));
@@ -1029,7 +1061,7 @@ assert(F.results.hp_mini_split_oos.actions[1] === 'Choose the number of indoor u
 assert(F.results.out_of_scope_equipment.explanation === 'Window and portable units, packaged systems, and other types are not diagnosed here.', 'MS-C15');
 assert(/do not climb or open equipment/i.test(F.nodes['ms.intake.system_confirm'].body), 'MS-C16');
 assert(F.nodes['ms.head.filter_path_ok'].body.indexOf('If you’d need a ladder, chair, or step stool, stop here.') !== -1, 'MS-C1');
-assert(F.nodes['ms.head.filter_path_ok'].body.indexOf('If it says to switch off power at a breaker or switch, stop here. This check doesn’t guide that step.') !== -1, 'MS-C2');
+assert(F.nodes['ms.head.filter_path_ok'].body.indexOf('If it says to switch power off at a breaker, outdoor disconnect, or service switch, choose that option.') !== -1, 'MS-C2');
 assert(F.nodes['ms.head.filter_path_ok'].body.indexOf('Turning the unit off with the remote stops it running. It doesn’t cut the power.') !== -1, 'MS-C3');
 assert(F.nodes['ms.head.filter_clean'].body.indexOf('Remote Off doesn’t cut the power. Touch only the filters and the cover.') !== -1, 'MS-C4');
 assert(F.nodes['ms.head.filter_clean'].body.indexOf('never hotter than 104°F (40°C)') !== -1, 'MS-C5');
@@ -1051,7 +1083,7 @@ assert(fs.readFileSync(path.join(__dirname, '../docs/ac-second-opinion/legal/dis
 assert(F.nodes['ms.head.water_observe'].options.find(op => op.id === 'water_unsure_electrical').next === '@ms_unsure_water_electrical', 'mini-split unsure water uses the look-only twin');
 assert(!/wet hands/i.test(JSON.stringify(F.results.ms_unsure_water_electrical)) && /wet hands/i.test(F.results.unsure_water_electrical.avoid), 'unsure-water twin drops wet-hands wording; the shared result keeps it');
 assert(F.nodes['ac.cool.intake.system_confirm'].options.find(op => op.id === 'heat_pump').hint === 'A heat pump heats and cools. Leave this cooling-only check and continue on the air-source heat pump check.', 'AC heat-pump choice leaves the cooling-only check');
-assert(appText.includes('A mini-split owner filter cover is eligible only') && appText.includes('without tools, climbing, or a breaker or disconnect step'), 'safety page states the mini-split filter rule');
+assert(appText.includes('A mini-split owner filter cover is eligible only') && appText.includes('the panel cover and the disconnect box stay closed'), 'safety page states the mini-split filter rule');
 assert(appText.includes('Remote Off stops the unit running. It is not electrical isolation.') && appText.includes('Those go to a licensed pro.'), 'Trane filter note says remote Off is not isolation');
 const notListed = walk('ask', gate.concat(['other_heat_or_ductless', 'not_listed']));
 assert(notListed.result === 'sw_other_not_listed' && F.summary(notListed).indexOf('AC concern') === -1 && F.summary(notListed).indexOf('Equipment this beta does not check yet; see reported observations.') !== -1, 'not-listed service note is neutral');
@@ -1078,6 +1110,14 @@ const prohibAllow = new Set([
   'Let them dry in the shade, not in the sun or with a heater or hair dryer.',
   'Melting ice is dripping on or near an outlet, cord, or anything electrical',
   'My manual says to switch off power at a breaker or switch first',
+  'My manual says to switch the breaker, outdoor disconnect, or service switch off first',
+  'If it says to switch power off at a breaker, outdoor disconnect, or service switch, choose that option.',
+  'The panel cover and the disconnect box stay closed.',
+  'Manual asks for power to be switched off at a breaker, outdoor disconnect, or service switch before filter cleaning.',
+  'My manual says to unplug the unit, or I’m not sure remote Off is enough',
+  'Manual asks to unplug the unit, or power isolation is unclear.',
+  'Let a professional handle filters that are out of reach from the floor, need tools or force, or require unplugging.',
+  'Unplugging, or not being sure remote Off is enough, still stops here.',
   'First: is any water, or ice that is melting, on or near an outlet, a power cord, a light, a switch, or the unit’s wiring?',
   'When the remote or app can’t control it, or the indoor unit shows no lights, the cause can be power, wiring, or the controls inside.',
   'Spray cleaners and bleach can damage the unit.',

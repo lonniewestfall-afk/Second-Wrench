@@ -2463,7 +2463,7 @@
       "ms.head.filter_path_ok": {
         "section": "Indoor unit filters",
         "title": "Can you reach the filters?",
-        "body": "Most mini-splits have washable filters behind the front cover of the indoor unit. Clean them only if all four of these are true:\n\n1. Your owner’s manual shows the filter steps without tools.\n2. The front cover lifts by hand. Nothing needs to be pried, unscrewed, or forced.\n3. You can reach it standing on the floor. If you’d need a ladder, chair, or step stool, stop here.\n4. The exact manual explicitly permits this filter access after remote Off alone. If it requires disconnecting or isolating any electric power supply, unplugging, or you are unsure whether remote Off alone is enough, stop here. If it says to switch off power at a breaker or switch, stop here. This check doesn’t guide that step.\n\nTurning the unit off with the remote stops it running. It doesn’t cut the power. That’s why you’ll touch only the filters.",
+        "body": "Most mini-splits have washable filters behind the front cover of the indoor unit. Clean them only if all four of these are true:\n\n1. Your owner’s manual shows the filter steps without tools.\n2. The front cover lifts by hand. Nothing needs to be pried, unscrewed, or forced.\n3. You can reach it standing on the floor. If you’d need a ladder, chair, or step stool, stop here.\n4. The exact manual explicitly permits this filter access after remote Off alone. If it requires disconnecting or isolating any electric power supply, unplugging, or you are unsure whether remote Off alone is enough, stop here. If it says to switch power off at a breaker, outdoor disconnect, or service switch, choose that option. The next screen shows the shared power-off wording. Unplugging, or not being sure remote Off is enough, still stops here.\n\nTurning the unit off with the remote stops it running. It doesn’t cut the power. That’s why you’ll touch only the filters.",
         "options": [
           {
             "id": "filter_ok_tool_free_floor",
@@ -2495,10 +2495,10 @@
           },
           {
             "id": "manual_says_cut_power",
-            "label": "My manual requires disconnecting power, unplugging, a breaker or switch, or isolation is unclear",
-            "next": "@ms_filter_inaccessible",
-            "hint": "This check stops there.",
-            "fact": "Manual asks for power to be switched off at a breaker or switch before filter cleaning."
+            "label": "My manual says to switch the breaker, outdoor disconnect, or service switch off first",
+            "next": "ms.head.filter_power_off",
+            "hint": "Next: the shared power-off wording. The panel cover and the disconnect box stay closed.",
+            "fact": "Manual asks for power to be switched off at a breaker, outdoor disconnect, or service switch before filter cleaning."
           },
           {
             "id": "no_manual_not_sure",
@@ -2506,6 +2506,13 @@
             "next": "@ms_filter_path_unconfirmed",
             "hint": "Don’t guess at clips or covers.",
             "fact": "Filter steps could not be confirmed from the manual."
+          },
+          {
+            "id": "manual_unplug_or_unsure",
+            "label": "My manual says to unplug the unit, or I’m not sure remote Off is enough",
+            "hint": "This check stops there.",
+            "fact": "Manual asks to unplug the unit, or power isolation is unclear.",
+            "next": "@ms_filter_inaccessible"
           },
           {
             "id": "hazard_now",
@@ -4105,6 +4112,38 @@
         "coldPolicy": "Second Wrench doesn’t guide these changes when it’s 40 °F (4 °C) or colder outside, or will be in the next few days. That’s our own cautious cutoff, not a rating for your equipment. If anyone at home is an infant, elderly, or medically fragile, leave these to a professional.",
         "warranty": false
       },
+      "ms.head.filter_power_off": {
+        "section": "Indoor filter",
+        "title": "Before you clean the filters",
+        "body": "Turn the system Off at the thermostat. Then switch off its breaker (or the outdoor disconnect or service switch near the unit). When you're done and everything is dry, switch it back on. If a breaker trips again or keeps tripping, leave it off and call a licensed HVAC professional. Never open the breaker panel cover or the disconnect box.",
+        "owner": "ms",
+        "diyTier": "basic",
+        "safetyGate": true,
+        "options": [
+          {
+            "id": "power_off_done",
+            "label": "Power is off. I’ll go on to the filter steps.",
+            "hint": "Next: whether the home can be without this unit while filters dry.",
+            "fact": "Homeowner reports power was switched off at the breaker, outdoor disconnect, or service switch.",
+            "next": "ms.head.pause_guard"
+          },
+          {
+            "id": "breaker_tripped",
+            "label": "A breaker was already tripped, or it trips when power comes back",
+            "hint": "Leave it off and call.",
+            "fact": "Breaker was already tripped, or it tripped when power was restored.",
+            "next": "@ms_filter_inaccessible"
+          },
+          {
+            "id": "hazard_now",
+            "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)",
+            "next": "@ms_hazard_now",
+            "hint": "Stop. Don’t keep checking.",
+            "fact": "New hazard reported during the mini-split check.",
+            "gate": "ms_new_hazard"
+          }
+        ]
+      },
       "ms.head.pause_guard": {
         "section": "Indoor filter",
         "title": "Can you leave this unit Off through cleaning and drying?",
@@ -4311,7 +4350,7 @@
         "tier": "Professional guidance",
         "urgency": "Arrange HVAC service",
         "title": "Skip a filter step you can’t do.",
-        "explanation": "Let a professional handle filters that are out of reach from the floor, need tools or force, or require any power disconnection, unplugging, or electrical isolation in the manual.",
+        "explanation": "Let a professional handle filters that are out of reach from the floor, need tools or force, or require unplugging. If you are not sure remote Off is enough, stop here too.",
         "actions": [
           "If a cover is partly open, leave it and keep the unit Off with the remote.",
           "From the floor, move curtains or furniture away from the indoor unit.",

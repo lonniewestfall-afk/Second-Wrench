@@ -1,6 +1,6 @@
 # Gaps vs live beta
 
-**Beta URL:** https://beta-secondwrench.netlify.app/#/  
+**Site URL:** https://secondwrench.co/#/  
 **UI inventory:** 2026-09-22 evening (computer walkthrough + later guided-picker pass)  
 **MVP approved:** 2026-09-22 · **Wave-1 nodes approved:** all 12 · **Deep-write:** DONE in `tree/nodes/` · **Advanced DIY:** OFF
 

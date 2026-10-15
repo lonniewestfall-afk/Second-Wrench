@@ -136,3 +136,8 @@ input::placeholder,textarea::placeholder{color:#aaaab4;opacity:1}
 .button.danger:hover{background:#64101b}
 .option.stop-option{border-color:#7e1522;background:#3a1820;color:#fff}
 .option.stop-option strong,.option.stop-option small{color:#fff}
+.site-header nav a.nav-maintenance{color:var(--accent);font-weight:750}
+.static-guides{max-width:1160px;margin:0 auto;padding:18px 40px 0}
+.static-guides p{color:var(--muted);font-size:.95rem;margin-bottom:.4em}
+.warranty-note{border-left:3px solid var(--orange);background:var(--amber);padding:14px 16px;margin:20px 0}
+.warranty-note p{margin:0;font-size:.9rem}

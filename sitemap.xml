@@ -1,6 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://beta-secondwrench.netlify.app/</loc>
-  </url>
+  <url><loc>https://secondwrench.co/</loc></url>
+  <url><loc>https://secondwrench.co/answers/no-hot-water/</loc></url>
+  <url><loc>https://secondwrench.co/answers/water-heater-leaking/</loc></url>
+  <url><loc>https://secondwrench.co/answers/tankless-water-heater-error-code/</loc></url>
+  <url><loc>https://secondwrench.co/answers/hot-water-rotten-egg-smell/</loc></url>
+  <url><loc>https://secondwrench.co/answers/water-heater-maintenance-checklist/</loc></url>
+  <url><loc>https://secondwrench.co/answers/side-discharge-outdoor-unit-error-code/</loc></url>
+  <url><loc>https://secondwrench.co/answers/ac-maintenance-checklist/</loc></url>
+  <url><loc>https://secondwrench.co/answers/heat-pump-maintenance-checklist/</loc></url>
+  <url><loc>https://secondwrench.co/answers/mini-split-maintenance-checklist/</loc></url>
+  <url><loc>https://secondwrench.co/answers/side-discharge-heat-pump-maintenance-checklist/</loc></url>
+  <url><loc>https://secondwrench.co/answers/furnace-maintenance-checklist/</loc></url>
+  <url><loc>https://secondwrench.co/answers/boiler-maintenance-checklist/</loc></url>
+  <url><loc>https://secondwrench.co/answers/thermostat-maintenance-checklist/</loc></url>
+  <url><loc>https://secondwrench.co/answers/geothermal-heat-pump-maintenance-checklist/</loc></url>
+  <url><loc>https://secondwrench.co/answers/</loc></url>
+  <url><loc>https://secondwrench.co/maintenance/</loc></url>
 </urlset>
