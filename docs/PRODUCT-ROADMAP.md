@@ -12,7 +12,7 @@
 - Legal posture: quiet beta; trademark/LLC when cash allows; Terms/insurance nearer launch (Leon Bass)
 
 ## Live beta baseline
-- URL: https://beta-secondwrench.netlify.app/#/
+- URL: https://secondwrench.co/#/
 - Source package: `/workspace/second-wrench/beta-source/Second-Wrench-Netlify-Upload/`
 - Version: `0.1.0-beta` · content `2026-09-13.1`
 - Flags: `advancedRepairsEnabled: false`, `formsEnabled: false`

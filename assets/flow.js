@@ -702,7 +702,7 @@
       ], { diyTier: 'pro_only', safetyGate: true, caution: 'Do not add anything to the well, water lines, or unit. Do not open the well, pressure tank, or loop pipes.' }),
 
     'wshp.handback.call_pro': n('Call a professional', 'Get a geothermal pro. Here is what to tell them.',
-      'In this beta, the water-source check ends with a visit from a pro who works on geothermal or water-source heat pumps. The water loop, pump, refrigerant, and controls all need a trained technician.\n\nPick the main problem. It goes at the top of your service note. Every choice leads to the same next step.\n\nWhile you wait:\n\n- If a light or code is already showing on the unit or thermostat, write it down exactly. Do not reset the system again and again to make it come back.\n- If your thermostat or unit display already shows water temperatures (often called entering and leaving water), write them down. Do not open panels to look.\n- Leave covers on. Leave loop valves, the pump box, and any well equipment alone.', [
+      'In this beta, the water-source check ends with a visit from a pro who works on geothermal or water-source heat pumps. The water loop, pump, refrigerant, and controls all need a trained technician.\n\nPick the main problem. It goes at the top of your service note. Every choice leads to the same next step.\n\nWhile you wait:\n\n- If a light or code is already showing on the unit or thermostat, write it down exactly. Do not reset the system again to make it come back.\n- If your thermostat or unit display already shows water temperatures (often called entering and leaving water), write them down. Do not open panels to look.\n- Leave covers on. Leave loop valves, the pump box, and any well equipment alone.', [
         o('wshp_cx_no_heat', 'No heat, or not enough heat', '@wshp_handback_call_pro', '', 'Complaint: No heat or not enough heat (water-source / geothermal).'),
         o('wshp_cx_no_cool', 'No cooling, or not enough cooling', '@wshp_handback_call_pro', '', 'Complaint: No cooling or not enough cooling (water-source / geothermal).'),
         o('wshp_cx_both_weak', 'Heating and cooling are both weak', '@wshp_handback_call_pro', '', 'Complaint: Both heating and cooling weak (water-source / geothermal).'),
@@ -1515,7 +1515,7 @@
     wshp_breaker_wont_reset: r('Stop / professional', 'Leave it off · call a pro', 'A breaker that keeps tripping is a stop sign.',
       'A breaker that will not stay on is protecting the wiring. The cause is in the electrical system, the pump, or the unit. That is not a homeowner repair.',
       ['Leave the breaker off. Do not reset it again.', 'Set the thermostat to Off.', 'Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn.', 'Call a licensed HVAC professional who works on geothermal systems. If you smell burning or see smoke or sparks, get away and call 911.'],
-      'Do not reset it again and again, open the breaker panel or a disconnect, or swap a breaker.', 'electrical',
+      'Do not reset it again, open the breaker panel or a disconnect, or swap a breaker.', 'electrical',
       'emergency_exit', 'breaker_wont_reset', { gate: 'breaker_wont_reset' }),
     wshp_openloop_water_quality_pro: r('Professional guidance', 'Call a pro who works on open-loop systems', 'Open-loop water care needs a professional.',
       'Well, lake, or pond water can leave minerals or iron inside the unit’s water coil over time. Checking and cleaning it takes special equipment and chemicals. This is a reason to call, not a confirmed diagnosis.',
@@ -1524,7 +1524,7 @@
       'call_pro', 'wshp_openloop_water_quality_pro', { diyTier: 'pro_only' }),
     wshp_handback_call_pro: r('Professional guidance', 'Arrange service · geothermal / water-source pro', 'Call a pro who works on geothermal or water-source heat pumps.',
       'This beta does not yet guide homeowner checks for this system. The water loop, pump, refrigerant, and controls need a trained technician. This is a next step, not a diagnosis.',
-      ['Leave covers on. Leave loop valves, the pump box, and any well equipment alone.', 'If the house is still getting some heat, leave the thermostat on Heat.', 'If your thermostat has an Emergency Heat setting, switch to it to keep heat on with backup heat while you wait for a pro. It usually costs more to run.', 'If the house is getting cold, call a licensed HVAC professional. If it’s dangerously cold and anyone is at risk, get them somewhere warm first.', 'Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn.', 'If the system keeps stopping or shows a lockout, leave it as it is. Do not reset it again and again.', 'Write down any light, code, or water temperature that is already showing.', 'Call a technician who services geothermal or water-source heat pumps. Copy the note below for them.'],
+      ['Leave covers on. Leave loop valves, the pump box, and any well equipment alone.', 'If the house is still getting some heat, leave the thermostat on Heat.', 'If your thermostat has an Emergency Heat setting, switch to it to keep heat on with backup heat while you wait for a pro. It usually costs more to run.', 'If the house is getting cold, call a licensed HVAC professional. If it’s dangerously cold and anyone is at risk, get them somewhere warm first.', 'Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn.', 'If the system keeps stopping or shows a lockout, leave it as it is. Do not reset it again.', 'Write down any light, code, or water temperature that is already showing.', 'Call a technician who services geothermal or water-source heat pumps. Copy the note below for them.'],
       'Do not open panels, add refrigerant or antifreeze, drain or refill the loop, open loop pipes, jump or bypass a safety switch, or work inside the electrical panel.', 'safety',
       'call_pro', 'wshp_handback_call_pro', { diyTier: 'pro_only' }),
     wshp_out_of_scope_call_pro: r('Professional guidance', 'Outside this beta · call a pro', 'This system is outside this check.',
@@ -2410,7 +2410,7 @@
     if (msChoice('ms.ice.stop_observe', 'ice_outdoor_heating_or_unsure').next !== '@ms_ice_unclear_or_heat') {
       throw new Error('Ice screen must not loop back into defrost');
     }
-    ['filter_needs_ladder', 'filter_needs_tools_or_force', 'manual_says_cut_power'].forEach(id => {
+    ['filter_needs_ladder', 'filter_needs_tools_or_force'].forEach(id => {
       const op = nodes['ms.head.filter_path_ok'].options.find(item => item.id === id);
       if (!op || op.next !== '@ms_filter_inaccessible' || results.ms_filter_inaccessible.outcome !== 'call_pro') {
         throw new Error('Unsafe filter access must call a pro: ' + id);
@@ -2474,6 +2474,8 @@
       'If it says to switch off power at a breaker or switch, stop here.',
       'It doesn’t cut the power.',
       'My manual says to switch off power at a breaker or switch first',
+      'My manual says to switch the breaker, outdoor disconnect, or service switch off first',
+      'If it says to switch power off at a breaker, outdoor disconnect, or service switch, choose that option.',
       'Remote Off doesn’t cut the power.',
       'Don’t open covers, reset breakers, or open the outdoor unit to look for the cause.',
       'Don’t open the indoor or outdoor unit, rewire anything, or reset breakers to test it.',
@@ -2511,6 +2513,24 @@
   Object.keys(TS.nodes).forEach(id => { nodes[id] = TS.nodes[id]; });
   Object.keys(TS.results).forEach(id => { results[id] = TS.results[id]; });
   HEAT.install(nodes, results);
+  (function assertFilterPowerOff() {
+    const pathNode = nodes['ms.head.filter_path_ok'];
+    const cut = pathNode.options.find(item => item.id === 'manual_says_cut_power');
+    const unplug = pathNode.options.find(item => item.id === 'manual_unplug_or_unsure');
+    const off = nodes['ms.head.filter_power_off'];
+    const PO2 = 'Turn the system Off at the thermostat. Then switch off its breaker (or the outdoor disconnect or service switch near the unit). When you\'re done and everything is dry, switch it back on. If a breaker trips again or keeps tripping, leave it off and call a licensed HVAC professional. Never open the breaker panel cover or the disconnect box.';
+    if (!cut || cut.next !== 'ms.head.filter_power_off') throw new Error('Filter breaker path must show the shared power-off wording');
+    if (!unplug || unplug.next !== '@ms_filter_inaccessible') throw new Error('Filter unplug path must stop');
+    if (!off || off.body !== PO2) throw new Error('PO-2 wording drifted');
+    const tripped = off.options.find(item => item.id === 'breaker_tripped');
+    if (!tripped || tripped.next !== '@ms_filter_inaccessible') throw new Error('A tripped breaker must stay off');
+    ['filter_needs_ladder', 'filter_needs_tools_or_force'].forEach(id => {
+      const op = pathNode.options.find(item => item.id === id);
+      if (!op || op.next !== '@ms_filter_inaccessible' || results.ms_filter_inaccessible.outcome !== 'call_pro') {
+        throw new Error('Inaccessible filter access must call a pro: ' + id);
+      }
+    });
+  })();
   results.hp_cold_exposure=Object.assign({},results.cold_exposure);
   const sideEntry=()=>o('fan_on_side','My outdoor unit’s fan is on the side and blows air out sideways (not up)','sd.entry.outdoor','Start with mode and hazards before outdoor observations.','Side-discharge outdoor unit reported.');
   nodes['ac.cool.outdoor.fan_spinning'].options.splice(3,0,sideEntry());

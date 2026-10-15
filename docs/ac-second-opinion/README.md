@@ -2,7 +2,7 @@
 
 **Product:** Second Wrench / AC Second Opinion  
 **Domain:** secondwrench.co  
-**Beta:** https://beta-secondwrench.netlify.app/#/  
+**Site:** https://secondwrench.co/#/  
 **Positioning:** DIY without the expensive mistakes  
 **Tagline:** Know what's wrong. Know what's safe. Know when to call.
 

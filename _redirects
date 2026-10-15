@@ -1,4 +1,5 @@
-# Keep root + www on one HTTPS origin, after configuring both domains in Netlify.
+# Keep the beta host and www on the apex, after configuring both domains in Netlify.
+https://beta-secondwrench.netlify.app/* https://secondwrench.co/:splat 301!
 https://www.secondwrench.co/* https://secondwrench.co/:splat 301!
 /safety /#/safety 302
 /sources /#/sources 302

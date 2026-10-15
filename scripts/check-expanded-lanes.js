@@ -49,7 +49,7 @@ for(const mode of ['heat','cool']){
  const no=copy(x);act(no,'cannot_pause');A.equal(no.result,'ms_filter_pause_pro');A.ok(!no.answers.some(a=>a.node==='ms.head.shutdown_thaw_check'));
  const hz=copy(x);act(hz,'hazard_now');A.equal(hz.result,'ms_hazard_now');
  act(x,'pause_ok');A.equal(x.node,'ms.head.shutdown_thaw_check');A.match(F.viewNode(x.node,x).body,/Write down or photograph/);act(x,'thaw_off_stopped_no_ice');A.equal(x.node,'ms.head.filter_clean');
- const isolation=act(mini(),...path,'manual_says_cut_power');A.equal(isolation.result,'ms_filter_inaccessible');A.match(F.presentResult(isolation).explanation,/any power disconnection, unplugging, or electrical isolation/);
+ const power=act(mini(),...path,'manual_says_cut_power');A.equal(power.node,'ms.head.filter_power_off');A.match(F.viewNode(power.node,power).body,/Never open the breaker panel cover or the disconnect box/);const unplugStop=act(mini(),...path,'manual_unplug_or_unsure');A.equal(unplugStop.result,'ms_filter_inaccessible');A.match(F.presentResult(unplugStop).explanation,/require unplugging/);
 }
 A.match(F.nodes['ms.head.filter_path_ok'].body,/explicitly permits this filter access after remote Off alone/);A.match(F.nodes['ms.head.filter_path_ok'].body,/disconnecting or isolating any electric power supply, unplugging/);
 s=act(mini(),'landing_error_code','code_check_manual','manual_normal_status');A.equal(s.result,'ms_code_status_basic');A.match(F.presentResult(s).actions.join(' '),/does not authorize opening the unit/);A.doesNotMatch(F.presentResult(s).actions.join(' '),/filter steps it shows by hand/);
