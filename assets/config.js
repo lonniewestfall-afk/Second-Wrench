@@ -1,7 +1,7 @@
 /* Public configuration. Never place passwords, tokens, or API keys in this file. */
 window.SW_CONFIG = Object.freeze({
   version: '0.1.0-beta',
-  contentVersion: '2026-10-13.1',
+  contentVersion: '2026-10-13.2',
   privacyVersion: 'privacy-public-beta-2026-10-12.1',
   domain: 'secondwrench.co',
   contactEmail: 'support@secondwrench.co',

@@ -1,6 +1,6 @@
 /* Local sanity for AC Wave-2 and HP Wave-1. No network. */
 'use strict';
-globalThis.SW_CONFIG = { advancedRepairsEnabled: false, aiThermostatEnabled: false, mirrorsEnabled: false, stageLatchStepsEnabled: false, contentVersion: '2026-10-13.1' };
+globalThis.SW_CONFIG = { advancedRepairsEnabled: false, aiThermostatEnabled: false, mirrorsEnabled: false, stageLatchStepsEnabled: false, contentVersion: '2026-10-13.2' };
 const fs = require('fs');
 const path = require('path');
 const F = require('../assets/flow.js');
@@ -85,7 +85,7 @@ function assertNoCap(state, msg) {
 const gate = ['none_of_these', 'agree_18_terms'];
 
 assert(/advancedRepairsEnabled:\s*false/.test(configText), 'public advanced flag must stay false');
-const SHIP = '2026-10-13.1';
+const SHIP = '2026-10-13.2';
 assert(configText.includes("contentVersion: '" + SHIP + "'"), 'content version must be ' + SHIP);
 assert(['config', 'flow', 'app'].every(f => indexText.includes(f + '.js?v=' + SHIP)), 'script cache-bust must match content version');
 assert(indexText.includes('HOME HVAC CHECKS') && !indexText.includes('AC + HEAT PUMP'), 'header lockup is HOME HVAC CHECKS');

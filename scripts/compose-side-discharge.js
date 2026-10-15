@@ -79,13 +79,16 @@ module.exports = function (draft) {
   get('sd.step.clear_snow', 'ice_on_coil').next = routes['R-ice-step'];
   get('sd.observe.defrost_or_ice', 'actually_cooling').set = { sdMode: 'cool' };
   for (const [id, mode] of [['mode_heat', 'heat'], ['mode_cool', 'cool'], ['mode_unsure', 'unsure']]) get('sd.entry.outdoor', id).set = { sdMode: mode };
+  const LEGAL = require('./sd-legal-cleared.json');
   const R11 = 'The house is getting cold, and someone at home is at risk from the cold (an infant, an older adult, or someone who is ill or medically fragile)';
-  for (const [n, c] of [['sd.heat.cold_home_screen', 'someone_at_risk'], ['sd.gate.outdoor_hazard_screen', 'cold_exposure'], ['sd.step.clear_snow', 'someone_at_risk_cold']]) {
-    Object.assign(get(n, c), { label: R11, next: routes['R-cold'], gate: 'cold_exposure_911' });
+  for (const [n, c] of [['sd.heat.cold_home_screen', 'someone_at_risk'], ['sd.gate.outdoor_hazard_screen', 'cold_exposure']]) {
+    Object.assign(get(n, c), { label: LEGAL['020'], next: routes['R-cold'], gate: 'cold_exposure_911' });
   }
+  Object.assign(get('sd.step.clear_snow', 'someone_at_risk_cold'), { label: R11, next: routes['R-cold'], gate: 'cold_exposure_911' });
   const sideFan = get('sd.intake.cabinet_confirm', 'side_fan_confirmed');
   sideFan.set = { sdSideConfirmed: true };
-  sideFan.hint = String(sideFan.hint || '').replace('this kind of unit', 'the outdoor unit');
+  sideFan.hint = LEGAL['045'];
+  get('sd.landing.picker', 'landing_code').hint = LEGAL['047'];
   for (const id of ['sd.step.clear_outside', 'sd.step.clear_snow']) {
     const snow = id.endsWith('clear_snow');
     const said = quotes(draft.nodes[id].sourceText);
@@ -104,6 +107,22 @@ module.exports = function (draft) {
       undo: 'If you’re not sure what you changed, put back the thermostat settings you wrote down. If you can’t, leave it and call a licensed HVAC professional.',
       locked: LOCKED
     };
+  }
+  nodes['sd.step.clear_outside'].step.watch = LEGAL['108'];
+  nodes['sd.step.clear_outside'].step.stop = LEGAL['103'];
+  function addBody(id, keys) {
+    const node = nodes[id];
+    for (const key of keys) {
+      const line = LEGAL[key];
+      if (!String(node.body).includes(line)) node.body = String(node.body).replace(/\s+$/, '') + ' ' + line;
+    }
+  }
+  addBody('sd.observe.defrost_or_ice', ['021', '056', '063']);
+  addBody('sd.read.code_capture', ['025']);
+  addBody('sd.look.discharge_clearance', ['029']);
+  addBody('sd.look.snow_height', ['029']);
+  for (const id of ['sd.look.discharge_clearance', 'sd.look.intake_clearance', 'sd.look.snow_height', 'sd.observe.defrost_or_ice', 'sd.look.base_ice_drain', 'sd.look.mount_condition', 'sd.observe.fan_state']) {
+    addBody(id, ['005']);
   }
   for (const [id, v] of Object.entries(draft.results)) {
     const outcome = v.outcome.includes('EE') ? 'emergency_exit' : v.outcome.includes('NB') ? 'next_step' : v.outcome.includes('II') ? 'insufficient_info' : 'call_pro';

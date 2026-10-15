@@ -33,6 +33,7 @@ module.exports=function(base,draft,CO){
   const opt=get(id,'cold_exposure_risk');opt.label='The house is getting cold, and someone at home is at risk from the cold (an infant, an older adult, or someone who is ill or medically fragile)';opt.fact='House getting cold, and someone at home at risk from the cold.';
  }
  nodes['ms.heat.defrost_sanity'].body+='\n\nIf ice is thick, growing, or closes the grille, stop now. Do not keep the system running to time an hour.';
+ nodes['ms.heat.defrost_sanity'].body+='\n\n'+require('./sd-legal-cleared.json')['055'];
  get('ms.head.filter_path_ok','filter_ok_tool_free_floor').hint='First, make sure it has stopped, with no ice.';
  nodes['ms.head.filter_path_ok'].body=nodes['ms.head.filter_path_ok'].body.replace('4. The manual says to turn the unit off with the remote first.', '4. The exact manual explicitly permits this filter access after remote Off alone. If it requires disconnecting or isolating any electric power supply, unplugging, or you are unsure whether remote Off alone is enough, stop here.');
  get('ms.head.filter_path_ok','manual_says_cut_power').label='My manual requires disconnecting power, unplugging, a breaker or switch, or isolation is unclear';
