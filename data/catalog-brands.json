@@ -1,0 +1,14 @@
+{
+  "note": "Brand ids are copied from the live thermostat brand picker (ts.intake.brand_picker), excluding hazard and not-sure choices. other is the free-entry value for every other lane. No brand list is invented for lanes the tree does not already name.",
+  "thermostat_source": "ts.intake.brand_picker",
+  "brands": [
+    "brand_nest",
+    "brand_honeywell_smart",
+    "brand_ecobee",
+    "brand_honeywell_buttons",
+    "brand_amazon",
+    "brand_other",
+    "other"
+  ],
+  "what_fixed_it_note": "Call-pro results in the tree use internal reason codes, not homeowner part labels. No per-lane part list is shipped. The follow-up uses free entry, plus other and not_sure."
+}

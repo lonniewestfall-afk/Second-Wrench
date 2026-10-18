@@ -483,7 +483,7 @@ assert(!JSON.stringify(F.nodes).includes('2W'), 'no 2W brand');
 const joined = JSON.stringify(F.hpWave1.map(id => F.nodes[id]));
 assert(!/replace the capacitor/i.test(joined), 'HP nodes do not instruct capacitor replacement');
 
-assert(/termsVersion:\s*'public-beta-2026-10-15.1'/.test(configText), 'termsVersion matches the October 15 terms');
+assert(/termsVersion:\s*'public-beta-2026-10-18.1'/.test(configText), 'termsVersion matches the October 18 terms');
 assert(/advancedRepairsEnabled:\s*false/.test(configText) && !/advancedRepairsEnabled:\s*true/.test(configText), 'public advanced flag must stay false');
 assert(appText.includes("'/terms'") && appText.includes("'/privacy'"), 'terms and privacy routes exist');
 const termsRoute = appText.slice(appText.indexOf("'/terms':"), appText.indexOf("'/privacy':"));
@@ -496,7 +496,7 @@ assert(termsRoute.includes('TERMS_HTML') && termsRoute.includes('publicBetaNotic
 assert(privacyRoute.includes('PRIVACY_HTML'), 'privacy route renders the privacy body');
 assert(/not a licensed HVAC/i.test(visible(noticeHtml)), 'terms page says not a licensed HVAC');
 assert(termsHtml.includes('Advanced DIY repair procedures are OFF'), 'terms page says Advanced DIY repair procedures are OFF');
-assert(visible(privacyHtml).includes('We do not sell your feedback'), 'privacy page says we do not sell your feedback');
+assert(/We don(?:\u2019|\\u2019)t sell your information/.test(visible(privacyHtml)), 'privacy page says we do not sell your information');
 assert(termsHtml.includes('been reviewed or approved by an attorney') && termsRoute.includes('Not attorney-reviewed'), 'terms status says not attorney-reviewed');
 assert(privacyHtml.includes('attorney-reviewed or approved') && privacyRoute.includes('Not attorney-reviewed'), 'privacy status says not attorney-reviewed');
 assert(!/DRAFT FOR COUNSEL|attorney-approved|lawyer-reviewed/i.test(appText), 'pages do not claim attorney approval');
@@ -613,8 +613,8 @@ const HAZARDS = [
   ['hazard_refrigerant_alarm', 'Do not reset a refrigerant-leak alarm.'],
   ['hazard_unsure', 'Uncertainty is a good reason to stop.']
 ];
-const TERMS_BODY_SHA256 = 'd257cd01987232e4a882d405c4da7f0f57dd4616659c07ba5efc9dd876d10e50';
-const PRIVACY_BODY_SHA256 = 'd1966ef7156a5cca489070d872fb78e66627843e06e82943f70b8f1d67ed8552';
+const TERMS_BODY_SHA256 = '37efc0e6b1e272affa48119e1734606bba12f64cd7772d8f0afd831bc3b43838';
+const PRIVACY_BODY_SHA256 = '2fbfacdced289b7cd08324023a7439e0e36995ce4f1c0d6d648d7d6009ef5c05';
 
 // ---- WSHP Wave-1 PR-1 (A-1..A-28, T-1..T-26) ----
 const WSHP_IDS = ['wshp.hazard.flood_electrical', 'wshp.entry.equipment_gate', 'wshp.heat.cold_home_screen', 'wshp.openloop.complaint', 'wshp.openloop.chemistry_gate', 'wshp.handback.call_pro'];

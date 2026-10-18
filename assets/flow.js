@@ -2596,7 +2596,8 @@
   function create(seed = '', mode = 'real') {
     const state = {
       node: ENTRY, result: null, seed, mode, stopping: false, safetyCleared: false,
-      consent: false, consentAt: null, termsVersion: null, telemetry: false,
+      consent: false, consentAt: null, termsVersion: null, privacyVersion: null, telemetry: false,
+      stopCount: 0, catalogConsent: false, catalogConsentVersion: null, catalogConsentAt: null,
       answers: [], startedAt: Date.now(), id: uuid(), landing: null,
       preselectChoice: null, treeVersion: '', audit: [],
       product: 'ask', hpLanding: null, hpAmbient: null, hpHandback: null,
@@ -2821,6 +2822,7 @@
       state.consent = true;
       state.consentAt = new Date().toISOString();
       state.termsVersion = String(meta.termsVersion);
+      state.privacyVersion = meta.privacyVersion ? String(meta.privacyVersion) : null;
       state.telemetry = false;
     }
     if (nodeId === ENTRY || (state.stopping && nodeId === 'bl.gate.safety')) state.safetyCleared = choice === 'none_of_these';
@@ -3083,11 +3085,15 @@
     const hadConsent = !!state.consent;
     const consentAt = state.consentAt;
     const termsVersion = state.termsVersion;
+    const privacyVersion = state.privacyVersion;
+    const nextStop = (state.stopCount || 0) + 1;
     Object.assign(state, fresh, keep, {
       stopping: true, node: reopen, result: null, safetyCleared: false,
       consent: boilerStop ? hadConsent : false,
       consentAt: boilerStop ? consentAt : null,
       termsVersion: boilerStop ? termsVersion : null,
+      privacyVersion: boilerStop ? privacyVersion : null,
+      stopCount: nextStop,
       telemetry: false, preselectChoice: null, heatingHazardReported: false
     });
     pushAudit(state, 'exit_ramp:stop_get_help');
@@ -3250,6 +3256,124 @@
     }
     return copy;
   }
+  const HP_CONFIRM = {
+    air_source_ducted_hp: 1, air_source_hp_gas_furnace: 1, air_source_hp_gas_unsure: 1,
+    heat_pump: 1, furnace_plus_heat_pump: 1, winter_outdoor_runs: 1, has_em_aux: 1, label_says_heat_pump: 1
+  };
+  function catalogLane(state) {
+    const known = { ac: 'ac.', hp: 'hp.', ms: 'ms.', wshp: 'wshp.', fn: 'fn.', ts: 'ts.', bl: 'bl.', wh: 'wh.', sd: 'sd.' };
+    return known[state && state.product] || 'ask';
+  }
+  function catalogEquipmentType(state) {
+    const choices = (state && state.answers || []).map(answer => answer.choice);
+    const product = state && state.product;
+    if (product === 'ac') return 'ac_split';
+    if (product === 'ms') return 'mini_split';
+    if (product === 'wshp') return 'wshp_geo';
+    if (product === 'ts') return 'thermostat';
+    if (product === 'bl') return 'boiler';
+    if (product === 'sd') return 'side_discharge';
+    if (product === 'wh') {
+      if (state.whType === 'tank') return 'water_heater_tank';
+      if (state.whType === 'tankless') return 'water_heater_tankless';
+      return 'other';
+    }
+    if (product === 'fn') {
+      if (state.fnFuel === 'gas' || choices.indexOf('gas_furnace') !== -1) return 'furnace_gas';
+      if (state.fnFuel === 'electric' || choices.indexOf('electric_furnace') !== -1) return 'furnace_electric';
+      return 'other';
+    }
+    if (product === 'hp') {
+      const confirmed = choices.some(choice => HP_CONFIRM[choice]);
+      return confirmed ? 'heat_pump_air' : 'not_sure';
+    }
+    return product === 'ask' ? 'not_sure' : 'other';
+  }
+  function catalogSymptom(state) {
+    const answers = (state && state.answers) || [];
+    for (let i = answers.length - 1; i >= 0; i--) {
+      if (String(answers[i].node || '').indexOf('landing') !== -1) return answers[i].choice;
+    }
+    return '';
+  }
+  function catalogUnitRole(state) {
+    const product = state && state.product;
+    if (product === 'ac' || product === 'hp' || product === 'sd') return 'outdoor';
+    if (product === 'fn') return 'furnace';
+    if (product === 'bl') return 'boiler';
+    if (product === 'wh') return 'water_heater';
+    if (product === 'ts') return 'thermostat';
+    if (product === 'ms') return 'mini_split_outdoor';
+    return 'other';
+  }
+  function catalogFuel(state) {
+    if (!state) return '';
+    if (state.fnFuel === 'gas' || state.fnFuel === 'electric' || state.fnFuel === 'oil') return state.fnFuel;
+    if (state.fnGas === 'propane') return 'propane';
+    const boilerFuel = state.bl && state.bl.fuel;
+    if (boilerFuel === 'gas' || boilerFuel === 'oil' || boilerFuel === 'electric' || boilerFuel === 'propane') return boilerFuel;
+    if (state.whFuel === 'gas' || state.whFuel === 'electric' || state.whFuel === 'oil' || state.whFuel === 'propane') return state.whFuel;
+    const choices = (state.answers || []).map(answer => answer.choice);
+    if (choices.indexOf('oil_or_other') !== -1) return 'oil';
+    if (choices.indexOf('gas_furnace') !== -1) return 'gas';
+    if (choices.indexOf('electric_furnace') !== -1) return 'electric';
+    return '';
+  }
+  function catalogHazardResult(state) {
+    const shown = state && state.result && results[state.result];
+    return !!(shown && (shown.tier === 'Emergency' || shown.tier === 'Stop / professional'));
+  }
+  function catalogBrandChoices() {
+    const node = nodes['ts.intake.brand_picker'];
+    if (!node || !node.options) return [];
+    return node.options.filter(option => option.id !== 'hazard_now' && option.id !== 'not_sure').map(option => ({ id: option.id, label: option.label }));
+  }
+  function catalogPayload(state, extra) {
+    const more = extra || {};
+    const shown = state && state.result && results[state.result];
+    const path = ((state && state.answers) || []).slice(0, 80).map(answer => ({ node: answer.node, choice: answer.choice }));
+    const payload = {
+      check_id: state.id,
+      app_version: more.appVersion || '',
+      content_version: more.contentVersion || '',
+      tree_version: state.treeVersion || '',
+      terms_version: state.termsVersion || '',
+      privacy_version: state.privacyVersion || '',
+      catalog_consent_version: more.catalogConsentVersion || state.catalogConsentVersion || '',
+      catalog_consent_at: more.catalogConsentAt || state.catalogConsentAt || '',
+      mode: state.mode === 'test' ? 'test' : 'real',
+      equipment_type: catalogEquipmentType(state),
+      lane_entered: catalogLane(state),
+      path: path,
+      end_node: state.result || state.node || '',
+      stop_count: state.stopCount || 0,
+      reset_count: state.reset_count || 0,
+      elapsed_seconds: Math.max(0, Math.round((Date.now() - state.startedAt) / 1000)),
+      unit_step: more.unitStep || 'skipped',
+      followup_status: more.followupStatus || 'none'
+    };
+    const symptom = catalogSymptom(state);
+    if (symptom) payload.symptom = symptom;
+    if (shown) {
+      payload.result_tier = shown.tier;
+      payload.outcome_code = shown.outcome;
+    }
+    return payload;
+  }
+  function catalogReprompt(state, versions) {
+    const next = versions || {};
+    return {
+      stale: !!(state && state.consent && (state.termsVersion !== next.terms || state.privacyVersion !== next.privacy)),
+      catalogStale: !!(state && state.catalogConsent && next.catalog && state.catalogConsentVersion !== next.catalog)
+    };
+  }
+  function acceptReprompt(state, versions) {
+    const next = versions || {};
+    state.termsVersion = next.terms;
+    state.privacyVersion = next.privacy;
+    state.consentAt = new Date().toISOString();
+    return state;
+  }
   return {
     acknowledgeStep: state => { HEAT.acknowledge(state); HEAT.entered(state, state.node); return state; },
     nodes, results, create, answer, selectSystem, systemMenu, stop, resume, summary, activity, viewNode, presentResult, advancedEnabled,
@@ -3259,6 +3383,8 @@
     tsFnOf: TS.fnOf, tsModelOf: TS.modelOf, tsLandingOf: TS.landingOf, tsU1: TS.u1, tsU2: TS.u2, tsTellPro: TS.tellPro, tsForbiddenScan: TS.forbiddenScan,
     tsWave2: TS.wave2ui, tsLatchBlocks: TS.latchBlocks, tsOptionVisible: TS.optionVisible, tsCards: TS.cards,
     hpWave1: HP_WAVE1, wshpWave1: WSHP_WAVE1, treeVersionFn: TREE_FN, fnWave1: FN_WAVE1, fnReused: FN_REUSED, fnForbidden: FN_FORBIDDEN,
-    fnCoLine: FN_CO_LINE, fnReasonCopy: FN_REASON_COPY, fnEdge: FN_EDGE
+    fnCoLine: FN_CO_LINE, fnReasonCopy: FN_REASON_COPY, fnEdge: FN_EDGE,
+    catalogLane, catalogEquipmentType, catalogSymptom, catalogUnitRole, catalogFuel, catalogHazardResult,
+    catalogBrandChoices, catalogPayload, catalogReprompt, acceptReprompt
   };
 });

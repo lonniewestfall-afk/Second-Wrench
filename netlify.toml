@@ -6,3 +6,21 @@
 
 [build.environment]
   NODE_VERSION = "24"
+
+[[redirects]]
+  from = "/api/catalog/record"
+  to = "/.netlify/functions/catalog-record"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/catalog/followup"
+  to = "/.netlify/functions/catalog-followup"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/catalog"
+  to = "/.netlify/functions/catalog-ingest"
+  status = 200
+  force = true

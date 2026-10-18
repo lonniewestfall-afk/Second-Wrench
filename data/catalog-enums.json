@@ -1,0 +1,98 @@
+{
+  "schema_version": "cat-v1",
+  "versions": {
+    "terms": "public-beta-2026-10-18.1",
+    "privacy": "privacy-public-beta-2026-10-18.1",
+    "catalog_consent": "cat-consent-2026-10-18.1"
+  },
+  "store": {
+    "name": "catalog-v1",
+    "region": "us-east-2",
+    "consistency": "strong"
+  },
+  "limits": {
+    "body_bytes": 32768,
+    "path_steps": 80,
+    "events": 80,
+    "units": 3,
+    "elapsed_seconds": 7200,
+    "brand_other": 40,
+    "model_number": 40,
+    "serial_number": 40,
+    "what_fixed_other": 60,
+    "part_recommended_other": 60,
+    "zip3": 3
+  },
+  "retention": {
+    "serial_months": 24,
+    "serial_hmac_months": 24,
+    "raw_record_months": 24,
+    "free_text_months": 12,
+    "consent_extra_years": 3,
+    "test_record": "next_daily_rollup",
+    "suppression_k": 10,
+    "reply_days": 30
+  },
+  "zip3_policy": "all_000_until_cited_census_list",
+  "low_population_zip3": [],
+  "zip3_note": "No current Census ZCTA population table is bundled. Until a cited list is added, every ZIP3 and FSA is stored as 000. A Canadian rural FSA (second character 0) is also 000.",
+  "catalog_hidden_regions": ["QC"],
+  "ip_state_fallback": false,
+  "equipment_type": [
+    "ac_split", "heat_pump_air", "mini_split", "wshp_geo", "furnace_gas", "furnace_electric",
+    "thermostat", "boiler", "water_heater_tank", "water_heater_tankless", "side_discharge",
+    "not_sure", "other"
+  ],
+  "mode": ["real", "test"],
+  "result_tier": [
+    "Emergency", "Stop / professional", "Professional guidance", "Basic homeowner check",
+    "More information needed", "Advanced DIY"
+  ],
+  "outcome_code": ["next_step", "call_pro", "emergency_exit", "insufficient_info"],
+  "outcome_at_result": ["fixed_pending", "needs_pro", "unknown"],
+  "outcome_reported": ["fixed", "needs_pro", "unknown"],
+  "unit_step": ["submitted", "skipped", "not_offered"],
+  "followup_status": ["none", "offered", "answered"],
+  "unit_role": [
+    "outdoor", "indoor_air_handler", "furnace", "boiler", "water_heater", "thermostat",
+    "mini_split_indoor", "mini_split_outdoor", "other"
+  ],
+  "serial_status": ["entered", "skipped", "unreadable"],
+  "nameplate_source": ["typed", "typed_with_photo_helper", "from_tree"],
+  "fuel": ["gas", "propane", "electric", "oil", "unknown"],
+  "age_band": ["0-4", "5-9", "10-14", "15-19", "20+", "unknown"],
+  "mfg_decode_status": ["decoded", "no_rule", "ambiguous"],
+  "status_now": ["fixed", "still_broken_pro_coming", "pro_fixed", "replaced_equipment", "gave_up_or_unknown"],
+  "who_did_it": ["pro", "me", "someone_else", "not_sure"],
+  "what_fixed_it": ["other", "not_sure"],
+  "symptom": [
+    "code", "filter", "flow", "hazard_now", "landing_after_outage", "landing_after_storm",
+    "landing_auto_mode", "landing_backup_heat_cost", "landing_base_ice", "landing_blank_screen",
+    "landing_blank_tstat", "landing_both_modes_fail", "landing_code", "landing_code_alert",
+    "landing_cold_air", "landing_cooling_problem", "landing_crowded", "landing_em_aux_heat",
+    "landing_error_code", "landing_fan", "landing_fuel_low", "landing_humid", "landing_ice_outdoor",
+    "landing_ice_seen", "landing_leak", "landing_low_battery", "landing_mount",
+    "landing_never_catches_up", "landing_new_furnace", "landing_no_cool", "landing_no_heat",
+    "landing_no_heat_cool", "landing_no_hot_water", "landing_noise", "landing_not_cooling",
+    "landing_not_enough_heat", "landing_nothing_obvious", "landing_one_area_cold",
+    "landing_outdoor_side_unit", "landing_outdoor_unit", "landing_pressure", "landing_schedule_hold",
+    "landing_short_cycle", "landing_short_cycling", "landing_smell", "landing_snow_ice",
+    "landing_some_rooms", "landing_something_else", "landing_stages", "landing_swings",
+    "landing_unusual_noise", "landing_wait_delay", "landing_want_to_fix", "landing_water_at_head",
+    "landing_water_near_furnace", "landing_water_or_ice", "landing_water_outside",
+    "landing_weak_airflow", "landing_wifi", "landing_will_not_start", "landing_wrong_reading",
+    "no_hot", "noise", "not_enough", "power", "smell", "too_hot"
+  ],
+  "region_state": [
+    "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FL", "GA", "HI", "ID", "IL", "IN", "IA",
+    "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM",
+    "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA",
+    "WV", "WI", "WY", "AB", "BC", "MB", "NB", "NL", "NS", "NT", "NU", "ON", "PE", "QC", "SK", "YT", "XX"
+  ],
+  "tier1_events": ["page_view", "check_start", "result_view", "stop_pressed"],
+  "tier2_events": [
+    "node_view", "answer", "result_reached", "exit", "unit_step_shown", "unit_step_skipped",
+    "unit_submitted", "serial_asked", "serial_skipped", "serial_entered", "serial_unreadable",
+    "followup_link_copied", "followup_shown", "followup_answered", "record_exported", "record_deleted"
+  ]
+}
