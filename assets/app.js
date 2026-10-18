@@ -287,8 +287,6 @@
 <p>Names, email addresses, phone numbers, street addresses, full ZIP or postal codes, GPS or precise location, IP addresses, photos, cookies, or cross-site identifiers. If you type personal details into a free-text box, we delete what you typed there and keep the rest.</p>
 <h3>Photo helper</h3>
 <p>If you use a photo to help read a label, the photo stays on your device. We don\u2019t upload, store, or send it.</p>
-<h3>Reminder on this device</h3>
-<p>If you check \u201cRemind me on this device\u201d, we save your record code in your browser\u2019s local storage (not a cookie). Dismissing the reminder or clearing your browser data removes it.</p>
 <h2>How we use it</h2>
 <p>To improve questions, safety stops and clarity; to fix bugs; to understand which paths people finish or leave; to count which equipment, ages and parts are reported with problems, and how often a result matched what happened later; and to reply if you asked. Incomplete checks aren\u2019t proof that anyone gave up.</p>
 <h2>What we don\u2019t do</h2>

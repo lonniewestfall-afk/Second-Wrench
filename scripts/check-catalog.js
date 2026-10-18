@@ -62,6 +62,7 @@ assert(appText.includes('public-beta-2026-10-18.1'), 'terms body uses the new ve
 assert(appText.includes('Privacy Officer, Second Wrench'), 'privacy names the person in charge');
 assert(appText.includes('support@secondwrench.co'), 'privacy keeps the support address');
 assert(appText.includes('Operated by:</strong> Second Wrench'), 'privacy names the operator');
+assert(!/Remind me on this device/.test(appText.slice(appText.indexOf('const PRIVACY_HTML'), appText.indexOf('function publicBetaNotice'))), 'privacy does not describe an unbuilt remind-me control');
 const catalogSlice = appText.slice(appText.indexOf('const CATALOG_REGION_CODES'), appText.indexOf('function render()'));
 const legalSlice = appText.slice(appText.indexOf('<h3>9A.'), appText.indexOf('<h3>10. Acceptable use')) + appText.slice(appText.indexOf('const PRIVACY_HTML'), appText.indexOf('function publicBetaNotice'));
 assert(!/\bsafe\b/i.test(catalogSlice + legalSlice), 'new catalog and legal copy does not use safe as an adjective');
