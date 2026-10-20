@@ -1,6 +1,6 @@
 /* Local sanity for AC Wave-2 and HP Wave-1. No network. */
 'use strict';
-globalThis.SW_CONFIG = { advancedRepairsEnabled: false, aiThermostatEnabled: false, mirrorsEnabled: false, stageLatchStepsEnabled: false, contentVersion: '2026-10-20.10' };
+globalThis.SW_CONFIG = { advancedRepairsEnabled: false, aiThermostatEnabled: false, mirrorsEnabled: false, stageLatchStepsEnabled: false, contentVersion: '2026-10-20.11' };
 const fs = require('fs');
 const path = require('path');
 const F = require('../assets/flow.js');
@@ -90,7 +90,7 @@ const gate = ['none_of_these', 'agree_18_terms'];
 
 assert(/advancedRepairsEnabled:\s*false/.test(configText), 'public advanced flag must stay false');
 assert(/referralEnabled:\s*false/.test(configText) && !/referralEnabled:\s*true/.test(configText), 'referral flag must stay false');
-const SHIP = '2026-10-20.10';
+const SHIP = '2026-10-20.11';
 assert(configText.includes("contentVersion: '" + SHIP + "'"), 'content version must be ' + SHIP);
 assert(['config', 'flow', 'app'].every(f => indexText.includes(f + '.js?v=' + SHIP)), 'script cache-bust must match content version');
 assert(indexText.includes('HOME HVAC CHECKS') && !indexText.includes('AC + HEAT PUMP'), 'header lockup is HOME HVAC CHECKS');
@@ -977,8 +977,8 @@ const words = t => String(t || '').split(/\s+/).filter(Boolean).length;
 assert(F.treeVersionMs === 'ms.ductless.v2', 'MS-A1 mini-split tree version');
 assert(Array.isArray(F.msPr1) && F.msPr1.length === 10, 'MS-G1 ten original mini-split nodes exported');
 assert(Array.isArray(F.msV1) && F.msV1.join('|') === 'ms.heat.mode_setpoint|ms.heat.force_heat|ms.heat.defrost_sanity|ms.outdoor.safe_observe', 'MS-G1 heat and outdoor nodes');
-assert(Object.keys(F.nodes).length === 247, 'node count is ' + Object.keys(F.nodes).length);
-assert(Object.keys(F.results).length === 413, 'result count is ' + Object.keys(F.results).length);
+assert(Object.keys(F.nodes).length === 256, 'node count is ' + Object.keys(F.nodes).length);
+assert(Object.keys(F.results).length === 419, 'result count is ' + Object.keys(F.results).length);
 assert(!Object.keys(F.nodes).some(id => id.indexOf('ac.adv.cap.') === 0), 'advanced capacitor nodes are absent from the public bundle');
 const ms1 = ['none_of_these', 'agree_18_terms', 'other_heat_or_ductless', 'ductless_mini_split', 'ductless_single_zone'];
 const msGate = ms1.slice(0, 4);
@@ -1713,6 +1713,7 @@ assert(!F.tsMirrors.records.some(record => F.tsMirrorRenderable(record)), 'TS-G1
 const { execFileSync } = require('child_process');
 execFileSync(process.execPath, ['--check', path.join(__dirname, '../assets/flow.js')]);
 execFileSync(process.execPath, ['--check', path.join(__dirname, '../assets/ts-lane.js')]);
+execFileSync(process.execPath, ['--check', path.join(__dirname, '../assets/ta-wave3.js')]);
 execFileSync(process.execPath, ['--check', path.join(__dirname, '../assets/app.js')]);
 let straightCheckFailed = false;
 try {
@@ -2056,8 +2057,8 @@ function bootPage() {
   const virtualConsole = new VirtualConsole();
   virtualConsole.on('jsdomError', error => errors.push(String(error && error.stack || error)));
   const html = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8')
-    .replace(/\s*<script src="assets\/(?:config|ts-runtime|ts-lane|heating-data|heating-lanes|flow|app)\.js\?v=[^"]+" defer><\/script>/g, '')
-    .replace('</body>', '<script>' + fs.readFileSync(path.join(__dirname, '../assets/config.js'), 'utf8') + '</script><script>' + fs.readFileSync(path.join(__dirname, '../assets/ts-runtime.js'), 'utf8') + '</script><script>' + fs.readFileSync(path.join(__dirname, '../assets/ts-lane.js'), 'utf8') + '</script><script>' + fs.readFileSync(path.join(__dirname, '../assets/heating-data.js'), 'utf8') + '</script><script>' + fs.readFileSync(path.join(__dirname, '../assets/heating-lanes.js'), 'utf8') + '</script><script>' + fs.readFileSync(path.join(__dirname, '../assets/flow.js'), 'utf8') + '</script><script>' + fs.readFileSync(path.join(__dirname, '../assets/app.js'), 'utf8') + '</script></body>');
+    .replace(/\s*<script src="assets\/(?:config|ts-runtime|ts-lane|ta-wave3|heating-data|heating-lanes|flow|app)\.js\?v=[^"]+" defer><\/script>/g, '')
+    .replace('</body>', '<script>' + fs.readFileSync(path.join(__dirname, '../assets/config.js'), 'utf8') + '</script><script>' + fs.readFileSync(path.join(__dirname, '../assets/ts-runtime.js'), 'utf8') + '</script><script>' + fs.readFileSync(path.join(__dirname, '../assets/ts-lane.js'), 'utf8') + '</script><script>' + fs.readFileSync(path.join(__dirname, '../assets/heating-data.js'), 'utf8') + '</script><script>' + fs.readFileSync(path.join(__dirname, '../assets/heating-lanes.js'), 'utf8') + '</script><script>' + fs.readFileSync(path.join(__dirname, '../assets/ta-wave3.js'), 'utf8') + '</script><script>' + fs.readFileSync(path.join(__dirname, '../assets/flow.js'), 'utf8') + '</script><script>' + fs.readFileSync(path.join(__dirname, '../assets/app.js'), 'utf8') + '</script></body>');
   const dom = new JSDOM(html, {
     url: 'http://127.0.0.1:8765/#/',
     runScripts: 'dangerously',

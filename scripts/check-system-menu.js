@@ -68,9 +68,9 @@ async function checkPage() {
   const {JSDOM,VirtualConsole}=require('jsdom');
   const errors=[];
   const vc=new VirtualConsole();vc.on('jsdomError',e=>errors.push(String(e)));
-  const files=['config','ts-runtime','ts-lane','heating-data','heating-lanes','flow','app'];
+  const files=['config','ts-runtime','ts-lane','ta-wave3','heating-data','heating-lanes','flow','app'];
   const html=fs.readFileSync(path.join(root,'index.html'),'utf8')
-    .replace(/\s*<script src="assets\/(?:config|ts-runtime|ts-lane|heating-data|heating-lanes|flow|app)\.js\?v=[^"]+" defer><\/script>/g,'')
+    .replace(/\s*<script src="assets\/(?:config|ts-runtime|ts-lane|ta-wave3|heating-data|heating-lanes|flow|app)\.js\?v=[^"]+" defer><\/script>/g,'')
     .replace('</body>',files.map(f=>'<script>'+fs.readFileSync(path.join(root,'assets',f+'.js'),'utf8')+'</script>').join('')+'</body>');
   const dom=new JSDOM(html,{url:'http://127.0.0.1:8765/#/',runScripts:'dangerously',pretendToBeVisual:true,virtualConsole:vc,beforeParse(w){w.scrollTo=()=>{};}});
   const w=dom.window,d=w.document,flush=()=>new Promise(r=>setTimeout(r,0));
