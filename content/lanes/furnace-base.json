@@ -39,10 +39,10 @@
         },
         {
           "id": "cold_exposure_risk",
-          "label": "Someone's at risk from the cold (a baby, an older adult, or a medical need)",
+          "label": "Someone’s at risk from the cold (a baby, an older adult, or a medical need) and there’s no other way to keep them warm",
           "next": "@fn_cold_exposure",
           "hint": "Get them warm first.",
-          "fact": "Someone at risk from the cold.",
+          "fact": "Someone at risk from the cold with no other way to keep warm.",
           "gate": "cold_exposure_911"
         },
         {
@@ -353,7 +353,7 @@
         "Don't touch light switches, the thermostat, phones, or anything that could spark while you're inside.",
         "Don't try to find the leak.",
         "From outside or a neighbor's, call the gas utility's emergency line or 911.",
-        "Don't go back in until they say you can go back in.",
+        "Don’t go back in until they say you can.",
         "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
       ],
       "avoid": "Don't try to shut off the gas yourself.",
@@ -372,7 +372,7 @@
       "actions": [
         "Get everyone, and pets, outside to fresh air now.",
         "From outside, call 911 or the fire department.",
-        "Don't go back in until responders say you can go back in.",
+        "Don’t go back in until responders say you can.",
         "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
       ],
       "avoid": "Don't silence the alarm and stay inside, and don't open windows instead of leaving.",
@@ -387,7 +387,7 @@
       "tier": "Emergency",
       "urgency": "Stop · keep away from the furnace",
       "title": "Stop using the furnace.",
-      "explanation": "Soot, scorch marks, or flame outside the burner can mean unsafe burning and carbon monoxide.",
+      "explanation": "Soot, scorch marks, or flame outside the burner can mean burning that is not complete and carbon monoxide.",
       "actions": [
         "If you're at the thermostat and smell no gas, set it to Off.",
         "If you smell gas, a CO alarm sounds, or anyone feels sick, get everyone out and call 911 from outside.",
@@ -430,7 +430,7 @@
         "Otherwise, get them somewhere warm: a neighbor, family, or a warming center.",
         "Add blankets and dry layers in the meantime.",
         "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn.",
-        "Call a licensed HVAC pro for the furnace once everyone is warm."
+        "Call a licensed HVAC pro for the furnace once everyone is warm and out of danger."
       ],
       "avoid": "Don't wait on a furnace repair to get someone warm.",
       "source": "safety",
@@ -482,7 +482,7 @@
       "tier": "Stop / professional",
       "urgency": "Stop here",
       "title": "Not sure is a good reason to stop.",
-      "explanation": "You don't need to check the furnace to answer. Stopping is the right stop.",
+      "explanation": "You don't need to check the furnace to answer. Stopping is the careful choice.",
       "actions": [
         "If you smell gas or a CO alarm sounds, get everyone out and call 911 from outside.",
         "If not, set the thermostat to Off if you're already there, and call a licensed HVAC pro.",
@@ -507,7 +507,7 @@
         "CO alarm or feeling sick: get everyone and pets out to fresh air. Call 911 from outside.",
         "Smoke, sparks, or burning smell: get away and call 911 from outside.",
         "If a refrigerant leak alarm is going off, move people out of the affected area to fresh air without operating switches or creating ignition sources. Don’t reset the alarm, cycle power, or turn off a blower that’s running. Call a licensed HVAC professional from outside the affected area, and for breathing trouble or immediate danger, call 911.",
-        "Don't go back in until responders say you can go back in.",
+        "Don’t go back in until responders say you can.",
         "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
       ],
       "avoid": "Don't keep troubleshooting.",
@@ -526,7 +526,7 @@
       "actions": [
         "Set the mode to Heat.",
         "Raise the setpoint a few degrees above the room temperature. Fan on Auto.",
-        "Still no heat after 10 minutes? Start a new check and answer that heat still won't come on.",
+        "Give it 5 to 10 minutes. Still no heat? Start a new check and pick Furnace.",
         "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
       ],
       "avoid": "Don't take the thermostat off the wall or change wiring or installer settings.",
@@ -727,9 +727,8 @@
       "title": "Don't touch the furnace or stand in the water.",
       "explanation": "Water is at or near the furnace's electrical parts.",
       "actions": [
-        "Don't touch the furnace, any switch, or the breaker panel, and don't stand in the water.",
-        "Leave the area, keep others and pets away, and call a licensed HVAC pro or an electrician.",
-        "If you see sparks, smoke, or smell burning, get out and call 911 from outside.",
+        "Stay clear of standing water and the equipment. Keep other people away.",
+        "Stay away from the equipment and the breaker panel if there’s water nearby. Leave the area and call a licensed electrician or HVAC professional. If there are sparks, smoke, or anyone is hurt, call 911 from outside.",
         "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
       ],
       "avoid": "Don't touch the furnace, any switch, or the breaker panel.",

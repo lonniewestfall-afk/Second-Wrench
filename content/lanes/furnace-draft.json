@@ -379,10 +379,10 @@
         ],
         [
           "unsafe_outside",
-          "Ice, dark, or the storm makes it unsafe to go out",
+          "Ice, dark, or the storm makes it the wrong time to go out",
           "@fn_vent_unsafe_wait",
           "",
-          "Outdoor trip unsafe."
+          "Outdoor trip should wait."
         ],
         [
           "metal_chimney",
@@ -1276,8 +1276,8 @@
       "id": "fn_vent_unsafe_wait",
       "outcome": "pro_referral",
       "badge": "Stop / professional",
-      "title": "Don't go out in unsafe conditions",
-      "exp": "Ice, dark, or the storm makes the trip outside unsafe right now.",
+      "title": "Don't go out in these conditions",
+      "exp": "Ice, dark, or the storm makes this the wrong time to go outside.",
       "act": [
         "Call a licensed HVAC pro or your gas utility and say the vent may be blocked.",
         "Keep CO alarms on, and leave if one sounds."

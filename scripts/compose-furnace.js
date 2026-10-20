@@ -84,7 +84,7 @@ module.exports = function buildFurnace(base, draft, CO) {
   nodes['fn.power.switch_on_step'].step={what:'Restoring a mistakenly switched-off external furnace switch supplies power again.',caution:'Equipment can start when power returns. A shutdown for a fault or repair must not be overridden.',source:'Trane, Furnace Not Igniting?; checked October 12, 2026. Single-attempt limit and exclusions are Second Wrench policy.',steps:['Write down the thermostat settings and set the thermostat to Off.','Operate only the clearly identified external furnace switch once, to On. Keep every equipment and electrical-panel cover closed.','If no hazard appears, restore the thermostat settings you recorded and step away.'],watch:'If useful heat does not return promptly, call for service. Do not keep trying.',stop:'For gas smell, a CO alarm, smoke, or a bang, leave and call from outside. Do not operate another switch on the way out. If the breaker trips or the equipment stops again, leave it stopped and call a professional.'};
   set('fn.power.switch_on_step','no_heat','fn.code.window_look');
   nodes['fn.fuel.propane_gauge'].step.steps=['Read only a gauge already visible from ground level, or under the tank’s owner-access weather dome if your supplier’s instructions identify it. Do not remove another cover.','Do not touch a valve, regulator, fitting, or connection. Record the reading without treating it as proof that fuel reaches the furnace.','Close a weather dome you opened.'];
-  nodes['fn.fuel.propane_gauge'].step.stop='If you smell gas or hear unexplained hissing, leave and call your supplier or 911 from outside.';
+  nodes['fn.fuel.propane_gauge'].step.stop='If you smell gas or hear hissing, get away from the tank. Don\u2019t touch switches or flames. Call 911 and your propane supplier.';
   for(const c of ['ok','cant_read'])set('fn.fuel.propane_gauge',c,skipped);
   get('fn.fuel.propane_gauge','ok').fact='Propane gauge reported above empty; delivery to furnace unconfirmed.';
   set('fn.fuel.oil_tank','some_oil','fn.code.window_look');
@@ -131,8 +131,7 @@ module.exports = function buildFurnace(base, draft, CO) {
   n('fn.hydro.leak','Water or ice at the air handler','Stay back and do not touch water, pipes, or electrical equipment.',[op('near_electrical','Water near electrical parts, or not sure','@fn_water_electrical'),op('away','Water is clearly away from electrical parts','@fn_hydro_coil_freeze_pro')]);
   set('fn.tstat.new_furnace','older_or_ok','ts.gate.safety_stops');
   // Retain uncertainty and avoid ordering restarts after an unresolved fault.
-  results.fn_call_pro.explanation='The cause has not been confirmed. Share the observations you actually made, and any checks you could not complete, with a licensed HVAC professional.';
-  results.fn_call_pro.actions=['Call a licensed HVAC professional and share the service note below.','Use Stop / get help for a new smell, alarm, smoke, water at electrical parts, or cold exposure.'];
+  // fn_call_pro keeps the spec actions. presentResult fills the per-reason explanation.
   results.fn_vent_cleared_basic.explanation='You reported clearing snow and heat returning. That observation does not rule out another fault.';
   results.fn_vent_cleared_basic.actions=['Keep the exterior terminations unobstructed.','If heat stops again, call for service; do not reset it.'];
   results.fn_condensate_pump_pro.actions=['Stay away from water and electrical parts.','Call a licensed HVAC professional or plumber about the pump and leak.'];
@@ -159,8 +158,7 @@ module.exports = function buildFurnace(base, draft, CO) {
   results.fn_out_of_scope_equipment.explanation='This check covers gas, oil, and electric furnaces and hot-water air handlers. Wood, coal, pellet, wall and floor heaters, and rooftop equipment need a professional familiar with that equipment.';
   results.fn_mh_return_cleared_basic.explanation='You reported removing an obstruction from an existing air path. The home type and duct arrangement do not establish whether heat is restored.';
   results.fn_mh_return_cleared_basic.actions=['Keep the existing room grilles, return openings, and any closet-door louvers unobstructed. Keep equipment covers closed.','Follow the equipment manual’s storage and clearance rules.','If useful heat does not return or the equipment shuts off again, call a licensed HVAC professional. Do not reset it.'];
-  results.fn_batteries_display_back.actions=['If no warning signs have appeared, restore the normal Heat setting, the recorded heating setpoint, and the recorded fan setting. Do not change a setting you cannot identify.','Allow at least five minutes for a normal thermostat delay, or the longer delay in your exact manual, only while the home has enough heat and nobody is at risk.','If useful heat does not return, arrange service. A restored display does not prove the equipment works.'];
-  results.fn_returns_supplies_cleared.actions=['Keep the existing returns and registers clear of furniture, rugs, and curtains.','Observe only while the home has enough heat and nobody is at risk. If rooms remain short on heat, call a licensed HVAC professional.'];
+  // Battery and vent results keep the spec actions.
   results.fn_elec_staging_normal.actions=['You reported warm air and rooms maintaining temperature; continue normal observation.','If useful heat falls behind or the equipment shuts off again, call a licensed HVAC professional. Do not reset it.'];
   get(intake,'boiler_radiators').fact='Boiler reported on the furnace screen; continuing with the boiler hazard check.';
   get(intake,'other_fuel').fact='Other heating fuel reported.';
@@ -268,9 +266,39 @@ module.exports = function buildFurnace(base, draft, CO) {
     if (coChoice) coChoice.next = '@sw_co_symptom_exit';
   }
   nodes['sw.co.fast_exit'].owner = 'shared';
-  for (const r of Object.values(results)) { if (!(r.actions || []).includes(CO)) r.actions.push(CO); }
-  const serialized=JSON.stringify({nodes,results}).replace(/safely from the ground/g,'from dry, level ground').replace(/safely/g,'without approaching a hazard').replace(/a safe place/g,'outside');
+  const SPEC_CO = "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns.";
+  for (const [id, r] of Object.entries(results)) {
+    if (!String(id).startsWith('fn_')) {
+      if (!(r.actions || []).includes(CO)) r.actions.push(CO);
+      continue;
+    }
+    r.actions = (r.actions || []).map(a => a === CO ? SPEC_CO : a);
+    if (!r.actions.includes(SPEC_CO)) r.actions.push(SPEC_CO);
+  }
+  const serialized=JSON.stringify({nodes,results})
+    .replace(/safely from the ground/g,'from dry, level ground')
+    .replace(/makes the trip outside unsafe right now/g,'makes this the wrong time to go outside')
+    .replace(/unsafe to go out/g,'the wrong time to go out')
+    .replace(/Outdoor trip unsafe\./g,'Outdoor trip should wait.')
+    .replace(/unsafe conditions/g,'these conditions')
+    .replace(/unsafe burning/g,'burning that is not complete')
+    .replace(/safely/g,'without approaching a hazard')
+    .replace(/a safe place/g,'outside');
   const compiled=JSON.parse(serialized);
+  const safeAdjective = /\b(safe|safely|safer|safest|unsafe)\b/i;
+  const furnaceBits = [];
+  for (const [id, node] of Object.entries(compiled.nodes)) {
+    furnaceBits.push([id, node.title, node.body, node.caution]);
+    for (const option of node.options || []) furnaceBits.push([id + '/' + option.id, option.label, option.hint, option.fact]);
+    if (node.step) furnaceBits.push([id + '.step', node.step.what, node.step.caution, node.step.stop, node.step.watch].concat(node.step.steps || []));
+  }
+  for (const [id, result] of Object.entries(compiled.results)) {
+    furnaceBits.push([id, result.title, result.explanation, result.avoid, result.body].concat(result.actions || []));
+  }
+  for (const bits of furnaceBits) {
+    const hit = bits.filter(Boolean).join('\n').match(safeAdjective);
+    if (hit) throw new Error('Furnace copy uses "' + hit[0] + '" as an adjective: ' + bits[0]);
+  }
   for(const [id,v] of Object.entries(compiled.nodes))for(const o of v.options)if(typeof o.next==='string'&&(/\(router\)|\(path|\(reason|FN_CODE|unchanged|→/.test(o.next)))throw Error('Unresolved furnace route '+id+'/'+o.id+': '+o.next);
   return compiled;
 };
