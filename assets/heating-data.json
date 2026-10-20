@@ -8775,7 +8775,7 @@
           {
             "id": "co_alarm_or_symptoms",
             "label": "CO alarm sounding, or headache, dizziness, nausea, or drowsiness, especially in more than one person or pet",
-            "next": "@fn_co_alarm",
+            "next": "@sw_co_symptom_exit",
             "hint": "Get to fresh air. Call from outside.",
             "fact": "CO alarm or possible CO symptoms reported.",
             "gate": "co_alarm_or_symptoms"
@@ -8997,7 +8997,7 @@
           {
             "id": "landing_no_heat",
             "label": "No heat: nothing seems to happen",
-            "next": "fn.tstat.mode_setpoint",
+            "next": "fn.noheat.split",
             "hint": "",
             "fact": "Complaint: No heat from the furnace.",
             "gate": null
@@ -9005,7 +9005,7 @@
           {
             "id": "landing_cold_air",
             "label": "Blower runs, but the air isn't warm",
-            "next": "fn.tstat.mode_setpoint",
+            "next": "fn.noheat.split",
             "hint": "",
             "fact": "Complaint: Blower runs but the air is not warm.",
             "gate": null
@@ -9057,6 +9057,13 @@
             "hint": "The central AC check takes it from here.",
             "fact": "Cooling problem on a furnace home. Switching to the AC check.",
             "gate": null
+          },
+          {
+            "id": "landing_first_heat_smell",
+            "label": "A smell when the heat first came on this season",
+            "next": "fn.smell.first_heat",
+            "fact": "A smell when the heat first came on this season.",
+            "hint": ""
           },
           {
             "id": "hazard_now",
@@ -9129,6 +9136,16 @@
             "hint": "Don't guess.",
             "fact": "",
             "gate": null
+          },
+          {
+            "id": "fan_settings_more",
+            "label": "More about fan settings",
+            "next": "ts.settings.fan",
+            "fact": "More about the fan setting during a heating check.",
+            "hint": "",
+            "set": {
+              "fnFanContext": "heat"
+            }
           },
           {
             "id": "hazard_now",
@@ -9335,7 +9352,7 @@
           {
             "id": "co_alarm_or_symptoms",
             "label": "A CO alarm is sounding, or anyone has headache, dizziness, or nausea",
-            "next": "@fn_co_alarm",
+            "next": "@sw_co_symptom_exit",
             "fact": "CO alarm or symptoms at the outdoor check.",
             "hint": ""
           },
@@ -10611,6 +10628,201 @@
         "diyTier": "basic",
         "safetyGate": false,
         "owner": "fn"
+      },
+      "sw.co.fast_exit": {
+        "section": "Safety first",
+        "title": "Is a carbon monoxide (CO) alarm going off, or does anyone in the home have a headache, dizziness, nausea, unusual tiredness, or confusion that gets better when they leave the house?",
+        "body": "",
+        "options": [
+          {
+            "id": "co_yes",
+            "label": "Yes, or I'm not sure",
+            "next": "@sw_co_symptom_exit",
+            "hint": "",
+            "fact": "CO alarm or possible CO symptoms reported.",
+            "gate": "co_alarm_or_symptoms"
+          },
+          {
+            "id": "co_no",
+            "label": "No",
+            "next": "ac.gate.cluster_entry",
+            "hint": "",
+            "fact": "",
+            "gate": null
+          }
+        ],
+        "caution": "",
+        "diyTier": "basic",
+        "safetyGate": true,
+        "owner": "shared"
+      },
+      "fn.noheat.split": {
+        "section": "Furnace and air handler",
+        "title": "When the heat should be on, what does the furnace do?",
+        "body": "",
+        "options": [
+          {
+            "id": "cold_risk",
+            "label": "The house is getting cold, and someone at home is at risk from the cold (an infant, an older adult, or someone who is ill or medically fragile)",
+            "next": "@fn_cold_exposure",
+            "fact": "Cold exposure reported.",
+            "hint": ""
+          },
+          {
+            "id": "silent",
+            "label": "Nothing happens. It's silent.",
+            "next": "fn.tstat.mode_setpoint",
+            "fact": "Furnace silent on a call for heat.",
+            "hint": "",
+            "set": {
+              "fnNoHeat": "silent"
+            }
+          },
+          {
+            "id": "blowing_cold",
+            "label": "The blower runs, but the air is cold",
+            "next": "fn.tstat.mode_setpoint",
+            "fact": "Blower runs; air not warm.",
+            "hint": "",
+            "set": {
+              "fnNoHeat": "cold_air"
+            }
+          },
+          {
+            "id": "hazard_now",
+            "label": "New gas smell, CO alarm, refrigerant leak alarm, smoke, sparks, leaking hot water or steam, or another hazard",
+            "next": "sw.co.fast_exit",
+            "fact": "New furnace or air-handler hazard reported."
+          }
+        ],
+        "diyTier": "basic",
+        "safetyGate": false,
+        "owner": "fn",
+        "notice": "look"
+      },
+      "fn.noheat.warmup_wait": {
+        "section": "Furnace and air handler",
+        "title": "Give it a few minutes",
+        "body": "",
+        "options": [
+          {
+            "id": "cold_risk",
+            "label": "The house is getting cold, and someone at home is at risk from the cold (an infant, an older adult, or someone who is ill or medically fragile)",
+            "next": "@fn_cold_exposure",
+            "fact": "Cold exposure reported.",
+            "hint": ""
+          },
+          {
+            "id": "warm_now",
+            "label": "The air is warm now",
+            "next": "@fn_tstat_set_heat_basic",
+            "fact": "The air is warm after a short wait.",
+            "hint": ""
+          },
+          {
+            "id": "still_cold",
+            "label": "Still cold after 5 minutes",
+            "next": "ac.cool.filter.check",
+            "fact": "Air still cold after 5 minutes.",
+            "hint": "",
+            "set": {
+              "fnAfterWarmup": true
+            }
+          },
+          {
+            "id": "hazard_now",
+            "label": "New gas smell, CO alarm, refrigerant leak alarm, smoke, sparks, leaking hot water or steam, or another hazard",
+            "next": "sw.co.fast_exit",
+            "fact": "New furnace or air-handler hazard reported."
+          }
+        ],
+        "diyTier": "basic",
+        "safetyGate": false,
+        "owner": "fn",
+        "notice": "look"
+      },
+      "fn.smell.first_heat": {
+        "section": "Furnace and air handler",
+        "title": "What does it smell like, and how long has it lasted?",
+        "body": "",
+        "options": [
+          {
+            "id": "dust",
+            "label": "A dusty, slightly burnt smell that started when the heat first came on this season",
+            "next": "fn.smell.dust_time",
+            "fact": "Dusty smell at the first heat of the season.",
+            "hint": ""
+          },
+          {
+            "id": "plastic_electrical",
+            "label": "Burning plastic, rubber, or wiring, or an electrical smell",
+            "next": "@fn_smell_shutoff",
+            "fact": "Burning plastic, rubber, wiring, or an electrical smell.",
+            "hint": ""
+          },
+          {
+            "id": "gas",
+            "label": "Rotten eggs, sulfur, or gas",
+            "next": "@fn_gas_smell",
+            "fact": "Rotten eggs, sulfur, or gas smell.",
+            "hint": ""
+          },
+          {
+            "id": "smoke_or_stronger",
+            "label": "Smoke I can see, or the smell keeps getting stronger",
+            "next": "@fn_smell_smoke_exit",
+            "fact": "Visible smoke, or a smell that keeps getting stronger.",
+            "hint": ""
+          },
+          {
+            "id": "co_alarm",
+            "label": "A CO alarm is going off",
+            "next": "@sw_co_symptom_exit",
+            "fact": "CO alarm reported during the smell check.",
+            "hint": ""
+          },
+          {
+            "id": "hazard_now",
+            "label": "New gas smell, CO alarm, refrigerant leak alarm, smoke, sparks, leaking hot water or steam, or another hazard",
+            "next": "sw.co.fast_exit",
+            "fact": "New furnace or air-handler hazard reported."
+          }
+        ],
+        "diyTier": "basic",
+        "safetyGate": false,
+        "owner": "fn",
+        "notice": "look"
+      },
+      "fn.smell.dust_time": {
+        "section": "Furnace and air handler",
+        "title": "Is the smell light and fading, and has the heat run less than about an hour?",
+        "body": "",
+        "options": [
+          {
+            "id": "fading_under_hour",
+            "label": "Yes, it's light and fading",
+            "next": "@fn_smell_dust_normal",
+            "fact": "Dusty smell is light and fading.",
+            "hint": ""
+          },
+          {
+            "id": "over_hour_or_stronger",
+            "label": "No, it's lasted about an hour or more, or it's not fading",
+            "next": "@fn_smell_shutoff",
+            "fact": "Dusty smell lasted about an hour or is not fading.",
+            "hint": ""
+          },
+          {
+            "id": "hazard_now",
+            "label": "New gas smell, CO alarm, refrigerant leak alarm, smoke, sparks, leaking hot water or steam, or another hazard",
+            "next": "sw.co.fast_exit",
+            "fact": "New furnace or air-handler hazard reported."
+          }
+        ],
+        "diyTier": "basic",
+        "safetyGate": false,
+        "owner": "fn",
+        "notice": "look"
       }
     },
     "results": {
@@ -10638,21 +10850,28 @@
       "fn_co_alarm": {
         "tier": "Emergency",
         "urgency": "Get to fresh air · call 911",
-        "title": "Get everyone out to fresh air now.",
-        "explanation": "A CO alarm or these symptoms can mean carbon monoxide. You can't see or smell it.",
+        "title": "Get everyone outside to fresh air now.",
+        "explanation": "",
+        "body": "1. Get everyone, including pets, out of the house now. Don't stop to open windows or look for the problem.\n2. From outside, call 911 or your fire department. If anyone is very sleepy, confused, vomiting, has chest pain, or passes out, call 911 right away.\n3. Don't go back inside until the fire department or your gas utility says it's OK.\n4. Anyone with symptoms should get checked by a doctor, even if they feel better outside. Tell them you may have been exposed to carbon monoxide.\n5. In an emergency, call 911 first. For questions about symptoms when it isn't an emergency, call Poison Control: U.S. 1-800-222-1222. Canada 1-844-POISON-X (1-844-764-7669). Quebec 1-800-463-5060. Nunavut: your local health centre.\n6. Before using the heat again, have a licensed HVAC professional check the system.",
+        "footer": "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn.",
         "actions": [
-          "Get everyone, and pets, outside to fresh air now.",
-          "From outside, call 911 or the fire department.",
-          "Don't go back in until responders say you can go back in.",
+          "1. Get everyone, including pets, out of the house now. Don't stop to open windows or look for the problem.",
+          "2. From outside, call 911 or your fire department. If anyone is very sleepy, confused, vomiting, has chest pain, or passes out, call 911 right away.",
+          "3. Don't go back inside until the fire department or your gas utility says it's OK.",
+          "4. Anyone with symptoms should get checked by a doctor, even if they feel better outside. Tell them you may have been exposed to carbon monoxide.",
+          "5. In an emergency, call 911 first. For questions about symptoms when it isn't an emergency, call Poison Control: U.S. 1-800-222-1222. Canada 1-844-POISON-X (1-844-764-7669). Quebec 1-800-463-5060. Nunavut: your local health centre.",
+          "6. Before using the heat again, have a licensed HVAC professional check the system.",
           "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
         ],
-        "avoid": "Don't silence the alarm and stay inside, and don't open windows instead of leaving.",
+        "avoid": "Don't go back inside to troubleshoot, open windows, or silence the alarm.",
         "source": "gas",
         "outcome": "emergency_exit",
         "reason": "co_alarm_or_symptoms",
         "diyTier": null,
         "gate": "co_alarm_or_symptoms",
-        "continueTo": null
+        "continueTo": null,
+        "owner": "shared",
+        "aliasOf": "sw_co_symptom_exit"
       },
       "fn_rollout_soot": {
         "tier": "Emergency",
@@ -11460,6 +11679,93 @@
         "outcome": "call_pro",
         "diyTier": "pro_only",
         "urgency": "",
+        "owner": "fn"
+      },
+      "sw_co_symptom_exit": {
+        "tier": "Emergency",
+        "urgency": "Get to fresh air · call 911",
+        "title": "Get everyone outside to fresh air now.",
+        "explanation": "",
+        "body": "1. Get everyone, including pets, out of the house now. Don't stop to open windows or look for the problem.\n2. From outside, call 911 or your fire department. If anyone is very sleepy, confused, vomiting, has chest pain, or passes out, call 911 right away.\n3. Don't go back inside until the fire department or your gas utility says it's OK.\n4. Anyone with symptoms should get checked by a doctor, even if they feel better outside. Tell them you may have been exposed to carbon monoxide.\n5. In an emergency, call 911 first. For questions about symptoms when it isn't an emergency, call Poison Control: U.S. 1-800-222-1222. Canada 1-844-POISON-X (1-844-764-7669). Quebec 1-800-463-5060. Nunavut: your local health centre.\n6. Before using the heat again, have a licensed HVAC professional check the system.",
+        "footer": "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn.",
+        "actions": [
+          "1. Get everyone, including pets, out of the house now. Don't stop to open windows or look for the problem.",
+          "2. From outside, call 911 or your fire department. If anyone is very sleepy, confused, vomiting, has chest pain, or passes out, call 911 right away.",
+          "3. Don't go back inside until the fire department or your gas utility says it's OK.",
+          "4. Anyone with symptoms should get checked by a doctor, even if they feel better outside. Tell them you may have been exposed to carbon monoxide.",
+          "5. In an emergency, call 911 first. For questions about symptoms when it isn't an emergency, call Poison Control: U.S. 1-800-222-1222. Canada 1-844-POISON-X (1-844-764-7669). Quebec 1-800-463-5060. Nunavut: your local health centre.",
+          "6. Before using the heat again, have a licensed HVAC professional check the system.",
+          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+        ],
+        "avoid": "Don't go back inside to troubleshoot, open windows, or silence the alarm.",
+        "source": "gas",
+        "outcome": "emergency_exit",
+        "reason": "co_alarm_or_symptoms",
+        "diyTier": null,
+        "gate": "co_alarm_or_symptoms",
+        "continueTo": null,
+        "owner": "shared"
+      },
+      "fn_smell_dust_normal": {
+        "tier": "Basic homeowner check",
+        "urgency": "Keep an eye on it",
+        "title": "A dusty smell can fade",
+        "explanation": "",
+        "body": "A dusty smell the first few times the heat runs each season is common. Dust on the heating parts burns off. It should fade in about an hour of running (POLICY, R18). If it hasn't faded after about an hour, keeps coming back, or changes to a plastic or electrical smell, turn the heat Off at the thermostat and call a licensed HVAC professional.",
+        "footer": "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn.",
+        "actions": [
+          "A dusty smell the first few times the heat runs each season is common. Dust on the heating parts burns off. It should fade in about an hour of running (POLICY, R18). If it hasn't faded after about an hour, keeps coming back, or changes to a plastic or electrical smell, turn the heat Off at the thermostat and call a licensed HVAC professional.",
+          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+        ],
+        "avoid": "",
+        "source": "maintenance",
+        "sourceCaption": "Carrier Canada + Trane",
+        "outcome": "next_step",
+        "reason": "fn_smell_dust_normal",
+        "diyTier": "basic",
+        "gate": null,
+        "continueTo": "fn.landing.picker",
+        "owner": "fn"
+      },
+      "fn_smell_shutoff": {
+        "tier": "Stop / professional",
+        "urgency": "Turn the heat off",
+        "title": "Turn the heat off and call",
+        "explanation": "",
+        "body": "Turn the heat Off at the thermostat now. Then switch off the furnace's service switch or its breaker (switch it Off only). Never open the panel cover. Don't reset a breaker that trips again. Don't run the heat again until a licensed HVAC professional has checked it. If you see smoke or the smell gets stronger, get everyone outside and call 911 from outside.\nIf the house is getting cold, call a licensed HVAC professional. If it’s dangerously cold and anyone is at risk, get them somewhere warm first.",
+        "footer": "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn.",
+        "actions": [
+          "Turn the heat Off at the thermostat now. Then switch off the furnace's service switch or its breaker (switch it Off only). Never open the panel cover. Don't reset a breaker that trips again. Don't run the heat again until a licensed HVAC professional has checked it. If you see smoke or the smell gets stronger, get everyone outside and call 911 from outside.",
+          "If the house is getting cold, call a licensed HVAC professional. If it’s dangerously cold and anyone is at risk, get them somewhere warm first.",
+          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+        ],
+        "avoid": "Don't open the panel cover.",
+        "source": "gas",
+        "outcome": "call_pro",
+        "reason": "fn_smell_shutoff",
+        "diyTier": "pro_only",
+        "gate": null,
+        "continueTo": null,
+        "owner": "fn"
+      },
+      "fn_smell_smoke_exit": {
+        "tier": "Emergency",
+        "urgency": "Leave now · call 911",
+        "title": "Get everyone outside now and call 911 from outside.",
+        "explanation": "",
+        "body": "Get everyone outside now and call 911 from outside. Don't go back in to turn anything off.",
+        "footer": "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn.",
+        "actions": [
+          "Get everyone outside now and call 911 from outside. Don't go back in to turn anything off.",
+          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+        ],
+        "avoid": "Don't go back in to turn anything off.",
+        "source": "fire",
+        "outcome": "emergency_exit",
+        "reason": "smoke_fire_sparks_burn",
+        "diyTier": null,
+        "gate": "smoke_fire_sparks_burn",
+        "continueTo": null,
         "owner": "fn"
       }
     }

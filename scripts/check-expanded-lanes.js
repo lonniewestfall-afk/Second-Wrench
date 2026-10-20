@@ -3,7 +3,7 @@ const A=require('assert/strict');
 global.SW_CONFIG={advancedRepairsEnabled:false,aiThermostatEnabled:false,mirrorsEnabled:false,stageLatchStepsEnabled:false};
 const F=require('../assets/flow'),H=require('../assets/heating-lanes');
 const copy=s=>JSON.parse(JSON.stringify(s)),meta={agreed:true,termsVersion:'test'};
-function act(s,...cs){for(const c of cs)F.answer(s,c,meta);return s;}
+function act(s,...cs){for(const c of cs){if(s.node==='sw.co.fast_exit'&&c!=='co_yes'&&c!=='co_no')F.answer(s,'co_no',meta);F.answer(s,c,meta);}return s;}
 function start(...cs){return act(F.create('','test'),'none_of_these','agree_18_terms',...cs);}
 const mini=(multi=false)=>start('other_heat_or_ductless','ductless_mini_split',multi?'ductless_multi_zone':'ductless_single_zone');
 const hp=()=>start('heat_pump','air_source_ducted_hp','landing_outdoor_side_unit');
@@ -73,7 +73,7 @@ const saved=F.results[guard.result].continueTo;F.results[guard.result].continueT
 // Bounded context walk: every option, each notice state, every cross-lane mode.
 const queue=[start('other_heat_or_ductless','ductless_mini_split'),mini(),mini(true),hp(),ac()],seen=new Set(),nodes=new Set(),results=new Set();
 function key(s){return JSON.stringify([s.node,s.result,s.product,s.msMode,s.msLanding,s.msMultiZone,s.msSingleZone,s.remoteCodeStepDone,s.reset_count,s.sdFrom,s.sdMode,s.sdSideConfirmed,!!s.notices?.ms,s.coldGuardAck,s.warrantyAck,s.heatingHazardReported]);}
-while(queue.length){const a=queue.shift(),k=key(a);if(seen.has(k))continue;seen.add(k);A.ok(seen.size<60000,'bounded expanded walk');if(a.result){results.add(a.result);A.ok(!F.results[a.result].continueTo);A.notEqual(F.results[a.result].diyTier,'advanced');A.match(F.summary(a),/TEST SCENARIO/);const t=copy(a);F.stop(t);act(t,'hazard_gas_co');A.equal(t.result,'gas');continue;}
+while(queue.length){const a=queue.shift(),k=key(a);if(seen.has(k))continue;seen.add(k);A.ok(seen.size<60000,'bounded expanded walk');if(a.result){results.add(a.result);A.ok(!F.results[a.result].continueTo);A.notEqual(F.results[a.result].diyTier,'advanced');A.match(F.summary(a),/TEST SCENARIO/);const t=copy(a);F.stop(t);if(t.node==='sw.co.fast_exit'){F.answer(t,'co_yes',meta);A.equal(t.result,'sw_co_symptom_exit');}else{act(t,'hazard_gas_co');A.equal(t.result,'gas');}continue;}
  if(!/^(ms|sd)\./.test(a.node))continue;nodes.add(a.node);const v=F.viewNode(a.node,a);A.ok(v.title);if(v.noticePrompt){const t=copy(a);F.acknowledgeStep(t);queue.push(t);}
  for(const o of v.options){const t=copy(a);if(o.disabled){const saved=JSON.stringify(t);A.throws(()=>F.answer(t,o.id,meta));A.equal(JSON.stringify(t),saved);continue;}act(t,o.id);queue.push(t);}
 }

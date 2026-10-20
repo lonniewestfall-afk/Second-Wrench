@@ -92,7 +92,10 @@ assert(panels > 0, 'Withdrawal coverage must not be empty');
 // Its notes must resolve the new global result and keep the reported hazard.
 function tsResult(choices) {
   const state = F.create('', 'test');
-  for (const choice of ['none_of_these', 'agree_18_terms', 'other_heat_or_ductless', 'thermostat_settings', 'ts_none_of_these', 'brand_honeywell_buttons', 'hw_focuspro'].concat(choices)) F.answer(state, choice, meta);
+  for (const choice of ['none_of_these', 'agree_18_terms', 'other_heat_or_ductless', 'thermostat_settings', 'ts_none_of_these', 'brand_honeywell_buttons', 'hw_focuspro'].concat(choices)) {
+    if (state.node === 'sw.co.fast_exit' && choice !== 'co_yes' && choice !== 'co_no') F.answer(state, 'co_no', meta);
+    F.answer(state, choice, meta);
+  }
   return state;
 }
 const waiting = tsResult(['landing_wait_delay', 'wait_persists']);

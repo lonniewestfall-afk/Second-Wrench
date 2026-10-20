@@ -70,7 +70,7 @@
     "landing_auto_mode", "landing_backup_heat_cost", "landing_base_ice", "landing_blank_screen",
     "landing_blank_tstat", "landing_both_modes_fail", "landing_code", "landing_code_alert",
     "landing_cold_air", "landing_cooling_problem", "landing_crowded", "landing_em_aux_heat",
-    "landing_error_code", "landing_fan", "landing_fuel_low", "landing_humid", "landing_ice_outdoor",
+    "landing_error_code", "landing_fan", "landing_first_heat_smell", "landing_fuel_low", "landing_humid", "landing_ice_outdoor",
     "landing_ice_seen", "landing_leak", "landing_low_battery", "landing_mount",
     "landing_never_catches_up", "landing_new_furnace", "landing_no_cool", "landing_no_heat",
     "landing_no_heat_cool", "landing_no_hot_water", "landing_noise", "landing_not_cooling",

@@ -82,6 +82,16 @@
   const TREE_WSHP = 'wshp.water_to_air.v1';
   const ENTRY = 'ac.gate.cluster_entry';
   const CONSENT = 'ac.session.consent';
+  const CO_NODE = 'sw.co.fast_exit';
+  const CO_HOOKS = {
+    'fn.gate.combustion_co': 1,
+    'bl.gate.safety': 1,
+    'hp.intake.system_confirm': 1,
+    'wh.gate.safety': 1
+  };
+  function laneGate(product) {
+    return { fn: 'fn.gate.combustion_co', bl: 'bl.gate.safety', hp: 'hp.intake.system_confirm', wh: 'wh.gate.safety' }[product] || null;
+  }
   const WAVE1 = [
     'ac.session.consent',
     'ac.gate.cluster_entry',
@@ -133,7 +143,7 @@
     'wshp.handback.call_pro'
   ];
   const CONCLUDE = 'ac.cool.conclude.call_pro_capacitor_contactor';
-  const TREE_FN = 'fn.furnace.v2';
+  const TREE_FN = 'fn.furnace.v3';
   const TREE_MS = 'ms.ductless.v2';
   const MS_PR1 = [
     'ms.intake.system_confirm',
@@ -2595,7 +2605,8 @@
 
   function create(seed = '', mode = 'real') {
     const state = {
-      node: ENTRY, result: null, seed, mode, stopping: false, safetyCleared: false,
+      node: CO_NODE, result: null, seed, mode, stopping: false, safetyCleared: false,
+      coReturn: null, coSkip: null, fnNoHeat: null, fnAfterWarmup: false,
       consent: false, consentAt: null, termsVersion: null, privacyVersion: null, telemetry: false,
       stopCount: 0, catalogConsent: false, catalogConsentVersion: null, catalogConsentAt: null,
       answers: [], startedAt: Date.now(), id: uuid(), landing: null,
@@ -2608,7 +2619,7 @@
       tsModel: null, tsLanding: null, tsGeo: false, tsHpAir: false, tsRatedMin: null, tsWarrantyAck: false, tsLc18: false,
       reset_count: 0, priorResults: [], noDiyLock: false
     };
-    pushAudit(state, 'node_entered:' + ENTRY);
+    pushAudit(state, 'node_entered:' + CO_NODE);
     pushAudit(state, 'product_lane:ask');
     return state;
   }
@@ -2813,7 +2824,8 @@
     const rendered = viewNode(nodeId, state);
     const option = rendered && rendered.options.find(x => x.id === choice);
     if (!option || option.disabled || (choice === 'filter_clean_weak_airflow' && state.product !== 'hp')) throw new Error('Choose an answer shown on the current screen.');
-    if (nodeId !== ENTRY && nodeId !== CONSENT && !(state.stopping && nodeId === 'bl.gate.safety') && (!state.safetyCleared || !state.consent)) {
+    const heatingGateWhileStopping = !!(state.stopping && CO_HOOKS[nodeId]);
+    if (nodeId !== ENTRY && nodeId !== CONSENT && nodeId !== CO_NODE && !heatingGateWhileStopping && (!state.safetyCleared || !state.consent)) {
       throw new Error('Safety and consent are required before troubleshooting.');
     }
     if (HEAT.before(state, nodeId, option)) { HEAT.entered(state, state.node); return state; }
@@ -2825,7 +2837,7 @@
       state.privacyVersion = meta.privacyVersion ? String(meta.privacyVersion) : null;
       state.telemetry = false;
     }
-    if (nodeId === ENTRY || (state.stopping && nodeId === 'bl.gate.safety')) state.safetyCleared = choice === 'none_of_these';
+    if (nodeId === ENTRY || heatingGateWhileStopping) state.safetyCleared = choice === 'none_of_these';
     if (nodeId === 'ac.cool.landing.picker' && LANDING[choice]) state.landing = LANDING[choice];
     if (nodeId === 'hp.landing.picker' && HP_LANDING[choice]) state.hpLanding = HP_LANDING[choice];
     if (nodeId === 'hp.ambient.outdoor_band' && HP_BAND[choice]) state.hpAmbient = HP_BAND[choice];
@@ -2963,6 +2975,24 @@
       throw new Error('That step is not part of this check.');
     }
     if (nodeId === ENTRY && state.stopping && state.noDiyLock && (choice === 'none_of_these' || choice === 'hazard_unsure')) target = '@professional';
+    if (nodeId === CO_NODE && choice === 'co_no') {
+      target = state.coReturn || ENTRY;
+      state.coSkip = target;
+      state.coReturn = null;
+      if (target !== ENTRY && state.consent) state.safetyCleared = true;
+    }
+    if (typeof target === 'string' && CO_HOOKS[target]) {
+      if (state.coSkip === target) state.coSkip = null;
+      else {
+        state.coReturn = target;
+        target = CO_NODE;
+      }
+    }
+    if (target === CO_NODE && !state.coReturn) {
+      const gate = laneGate(state.product);
+      if (gate) state.coReturn = gate;
+    }
+    if (target === '@fn_co_alarm') target = '@sw_co_symptom_exit';
     if (state.product === 'sd' && ['@breaker_reset_basic', 'ac.cool.power.breaker_reset_gate', 'ac.cool.power.seasonal_restore_step', '@breaker_seasonal_restore_basic'].indexOf(target) !== -1) {
       target = '@sd_breaker_not_guided';
     }
@@ -3080,24 +3110,25 @@
       hpGasFurnace: state.hpGasFurnace, fnLanding: state.fnLanding, answers: state.answers, audit: state.audit
     };
     const fresh = create(keep.seed, keep.mode);
-    const boilerStop = keep.product === 'bl';
-    const reopen = boilerStop ? 'bl.gate.safety' : ENTRY;
+    const heatingStop = laneGate(keep.product);
+    const reopen = heatingStop || ENTRY;
     const hadConsent = !!state.consent;
     const consentAt = state.consentAt;
     const termsVersion = state.termsVersion;
     const privacyVersion = state.privacyVersion;
     const nextStop = (state.stopCount || 0) + 1;
     Object.assign(state, fresh, keep, {
-      stopping: true, node: reopen, result: null, safetyCleared: false,
-      consent: boilerStop ? hadConsent : false,
-      consentAt: boilerStop ? consentAt : null,
-      termsVersion: boilerStop ? termsVersion : null,
-      privacyVersion: boilerStop ? privacyVersion : null,
+      stopping: true, node: heatingStop ? CO_NODE : reopen, result: null, safetyCleared: false,
+      coReturn: heatingStop || null, coSkip: null,
+      consent: heatingStop ? hadConsent : false,
+      consentAt: heatingStop ? consentAt : null,
+      termsVersion: heatingStop ? termsVersion : null,
+      privacyVersion: heatingStop ? privacyVersion : null,
       stopCount: nextStop,
       telemetry: false, preselectChoice: null, heatingHazardReported: false
     });
     pushAudit(state, 'exit_ramp:stop_get_help');
-    pushAudit(state, 'node_entered:' + reopen);
+    pushAudit(state, 'node_entered:' + state.node);
     return state;
   }
   function summary(state, extra = {}) {
