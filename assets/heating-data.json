@@ -8621,10 +8621,10 @@
           },
           {
             "id": "cold_exposure_risk",
-            "label": "Someone's at risk from the cold (a baby, an older adult, or a medical need)",
+            "label": "Someone’s at risk from the cold (a baby, an older adult, or a medical need) and there’s no other way to keep them warm",
             "next": "@fn_cold_exposure",
             "hint": "Get them warm first.",
-            "fact": "Someone at risk from the cold.",
+            "fact": "Someone at risk from the cold with no other way to keep warm.",
             "gate": "cold_exposure_911"
           },
           {
@@ -9209,9 +9209,9 @@
           },
           {
             "id": "unsafe_outside",
-            "label": "Ice, dark, or the storm makes it unsafe to go out",
+            "label": "Ice, dark, or the storm makes it the wrong time to go out",
             "next": "@fn_vent_unsafe_wait",
-            "fact": "Outdoor trip unsafe.",
+            "fact": "Outdoor trip should wait.",
             "hint": ""
           },
           {
@@ -9650,7 +9650,7 @@
             "Close a weather dome you opened."
           ],
           "watch": "—",
-          "stop": "If you smell gas or hear unexplained hissing, leave and call your supplier or 911 from outside.",
+          "stop": "If you smell gas or hear hissing, get away from the tank. Don’t touch switches or flames. Call 911 and your propane supplier.",
           "undo": "If you’re not sure what you changed, put back what you wrote down. If you can’t, leave it and call a licensed HVAC professional. Don’t guess. For a hazard, follow the emergency instructions instead of going back to equipment.",
           "locked": "Do not change gas valves, burner controls, wiring, blower or heat-stage setup, limits, rollout or pressure switches, freezestats, or stored error history. Do not enter installer passwords or access codes."
         },
@@ -10659,8 +10659,8 @@
           "Don't touch light switches, the thermostat, phones, or anything that could spark while you're inside.",
           "Don't try to find the leak.",
           "From outside or a neighbor's, call the gas utility's emergency line or 911.",
-          "Don't go back in until they say you can go back in.",
-          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+          "Don’t go back in until they say you can.",
+          "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
         ],
         "avoid": "Don't try to shut off the gas yourself.",
         "source": "gas",
@@ -10684,7 +10684,7 @@
           "4. Anyone with symptoms should get checked by a doctor, even if they feel better outside. Tell them you may have been exposed to carbon monoxide.",
           "5. In an emergency, call 911 first. For questions about symptoms when it isn't an emergency, call Poison Control: U.S. 1-800-222-1222. Canada 1-844-POISON-X (1-844-764-7669). Quebec 1-800-463-5060. Nunavut: your local health centre.",
           "6. Before using the heat again, have a licensed HVAC professional check the system.",
-          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+          "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
         ],
         "avoid": "Don't go back inside to troubleshoot, open windows, or silence the alarm.",
         "source": "gas",
@@ -10700,12 +10700,12 @@
         "tier": "Emergency",
         "urgency": "Stop · keep away from the furnace",
         "title": "Stop using the furnace.",
-        "explanation": "Soot, scorch marks, or flame outside the burner can mean unsafe burning and carbon monoxide.",
+        "explanation": "Soot, scorch marks, or flame outside the burner can mean burning that is not complete and carbon monoxide.",
         "actions": [
           "If you're at the thermostat and smell no gas, set it to Off.",
           "If you smell gas, a CO alarm sounds, or anyone feels sick, get everyone out and call 911 from outside.",
           "Call a licensed HVAC pro before using the furnace again.",
-          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+          "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
         ],
         "avoid": "Don't open, reset, or restart the furnace.",
         "source": "gas",
@@ -10723,7 +10723,7 @@
         "actions": [
           "Get everyone away from the furnace. If there's smoke or fire, leave and call 911 from outside.",
           "Don't use the furnace until a licensed HVAC pro checks it.",
-          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+          "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
         ],
         "avoid": "Don't stay to troubleshoot, open the furnace, or flip switches or breakers.",
         "source": "fire",
@@ -10742,8 +10742,8 @@
           "If anyone is confused, very drowsy, or hard to wake, call 911 now.",
           "Otherwise, get them somewhere warm: a neighbor, family, or a warming center.",
           "Add blankets and dry layers in the meantime.",
-          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn.",
-          "Call a licensed HVAC pro for the furnace once everyone is warm."
+          "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns.",
+          "Call a licensed HVAC pro for the furnace once everyone is warm and out of danger."
         ],
         "avoid": "Don't wait on a furnace repair to get someone warm.",
         "source": "safety",
@@ -10762,7 +10762,7 @@
           "Set the thermostat to Off.",
           "Don't use the furnace until a licensed HVAC pro checks it.",
           "Make sure your CO alarms work. If one sounds or anyone feels sick, get everyone out and call 911 from outside.",
-          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+          "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
         ],
         "avoid": "Don't open the furnace or go look at the flame again.",
         "source": "gas",
@@ -10781,7 +10781,7 @@
           "Set the thermostat to Off.",
           "Don't keep restarting it to see if it happens again.",
           "Call a licensed HVAC pro. If you smell gas, leave and call from outside.",
-          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+          "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
         ],
         "avoid": "Don't open the furnace, press reset buttons, or try to relight anything.",
         "source": "gas",
@@ -10795,12 +10795,12 @@
         "tier": "Stop / professional",
         "urgency": "Stop here",
         "title": "Not sure is a good reason to stop.",
-        "explanation": "You don't need to check the furnace to answer. Stopping is the right stop.",
+        "explanation": "You don't need to check the furnace to answer. Stopping is the careful choice.",
         "actions": [
           "If you smell gas or a CO alarm sounds, get everyone out and call 911 from outside.",
           "If not, set the thermostat to Off if you're already there, and call a licensed HVAC pro.",
           "Tell them what you noticed.",
-          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+          "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
         ],
         "avoid": "Don't open the furnace or look at the flame to find out.",
         "source": "safety",
@@ -10820,8 +10820,8 @@
           "CO alarm or feeling sick: get everyone and pets out to fresh air. Call 911 from outside.",
           "Smoke, sparks, or burning smell: get away and call 911 from outside.",
           "If a refrigerant leak alarm is going off, move people out of the affected area to fresh air without operating switches or creating ignition sources. Don’t reset the alarm, cycle power, or turn off a blower that’s running. Call a licensed HVAC professional from outside the affected area, and for breathing trouble or immediate danger, call 911.",
-          "Don't go back in until responders say you can go back in.",
-          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+          "Don’t go back in until responders say you can.",
+          "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
         ],
         "avoid": "Don't keep troubleshooting.",
         "source": "safety",
@@ -10839,8 +10839,8 @@
         "actions": [
           "Set the mode to Heat.",
           "Raise the setpoint a few degrees above the room temperature. Fan on Auto.",
-          "Still no heat after 10 minutes? Start a new check and answer that heat still won't come on.",
-          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+          "Give it 5 to 10 minutes. Still no heat? Start a new check and pick Furnace.",
+          "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
         ],
         "avoid": "Don't take the thermostat off the wall or change wiring or installer settings.",
         "source": "maintenance",
@@ -10859,7 +10859,7 @@
           "Set the fan to Auto. Leave the mode on Heat.",
           "Wait for the next heating cycle. The air should feel warm while the heat runs.",
           "Still cool air while the heat runs? Start a new check and pick Furnace.",
-          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+          "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
         ],
         "avoid": "Don't change wiring or installer settings.",
         "source": "maintenance",
@@ -10877,7 +10877,7 @@
         "actions": [
           "Read the mode, setpoint, and fan setting on the screen, or check the thermostat manual.",
           "Start a new check when you can.",
-          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+          "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
         ],
         "avoid": "Don't take the thermostat off the wall or open the furnace to find out.",
         "source": "maintenance",
@@ -10896,7 +10896,7 @@
           "Put in the right size and type. Match the airflow arrow.",
           "Put any filter door or cover back fully. Don't run the furnace with it off.",
           "Set Heat and retest in 15 to 30 minutes. No better? Call a licensed HVAC pro.",
-          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+          "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
         ],
         "avoid": "Don't run it without a filter or reach into the blower.",
         "source": "maintenance",
@@ -10915,7 +10915,7 @@
           "Install the right size and type. Match the airflow arrow.",
           "Put any filter door or cover back fully before running heat.",
           "Set Heat and retest in 15 to 30 minutes. No better? Call a licensed HVAC pro.",
-          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+          "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
         ],
         "avoid": "Don't guess the size, stack filters, or force a fit.",
         "source": "maintenance",
@@ -10931,10 +10931,9 @@
         "title": "Fresh batteries brought the screen back.",
         "explanation": "That doesn't prove the rest of the system is fine.",
         "actions": [
-          "If no warning signs have appeared, restore the normal Heat setting, the recorded heating setpoint, and the recorded fan setting. Do not change a setting you cannot identify.",
-          "Allow at least five minutes for a normal thermostat delay, or the longer delay in your exact manual, only while the home has enough heat and nobody is at risk.",
-          "If useful heat does not return, arrange service. A restored display does not prove the equipment works.",
-          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+          "Set Heat, with the setpoint a few degrees above room temperature and the fan on Auto.",
+          "Give it 5 to 10 minutes. Still no heat? Start a new check and pick Furnace.",
+          "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
         ],
         "avoid": "Don't pull thermostat wires or open the furnace.",
         "source": "maintenance",
@@ -10950,9 +10949,10 @@
         "title": "A blocked vent was cleared, and airflow's better.",
         "explanation": "Blocked returns and closed registers can leave rooms short on heat.",
         "actions": [
-          "Keep the existing returns and registers clear of furniture, rugs, and curtains.",
-          "Observe only while the home has enough heat and nobody is at risk. If rooms remain short on heat, call a licensed HVAC professional.",
-          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+          "Keep returns and registers clear of furniture, rugs, and curtains.",
+          "Stay on Heat and retest in 15 to 30 minutes.",
+          "If rooms are still short on heat, call a licensed HVAC pro.",
+          "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
         ],
         "avoid": "Don't cut ducts, open a chase, or remove the blower panel.",
         "source": "maintenance",
@@ -10970,7 +10970,7 @@
         "actions": [
           "Call a licensed pro who works on your type of system.",
           "Fuel-burning heat needs working CO alarms. If one sounds, get everyone out and call 911 from outside.",
-          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+          "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
         ],
         "avoid": "Don't open the equipment or relight anything to find out what's wrong.",
         "source": "scope",
@@ -10987,7 +10987,7 @@
         "explanation": "This furnace check is for ducted furnaces. Cooling problems on one indoor unit start on the Something else screen.",
         "actions": [
           "Go back home, press Start, and choose “Something else: mini-split, geothermal, thermostat, other”, then “Ductless mini-split”.",
-          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+          "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
         ],
         "avoid": "Don't remove covers to identify the equipment.",
         "source": "scope",
@@ -11005,7 +11005,7 @@
         "actions": [
           "Check the manual, a label you can read without opening anything, or ask someone who knows the system.",
           "Start a new check when you know. If you can't tell, call a licensed HVAC pro.",
-          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+          "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
         ],
         "avoid": "Don't remove panels or climb to read a label.",
         "source": "scope",
@@ -11019,11 +11019,12 @@
         "tier": "Professional guidance",
         "urgency": "Call a licensed HVAC pro",
         "title": "Call a licensed HVAC pro.",
-        "explanation": "The cause has not been confirmed. Share the observations you actually made, and any checks you could not complete, with a licensed HVAC professional.",
+        "explanation": "The homeowner checks are done. The next checks are inside the furnace.",
         "actions": [
-          "Call a licensed HVAC professional and share the service note below.",
-          "Use Stop / get help for a new smell, alarm, smoke, water at electrical parts, or cold exposure.",
-          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+          "If the furnace acts strangely, set the thermostat to Off.",
+          "Tell the pro what you checked. Your note below lists it.",
+          "If you smell gas or a CO alarm sounds, get everyone out and call 911 from outside.",
+          "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
         ],
         "avoid": "Don't press reset buttons, keep restarting, open panels, or relight anything.",
         "source": "safety",
@@ -11039,10 +11040,9 @@
         "title": "Don't touch the furnace or stand in the water.",
         "explanation": "Water is at or near the furnace's electrical parts.",
         "actions": [
-          "Don't touch the furnace, any switch, or the breaker panel, and don't stand in the water.",
-          "Leave the area, keep others and pets away, and call a licensed HVAC pro or an electrician.",
-          "If you see sparks, smoke, or smell burning, get out and call 911 from outside.",
-          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+          "Stay clear of standing water and the equipment. Keep other people away.",
+          "Stay away from the equipment and the breaker panel if there’s water nearby. Leave the area and call a licensed electrician or HVAC professional. If there are sparks, smoke, or anyone is hurt, call 911 from outside.",
+          "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
         ],
         "avoid": "Don't touch the furnace, any switch, or the breaker panel.",
         "source": "electrical",
@@ -11059,7 +11059,7 @@
         "actions": [
           "Call a licensed HVAC pro and say snow or ice may be blocking the furnace vent.",
           "Keep CO alarms on, and leave if one sounds.",
-          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+          "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
         ],
         "avoid": "Don't use a ladder or go on the roof.",
         "reason": "vent_out_of_reach",
@@ -11070,12 +11070,12 @@
       },
       "fn_vent_unsafe_wait": {
         "tier": "Stop / professional",
-        "title": "Don't go out in unsafe conditions",
-        "explanation": "Ice, dark, or the storm makes the trip outside unsafe right now.",
+        "title": "Don't go out in these conditions",
+        "explanation": "Ice, dark, or the storm makes this the wrong time to go outside.",
         "actions": [
           "Call a licensed HVAC pro or your gas utility and say the vent may be blocked.",
           "Keep CO alarms on, and leave if one sounds.",
-          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+          "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
         ],
         "avoid": "Don't go out on ice or in the storm to clear vents.",
         "reason": "outdoor_unsafe",
@@ -11092,7 +11092,7 @@
           "Stay clear of the buried or iced gas meter or propane regulator. Do not brush, chip, heat, or touch it.",
           "Call your gas utility or propane supplier now and describe the snow or ice.",
           "If you smell gas or hear unexplained hissing, get everyone outside and call the utility emergency line or 911 from away from the equipment.",
-          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+          "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
         ],
         "avoid": "Don't chip, kick, or melt ice on the meter or regulator.",
         "reason": "meter_iced",
@@ -11108,7 +11108,7 @@
         "actions": [
           "Call a licensed HVAC pro and say a furnace vent pipe is iced.",
           "Keep CO alarms on, and leave if one sounds.",
-          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+          "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
         ],
         "avoid": "Don't chip, melt, or pour water on the pipes.",
         "reason": "vent_iced",
@@ -11125,7 +11125,7 @@
           "Set the thermostat to Off.",
           "Call a licensed HVAC pro today.",
           "Keep CO alarms on, and leave if one sounds.",
-          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+          "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
         ],
         "avoid": "Don't push pipes back together or tape them.",
         "reason": "vent_damaged",
@@ -11141,7 +11141,7 @@
         "actions": [
           "Keep the exterior terminations unobstructed.",
           "If heat stops again, call for service; do not reset it.",
-          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+          "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
         ],
         "avoid": "Don't pile shoveled snow near the pipes.",
         "reason": "fn_vent_cleared_basic",
@@ -11157,7 +11157,7 @@
         "actions": [
           "Call a licensed HVAC pro and say the condensate drain is frozen.",
           "Ask whether the trap and line need heat tape or a new route.",
-          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+          "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
         ],
         "avoid": "Don't use a torch, heat gun, or boiling water on it.",
         "reason": "condensate_frozen",
@@ -11173,7 +11173,7 @@
         "actions": [
           "Stay away from water and electrical parts.",
           "Call a licensed HVAC professional or plumber about the pump and leak.",
-          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+          "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
         ],
         "avoid": "Don't open the pump or furnace to drain it.",
         "reason": "condensate_pump",
@@ -11190,7 +11190,7 @@
           "Set the thermostat to Off.",
           "Call a licensed HVAC pro today and give them the code.",
           "Keep CO alarms on, and leave if one sounds.",
-          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+          "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
         ],
         "avoid": "Don't reset anything or open the furnace.",
         "reason": "code_rollout",
@@ -11206,7 +11206,7 @@
         "actions": [
           "Set the thermostat to Off and call a licensed HVAC pro now.",
           "Smell gas? Leave and call from outside.",
-          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+          "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
         ],
         "avoid": "Don't open the furnace or touch the gas line.",
         "reason": "code_flame_no_call",
@@ -11222,7 +11222,7 @@
         "actions": [
           "Tell the service company the code, model, and what happened.",
           "Do not deliberately clear error history. If a hazard appears, leaving and getting help takes priority over preserving a code.",
-          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+          "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
         ],
         "avoid": "Don't reset the furnace or open its doors.",
         "reason": "code_to_pro",
@@ -11238,7 +11238,7 @@
         "actions": [
           "Photograph an already-visible display or record the light through an existing window.",
           "Send the full code and already-known model to a licensed HVAC professional.",
-          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+          "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
         ],
         "avoid": "Don't remove the door to find the chart.",
         "reason": "fn_code_unlisted",
@@ -11254,7 +11254,7 @@
         "actions": [
           "Leave the breaker as it is.",
           "Call a licensed HVAC pro and say the furnace breaker tripped.",
-          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+          "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
         ],
         "avoid": "Don't reset the breaker or open the furnace.",
         "reason": "breaker_tripped",
@@ -11270,7 +11270,7 @@
         "actions": [
           "Ask who turned it off, and why.",
           "Call a licensed HVAC pro if it was off for a repair, leak, or smell.",
-          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+          "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
         ],
         "avoid": "Don't turn it back on until you know why it's off.",
         "reason": "switch_intentional",
@@ -11286,7 +11286,7 @@
         "actions": [
           "Keep the switch identifiable and accessible; do not cover it.",
           "If the furnace stops again, call for service. Do not cycle the switch again.",
-          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+          "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
         ],
         "avoid": "Don't switch it off and on again to test.",
         "reason": "fn_switch_on_basic",
@@ -11302,7 +11302,7 @@
         "actions": [
           "Call your propane supplier and say you ran out.",
           "Let them check for leaks and restart your appliances.",
-          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+          "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
         ],
         "avoid": "Don't open the tank valve or relight anything.",
         "reason": "propane_out",
@@ -11318,7 +11318,7 @@
         "actions": [
           "Call your propane supplier for a delivery today.",
           "If the furnace still won't heat, start a new check.",
-          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+          "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
         ],
         "avoid": "Don't touch the tank valves or regulator.",
         "reason": "propane_low",
@@ -11334,7 +11334,7 @@
         "actions": [
           "Call your oil supplier for a delivery and ask about a service visit.",
           "Keep the thermostat on Off until then.",
-          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+          "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
         ],
         "avoid": "Don't press the red reset button on the burner.",
         "reason": "oil_out",
@@ -11350,7 +11350,7 @@
         "actions": [
           "Call your oil service company and tell them the light color and pattern.",
           "Keep the thermostat on Off until they come.",
-          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+          "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
         ],
         "avoid": "Don't press the red reset button, even once.",
         "reason": "oil_lockout",
@@ -11366,7 +11366,7 @@
         "actions": [
           "You reported restoring the recorded thermostat settings with the required filters installed and access closed. Observe one heating cycle only while the home has enough heat and nobody is at risk.",
           "If useful heat does not return or the furnace shuts off again, call for service. Do not reset it.",
-          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+          "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
         ],
         "avoid": "Don't stack filters or run without one.",
         "reason": "fn_filter_fit_basic",
@@ -11383,7 +11383,7 @@
           "Keep the existing room grilles, return openings, and any closet-door louvers unobstructed. Keep equipment covers closed.",
           "Follow the equipment manual’s storage and clearance rules.",
           "If useful heat does not return or the equipment shuts off again, call a licensed HVAC professional. Do not reset it.",
-          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+          "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
         ],
         "avoid": "Don't tape over or cover the louvered door.",
         "reason": "fn_mh_return_cleared_basic",
@@ -11399,7 +11399,7 @@
         "actions": [
           "Call a manufactured-home installer or HVAC pro about the crossover duct.",
           "Ask them to seal it and strap it off the ground.",
-          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+          "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
         ],
         "avoid": "Don't crawl under the home to fix it yourself.",
         "reason": "fn_mh_crossover_pro",
@@ -11415,7 +11415,7 @@
         "actions": [
           "Stay out from under the home.",
           "Call pest control, then an HVAC pro for the ducts.",
-          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+          "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
         ],
         "avoid": "Don't reach in or crawl under to look.",
         "reason": "mh_animals",
@@ -11431,7 +11431,7 @@
         "actions": [
           "Ask your installer: is this furnace listed for manufactured homes?",
           "Ask whether the AC or heat pump is certified to pair with it.",
-          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+          "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
         ],
         "avoid": "Don't buy a standard house furnace for a manufactured home.",
         "reason": "fn_mh_listing_card",
@@ -11447,7 +11447,7 @@
         "actions": [
           "You reported warm air and rooms maintaining temperature; continue normal observation.",
           "If useful heat falls behind or the equipment shuts off again, call a licensed HVAC professional. Do not reset it.",
-          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+          "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
         ],
         "avoid": "Don't open the furnace panel or touch the breaker.",
         "reason": "fn_elec_staging_normal",
@@ -11463,7 +11463,7 @@
         "actions": [
           "You reported warm air and rooms maintaining temperature after the delay. Continue normal observation.",
           "If heat falls behind, call for service. A fan delay alone does not confirm water circulation or rule out a fault.",
-          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+          "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
         ],
         "avoid": "Don't open the air handler.",
         "reason": "fn_hydro_fan_delay_normal",
@@ -11479,7 +11479,7 @@
         "actions": [
           "Call a licensed heating professional urgently. Describe the ice or leak and the location of the air handler.",
           "Do not change freeze-protection controls, close water valves, thaw the coil, or attempt a reset. Ask the professional how to leave this installation while help is coming.",
-          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+          "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
         ],
         "avoid": "Don't press any reset or open the unit.",
         "reason": "hydro_coil_freeze",
@@ -11495,7 +11495,7 @@
         "actions": [
           "Ask the installer to verify thermostat compatibility, configuration, and any active warranty.",
           "For a manufactured home, ask whether the equipment and its pairing are listed for that home. Give them any visible code.",
-          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+          "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
         ],
         "avoid": "Don't change wiring or furnace settings yourself.",
         "reason": "fn_ask_installer_card",
@@ -11538,7 +11538,7 @@
         "footer": "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn.",
         "actions": [
           "A dusty smell the first few times the heat runs each season is common. Dust on the heating parts burns off. It should fade in about an hour of running. If it hasn't faded after about an hour, keeps coming back, or changes to a plastic or electrical smell, turn the heat Off at the thermostat and call a licensed HVAC professional.",
-          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+          "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
         ],
         "avoid": "",
         "source": "maintenance",
@@ -11560,7 +11560,7 @@
         "actions": [
           "Turn the heat Off at the thermostat now. Then switch off the furnace's service switch or its breaker (switch it Off only). Never open the panel cover. Don't reset a breaker that trips again. Don't run the heat again until a licensed HVAC professional has checked it. If you see smoke or the smell gets stronger, get everyone outside and call 911 from outside.",
           "If the house is getting cold, call a licensed HVAC professional. If it’s dangerously cold and anyone is at risk, get them somewhere warm first.",
-          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+          "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
         ],
         "avoid": "Don't open the panel cover.",
         "source": "gas",
@@ -11580,7 +11580,7 @@
         "footer": "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn.",
         "actions": [
           "Get everyone outside now and call 911 from outside. Don't go back in to turn anything off.",
-          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+          "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns."
         ],
         "avoid": "Don't go back in to turn anything off.",
         "source": "fire",

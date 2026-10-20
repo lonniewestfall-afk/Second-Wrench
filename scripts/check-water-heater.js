@@ -2,7 +2,7 @@
 const assert = require('assert/strict');
 const fs = require('fs');
 const path = require('path');
-global.SW_CONFIG = { advancedRepairsEnabled: false, aiThermostatEnabled: false, mirrorsEnabled: false, stageLatchStepsEnabled: false, catalogEnabled: false, contentVersion: '2026-10-20.7' };
+global.SW_CONFIG = { advancedRepairsEnabled: false, aiThermostatEnabled: false, mirrorsEnabled: false, stageLatchStepsEnabled: false, catalogEnabled: false, contentVersion: '2026-10-20.8' };
 const F = require('../assets/flow');
 const heating = require('../assets/heating-data.json');
 const codes = require('./wh-codes');
@@ -34,7 +34,7 @@ assert.equal(heating.waterHeater.codes.filter(row => row.proGuide && row.brand =
 const config = fs.readFileSync(path.join(__dirname, '../assets/config.js'), 'utf8');
 assert.match(config, /advancedRepairsEnabled:\s*false/);
 assert.match(config, /catalogEnabled:\s*false/);
-assert.match(config, /contentVersion:\s*'2026-10-20\.7'/);
+assert.match(config, /contentVersion:\s*'2026-10-20\.8'/);
 
 const gate = F.nodes['wh.gate.safety'].options;
 assert.deepEqual(gate.slice(-2).map(o => o.id), ['unsure', 'none_of_these']);

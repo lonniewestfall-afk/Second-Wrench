@@ -1,6 +1,6 @@
 /* Local sanity for AC Wave-2 and HP Wave-1. No network. */
 'use strict';
-globalThis.SW_CONFIG = { advancedRepairsEnabled: false, aiThermostatEnabled: false, mirrorsEnabled: false, stageLatchStepsEnabled: false, contentVersion: '2026-10-20.7' };
+globalThis.SW_CONFIG = { advancedRepairsEnabled: false, aiThermostatEnabled: false, mirrorsEnabled: false, stageLatchStepsEnabled: false, contentVersion: '2026-10-20.8' };
 const fs = require('fs');
 const path = require('path');
 const F = require('../assets/flow.js');
@@ -90,7 +90,7 @@ const gate = ['none_of_these', 'agree_18_terms'];
 
 assert(/advancedRepairsEnabled:\s*false/.test(configText), 'public advanced flag must stay false');
 assert(/referralEnabled:\s*false/.test(configText) && !/referralEnabled:\s*true/.test(configText), 'referral flag must stay false');
-const SHIP = '2026-10-20.7';
+const SHIP = '2026-10-20.8';
 assert(configText.includes("contentVersion: '" + SHIP + "'"), 'content version must be ' + SHIP);
 assert(['config', 'flow', 'app'].every(f => indexText.includes(f + '.js?v=' + SHIP)), 'script cache-bust must match content version');
 assert(indexText.includes('HOME HVAC CHECKS') && !indexText.includes('AC + HEAT PUMP'), 'header lockup is HOME HVAC CHECKS');
@@ -2152,6 +2152,89 @@ function bootPage() {
   assert(w7.result === 'fn_gas_smell', 'W7 gas smell uses the existing gas exit');
   const w8 = walk('ask', gate.concat(['furnace', 'none_of_these', 'gas_furnace', 'natural_gas', 'site_built', 'landing_first_heat_smell', 'smoke_or_stronger']));
   assert(w8.result === 'fn_smell_smoke_exit' && F.results[w8.result].outcome === 'emergency_exit', 'W8 smoke is get out and call 911');
+  const fnGate = F.nodes['fn.gate.combustion_co'];
+  const fnGateRoutes = {
+    gas_smell_or_unknown_smell: { next: '@fn_gas_smell', gate: 'gas_co', result: 'fn_gas_smell' },
+    co_alarm_or_symptoms: { next: '@sw_co_symptom_exit', gate: 'co_alarm_or_symptoms', result: 'sw_co_symptom_exit' },
+    rollout_soot_scorch: { next: '@fn_rollout_soot', gate: 'flame_rollout_soot', result: 'fn_rollout_soot' },
+    burning_smoke_sparks: { next: '@fn_burning_sparks', gate: 'smoke_fire_sparks_burn', result: 'fn_burning_sparks' },
+    cold_exposure_risk: { next: '@fn_cold_exposure', gate: 'cold_exposure_911', result: 'fn_cold_exposure' },
+    flame_yellow_orange: { next: '@fn_flame_abnormal', gate: 'combustion_flame_abnormal', result: 'fn_flame_abnormal' },
+    boom_at_ignition: { next: '@fn_ignition_bang', gate: 'delayed_ignition_bang', result: 'fn_ignition_bang' },
+    refrigerant_alarm: { next: '@leak', gate: null, result: 'leak' },
+    unsure: { next: '@fn_gate_unsure', gate: 'unsure_hazard', result: 'fn_gate_unsure' }
+  };
+  Object.entries(fnGateRoutes).forEach(([choice, expect]) => {
+    const option = fnGate.options.find(o => o.id === choice);
+    assert(option && option.next === expect.next && option.gate === expect.gate, 'furnace gate route ' + choice);
+    const taken = walk('ask', gate.concat(['furnace', choice]));
+    assert(taken.result === expect.result, 'furnace gate ' + choice + ' still ends at ' + expect.result + ', got ' + (taken.result || taken.node));
+  });
+  const fnGateClear = fnGate.options.find(o => o.id === 'none_of_these');
+  assert(fnGateClear && fnGateClear.gate === null && fnGateClear.next && fnGateClear.next.hpDualFuel === 'hp.landing.picker' && fnGateClear.next.default === 'fn.intake.system_confirm', 'furnace gate none_of_these stays the intake route');
+  const fnCleared = walk('ask', gate.concat(['furnace', 'none_of_these']));
+  assert(fnCleared.node === 'fn.intake.system_confirm', 'furnace gate none_of_these still opens system confirm');
+  const coldOption = fnGate.options.find(o => o.id === 'cold_exposure_risk');
+  assert(coldOption.label === 'Someone’s at risk from the cold (a baby, an older adult, or a medical need) and there’s no other way to keep them warm', 'cold-exposure gate label');
+  assert(coldOption.fact === 'Someone at risk from the cold with no other way to keep warm.', 'cold-exposure gate fact');
+  const fnSpecCo = "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns.";
+  assert(F.results.fn_gas_smell.actions.includes("Don’t go back in until they say you can.") && F.results.fn_gas_smell.actions.includes(fnSpecCo), 'gas-smell stop keeps the spec return line and heat line');
+  assert(F.results.fn_hazard_now.actions.includes('Don’t go back in until responders say you can.'), 'hazard stop keeps the spec return line');
+  assert(F.results.fn_gate_unsure.explanation === "You don't need to check the furnace to answer. Stopping is the careful choice.", 'gate-unsure explanation');
+  assert(F.results.fn_rollout_soot.explanation === 'Soot, scorch marks, or flame outside the burner can mean burning that is not complete and carbon monoxide.', 'rollout explanation');
+  assert(F.results.fn_tstat_set_heat_basic.actions.includes('Give it 5 to 10 minutes. Still no heat? Start a new check and pick Furnace.'), 'thermostat heat wait');
+  assert(F.results.fn_cold_exposure.actions[F.results.fn_cold_exposure.actions.length - 1] === 'Call a licensed HVAC pro for the furnace once everyone is warm and out of danger.', 'cold-exposure last action');
+  const coldShown = F.presentResult(walk('ask', gate.concat(['furnace', 'cold_exposure_risk'])));
+  const waterState = walk('ask', gate.concat(['furnace', 'none_of_these', 'gas_furnace', 'natural_gas', 'site_built', 'landing_water_near_furnace', 'water_at_electrical_yes']));
+  const waterShown = F.presentResult(waterState);
+  assert(coldShown.actionsFirst === true && coldShown.tier === 'Emergency', 'cold exposure is actions first');
+  assert(waterState.result === 'fn_water_electrical' && waterShown.actionsFirst === true && waterShown.actions[0] === 'Stay clear of standing water and the equipment. Keep other people away.', 'electrical stop is actions first');
+  assert(waterShown.actions[1] === 'Stay away from the equipment and the breaker panel if there’s water nearby. Leave the area and call a licensed electrician or HVAC professional. If there are sparks, smoke, or anyone is hurt, call 911 from outside.', 'electrical stop uses the F-1 action');
+  assert(!waterShown.actions.some(action => /from safety|shut off|main power/i.test(action)), 'electrical stop actions do not send anyone back to shut off power');
+  const propaneStop = 'If you smell gas or hear hissing, get away from the tank. Don’t touch switches or flames. Call 911 and your propane supplier.';
+  assert(F.nodes['fn.fuel.propane_gauge'].options.find(o => o.id === 'gas_smell').next === '@fn_gas_smell', 'propane hiss stays on the gas-smell route');
+  assert(F.nodes['fn.fuel.propane_gauge'].step.stop === propaneStop, 'propane gauge stop');
+  const propane = walk('ask', gate.concat(['furnace', 'none_of_these', 'gas_furnace', 'propane', 'site_built', 'landing_fuel_low', 'gas_smell']));
+  assert(propane.result === 'fn_gas_smell' && propane.fnGas === 'propane', 'propane hiss still ends on fn_gas_smell');
+  const propaneShown = F.presentResult(propane);
+  assert(propaneShown.title === 'Leave now. Get away from the tank.', 'propane stop title');
+  assert(propaneShown.explanation === 'A hiss or a propane smell at the tank comes before anything else.', 'propane stop explanation');
+  ['Get everyone, and pets, away from the tank and out of the house now.', "Don't touch switches, phones, or flames on the way out.", "Stay back from the tank. Don't try to find the leak.", 'From away from the tank, call 911 and your propane supplier.', 'Don’t go back in until they say you can.', fnSpecCo].forEach(action => {
+    assert(propaneShown.actions.includes(action), 'propane stop action: ' + action);
+  });
+  assert(propaneShown.avoid === "Don't turn a valve or shut off the propane yourself.", 'propane stop avoid');
+  const callPro = walk('ask', gate.concat(['furnace', 'none_of_these', 'gas_furnace', 'natural_gas', 'site_built', 'landing_no_heat', 'silent', 'cannot_change_settings', 'ack_call_pro']));
+  const callShown = F.presentResult(callPro);
+  assert(callPro.fnReason === 'thermostat_control_issue' && callShown.explanation === F.fnReasonCopy.thermostat_control_issue, 'call-pro explanation follows the reason');
+  assert(F.fnReasonCopy.tstat_inaccessible === 'The thermostat batteries couldn’t be reached without climbing.', 'inaccessible thermostat reason');
+  assert(F.fnReasonCopy.filter_inaccessible === 'The filter couldn’t be reached without tools or opening the furnace.', 'inaccessible filter reason');
+  assert(F.fnReasonCopy.airflow_check_inaccessible === 'The vents couldn’t be checked without climbing or moving furniture.', 'inaccessible vent reason');
+  const safeAdjective = /\b(safe|safely|safer|safest|unsafe)\b/i;
+  const switchMention = /\b(limit switch|high limit|rollout|pressure switch|flame-safety|flame safety|safety switch)\b/i;
+  function furnaceSentences(text) {
+    return String(text || '').split(/(?<=[.!?])\s+|\n+/).map(sentence => sentence.trim()).filter(Boolean);
+  }
+  function scanFurnaceCopy(id, bits) {
+    bits.filter(Boolean).forEach(text => {
+      assert(!safeAdjective.test(text), 'furnace copy keeps the adjective safe out of ' + id + ': ' + String(text).slice(0, 80));
+      furnaceSentences(text).forEach(sentence => {
+        if (switchMention.test(sentence) && /\breset\b/i.test(sentence)) {
+          assert(/^(Don['’]t|Do not|Never)\b/.test(sentence) || /\b(don['’]t|do not|never)\b/i.test(sentence), 'furnace safety switch offers no reset: ' + id + ' ' + sentence);
+        }
+      });
+    });
+  }
+  Object.entries(F.nodes).forEach(([id, node]) => {
+    if (node.owner !== 'fn' && id.indexOf('fn.') !== 0) return;
+    const bits = [node.title, node.body, node.caution];
+    (node.options || []).forEach(option => bits.push(option.label, option.hint, option.fact));
+    if (node.step) bits.push(node.step.what, node.step.caution, node.step.stop, node.step.watch, node.step.undo, node.step.locked, ...(node.step.steps || []));
+    scanFurnaceCopy(id, bits);
+  });
+  Object.entries(F.results).forEach(([id, result]) => {
+    if (id.indexOf('fn_') !== 0) return;
+    scanFurnaceCopy(id, [result.title, result.explanation, result.avoid, result.body, result.urgency, ...(result.actions || [])]);
+  });
   assert(/advancedRepairsEnabled:\s*false/.test(configText) && /catalogEnabled:\s*false/.test(configText) && /referralEnabled:\s*false/.test(configText) && /hvacContentReviewed:\s*false/.test(configText) && /termsAndPrivacyReviewed:\s*false/.test(configText), 'feature and review flags stay false');
 }
 {
@@ -2362,9 +2445,32 @@ function pageChecks() {
     assert(doc.querySelector('h1').textContent === "Don't touch the furnace or stand in the water.", 'furnace water-at-electrical title');
     assert(doc.querySelector('.result-heading.emergency'), 'furnace water-at-electrical renders an emergency result');
     assert(norm(doc.querySelector('.explanation')) === "Water is at or near the furnace's electrical parts.", 'furnace water-at-electrical explanation');
+    const waterActions = doc.querySelector('.action-list');
+    const waterExplain = doc.querySelector('.explanation');
+    assert(waterActions && waterExplain && (waterActions.compareDocumentPosition(waterExplain) & window.Node.DOCUMENT_POSITION_FOLLOWING), 'furnace water-at-electrical renders actions before the explanation');
+    assert(!doc.querySelector('.result-heading .explanation'), 'furnace water-at-electrical keeps the explanation out of the heading');
+    const waterLines = [...doc.querySelectorAll('.action-list li')].map(item => item.textContent);
+    assert(waterLines[0] === 'Stay clear of standing water and the equipment. Keep other people away.', 'furnace water-at-electrical first action');
+    assert(waterLines[1] === 'Stay away from the equipment and the breaker panel if there’s water nearby. Leave the area and call a licensed electrician or HVAC professional. If there are sparks, smoke, or anyone is hurt, call 911 from outside.', 'furnace water-at-electrical second action');
+    assert(!waterLines.some(line => /from safety|shut off|main power/i.test(line)), 'furnace water-at-electrical actions do not send anyone back to shut off power');
     assertNoShutOff(rendered(), 'furnace water-at-electrical page shut-off instruction');
     assert(doc.querySelector('.legal-footer') && doc.querySelector('.legal-footer').textContent === EMERGENCY_LINE, 'furnace water-at-electrical shows the emergency result line');
     assert(!doc.getElementById('flow-error'), 'furnace water-at-electrical has no error');
+    await home();
+    click(doc.querySelector('[data-answer="none_of_these"]'));
+    await flush();
+    await acceptAndContinue();
+    await clickPath(['furnace', 'cold_exposure_risk']);
+    assert(window.location.hash === '#/result' && doc.querySelector('[data-result="fn_cold_exposure"]'), 'furnace cold exposure reaches its result');
+    assert(doc.querySelector('h1').textContent === 'Get the person warm first.', 'furnace cold exposure title');
+    const coldActions = doc.querySelector('.action-list');
+    const coldExplain = doc.querySelector('.explanation');
+    assert(coldActions && coldExplain && (coldActions.compareDocumentPosition(coldExplain) & window.Node.DOCUMENT_POSITION_FOLLOWING), 'furnace cold exposure renders actions before the explanation');
+    assert(!doc.querySelector('.result-heading .explanation'), 'furnace cold exposure keeps the explanation out of the heading');
+    const coldLines = [...doc.querySelectorAll('.action-list li')].map(item => item.textContent);
+    assert(coldLines[coldLines.length - 1] === 'Call a licensed HVAC pro for the furnace once everyone is warm and out of danger.', 'furnace cold exposure ends on getting everyone warm');
+    assertNoShutOff(rendered(), 'furnace cold exposure page shut-off instruction');
+    assert(!doc.getElementById('flow-error'), 'furnace cold exposure has no error');
     await home();
     click(doc.querySelector('[data-answer="none_of_these"]'));
     await flush();

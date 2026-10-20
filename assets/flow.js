@@ -209,6 +209,25 @@
     '@noise_burning_sparks_smoke', '@uncertain', '@electrical'
   ];
   const FN_CO_LINE = "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn.";
+  const FN_SPEC_CO = "Until heat's back: never heat with an oven, stove, grill, or generator indoors. Plug electric space heaters into a wall, clear of anything that burns.";
+  const FN_PROPANE_STOP = {
+    title: 'Leave now. Get away from the tank.',
+    explanation: 'A hiss or a propane smell at the tank comes before anything else.',
+    actions: [
+      'Get everyone, and pets, away from the tank and out of the house now.',
+      "Don't touch switches, phones, or flames on the way out.",
+      "Stay back from the tank. Don't try to find the leak.",
+      'From away from the tank, call 911 and your propane supplier.',
+      "Don\u2019t go back in until they say you can.",
+      FN_SPEC_CO
+    ],
+    avoid: "Don't turn a valve or shut off the propane yourself."
+  };
+  const FN_ELECTRICAL_ACTIONS = [
+    'Stay clear of standing water and the equipment. Keep other people away.',
+    'Stay away from the equipment and the breaker panel if there\u2019s water nearby. Leave the area and call a licensed electrician or HVAC professional. If there are sparks, smoke, or anyone is hurt, call 911 from outside.',
+    FN_SPEC_CO
+  ];
   const LANDING = {
     landing_not_cooling: 'not_cooling',
     landing_will_not_start: 'will_not_start',
@@ -1909,10 +1928,10 @@
     short_cycle_after_basics: "It still starts and stops with the settings and filter checked. A pro should find out why.",
     weak_heat_after_basics: "Rooms are still short on heat with a clean filter and clear vents.",
     blank_tstat_after_basics: "The screen is still blank after the battery check, usually a power or control problem for a pro.",
-    tstat_inaccessible: "The thermostat batteries couldn't be reached.",
+    tstat_inaccessible: "The thermostat batteries couldn\u2019t be reached without climbing.",
     thermostat_control_issue: "The thermostat won't take Heat or a new setpoint.",
-    filter_inaccessible: "The filter couldn't be reached.",
-    airflow_check_inaccessible: "The vents couldn't be checked.",
+    filter_inaccessible: "The filter couldn\u2019t be reached without tools or opening the furnace.",
+    airflow_check_inaccessible: "The vents couldn\u2019t be checked without climbing or moving furniture.",
     electric_furnace_components: "On an electric furnace, the next checks are high-voltage heating parts. That's work for a pro.",
     condensate_drain_issue: "There's water near the furnace, away from electrical parts. A pro should check the drain.",
     water_near_electric_furnace: "There's water near an electric furnace, away from electrical parts. A pro should find the source.",
@@ -2316,7 +2335,9 @@
     });
     if (nodes[FN_CONCLUDE].diyTier !== 'pro_only') throw new Error('Furnace conclude must be pro_only');
     Object.keys(results).filter(id => id.indexOf('fn_') === 0).forEach(id => {
-      if (results[id].actions.indexOf(FN_CO_LINE) === -1) throw new Error('Furnace result missing CO line ' + id);
+      const actions = results[id].actions || [];
+      const hasHeatLine = actions.indexOf(FN_SPEC_CO) !== -1 || actions.indexOf(FN_CO_LINE) !== -1 || results[id].footer === FN_CO_LINE;
+      if (!hasHeatLine) throw new Error('Furnace result missing CO line ' + id);
     });
 
     MS_PR1.forEach(id => {
@@ -3282,8 +3303,22 @@
     }
     if (state && state.product === 'fn') {
       const fnCopy = Object.assign({}, res, { actions: (res.actions || []).slice() });
-      if (state.result === 'fn_call_pro') fnCopy.explanation = 'The cause has not been confirmed. Share the observations you actually made, and any checks you could not complete, with a licensed HVAC professional.';
-      if (fnCopy.actions.indexOf(FN_CO_LINE) === -1) fnCopy.actions.push(FN_CO_LINE);
+      fnCopy.actions = fnCopy.actions.map(action => action === FN_CO_LINE ? FN_SPEC_CO : action);
+      if (fnCopy.actions.indexOf(FN_SPEC_CO) === -1) fnCopy.actions.push(FN_SPEC_CO);
+      if (state.result === 'fn_call_pro') {
+        const why = state.fnReason && FN_REASON_COPY[state.fnReason];
+        fnCopy.explanation = why || res.explanation;
+      }
+      if (state.result === 'fn_gas_smell' && state.fnGas === 'propane') {
+        fnCopy.title = FN_PROPANE_STOP.title;
+        fnCopy.explanation = FN_PROPANE_STOP.explanation;
+        fnCopy.actions = FN_PROPANE_STOP.actions.slice();
+        fnCopy.avoid = FN_PROPANE_STOP.avoid;
+      }
+      if (state.result === 'fn_water_electrical' || state.result === 'electrical') {
+        fnCopy.actions = FN_ELECTRICAL_ACTIONS.slice();
+      }
+      if (fnCopy.tier === 'Emergency' || fnCopy.tier === 'Stop / professional') fnCopy.actionsFirst = true;
       return fnCopy;
     }
     if (state && state.product === 'ms' && state.msLanding === 'weak_airflow' && state.result === 'ms_settings_fixed_basic') {
