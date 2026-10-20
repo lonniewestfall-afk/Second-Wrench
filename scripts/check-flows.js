@@ -1,6 +1,6 @@
 /* Local sanity for AC Wave-2 and HP Wave-1. No network. */
 'use strict';
-globalThis.SW_CONFIG = { advancedRepairsEnabled: false, aiThermostatEnabled: false, mirrorsEnabled: false, stageLatchStepsEnabled: false, contentVersion: '2026-10-20.2' };
+globalThis.SW_CONFIG = { advancedRepairsEnabled: false, aiThermostatEnabled: false, mirrorsEnabled: false, stageLatchStepsEnabled: false, contentVersion: '2026-10-20.3' };
 const fs = require('fs');
 const path = require('path');
 const F = require('../assets/flow.js');
@@ -27,7 +27,6 @@ const SHUT_OFF_ALLOW = new Set([
   'It doesn’t cut the power.',
   'My manual says to switch off power at a breaker or switch first',
   'Remote Off doesn’t cut the power.',
-  'Don’t open covers, reset breakers, or open the outdoor unit to look for the cause.',
   'Don’t open the indoor or outdoor unit, rewire anything, or reset breakers to test it.',
   'Don’t add refrigerant, open the outdoor unit, or reset breakers to test it.',
   'Remote Off doesn’t cut the power, so stay away from the unit’s wiring.',
@@ -90,7 +89,7 @@ function assertNoCap(state, msg) {
 const gate = ['none_of_these', 'agree_18_terms'];
 
 assert(/advancedRepairsEnabled:\s*false/.test(configText), 'public advanced flag must stay false');
-const SHIP = '2026-10-20.2';
+const SHIP = '2026-10-20.3';
 assert(configText.includes("contentVersion: '" + SHIP + "'"), 'content version must be ' + SHIP);
 assert(['config', 'flow', 'app'].every(f => indexText.includes(f + '.js?v=' + SHIP)), 'script cache-bust must match content version');
 assert(indexText.includes('HOME HVAC CHECKS') && !indexText.includes('AC + HEAT PUMP'), 'header lockup is HOME HVAC CHECKS');
@@ -970,7 +969,7 @@ assert(F.treeVersionMs === 'ms.ductless.v2', 'MS-A1 mini-split tree version');
 assert(Array.isArray(F.msPr1) && F.msPr1.length === 10, 'MS-G1 ten original mini-split nodes exported');
 assert(Array.isArray(F.msV1) && F.msV1.join('|') === 'ms.heat.mode_setpoint|ms.heat.force_heat|ms.heat.defrost_sanity|ms.outdoor.safe_observe', 'MS-G1 heat and outdoor nodes');
 assert(Object.keys(F.nodes).length === 225, 'node count is ' + Object.keys(F.nodes).length);
-assert(Object.keys(F.results).length === 395, 'result count is ' + Object.keys(F.results).length);
+assert(Object.keys(F.results).length === 394, 'result count is ' + Object.keys(F.results).length);
 assert(!Object.keys(F.nodes).some(id => id.indexOf('ac.adv.cap.') === 0), 'advanced capacitor nodes are absent from the public bundle');
 const ms1 = ['none_of_these', 'agree_18_terms', 'other_heat_or_ductless', 'ductless_mini_split', 'ductless_single_zone'];
 const msGate = ms1.slice(0, 4);
@@ -1060,6 +1059,14 @@ const MS_BACKUP = 'If the house is getting cold, call a licensed HVAC profession
   assert(F.results[id].actions.indexOf(MS_BACKUP) !== -1, 'backup heat line on ' + id);
   assert(!/plugged into a wall|electric space heaters/i.test(JSON.stringify(F.results[id])), 'no space-heater how-to on ' + id);
 });
+assert(!F.results.ms_landing_not_in_pr1, 'unreachable ms_landing_not_in_pr1 result is removed');
+Object.keys(F.nodes).forEach(id => (F.nodes[id].options || []).forEach(op => {
+  const next = typeof op.next === 'string' ? op.next : '';
+  assert(next !== '@ms_landing_not_in_pr1' && next !== 'ms_landing_not_in_pr1', id + ' still routes to the removed result');
+}));
+assert(!fs.readFileSync(path.join(__dirname, '../assets/flow.js'), 'utf8').includes('Run Cool'), 'flow.js fallback no longer says Run Cool');
+assert(!fs.readFileSync(path.join(__dirname, '../assets/heating-data.js'), 'utf8').includes('Run Cool'), 'heating data no longer stores Run Cool');
+assert(F.presentResult(Object.assign(walk('ask', ms1.concat(['landing_no_heat', 'heat_settings_right_still_problem', 'no_frost_or_mild_weather', 'filter_cleaned_recently', 'nothing_blocking', 'not_sure_result'])), {})).actions[0].indexOf('Heat') !== -1, 'heat airflow unsure observes in Heat');
 assert(F.nodes['ms.intake.system_confirm'].options.find(op => op.id === 'ductless_multi_zone').next === 'ms.zone.which_head', 'multi-zone enters its zone questions');
 assert(F.nodes['ms.zone.which_head'] && F.nodes['ms.zone.others_ok'] && F.nodes['ms.zone.isolate_head'] && !F.results.ms_multi_zone_pr2, 'zone nodes replace the deferred result');
 assert(F.nodes['ms.ice.stop_observe'].options.find(op => op.id === 'ice_outdoor_heating_or_unsure').next === '@ms_ice_unclear_or_heat', 'ice screen does not loop back to defrost');

@@ -122,8 +122,8 @@
         {
           "id": "landing_something_else",
           "label": "Something else (a noise or a smell)",
-          "next": "@ms_landing_not_in_pr1",
-          "hint": "Not covered in this check.",
+          "next": "ms.landing.noise_or_smell",
+          "hint": "A noise or a smell has its own short check.",
           "fact": "Complaint: A noise or a smell from the mini-split.",
           "gate": null
         },
@@ -969,23 +969,6 @@
       "gate": null,
       "continueTo": null
     },
-    "ms_landing_not_in_pr1": {
-      "tier": "More information needed",
-      "urgency": "Not covered in this check",
-      "title": "Noise and smell aren’t sorted out here.",
-      "explanation": "This check covers cooling, heating, and a look at the outdoor unit. It won’t guess at a noise or a smell.",
-      "actions": [
-        "If something smells like burning, or you see smoke or sparks, get people away and call 911 from safety.",
-        "Otherwise, call a licensed HVAC pro who works on mini-splits. Tell them what you noticed and when it started."
-      ],
-      "avoid": "Don’t open covers, reset breakers, or open the outdoor unit to look for the cause.",
-      "source": "safety",
-      "outcome": "insufficient_info",
-      "reason": "ms_landing_not_in_pr1",
-      "diyTier": null,
-      "gate": null,
-      "continueTo": null
-    },
     "ms_settings_fixed_basic": {
       "tier": "Basic homeowner check",
       "urgency": "Leave it set this way",
@@ -1205,7 +1188,7 @@
       "title": "The airflow check needs a clearer answer.",
       "explanation": "It’s fine not to know. Don’t open the unit to find out.",
       "actions": [
-        "Run Cool with the fan on High for 15 minutes, then compare the air to how it felt before.",
+        "Use the mode you need, only while everyone has enough heating or cooling, and observe for up to 15 minutes.",
         "Start a new check if it’s still unclear, or call an HVAC pro and describe what you noticed."
       ],
       "avoid": "Don’t open the unit or put anything into the air outlet.",

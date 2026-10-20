@@ -169,7 +169,7 @@
       },
       {
         "id": "landing_something_else",
-        "next": "@ms_landing_not_in_pr1"
+        "next": "ms.landing.noise_or_smell"
       },
       {
         "id": "hazard_now",
@@ -1087,7 +1087,7 @@
           "id": "landing_something_else",
           "label": "Something else",
           "hint": "Not covered in this check.",
-          "next": "@ms_landing_not_in_pr1",
+          "next": "ms.landing.noise_or_smell",
           "fact": "Complaint: Something else on the mini-split.",
           "gate": "something_else"
         }
