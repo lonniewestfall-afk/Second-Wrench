@@ -687,8 +687,9 @@
         o('wshp_hz_flooding', 'Water is spraying from a pipe or flooding the floor around the equipment', '@wshp_mech_room_flood', 'Stay out of the water.', 'Spraying water or flooding near the equipment reported.', { gate: 'wet_hands_flood' }),
         o('wshp_hz_breaker_wont_reset', 'A breaker for the heat pump or loop pump keeps tripping or will not stay on', '@wshp_breaker_wont_reset', 'Do not reset it again.', 'Breaker for the unit or pump keeps tripping or will not stay on.', { gate: 'breaker_wont_reset' }),
         o('wshp_hz_gas_co', 'A gas smell or a carbon monoxide alarm', '@gas', 'Leave the building first.', 'Gas smell or CO alarm reported at the water-source hazard screen.', { gate: 'gas_co' }),
+        o('wshp_hz_refrigerant_alarm', 'A refrigerant leak alarm is sounding', '@leak', 'Leave the affected area.', 'Refrigerant leak alarm reported at the water-source hazard screen.', { gate: 'refrigerant_alarm_or_release' }),
         o('wshp_hz_unsure', 'I am not sure', '@uncertain', 'It is OK to stop here.', 'Homeowner unsure whether a hazard is present.', { gate: 'unsure_hazard' }),
-        o('wshp_hz_none', 'None of these', 'wshp.entry.equipment_gate', 'Continue to the equipment questions.')
+        o('wshp_hz_none', 'None of these', 'wshp.entry.equipment_gate', 'Check the people and the home before the equipment.')
       ], { diyTier: 'basic', safetyGate: true, caution: 'Do not step into water or touch the unit to check.' }),
 
     'wshp.entry.equipment_gate': n('Your system', 'What kind of water-source or geothermal system is it?',
@@ -1534,7 +1535,7 @@
       'call_pro', 'wshp_openloop_water_quality_pro', { diyTier: 'pro_only' }),
     wshp_handback_call_pro: r('Professional guidance', 'Arrange service · geothermal / water-source pro', 'Call a pro who works on geothermal or water-source heat pumps.',
       'This beta does not yet guide homeowner checks for this system. The water loop, pump, refrigerant, and controls need a trained technician. This is a next step, not a diagnosis.',
-      ['Leave covers on. Leave loop valves, the pump box, and any well equipment alone.', 'If the house is still getting some heat, leave the thermostat on Heat.', 'If your thermostat has an Emergency Heat setting, switch to it to keep heat on with backup heat while you wait for a pro. It usually costs more to run.', 'If the house is getting cold, call a licensed HVAC professional. If it’s dangerously cold and anyone is at risk, get them somewhere warm first.', 'Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn.', 'If the system keeps stopping or shows a lockout, leave it as it is. Do not reset it again.', 'Write down any light, code, or water temperature that is already showing.', 'Call a technician who services geothermal or water-source heat pumps. Copy the note below for them.'],
+      ['Leave covers on. Leave loop valves, the pump box, and any well equipment alone.', 'If the house is still getting some heat, leave the thermostat on Heat.', 'If your thermostat has an Emergency Heat setting, switch to it to keep heat on with backup heat while you wait for a pro. It usually costs more to run.', 'If the house is getting cold, call a licensed HVAC professional. If it’s dangerously cold and anyone is at risk, get them somewhere warm first.', 'Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn.', 'If the system keeps stopping or shows a lockout, leave it as it is. Do not reset it again.', 'Write down any light, code, or water temperature that is already showing.', 'If your thermostat shows Emergency Heat and no one chose it, write that down too. Some geothermal units turn it on by themselves when they lock out.', 'Call a technician who services geothermal or water-source heat pumps. Copy the note below for them.'],
       'Do not open panels, add refrigerant or antifreeze, drain or refill the loop, open loop pipes, jump or bypass a safety switch, or work inside the electrical panel.', 'safety',
       'call_pro', 'wshp_handback_call_pro', { diyTier: 'pro_only' }),
     wshp_out_of_scope_call_pro: r('Professional guidance', 'Outside this beta · call a pro', 'This system is outside this check.',
@@ -2190,17 +2191,13 @@
     const hazard = nodes['wshp.hazard.flood_electrical'];
     if (hazard.safetyGate !== true) throw new Error('WSHP hazard stub must be a safety gate');
     hazard.options.forEach(op => {
-      if (op.id === 'wshp_hz_none') {
-        if (op.next !== 'wshp.heat.cold_home_screen') throw new Error('WSHP none must continue to the cold-home screen');
-        return;
-      }
+      if (op.id === 'wshp_hz_none') return;
       if (!op.gate) throw new Error('WSHP hazard choice missing a gate: ' + op.id);
       const res = results[op.next.slice(1)];
       if (!res || res.outcome !== 'emergency_exit') throw new Error('WSHP hazard choice must emergency-exit: ' + op.id);
     });
     const equip = nodes['wshp.entry.equipment_gate'];
     const equipNext = id => equip.options.find(op => op.id === id).next;
-    if (equipNext('wshp_open_loop') !== 'wshp.openloop.complaint') throw new Error('Open loop must capture the complaint before the chemistry gate');
     if (equipNext('wshp_closed_loop') !== 'wshp.handback.call_pro' || equipNext('wshp_loop_unsure') !== 'wshp.handback.call_pro') {
       throw new Error('Closed and unsure loops must reach the handback');
     }
@@ -2260,7 +2257,7 @@
     const allowedExact = 'Capacitor, contactor, pump, wiring, and refrigerant work need a trained technician.';
     const checkBanned = (text, where, labelId) => {
       if (!text) return;
-      if (labelId && (labelId.indexOf('want_diy_') === 0 || labelId === 'openloop_want_diy_treatment' || labelId === 'hazard_now')) return;
+      if (labelId && (labelId.indexOf('want_diy_') === 0 || labelId === 'openloop_want_diy_treatment' || labelId === 'hazard_now' || labelId === 'wshp_hz_refrigerant_alarm')) return;
       const phraseAt = text.indexOf(allowedPhrase);
       bannedDiy.lastIndex = 0;
       let match;
@@ -2547,6 +2544,12 @@
   results.hp_mini_split_oos.actions=['Go back home, press Start, and choose “Ductless mini-split”. It covers cooling and heating problems on one or several indoor units.','Choose the number of indoor units you already know about. Do not open equipment to identify the system.'];
   nodes['wshp.hazard.flood_electrical'].options.find(o=>o.id==='wshp_hz_none').next='wshp.heat.cold_home_screen';
   nodes['wshp.entry.equipment_gate'].options.find(o=>o.id==='wshp_open_loop').next='wshp.openloop.complaint';
+  (function assertWshpPatchedEdges() {
+    const noneNext = nodes['wshp.hazard.flood_electrical'].options.find(o => o.id === 'wshp_hz_none').next;
+    if (noneNext !== 'wshp.heat.cold_home_screen') throw new Error('WSHP none must continue to the cold-home screen');
+    const openNext = nodes['wshp.entry.equipment_gate'].options.find(o => o.id === 'wshp_open_loop').next;
+    if (openNext !== 'wshp.openloop.complaint') throw new Error('Open loop must capture the complaint before the chemistry gate');
+  })();
   results.owner_ask_installer=r('Professional guidance','Ask your installer first.','The optional step can wait.','Check the equipment instructions and any active installer agreement before changing it.', ['Ask your installer or licensed HVAC professional whether this step applies to the equipment.','For any new hazard, use Stop / get help.'], 'Do not change equipment while its condition or instructions are uncertain.', 'professional', 'call_pro','installer_first');
   results.breaker_seasonal_restore_basic.title='Power restored · keep the start-up wait';
   results.breaker_seasonal_restore_basic.explanation='You reported one seasonal power restoration. Equipment operation has not been confirmed.';

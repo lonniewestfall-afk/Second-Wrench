@@ -1,6 +1,6 @@
 /* Local sanity for AC Wave-2 and HP Wave-1. No network. */
 'use strict';
-globalThis.SW_CONFIG = { advancedRepairsEnabled: false, aiThermostatEnabled: false, mirrorsEnabled: false, stageLatchStepsEnabled: false, contentVersion: '2026-10-20.3' };
+globalThis.SW_CONFIG = { advancedRepairsEnabled: false, aiThermostatEnabled: false, mirrorsEnabled: false, stageLatchStepsEnabled: false, contentVersion: '2026-10-20.4' };
 const fs = require('fs');
 const path = require('path');
 const F = require('../assets/flow.js');
@@ -89,7 +89,7 @@ function assertNoCap(state, msg) {
 const gate = ['none_of_these', 'agree_18_terms'];
 
 assert(/advancedRepairsEnabled:\s*false/.test(configText), 'public advanced flag must stay false');
-const SHIP = '2026-10-20.3';
+const SHIP = '2026-10-20.4';
 assert(configText.includes("contentVersion: '" + SHIP + "'"), 'content version must be ' + SHIP);
 assert(['config', 'flow', 'app'].every(f => indexText.includes(f + '.js?v=' + SHIP)), 'script cache-bust must match content version');
 assert(indexText.includes('HOME HVAC CHECKS') && !indexText.includes('AC + HEAT PUMP'), 'header lockup is HOME HVAC CHECKS');
@@ -661,11 +661,19 @@ assert(hz.safetyGate === true, 'A-10 hazard safety gate');
 hz.options.forEach(op => {
   if (op.id === 'wshp_hz_none') {
     assert(op.next === 'wshp.heat.cold_home_screen', 'A-10 none continues to cold-home screen');
+    assert(op.hint === 'Check the people and the home before the equipment.', 'A-10 none hint');
     return;
   }
   assert(!!op.gate, 'A-11 hazard gate ' + op.id);
   assert(F.results[op.next.slice(1)].outcome === 'emergency_exit', 'A-10 hazard exits ' + op.id);
 });
+const wshpRefrigerant = hz.options.find(op => op.id === 'wshp_hz_refrigerant_alarm');
+assert(wshpRefrigerant && wshpRefrigerant.label === 'A refrigerant leak alarm is sounding' && wshpRefrigerant.hint === 'Leave the affected area.' && wshpRefrigerant.next === '@leak' && wshpRefrigerant.gate === 'refrigerant_alarm_or_release', 'F5-a refrigerant alarm option');
+assert(hz.options.findIndex(op => op.id === 'wshp_hz_refrigerant_alarm') < hz.options.findIndex(op => op.id === 'wshp_hz_unsure'), 'F5-a sits before not sure');
+const handbackBullet = 'If your thermostat shows Emergency Heat and no one chose it, write that down too. Some geothermal units turn it on by themselves when they lock out.';
+assert(F.results.wshp_handback_call_pro.actions.indexOf(handbackBullet) !== -1, 'handback keeps the Emergency Heat that no one chose bullet');
+assert(F.results.wshp_handback_call_pro.actions[5] === 'If the system keeps stopping or shows a lockout, leave it as it is. Do not reset it again.', 'handback lockout line stays the live wording');
+assert(!F.results.wshp_openloop_water_quality_pro.actions.some(action => /not normal Heat/.test(action)), 'open-loop well-out line is unchanged');
 const eq = F.nodes['wshp.entry.equipment_gate'];
 const eqNext = id => eq.options.find(o => o.id === id).next;
 assert(eqNext('wshp_open_loop') === 'wshp.openloop.complaint', 'A-12 open loop');
@@ -732,7 +740,7 @@ const allowedStart = /^(?:Do not|Don’t|Don't|Never|Not offered|This check will
 const allowedExact = 'Capacitor, contactor, pump, wiring, and refrigerant work need a trained technician.';
 function checkBanned(text, where, labelId) {
   if (!text) return;
-  if (labelId && (labelId.indexOf('want_diy_') === 0 || labelId === 'openloop_want_diy_treatment' || labelId === 'hazard_now')) return;
+  if (labelId && (labelId.indexOf('want_diy_') === 0 || labelId === 'openloop_want_diy_treatment' || labelId === 'hazard_now' || labelId === 'wshp_hz_refrigerant_alarm')) return;
   const phraseAt = text.indexOf(allowedPhrase);
   bannedDiy.lastIndex = 0;
   let match;
