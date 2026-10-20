@@ -258,7 +258,7 @@
       "wshp.heat.cold_home_screen": {
         "section": "Heat and the home",
         "title": "Is the home getting too cold?",
-        "body": "Check the people and the home before the equipment. Read the room temperature without opening equipment. Is anyone at risk, is the temperature dropping, or could pipes freeze? The WHO housing guideline uses 18°C (64°F) as a minimum in cold seasons; vulnerable people may need a warmer home. This number does not rule out risk. If a faucet only trickles, a pipe may be frozen; call a plumber. Do not enter a crawlspace or thaw pipes with an open flame.",
+        "body": "Before the equipment questions, check the people and the home. Read the room temperature on the thermostat. Don’t open any equipment to check.\n\n1. Is anyone at home at risk from the cold? That includes an infant, an older adult, or someone who is ill or medically fragile.\n2. How cold is it inside right now? This guide treats below 64 °F (18 °C) as a cold home. (POLICY: our cutoff. The World Health Organization recommends at least 18 °C (64 °F) indoors in cold weather.)\n3. Is the temperature holding steady, or does it keep dropping?\n4. Could any pipes freeze? For example, a faucet only trickles, or pipes run through a cold basement, crawlspace, garage, or outside wall.\n\nIf this is about cooling, a noise, or a leak, and the home isn’t cold, choose that answer.\n\nGas smell, a CO alarm, a refrigerant leak alarm, smoke, sparks, a burning smell, flooding, or water at electrical equipment: choose New hazard now.",
         "diyTier": "basic",
         "safetyGate": true,
         "owner": "wshp",
@@ -294,9 +294,9 @@
           },
           {
             "id": "home_holding",
-            "label": "At least 18°C (64°F), holding steady, with nobody and no pipes at risk",
+            "label": "The home is holding steady (maybe a little below the setting), it’s 64°F (18°C) or warmer, no pipes are at risk, and no one is at risk",
             "next": "wshp.entry.equipment_gate",
-            "fact": "Cold home: homeowner reports steady temperature at least 18°C (64°F), no person or pipes at risk.",
+            "fact": "Cold home: The home is holding steady (maybe a little below the setting), it’s 64°F (18°C) or warmer, no pipes are at risk, and no one is at risk.",
             "hint": ""
           },
           {
@@ -357,7 +357,7 @@
             "label": "House well water is also out or weak",
             "next": "@wshp_well_water_out",
             "fact": "Complaint: House well water is also out or weak (open-loop system).",
-            "hint": ""
+            "hint": "Use Emergency Heat (or Off if you don’t have it), not normal Heat, until the well works."
           },
           {
             "id": "wshp_cx_noise",
@@ -386,6 +386,233 @@
             "next": "@wshp_hazard_now",
             "fact": "New hazard reported during the water-source check.",
             "hint": "",
+            "gate": "wshp_new_hazard"
+          }
+        ]
+      },
+      "wshp.diy.thermostat_check": {
+        "section": "Thermostat",
+        "title": "Check the thermostat you already use",
+        "body": "Look at the thermostat on the wall. Don’t open the heat pump, the loop, or any panel.\n\nWrite down the mode and the temperature setting before you change anything.",
+        "diyTier": "basic",
+        "safetyGate": false,
+        "owner": "wshp",
+        "options": [
+          {
+            "id": "wshp_ts_fixed",
+            "label": "I set Heat or Cool to match the problem, and the setpoint is past the room temperature",
+            "next": "@wshp_ts_fixed",
+            "fact": "Thermostat mode or setpoint corrected from the wall control.",
+            "hint": ""
+          },
+          {
+            "id": "wshp_ts_ok",
+            "label": "The mode and setpoint already match the problem",
+            "next": "wshp.diy.filter_check",
+            "fact": "Thermostat mode and setpoint already matched the complaint.",
+            "hint": ""
+          },
+          {
+            "id": "wshp_ts_lockout",
+            "label": "A lockout light or code is already showing",
+            "next": "wshp.diy.lockout_brand_gate",
+            "fact": "Lockout light or code already showing.",
+            "hint": "Write it down. Don’t reset a breaker or disconnect."
+          },
+          {
+            "id": "hazard_now",
+            "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, flooding, or water at electrical parts)",
+            "next": "@wshp_hazard_now",
+            "fact": "New hazard reported during the water-source check.",
+            "hint": "Stop. Do not keep going.",
+            "gate": "wshp_new_hazard"
+          }
+        ]
+      },
+      "wshp.diy.filter_check": {
+        "section": "Air filter",
+        "title": "Look at the air filter",
+        "body": "Use only a filter door you already open for a filter change. Don’t open any other panel, and don’t use tools.\n\nIf you can’t reach the filter without a ladder, tools, or opening an equipment panel, stop and go to the service note.",
+        "diyTier": "basic",
+        "safetyGate": false,
+        "owner": "wshp",
+        "options": [
+          {
+            "id": "wshp_filter_replaced",
+            "label": "I replaced a dirty filter and closed the filter door",
+            "next": "@wshp_filter_replaced_retest",
+            "fact": "Air filter replaced and the filter door closed.",
+            "hint": ""
+          },
+          {
+            "id": "wshp_filter_ok",
+            "label": "The filter is in place and not blocked",
+            "next": "wshp.diy.condensate_check",
+            "fact": "Air filter in place and not blocked.",
+            "hint": ""
+          },
+          {
+            "id": "wshp_filter_blocked",
+            "label": "I can’t reach it without opening equipment",
+            "next": "wshp.handback.call_pro",
+            "fact": "Air filter not reachable without opening equipment.",
+            "hint": ""
+          },
+          {
+            "id": "hazard_now",
+            "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, flooding, or water at electrical parts)",
+            "next": "@wshp_hazard_now",
+            "fact": "New hazard reported during the water-source check.",
+            "hint": "Stop. Do not keep going.",
+            "gate": "wshp_new_hazard"
+          }
+        ]
+      },
+      "wshp.diy.condensate_check": {
+        "section": "Condensate",
+        "title": "Look at the condensate drain you can already see",
+        "body": "Look only at a drain pan or drain line you can see without opening a panel. Don’t open the unit, and don’t pour chemicals in the drain.\n\nA small amount of water in a cooling drain pan can be normal. Water near wiring is a hazard. If you see that, choose New hazard now.",
+        "diyTier": "basic",
+        "safetyGate": false,
+        "owner": "wshp",
+        "options": [
+          {
+            "id": "wshp_drain_cleared",
+            "label": "I cleared a visible clog in a drain I can already reach, and the area is dry",
+            "next": "@wshp_drain_cleared_retest",
+            "fact": "Visible condensate clog cleared. Area reported dry.",
+            "hint": ""
+          },
+          {
+            "id": "wshp_drain_ok",
+            "label": "I don’t see a clog or standing water away from wiring",
+            "next": "wshp.diy.loop_gauge_look",
+            "fact": "No visible condensate clog or standing water away from wiring.",
+            "hint": ""
+          },
+          {
+            "id": "wshp_drain_blocked",
+            "label": "I can’t see the drain without opening a panel",
+            "next": "wshp.handback.call_pro",
+            "fact": "Condensate drain not visible without opening a panel.",
+            "hint": ""
+          },
+          {
+            "id": "hazard_now",
+            "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, flooding, or water at electrical parts)",
+            "next": "@wshp_hazard_now",
+            "fact": "New hazard reported during the water-source check.",
+            "hint": "Stop. Do not keep going.",
+            "gate": "wshp_new_hazard"
+          }
+        ]
+      },
+      "wshp.diy.loop_gauge_look": {
+        "section": "Loop",
+        "title": "Look at a loop gauge you can already see",
+        "body": "Look only. Don’t touch a gauge, open a port, or add fluid. Don’t open a panel to find one.\n\nWrite down any numbers you can already read. This check does not say what the numbers mean.",
+        "diyTier": "basic",
+        "safetyGate": false,
+        "owner": "wshp",
+        "options": [
+          {
+            "id": "wshp_gauge_logged",
+            "label": "I wrote down numbers I can already see",
+            "next": "@wshp_loop_reading_logged",
+            "fact": "Loop numbers the homeowner could already see were written down.",
+            "hint": ""
+          },
+          {
+            "id": "wshp_loop_no_tag",
+            "label": "I can’t see a reading without opening anything",
+            "next": "wshp.handback.call_pro",
+            "fact": "Loop reading not visible without opening equipment.",
+            "hint": ""
+          },
+          {
+            "id": "hazard_now",
+            "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, flooding, or water at electrical parts)",
+            "next": "@wshp_hazard_now",
+            "fact": "New hazard reported during the water-source check.",
+            "hint": "Stop. Do not keep going.",
+            "gate": "wshp_new_hazard"
+          }
+        ]
+      },
+      "wshp.diy.lockout_brand_gate": {
+        "section": "Lockout",
+        "title": "Which brand is on a label you can already see?",
+        "body": "A one-time thermostat reset is offered only for WaterFurnace and ClimateMaster. Every other brand goes to a pro. This is not a breaker or disconnect reset.\n\nRead it only from a label you can already see. Don’t open any door, panel, or cover to find it.",
+        "diyTier": "basic",
+        "safetyGate": true,
+        "owner": "wshp",
+        "options": [
+          {
+            "id": "brand_waterfurnace",
+            "label": "WaterFurnace",
+            "next": "wshp.diy.lockout_reset_once",
+            "fact": "Brand reported: WaterFurnace.",
+            "hint": ""
+          },
+          {
+            "id": "brand_climatemaster",
+            "label": "ClimateMaster",
+            "next": "wshp.diy.lockout_reset_once",
+            "fact": "Brand reported: ClimateMaster.",
+            "hint": ""
+          },
+          {
+            "id": "brand_other",
+            "label": "Another brand",
+            "next": "@wshp_handback_call_pro",
+            "fact": "Brand reported: another brand. No thermostat reset offered.",
+            "hint": "No reset is offered."
+          },
+          {
+            "id": "brand_unsure",
+            "label": "I’m not sure",
+            "next": "@wshp_handback_call_pro",
+            "fact": "Brand not confirmed. No thermostat reset offered.",
+            "hint": "No reset is offered."
+          },
+          {
+            "id": "hazard_now",
+            "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, flooding, or water at electrical parts)",
+            "next": "@wshp_hazard_now",
+            "fact": "New hazard reported during the water-source check.",
+            "hint": "Stop. Do not keep going.",
+            "gate": "wshp_new_hazard"
+          }
+        ]
+      },
+      "wshp.diy.lockout_reset_once": {
+        "section": "Lockout",
+        "title": "One thermostat reset, then stop",
+        "body": "Do this once, at the thermostat only. Set the thermostat to Off. Wait about one minute. Set it back to the mode you wrote down.\n\nDon’t reset a breaker or a disconnect. Don’t open a panel. If you already did this once, stop and call a pro.",
+        "diyTier": "basic",
+        "safetyGate": false,
+        "owner": "wshp",
+        "options": [
+          {
+            "id": "wshp_reset_once_done",
+            "label": "I turned the thermostat Off, then back On, one time",
+            "next": "@wshp_lockout_reset_ok",
+            "fact": "One thermostat Off/On reset done.",
+            "hint": ""
+          },
+          {
+            "id": "wshp_reset_still_locked",
+            "label": "I already did that once and the lockout is still there",
+            "next": "@wshp_handback_call_pro",
+            "fact": "Thermostat reset already used once; lockout remains.",
+            "hint": ""
+          },
+          {
+            "id": "hazard_now",
+            "label": "New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, flooding, or water at electrical parts)",
+            "next": "@wshp_hazard_now",
+            "fact": "New hazard reported during the water-source check.",
+            "hint": "Stop. Do not keep going.",
             "gate": "wshp_new_hazard"
           }
         ]
@@ -420,9 +647,11 @@
           "If the house is getting cold, call a licensed HVAC professional. If it’s dangerously cold and anyone is at risk, get them somewhere warm first.",
           "If the house is still getting some heat, leave the thermostat on Heat.",
           "If your thermostat has an Emergency Heat setting, switch to it to keep heat on with backup heat while you wait for a pro. It usually costs more to run.",
+          "If your system uses well water and the house well water is out, set the thermostat to Emergency Heat, not normal Heat. If it has no Emergency Heat setting, set it to Off, and use the cold-home line above. (MANUAL: WaterFurnace Residential Owner’s Manual, pages 14 and 27.)",
           "An AUX indicator that comes on automatically is not the setting for Emergency Heat.",
           "Bring pets somewhere warm too.",
           "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn.",
+          "To help keep pipes from freezing, open the cabinet doors under kitchen and bathroom sinks (move any cleaners out of reach of children), and let cold water drip slowly from a faucet on an outside wall. If a faucet only trickles, a pipe may be frozen. Call a licensed plumber. Never thaw a pipe with an open flame. (Source: American Red Cross, “Preventing & Thawing Frozen Pipes.”)",
           "Call a licensed geothermal or water-source professional today and describe the indoor temperature and trend. For a possible frozen pipe, call a plumber; never use an open flame."
         ],
         "avoid": "Do not open equipment, reset a breaker, change water valves, or work on the well.",
@@ -436,16 +665,105 @@
         "explanation": "You reported an open-loop system and weak or missing house well water. Neither the well condition nor water flow through the unit has been confirmed.",
         "urgency": "Arrange service today",
         "actions": [
-          "Use Off at the thermostat, or Emergency Heat if the system has that backup-only setting, while arranging service. Do not use normal Heat or Cool without the required water supply.",
+          "If the house well water is also out, tell the pro. Until the well works again, set the thermostat to Emergency Heat (it may say Em Heat), not normal Heat. If it has no Emergency Heat setting, set it to Off. In normal Heat the heat pump may still try to run without well water. (MANUAL: WaterFurnace Residential Owner’s Manual, pages 14 and 27: if the well pumping system “is inoperable, your unit should be turned off or placed into emergency heat until an adequate water supply is restored.”)",
           "An automatic AUX light is not the setting for Emergency Heat. Do not change a valve, open the well controls, or reset a breaker.",
           "If the house is getting cold, call a licensed HVAC professional. If it’s dangerously cold and anyone is at risk, get them somewhere warm first.",
           "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn.",
           "Tell the geothermal service company and well professional that the water supply is weak or unavailable.",
-          "Source: WaterFurnace Residential Owner’s Manual OM1500MW, page 13, Water Supply; checked October 12, 2026."
+          "Source: WaterFurnace Residential Owner’s Manual (wfom.pdf) p.14/27."
         ],
         "avoid": "Do not open equipment, reset a breaker, change water valves, or work on the well.",
         "outcome": "call_pro",
         "reason": "wshp_well_water_out",
+        "diyTier": "pro_only"
+      },
+      "wshp_ts_fixed": {
+        "tier": "Basic homeowner check",
+        "title": "Thermostat setting updated.",
+        "explanation": "You changed a mode or setpoint you could already see. Operation has not been confirmed.",
+        "urgency": "Watch, then call if it stays wrong",
+        "actions": [
+          "Leave the thermostat on the setting you just chose.",
+          "Give it about 15 minutes. If the home still has the same problem, call a pro who works on geothermal or water-source heat pumps.",
+          "Don’t open the unit, and don’t reset a breaker or disconnect."
+        ],
+        "avoid": "Do not open equipment, reset a breaker or disconnect, change water valves, or work on the well.",
+        "outcome": "call_pro",
+        "reason": "wshp_ts_fixed",
+        "diyTier": "basic"
+      },
+      "wshp_filter_replaced_retest": {
+        "tier": "Basic homeowner check",
+        "title": "Filter replaced. Watch the system.",
+        "explanation": "A filter you could already reach was replaced and the filter door was closed. Airflow has not been confirmed.",
+        "urgency": "Watch, then call if it stays wrong",
+        "actions": [
+          "Leave the filter door closed.",
+          "Give the system about 15 minutes. If airflow or comfort stays poor, call a pro who works on geothermal or water-source heat pumps.",
+          "Don’t open any other panel, and don’t reset a breaker or disconnect."
+        ],
+        "avoid": "Do not open equipment, reset a breaker or disconnect, change water valves, or work on the well.",
+        "outcome": "call_pro",
+        "reason": "wshp_filter_replaced_retest",
+        "diyTier": "basic"
+      },
+      "wshp_drain_cleared_retest": {
+        "tier": "Basic homeowner check",
+        "title": "Visible drain cleared. Watch for water.",
+        "explanation": "A clog you could already see was cleared. The cause has not been confirmed.",
+        "urgency": "Watch, then call if it stays wrong",
+        "actions": [
+          "Keep water away from wiring. If water reaches electrical parts, use Get help now.",
+          "If water keeps collecting, call a pro who works on geothermal or water-source heat pumps.",
+          "Don’t pour chemicals in the drain, and don’t open the unit."
+        ],
+        "avoid": "Do not open equipment, reset a breaker or disconnect, change water valves, or work on the well.",
+        "outcome": "call_pro",
+        "reason": "wshp_drain_cleared_retest",
+        "diyTier": "basic"
+      },
+      "wshp_loop_reading_logged": {
+        "tier": "Basic homeowner check",
+        "title": "Loop reading written down.",
+        "explanation": "Numbers you could already see were written down. This check does not interpret them.",
+        "urgency": "Watch, then call if it stays wrong",
+        "actions": [
+          "Give those numbers to a pro who works on geothermal or water-source heat pumps.",
+          "Don’t open a port, add fluid, or touch a gauge."
+        ],
+        "avoid": "Do not open equipment, reset a breaker or disconnect, change water valves, or work on the well.",
+        "outcome": "call_pro",
+        "reason": "wshp_loop_reading_logged",
+        "diyTier": "basic"
+      },
+      "wshp_lockout_reset_ok": {
+        "tier": "Professional guidance",
+        "title": "One thermostat reset is done.",
+        "explanation": "The thermostat was turned Off and back On one time. Don’t do that again.",
+        "urgency": "Arrange service if it returns",
+        "actions": [
+          "Leave the thermostat as it is. Don’t reset it again.",
+          "If the lockout returns, or there is no warm air, call a pro who works on geothermal or water-source heat pumps.",
+          "Don’t reset a breaker or disconnect."
+        ],
+        "avoid": "Do not open equipment, reset a breaker or disconnect, change water valves, or work on the well.",
+        "outcome": "call_pro",
+        "reason": "wshp_lockout_reset_ok",
+        "diyTier": "pro_only"
+      },
+      "wshp_openloop_filter_drain_link": {
+        "tier": "Professional guidance",
+        "title": "Filter and drain looks only. Water care is a pro job.",
+        "explanation": "Open-loop water care stays with a pro. The only homeowner looks are an air filter you can already reach and a condensate drain you can already see.",
+        "urgency": "Arrange service",
+        "actions": [
+          "Use only a filter door you already open for a filter change. Don’t open the unit.",
+          "Look at a drain you can already see. Don’t pour anything into it.",
+          "Don’t work on the well, the pump, or the pressure tank. Call a pro who services open-loop geothermal systems."
+        ],
+        "avoid": "Do not open equipment, reset a breaker or disconnect, change water valves, or work on the well.",
+        "outcome": "call_pro",
+        "reason": "wshp_openloop_filter_drain_link",
         "diyTier": "pro_only"
       }
     }
