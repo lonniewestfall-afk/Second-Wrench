@@ -1,0 +1,145 @@
+{
+  "data_notice": "EXAMPLE DATA. Not real contractors. Not for production matching.",
+  "contractors": [
+    {
+      "contractor_id": "example-bosch-columbus",
+      "example": true,
+      "data_notice": "EXAMPLE DATA. Not a real contractor.",
+      "company_name": "Example Bosch Heating (not a real contractor)",
+      "active": true,
+      "paused": false,
+      "license": {
+        "state": "OH",
+        "authority": "Example city registration",
+        "number": "EXAMPLE-1001",
+        "status": "active",
+        "expires_on": "2027-06-01",
+        "checked_on": "2026-10-01",
+        "source_url": "https://example.invalid/license-lookup"
+      },
+      "insurance": {
+        "general_liability_expires_on": "2027-06-01",
+        "workers_comp_expires_on": "2027-06-01"
+      },
+      "brand_certs": [
+        {
+          "program": "Example installer locator",
+          "brand": "bosch",
+          "verified_on": "2026-10-01",
+          "evidence_url": "https://example.invalid/bosch-locator"
+        }
+      ],
+      "service_zip3s": ["432", "430"],
+      "equipment_tags": ["furnace", "heat_pump", "bosch"],
+      "capacity_per_week": 5,
+      "leads_this_week": 1
+    },
+    {
+      "contractor_id": "example-ac-columbus",
+      "example": true,
+      "data_notice": "EXAMPLE DATA. Not a real contractor.",
+      "company_name": "Example Cooling Co (not a real contractor)",
+      "active": true,
+      "paused": false,
+      "license": {
+        "state": "OH",
+        "authority": "Example city registration",
+        "number": "EXAMPLE-1002",
+        "status": "active",
+        "expires_on": "2027-06-01",
+        "checked_on": "2026-10-01",
+        "source_url": "https://example.invalid/license-lookup"
+      },
+      "insurance": {
+        "general_liability_expires_on": "2027-06-01"
+      },
+      "brand_certs": [
+        {
+          "program": "Example dealer locator",
+          "brand": "carrier",
+          "verified_on": "2026-10-01",
+          "evidence_url": "https://example.invalid/carrier-locator"
+        }
+      ],
+      "service_zip3s": ["432"],
+      "equipment_tags": ["ac", "carrier"],
+      "capacity_per_week": 4,
+      "leads_this_week": 0
+    },
+    {
+      "contractor_id": "example-furnace-cleveland",
+      "example": true,
+      "data_notice": "EXAMPLE DATA. Not a real contractor.",
+      "company_name": "Example Cleveland Heat (not a real contractor)",
+      "active": true,
+      "paused": false,
+      "license": {
+        "state": "OH",
+        "authority": "Example city registration",
+        "number": "EXAMPLE-1003",
+        "status": "active",
+        "expires_on": "2027-06-01",
+        "checked_on": "2026-10-01",
+        "source_url": "https://example.invalid/license-lookup"
+      },
+      "insurance": {
+        "general_liability_expires_on": "2027-06-01"
+      },
+      "brand_certs": [],
+      "service_zip3s": ["441"],
+      "equipment_tags": ["furnace"],
+      "capacity_per_week": 3,
+      "leads_this_week": 0
+    },
+    {
+      "contractor_id": "example-expired-columbus",
+      "example": true,
+      "data_notice": "EXAMPLE DATA. Not a real contractor.",
+      "company_name": "Example Expired License (not a real contractor)",
+      "active": true,
+      "paused": false,
+      "license": {
+        "state": "OH",
+        "authority": "Example city registration",
+        "number": "EXAMPLE-1004",
+        "status": "active",
+        "expires_on": "2020-01-01",
+        "checked_on": "2026-10-01",
+        "source_url": "https://example.invalid/license-lookup"
+      },
+      "insurance": {
+        "general_liability_expires_on": "2027-06-01"
+      },
+      "brand_certs": [],
+      "service_zip3s": ["432"],
+      "equipment_tags": ["furnace", "bosch"],
+      "capacity_per_week": 5,
+      "leads_this_week": 0
+    },
+    {
+      "contractor_id": "example-paused-columbus",
+      "example": true,
+      "data_notice": "EXAMPLE DATA. Not a real contractor.",
+      "company_name": "Example Paused Heat (not a real contractor)",
+      "active": true,
+      "paused": true,
+      "license": {
+        "state": "OH",
+        "authority": "Example city registration",
+        "number": "EXAMPLE-1005",
+        "status": "active",
+        "expires_on": "2027-06-01",
+        "checked_on": "2026-10-01",
+        "source_url": "https://example.invalid/license-lookup"
+      },
+      "insurance": {
+        "general_liability_expires_on": "2027-06-01"
+      },
+      "brand_certs": [],
+      "service_zip3s": ["432"],
+      "equipment_tags": ["furnace"],
+      "capacity_per_week": 5,
+      "leads_this_week": 0
+    }
+  ]
+}

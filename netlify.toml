@@ -27,3 +27,15 @@
   to = "/.netlify/functions/catalog-ingest"
   status = 200
   force = true
+
+[[redirects]]
+  from = "/api/referral"
+  to = "/.netlify/functions/referral"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/referral-admin"
+  to = "/.netlify/functions/referral-admin"
+  status = 200
+  force = true

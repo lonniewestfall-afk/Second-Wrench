@@ -3229,6 +3229,7 @@
       : state.product === 'ms' && state.msSingleZone ? 'Equipment: ductless mini-split, one indoor unit (homeowner reported).'
       : state.product === 'ms' ? (state.msMultiZone?'Equipment: ductless mini-split, multiple indoor units (homeowner reported).':'Equipment: ductless mini-split not confirmed.')
       : '';
+    const furnaceCall = state.product === 'fn' && shown && shown.outcome === 'call_pro';
     const sdDisclosure = state.product === 'sd'
       ? (state.mode === 'test'
         ? 'Test session: these answers were made up for practice. This isn’t a record of real equipment.'
@@ -3238,7 +3239,9 @@
       sdDisclosure,
       equipment,
       state.product==='sd' ? 'Outdoor fan position (reported): '+(state.sdSideConfirmed?'side-discharge':'not confirmed')+'. Mode: '+(state.sdMode||'not confirmed')+'. Incoming check: '+(state.sdFrom||'not stated')+'.' : '',
-      state.fnHome ? 'Home type (reported): ' + state.fnHome.replace(/_/g,' ') : '',
+      furnaceCall ? 'Fuel (reported): ' + referralFuelWords(state) : '',
+      furnaceCall ? 'Vent type (reported): ' + referralVentWords(state) : '',
+      furnaceCall ? 'Home type (reported): ' + referralHomeWords(state) : (state.fnHome ? 'Home type (reported): ' + state.fnHome.replace(/_/g, ' ') : ''),
       boilerTypeLine(state.bl),
       state.whType ? 'Water-heater type (reported): ' + state.whType + '; fuel: ' + (state.whFuel || 'unknown') : '',
       (state.fnFuel === 'hydronic' || state.bl && state.bl.coil) ? 'Water circulation and coil temperature have not been confirmed by this guide.' : '',
@@ -3342,6 +3345,138 @@
     air_source_ducted_hp: 1, air_source_hp_gas_furnace: 1, air_source_hp_gas_unsure: 1,
     heat_pump: 1, furnace_plus_heat_pump: 1, winter_outdoor_runs: 1, has_em_aux: 1, label_says_heat_pump: 1
   };
+  const REFERRAL_EXIT_GATES = {
+    gas_co: 1,
+    co_alarm_or_symptoms: 1,
+    smoke_fire_sparks_burn: 1,
+    burning_smell: 1,
+    sparking: 1,
+    flame_rollout_soot: 1,
+    combustion_flame_abnormal: 1,
+    delayed_ignition_bang: 1,
+    fn_new_hazard: 1,
+    ms_new_hazard: 1,
+    hp_new_hazard: 1,
+    wshp_new_hazard: 1,
+    breaker_panel_hazard: 1
+  };
+  const REFERRAL_EXIT_IDS = {
+    gas: 1, fire: 1, sw_co_symptom_exit: 1, fn_gas_smell: 1, fn_co_alarm: 1,
+    fn_burning_sparks: 1, fn_smell_smoke_exit: 1, noise_burning_sparks_smoke: 1,
+    fn_hazard_now: 1, hp_hazard_now: 1, ms_hazard_now: 1, wshp_hazard_now: 1,
+    adv_hazard_active: 1, breaker_unsafe_stop: 1, discharge_spark_shock_smoke: 1,
+    fn_flame_abnormal: 1, fn_ignition_bang: 1, fn_rollout_soot: 1,
+    fn_smell_shutoff: 1, fn_code_flame_no_call_stop: 1, fn_vent_damaged_stop: 1,
+    fn_water_electrical: 1, fn_ask_installer_card: 1, fn_vent_unsafe_wait: 1,
+    fn_mh_animals_stop: 1, fn_propane_out: 1, fn_propane_low_supplier: 1,
+    fn_cold_exposure: 1, fn_code_rollout_stop: 1, fn_meter_iced: 1, fn_gate_unsure: 1,
+    a11: 1, b7: 1
+  };
+  function referralCodeClass(value) {
+    const tokens = String(value || '').toUpperCase().split(/[^A-Z0-9]+/).filter(Boolean);
+    if (!tokens.length) return '';
+    if (tokens.some(token => token === 'A11' || token === 'B7')) return 'safety';
+    const normal = token => /^DF/.test(token) || /^D0/.test(token) || /^D1[1-4]$/.test(token) || token === 'D34' || token === 'DD' || token === 'D61';
+    if (tokens.every(normal)) return 'normal';
+    return '';
+  }
+  function referralFuel(state) {
+    if (!state) return '';
+    if (state.fnGas === 'propane') return 'propane';
+    if (state.fnFuel === 'gas' || state.fnFuel === 'oil' || state.fnFuel === 'electric' || state.fnFuel === 'hydronic') return state.fnFuel;
+    const boilerFuel = state.bl && state.bl.fuel;
+    if (boilerFuel === 'propane' || boilerFuel === 'gas' || boilerFuel === 'oil' || boilerFuel === 'electric') return boilerFuel;
+    if (state.whFuel === 'propane' || state.whFuel === 'gas' || state.whFuel === 'oil' || state.whFuel === 'electric') return state.whFuel;
+    return catalogFuel(state);
+  }
+  function referralVentType(state) {
+    if (!state || state.product !== 'fn') return '';
+    const answers = state.answers || [];
+    const choices = answers.map(answer => answer.choice);
+    if (choices.indexOf('metal_chimney') !== -1 || state.fnReason === 'vent_not_pvc') return 'metal';
+    const sawPlastic = answers.some(answer => String(answer.node || '').indexOf('fn.vent.') === 0)
+      || ['vents_high_or_roof', 'pipe_damaged', 'ice_stuck', 'blocked_cleared', 'pipes_clear'].some(choice => choices.indexOf(choice) !== -1);
+    if (sawPlastic) return 'pvc';
+    if (state.fnFuel === 'electric' || state.fnFuel === 'hydronic') return 'none';
+    return 'not_reported';
+  }
+  function referralHomeType(state) {
+    const home = state && state.fnHome;
+    if (home === 'site_built' || home === 'manufactured_home' || home === 'not_sure') return home;
+    return '';
+  }
+  function referralFuelWords(state) {
+    const fuel = referralFuel(state);
+    if (fuel === 'propane') return 'propane';
+    if (fuel === 'gas' && state.fnGas === 'not_sure') return 'gas, supply not confirmed';
+    if (fuel === 'gas') return 'natural gas';
+    if (fuel === 'oil') return 'oil';
+    if (fuel === 'electric') return 'electric';
+    if (fuel === 'hydronic') return 'hydronic hot-water coil';
+    return 'not reported';
+  }
+  function referralVentWords(state) {
+    const vent = referralVentType(state);
+    if (vent === 'metal') return 'metal chimney or vent';
+    if (vent === 'pvc') return 'plastic outdoor pipes';
+    if (vent === 'none') return 'none for this equipment';
+    return 'not reported';
+  }
+  function referralHomeWords(state) {
+    const home = referralHomeType(state);
+    if (home === 'site_built') return 'site built';
+    if (home === 'manufactured_home') return 'manufactured home';
+    if (home === 'not_sure') return 'not sure';
+    return 'not reported';
+  }
+  function referralSafetyNode(id) {
+    return id === 'sw.co.fast_exit'
+      || id === 'ac.gate.cluster_entry'
+      || id === 'ts.gate.safety_stops'
+      || id === 'bl.gate.safety'
+      || id === 'bl.gate.carryover'
+      || id === 'wh.gate.safety'
+      || id === 'wh.gate.warning_signs'
+      || id === 'fn.gate.combustion_co'
+      || /safety_stops|\.gate\.safety|combustion_co|fast_exit/.test(id || '');
+  }
+  function referralHazardExit(id, shown) {
+    if (!shown) return true;
+    if (shown.aliasOf === 'sw_co_symptom_exit') return true;
+    if (REFERRAL_EXIT_IDS[id]) return true;
+    if (shown.gate && REFERRAL_EXIT_GATES[shown.gate]) return true;
+    return false;
+  }
+  function referralEligible(state, extra) {
+    if (!state) return false;
+    if (state.node && referralSafetyNode(state.node)) return false;
+    if (state.node || !state.result) return false;
+    const shown = results[state.result];
+    if (!shown || shown.outcome !== 'call_pro') return false;
+    if (shown.tier === 'Emergency') return false;
+    if (referralHazardExit(state.result, shown)) return false;
+    if (referralCodeClass(state.result) === 'safety' || referralCodeClass(state.result) === 'normal') return false;
+    const more = extra || {};
+    if (referralCodeClass(more.code) === 'safety') return false;
+    return true;
+  }
+  function referralSummary(state, extra) {
+    const more = extra || {};
+    const clean = value => String(value || '').replace(/[\r\n\t]+/g, ' ').trim().slice(0, 80);
+    const reason = state && state.product === 'fn' ? String(state.fnReason || '') : '';
+    return {
+      lane: state && state.product || '',
+      result_id: state && state.result || '',
+      brand: clean(more.brand),
+      model: clean(more.model),
+      symptom: state ? catalogSymptom(state) : '',
+      fuel: referralFuel(state),
+      vent_type: referralVentType(state),
+      home_type: referralHomeType(state),
+      fn_reason: /^[a-z0-9_]{0,80}$/.test(reason) ? reason : '',
+      code: clean(more.code)
+    };
+  }
   function catalogLane(state) {
     const known = { ac: 'ac.', hp: 'hp.', ms: 'ms.', wshp: 'wshp.', fn: 'fn.', ts: 'ts.', bl: 'bl.', wh: 'wh.', sd: 'sd.' };
     return known[state && state.product] || 'ask';
@@ -3467,6 +3602,7 @@
     hpWave1: HP_WAVE1, wshpWave1: WSHP_WAVE1, treeVersionFn: TREE_FN, fnWave1: FN_WAVE1, fnReused: FN_REUSED, fnForbidden: FN_FORBIDDEN,
     fnCoLine: FN_CO_LINE, fnReasonCopy: FN_REASON_COPY, fnEdge: FN_EDGE,
     catalogLane, catalogEquipmentType, catalogSymptom, catalogUnitRole, catalogFuel, catalogHazardResult,
+    referralEligible, referralSummary, referralSafetyNode, referralCodeClass,
     catalogBrandChoices, catalogPayload, catalogReprompt, acceptReprompt
   };
 });

@@ -2,7 +2,7 @@
 const assert = require('assert/strict');
 const fs = require('fs');
 const path = require('path');
-global.SW_CONFIG = { advancedRepairsEnabled: false, aiThermostatEnabled: false, mirrorsEnabled: false, stageLatchStepsEnabled: false, catalogEnabled: false, contentVersion: '2026-10-20.6' };
+global.SW_CONFIG = { advancedRepairsEnabled: false, aiThermostatEnabled: false, mirrorsEnabled: false, stageLatchStepsEnabled: false, catalogEnabled: false, contentVersion: '2026-10-20.7' };
 const F = require('../assets/flow');
 const heating = require('../assets/heating-data.json');
 const codes = require('./wh-codes');

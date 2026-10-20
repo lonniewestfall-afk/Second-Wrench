@@ -1,6 +1,6 @@
 /* Local sanity for AC Wave-2 and HP Wave-1. No network. */
 'use strict';
-globalThis.SW_CONFIG = { advancedRepairsEnabled: false, aiThermostatEnabled: false, mirrorsEnabled: false, stageLatchStepsEnabled: false, contentVersion: '2026-10-20.6' };
+globalThis.SW_CONFIG = { advancedRepairsEnabled: false, aiThermostatEnabled: false, mirrorsEnabled: false, stageLatchStepsEnabled: false, contentVersion: '2026-10-20.7' };
 const fs = require('fs');
 const path = require('path');
 const F = require('../assets/flow.js');
@@ -89,7 +89,8 @@ function assertNoCap(state, msg) {
 const gate = ['none_of_these', 'agree_18_terms'];
 
 assert(/advancedRepairsEnabled:\s*false/.test(configText), 'public advanced flag must stay false');
-const SHIP = '2026-10-20.6';
+assert(/referralEnabled:\s*false/.test(configText) && !/referralEnabled:\s*true/.test(configText), 'referral flag must stay false');
+const SHIP = '2026-10-20.7';
 assert(configText.includes("contentVersion: '" + SHIP + "'"), 'content version must be ' + SHIP);
 assert(['config', 'flow', 'app'].every(f => indexText.includes(f + '.js?v=' + SHIP)), 'script cache-bust must match content version');
 assert(indexText.includes('HOME HVAC CHECKS') && !indexText.includes('AC + HEAT PUMP'), 'header lockup is HOME HVAC CHECKS');
@@ -2151,7 +2152,7 @@ function bootPage() {
   assert(w7.result === 'fn_gas_smell', 'W7 gas smell uses the existing gas exit');
   const w8 = walk('ask', gate.concat(['furnace', 'none_of_these', 'gas_furnace', 'natural_gas', 'site_built', 'landing_first_heat_smell', 'smoke_or_stronger']));
   assert(w8.result === 'fn_smell_smoke_exit' && F.results[w8.result].outcome === 'emergency_exit', 'W8 smoke is get out and call 911');
-  assert(/advancedRepairsEnabled:\s*false/.test(configText) && /catalogEnabled:\s*false/.test(configText) && /hvacContentReviewed:\s*false/.test(configText) && /termsAndPrivacyReviewed:\s*false/.test(configText), 'feature and review flags stay false');
+  assert(/advancedRepairsEnabled:\s*false/.test(configText) && /catalogEnabled:\s*false/.test(configText) && /referralEnabled:\s*false/.test(configText) && /hvacContentReviewed:\s*false/.test(configText) && /termsAndPrivacyReviewed:\s*false/.test(configText), 'feature and review flags stay false');
 }
 {
   const internalTag = /\(POLICY\b|\bPOLICY\b|\bR\d{2}\b|\bPL-[A-Z0-9]|\bFT-[A-Z0-9]|\bD-0\d{2}\b/;
