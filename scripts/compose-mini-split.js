@@ -101,7 +101,7 @@ module.exports=function(base,draft,CO){
  results.ms_ice_unclear_or_heat.explanation='Light frost while heating can be normal briefly. '+defrost;
  results.ms_ice_unclear_or_heat.actions[0]='For thick or growing ice, turn the unit Off with the remote and call a professional now. Do not keep it running to time an hour.';
  results.ms_ice_unclear_or_heat.actions[1]='If you cannot tell whether it is ice, describe the observation from a window or dry ground to a professional.';
- results.ms_landing_not_in_pr1.title='Something this check doesn’t cover.';results.ms_landing_not_in_pr1.explanation='This check covers heating, cooling, sounds, smells, water, codes, remote controls, and outdoor observations.';
+ delete results.ms_landing_not_in_pr1;
  results.ms_advanced_off.urgency='Arrange HVAC service';results.ms_advanced_off.explanation='These jobs need a licensed HVAC professional.';
  // A result records what the owner reported, not a diagnosis or an inspection.
  results.ms_zone_mode_match_basic.title='You reported improvement after matching the modes.';

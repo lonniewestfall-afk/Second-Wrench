@@ -21,5 +21,5 @@ If anything new comes up, like a burning smell, smoke, sparks, or water reaching
 | `landing_error_code` | A code or blinking lights on the indoor unit, remote, or app | `ms.error.capture` |  |
 | `landing_ice_seen` | Ice or frost on the indoor unit or its pipes | `ms.ice.stop_observe` |  |
 | `landing_outdoor_unit` | The outdoor unit: quiet, iced, or still not comfortable | `ms.outdoor.safe_observe` |  |
-| `landing_something_else` | Something else (a noise or a smell) | `@ms_landing_not_in_pr1` |  |
+| `landing_something_else` | Something else (a noise or a smell) | `ms.landing.noise_or_smell` |  |
 | `hazard_now` | New hazard now (burning smell, smoke, sparks, gas smell, or water at electrical parts) | `@ms_hazard_now` | ms_new_hazard |

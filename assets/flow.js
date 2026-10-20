@@ -238,7 +238,7 @@
     ({ section, title, body, options, caution: extra.caution || '', diyTier: extra.diyTier || 'basic', safetyGate: !!extra.safetyGate });
   const FN_HAZARD = o('hazard_now', 'New gas smell, CO alarm, refrigerant leak alarm, smoke, sparks, or burning smell right now', '@fn_hazard_now', 'Stop. Get to safety.', 'New hazard reported during the furnace check.', { gate: 'fn_new_hazard' });
   const MS_HAZARD = o('hazard_now', 'New hazard now (burning smell, smoke, sparks, gas smell, CO alarm, refrigerant leak alarm, or water at electrical parts)', '@ms_hazard_now', 'Stop. Don’t keep checking.', 'New hazard reported during the mini-split check.', { gate: 'ms_new_hazard' });
-  const MS_BACKUP_HEAT = 'Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn.';
+  const MS_BACKUP_HEAT = 'If the house is getting cold, call a licensed HVAC professional. If it’s dangerously cold and anyone is at risk, get them somewhere warm first. Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn.';
 
   const nodes = {
     'ac.gate.cluster_entry': n('Safety first', 'Is any of this happening right now?',
@@ -836,7 +836,7 @@
       ]),
 
     'ms.heat.defrost_sanity': n('Heat', 'Is this a normal defrost, or ice that stays?',
-      'In Heat, a mini-split sometimes pauses to clear light frost on the outdoor unit. A normal defrost often lasts about 5 to 15 minutes. You may see steam, heating may pause, and you may hear a whoosh. Then heat should return. The remote may not change the mode until that pause ends. Leave it in Heat. Don’t switch modes during the pause.\n\nSteam from the outdoor unit in cold weather is usually that pause. If you aren’t sure it’s steam, or it smells like burning, or it comes from the indoor unit, choose that option.\n\nIce that keeps building, or a unit coated thickly that doesn’t recover after about an hour, is not a normal defrost.\n\nLook from a window or from dry, cleared ground. Don’t reach into the grille. Don’t go out in ice, deep snow, or the dark to get a closer look.\n\nIf the outdoor air is well above freezing and dry, a defrost is unlikely.', [
+      "In Heat, a mini-split sometimes pauses to clear frost from the outdoor unit. From inside, heating stops for a while, the indoor fan stops or slows, and a light may blink. You may hear a whoosh. The remote may not change the mode until that pause ends. Leave it in Heat. Don’t switch modes during the pause.\n\n A normal defrost usually lasts about 5 to 15 minutes, and some models finish sooner. Ice that is still there after about an hour of running is not normal. Call a licensed HVAC professional.\n\n While it defrosts, the outdoor fan often stops and steam can rise from the unit. Don’t try to speed it up.\n In cold weather, a cloud of steam from the outdoor unit during defrost can be normal. If you’re not sure it’s steam, or you smell burning, treat it as smoke.\n If so, choose that option. A cloud from the indoor unit in Heat isn’t a defrost. Choose that option too.\n Not normal: a solid block of ice that keeps growing, a grille iced shut, or ice that never clears.\n\n Don’t chip or pick at ice, use hot water, a hose, a heat gun, a hair dryer, or salt, or cover the unit.\n\n Look from a window or from dry, cleared ground. Don’t reach into the grille. Don’t go out in ice, deep snow, or the dark to get a closer look.\n\nIf ice is thick, growing, or closes the grille, stop now. Do not keep the system running to time an hour.\n\nOutside, a cloud of steam can rise from the outdoor unit while it defrosts, and that can be normal. Ice that stays on the outdoor unit and keeps building isn’t a normal defrost. Look from a step back, and don’t touch the unit.", [
         o('defrost_then_heat_fine', 'It paused, then heat came back', '@ms_defrost_normal_basic', 'That can be normal.', 'User saw a short pause, then heat returned.'),
         o('defrost_seen_heat_still_weak', 'I saw a short pause or some steam, and heat is still weak', 'ms.head.filter_path_ok', 'Next: the filters.', 'A short defrost was seen, and heat stayed weak.'),
         o('no_frost_or_mild_weather', 'No frost, or it’s mild and dry outside', 'ms.head.filter_path_ok', 'Next: the filters.', 'No outdoor frost seen, or the weather was mild and dry.'),
@@ -1687,11 +1687,6 @@
       ['Check the owner’s manual, or ask someone who knows the equipment.', 'Start again when you can confirm it. If you can’t, call an HVAC company rather than guessing.'],
       'Don’t remove covers or climb to read labels.', 'scope',
       'insufficient_info', 'ms_system_unconfirmed'),
-    ms_landing_not_in_pr1: r('More information needed', 'Not covered in this check', 'Noise and smell aren’t sorted out here.',
-      'This check covers cooling, heating, and a look at the outdoor unit. It won’t guess at a noise or a smell.',
-      ['If something smells like burning, or you see smoke or sparks, get people away and call 911 from safety.', 'Otherwise, call a licensed HVAC pro who works on mini-splits. Tell them what you noticed and when it started.'],
-      'Don’t open covers, reset breakers, or open the outdoor unit to look for the cause.', 'safety',
-      'insufficient_info', 'ms_landing_not_in_pr1'),
     ms_settings_fixed_basic: r('Basic homeowner check', 'Leave it set this way', 'A setting was the problem.',
       'Cool mode, a setting below the room, and a normal fan speed let the mini-split cool the way it should.',
       ['Leave it in Cool, not Auto, while you need cooling.', 'If you use Quiet, Sleep, or a schedule, check that it isn’t turning cooling off when you need it.', 'If it stops cooling again with the right settings, start a new check and choose Not cooling.'],
@@ -1754,7 +1749,7 @@
       'call_pro', 'ms_no_cool_after_basics'),
     ms_airflow_unsure: r('More information needed', 'Check again when you can', 'The airflow check needs a clearer answer.',
       'It’s fine not to know. Don’t open the unit to find out.',
-      ['Run Cool with the fan on High for 15 minutes, then compare the air to how it felt before.', 'Start a new check if it’s still unclear, or call an HVAC pro and describe what you noticed.'],
+      ['Use the mode you need, only while everyone has enough heating or cooling, and observe for up to 15 minutes.', 'Start a new check if it’s still unclear, or call an HVAC pro and describe what you noticed.'],
       'Don’t open the unit or put anything into the air outlet.', 'safety',
       'insufficient_info', 'ms_airflow_unsure'),
     ms_condensate_leak_wave1: r('Professional guidance', 'Protect the area · arrange service', 'Water from the indoor unit needs a pro.',
@@ -1778,9 +1773,9 @@
       'Don’t chip or pick at the ice, use a hair dryer, heat gun, hot water, a hose, or salt, cover the unit, or keep restarting it.', 'ice',
       'emergency_exit', 'ice_keep_running', { gate: 'ice_keep_running' }),
     ms_ice_unclear_or_heat: r('More information needed', 'Look only', 'This check can’t sort out this ice yet.',
-      'Light frost on the outdoor unit while heating can be normal for a short time. A normal defrost can show steam, a pause in heating, and a whoosh, then heat returns. Thick ice that keeps building isn’t normal.',
-      ['If the ice is thick, keeps building, or doesn’t clear within about an hour, turn the system Off with the remote and call a licensed HVAC pro.', 'If you’re not sure it’s ice, watch from where you already stand and describe it to a pro.', MS_BACKUP_HEAT],
-      'Don’t chip ice, pour hot water on it, or open the outdoor unit.', 'ice',
+      'Light frost while heating can be normal briefly. A normal defrost usually lasts about 5 to 15 minutes, and some models finish sooner. Ice that is still there after about an hour of running is not normal. Call a licensed HVAC professional.',
+      ['For thick or growing ice, turn the unit Off with the remote and call a professional now. Do not keep it running to time an hour.', 'If you cannot tell whether it is ice, describe the observation from a window or dry ground to a professional.', MS_BACKUP_HEAT],
+      'Don’t chip or pick at ice, use hot water, a hose, a heat gun, a hair dryer, or salt, or cover the unit. Don’t open the outdoor unit.', 'ice',
       'insufficient_info', 'ms_ice_unclear_or_heat'),
     ms_hazard_now: r('Emergency', 'Stop. Get to safety.', 'A new hazard ends this check.',
       'Gas, smoke, sparks, a burning smell, or water at electrical equipment is not a mini-split DIY path.',
@@ -1808,9 +1803,9 @@
       'Don’t leave it on Auto when you need steady heat.', 'maintenance',
       'next_step', 'ms_heat_auto_fixed_basic', { diyTier: 'basic' }),
     ms_defrost_normal_basic: r('Basic homeowner check', 'Leave it in Heat', 'That pause was a normal defrost.',
-      'Steam, a pause, and a whoosh, then heat returns, can be a normal defrost. It often lasts about 5 to 15 minutes.',
+      'You reported a pause followed by heat returning. Steam, a pause, and a whoosh can match defrost, but do not confirm system performance. A normal defrost usually lasts about 5 to 15 minutes, and some models finish sooner. Ice that is still there after about an hour of running is not normal. Call a licensed HVAC professional.',
       ['Leave it in Heat. Don’t switch modes during a defrost pause.', 'If ice stays, keeps building, or heat doesn’t return after about an hour, turn it Off with the remote and call a licensed HVAC pro.', MS_BACKUP_HEAT],
-      'Don’t chip ice, pour hot water, or use a heat gun. Don’t cover the outdoor unit.', 'ice',
+      'Don’t chip or pick at ice, use hot water, a hose, a heat gun, a hair dryer, or salt, or cover the unit.', 'ice',
       'next_step', 'ms_defrost_normal_basic', { diyTier: 'basic' }),
     ms_outdoor_running_call_pro: r('Professional guidance', 'Arrange HVAC service', 'The outdoor unit is running, and the room still isn’t comfortable.',
       'A pro needs to test the system. This isn’t a diagnosis.',
@@ -1823,7 +1818,7 @@
       'Don’t reset a breaker, open a disconnect, or cover the outdoor unit.', 'safety',
       'call_pro', 'ms_outdoor_not_running_wave1'),
     ms_outdoor_freeze_heat_wave1: r('Stop / professional', 'Turn it Off · call a pro', 'Thick ice that won’t clear needs a pro.',
-      'Ice that keeps building, or a unit that stays thickly coated after about an hour, isn’t a normal defrost. A normal defrost is a short pause with steam and a whoosh, then heat returns.',
+      'Ice that stays or keeps building is not a normal defrost. Running it iced can damage it. Most mini-splits have no separate emergency heat.',
       ['Turn the unit Off with the remote.', 'Call a licensed HVAC professional. Tell them the outdoor unit stayed thick with ice in heat and didn’t recover.', MS_BACKUP_HEAT],
       'Don’t chip the ice, pour hot water, use a heat gun or salt, or cover the outdoor unit.', 'ice',
       'call_pro', 'ms_outdoor_freeze_heat_wave1'),
@@ -3241,10 +3236,10 @@
       const heat = state.msMode === 'heat';
       const cool = state.msMode === 'cool';
       const line = heat
-        ? 'Leave it in Heat with the fan on High for 15 minutes, then compare the air to how it felt before.'
+        ? 'Leave it in Heat, only while the home has enough heat, and observe for up to 15 minutes.'
         : cool
-          ? 'Leave it in Cool with the fan on High for 15 minutes, then compare the air to how it felt before.'
-          : 'Leave it in the mode you were using, with the fan on High, for 15 minutes, then compare the air to how it felt before.';
+          ? 'Leave it in Cool, only while everyone has enough cooling, and observe for up to 15 minutes.'
+          : 'Use the mode you need, only while everyone has enough heating or cooling, and observe for up to 15 minutes.';
       const actions = (res.actions || []).slice();
       actions[0] = line;
       return Object.assign({}, res, { actions: actions });
