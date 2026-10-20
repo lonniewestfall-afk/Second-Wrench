@@ -1,4 +1,6 @@
 'use strict';
-// Save deploy credits: only the final production branch builds on Netlify.
-// Exit 0 cancels a build; exit 1 proceeds. Tests and previews run locally.
-process.exitCode=process.env.CONTEXT==='production'&&process.env.BRANCH==='main'?1:0;
+// Exit 0 cancels a build; exit 1 proceeds.
+// Production builds on main. Deploy previews build so a pull request can be checked before merge.
+const preview=process.env.CONTEXT==='deploy-preview';
+const production=process.env.CONTEXT==='production'&&process.env.BRANCH==='main';
+process.exitCode=preview||production?1:0;
