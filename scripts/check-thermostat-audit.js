@@ -68,6 +68,8 @@ function checkNotes(f, leaves) {
 function checkStops(f, leaves) {
   for (const state of leaves) for (const [hazard, result] of [['hazard_gas_co', 'gas'], ['hazard_refrigerant_alarm', 'leak']]) {
     const stopped = clone(state); f.stop(stopped);
+    assert.equal(stopped.node, 'sw.co.fast_exit', 'TS-A39 Stop did not open the CO screen');
+    f.answer(stopped, 'co_no');
     assert.equal(stopped.node, 'ac.gate.cluster_entry', 'TS-A39 Stop did not reach hazard screen');
     const op = f.viewNode(stopped.node, stopped).options.find(o => o.id === hazard || o.next === '@' + result);
     assert(op, 'TS-A39 hazard choice missing: ' + hazard);

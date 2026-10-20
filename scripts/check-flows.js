@@ -1,6 +1,6 @@
 /* Local sanity for AC Wave-2 and HP Wave-1. No network. */
 'use strict';
-globalThis.SW_CONFIG = { advancedRepairsEnabled: false, aiThermostatEnabled: false, mirrorsEnabled: false, stageLatchStepsEnabled: false, contentVersion: '2026-10-20.1' };
+globalThis.SW_CONFIG = { advancedRepairsEnabled: false, aiThermostatEnabled: false, mirrorsEnabled: false, stageLatchStepsEnabled: false, contentVersion: '2026-10-20.2' };
 const fs = require('fs');
 const path = require('path');
 const F = require('../assets/flow.js');
@@ -90,7 +90,7 @@ function assertNoCap(state, msg) {
 const gate = ['none_of_these', 'agree_18_terms'];
 
 assert(/advancedRepairsEnabled:\s*false/.test(configText), 'public advanced flag must stay false');
-const SHIP = '2026-10-20.1';
+const SHIP = '2026-10-20.2';
 assert(configText.includes("contentVersion: '" + SHIP + "'"), 'content version must be ' + SHIP);
 assert(['config', 'flow', 'app'].every(f => indexText.includes(f + '.js?v=' + SHIP)), 'script cache-bust must match content version');
 assert(indexText.includes('HOME HVAC CHECKS') && !indexText.includes('AC + HEAT PUMP'), 'header lockup is HOME HVAC CHECKS');
@@ -554,7 +554,9 @@ F.answer(viaStop, 'co_no');
 F.answer(viaStop, 'none_of_these');
 assert(viaStop.node === 'ac.session.consent' && viaStop.consent === false, 'the safety gate does not imply acceptance');
 F.stop(viaStop);
-assert(viaStop.node === 'ac.gate.cluster_entry' && viaStop.consent === false, 'stop returns to the hazard gate without acceptance');
+assert(viaStop.node === 'sw.co.fast_exit' && viaStop.coReturn === 'ac.gate.cluster_entry' && viaStop.consent === false, 'stop opens the CO screen without acceptance');
+F.answer(viaStop, 'co_no');
+assert(viaStop.node === 'ac.gate.cluster_entry' && viaStop.consent === false, 'No on the CO screen returns to the hazard gate without acceptance');
 F.answer(viaStop, 'hazard_smoke_fire_sparks_burn');
 assert(viaStop.result === 'fire' && viaStop.consent === false && viaStop.termsVersion == null, 'stop/get help reaches a hazard result without acceptance');
 let blockedAgree = false;
@@ -838,7 +840,9 @@ try {
 assert(a27, 'A-27 wshp answer before safety and consent throws');
 const stopped = walk('ask', gate.concat(['other_heat_or_ductless', 'water_source_geo', 'wshp_hz_none']));
 F.stop(stopped);
-assert(stopped.node === 'ac.gate.cluster_entry' && stopped.safetyCleared === false, 'A-28 stop returns to the safety gate');
+assert(stopped.node === 'sw.co.fast_exit' && stopped.coReturn === 'ac.gate.cluster_entry' && stopped.safetyCleared === false, 'A-28 stop opens the CO screen');
+F.answer(stopped, 'co_no');
+assert(stopped.node === 'ac.gate.cluster_entry' && stopped.safetyCleared === false, 'A-28 No returns to the safety gate');
 // Live stop() sets stopping, so the next "none of these" is the call-pro exit, not a new consent.
 F.answer(stopped, 'none_of_these');
 assert(stopped.node === 'ac.session.consent' && !stopped.result, 'T-24 non-urgent stop then none of these continues, got ' + (stopped.result || stopped.node));
@@ -847,12 +851,16 @@ assert(t24.product === 'hp' && t24.treeVersion === 'hp.air_source.v1', 'T-24 a n
 const floodStop = walk('ask', gate.concat(['other_heat_or_ductless', 'water_source_geo', 'wshp_hz_flooding']));
 const floodBefore = floodStop.result;
 F.stop(floodStop);
-assert(floodStop.result === null && floodStop.node === 'ac.gate.cluster_entry' && floodStop.noDiyLock === true && floodStop.priorResults.indexOf(floodBefore) !== -1, 'A-28 stop on a Stop / professional result returns to hazards');
+assert(floodStop.result === null && floodStop.node === 'sw.co.fast_exit' && floodStop.coReturn === 'ac.gate.cluster_entry' && floodStop.noDiyLock === true && floodStop.priorResults.indexOf(floodBefore) !== -1, 'A-28 stop on a Stop / professional result opens the CO screen');
+F.answer(floodStop, 'co_no');
+assert(floodStop.node === 'ac.gate.cluster_entry', 'A-28 No returns to hazards');
 F.answer(floodStop, 'none_of_these');
 assert(floodStop.result === 'professional', 'A-28 urgent stop then none of these is call-pro, got ' + floodStop.result);
 const emergencyStop = walk('ask', gate.concat(['other_heat_or_ductless', 'water_source_geo', 'wshp_hz_smoke_burn_spark']));
 F.stop(emergencyStop);
-assert(emergencyStop.result === null && emergencyStop.node === 'ac.gate.cluster_entry' && emergencyStop.noDiyLock === true, 'A-28 stop on an Emergency result returns to hazards');
+assert(emergencyStop.result === null && emergencyStop.node === 'sw.co.fast_exit' && emergencyStop.coReturn === 'ac.gate.cluster_entry' && emergencyStop.noDiyLock === true, 'A-28 stop on an Emergency result opens the CO screen');
+F.answer(emergencyStop, 'co_no');
+assert(emergencyStop.node === 'ac.gate.cluster_entry', 'A-28 emergency No returns to hazards');
 const t26 = F.summary(t9, { codes: 'Lockout light; EWT 41' });
 assert(t26.indexOf('Loop type: open loop (well, lake, or pond water).') !== -1 && t26.indexOf('Codes / lights / water temps already showing (homeowner supplied): Lockout light; EWT 41') !== -1, 'T-26 codes note');
 assert(t26.indexOf('Safety screen: none of the listed hazards reported. This guide asked for no covers off and no loop, well, refrigerant, or electrical work.') !== -1, 'T-26 checked line');
@@ -998,11 +1006,11 @@ const w5a = walk('ask', ms1.concat(['landing_ice_seen', 'ice_want_keep_running']
 assert(w5a.result === 'ms_ice_keep_running' && F.results[w5a.result].outcome === 'emergency_exit', 'W5a keep running');
 const w5aEvents = eventsOf(w5a);
 assert(w5aEvents.indexOf('gate_fired:ice_keep_running') < w5aEvents.indexOf('exit_ramp:ice_keep_running') && w5aEvents.indexOf('exit_ramp:ice_keep_running') < w5aEvents.indexOf('conclusion_reached:emergency_exit'), 'MS-A12 W5a audit order');
-const w5aBefore = w5a.result; F.stop(w5a); assert(w5a.result === null && w5a.node === 'ac.gate.cluster_entry' && w5a.noDiyLock === true && w5a.priorResults.indexOf(w5aBefore) !== -1, 'MS-A14 stop from ice keep-running returns to hazards');
-const w3before = w3.result; F.stop(w3); assert(w3.result === null && w3.node === 'ac.gate.cluster_entry' && w3.noDiyLock === true && w3.priorResults.indexOf(w3before) !== -1, 'MS-A14 stop from water/electrical returns to hazards');
+const w5aBefore = w5a.result; F.stop(w5a); assert(w5a.result === null && w5a.node === 'sw.co.fast_exit' && w5a.coReturn === 'ac.gate.cluster_entry' && w5a.noDiyLock === true && w5a.priorResults.indexOf(w5aBefore) !== -1, 'MS-A14 stop from ice keep-running opens the CO screen');
+const w3before = w3.result; F.stop(w3); assert(w3.result === null && w3.node === 'sw.co.fast_exit' && w3.coReturn === 'ac.gate.cluster_entry' && w3.noDiyLock === true && w3.priorResults.indexOf(w3before) !== -1, 'MS-A14 stop from water/electrical opens the CO screen');
 const w5b = walk('ask', ms1.concat(['landing_ice_seen', 'ice_seen_cooling']));
 assert(w5b.result === 'ms_ice_cooling_wave1' && F.results[w5b.result].tier === 'Stop / professional' && F.results[w5b.result].outcome === 'call_pro' && eventsOf(w5b).indexOf('diy_tier_shown:basic') === -1, 'W5b ice while cooling');
-const w5bBefore = w5b.result; F.stop(w5b); assert(w5b.result === null && w5b.node === 'ac.gate.cluster_entry' && w5b.noDiyLock === true && w5b.priorResults.indexOf(w5bBefore) !== -1, 'MS-A14 stop from the ice call-pro returns to hazards');
+const w5bBefore = w5b.result; F.stop(w5b); assert(w5b.result === null && w5b.node === 'sw.co.fast_exit' && w5b.coReturn === 'ac.gate.cluster_entry' && w5b.noDiyLock === true && w5b.priorResults.indexOf(w5bBefore) !== -1, 'MS-A14 stop from the ice call-pro opens the CO screen');
 const w6 = walk('ask', ms1.concat(['landing_no_cool', 'settings_right_still_problem', 'filter_cleaned_recently', 'louver_stuck_wont_move']));
 assert(w6.result === 'ms_louver_stuck' && F.results[w6.result].outcome === 'call_pro', 'W6 louver');
 const w7 = walk('ask', ms1.concat(['landing_weak_airflow', 'settings_right_still_problem', 'filter_needs_ladder']));
@@ -1032,7 +1040,7 @@ const wh3 = walk('ask', ms1.concat(['landing_no_heat', 'heat_settings_right_stil
 assert(wh3.result === 'ms_ice_heat_keep_running' && F.results[wh3.result].outcome === 'emergency_exit' && F.results[wh3.result].gate === 'ice_keep_running', 'WH3 ice keep-running hard stop');
 const wh3events = eventsOf(wh3);
 assert(wh3events.indexOf('gate_fired:ice_keep_running') < wh3events.indexOf('exit_ramp:ice_keep_running') && wh3events.indexOf('exit_ramp:ice_keep_running') < wh3events.indexOf('conclusion_reached:emergency_exit') && wh3events.indexOf('diy_tier_shown:basic') === -1, 'WH3 audit order has no DIY tier');
-const wh3before = wh3.result; F.stop(wh3); assert(wh3.result === null && wh3.node === 'ac.gate.cluster_entry' && wh3.noDiyLock === true, 'WH3 urgent stop returns to hazards');
+const wh3before = wh3.result; F.stop(wh3); assert(wh3.result === null && wh3.node === 'sw.co.fast_exit' && wh3.coReturn === 'ac.gate.cluster_entry' && wh3.noDiyLock === true, 'WH3 urgent stop opens the CO screen');
 const whIce = walk('ask', ms1.concat(['landing_no_heat', 'heat_settings_right_still_problem', 'outdoor_iced_solid_no_recover']));
 assert(whIce.result === 'ms_outdoor_freeze_heat_wave1' && F.results[whIce.result].outcome === 'emergency_exit' && eventsOf(whIce).indexOf('diy_tier_shown:basic') === -1, 'ice that keeps building calls a pro');
 const wh4 = walk('ask', ms1.concat(['landing_no_heat', 'heat_settings_right_still_problem', 'no_frost_or_mild_weather', 'filter_cleaned_recently', 'nothing_blocking', 'air_ok_not_heating', 'outdoor_quiet_while_calling']));
@@ -1040,7 +1048,7 @@ assert(wh4.result === 'ms_outdoor_not_running_wave1' && F.results[wh4.result].ou
 const wh5 = walk('ask', ms1.concat(['landing_no_heat', 'cold_exposure_risk']));
 assert(wh5.result === 'ms_cold_exposure' && F.results[wh5.result].outcome === 'emergency_exit' && F.results[wh5.result].gate === 'cold_exposure_911' && wh5.result !== 'fn_cold_exposure', 'WH5 cold exposure reuses the 911 gate on an ms result');
 assert(eventsOf(wh5).indexOf('gate_fired:cold_exposure_911') !== -1 && eventsOf(wh5).indexOf('diy_tier_shown:basic') === -1, 'WH5 gate audit and no DIY tier');
-const wh5before = wh5.result; F.stop(wh5); assert(wh5.result === null && wh5.node === 'ac.gate.cluster_entry' && wh5.noDiyLock === true, 'WH5 urgent stop returns to hazards');
+const wh5before = wh5.result; F.stop(wh5); assert(wh5.result === null && wh5.node === 'sw.co.fast_exit' && wh5.coReturn === 'ac.gate.cluster_entry' && wh5.noDiyLock === true, 'WH5 urgent stop opens the CO screen');
 const wh5b = walk('ask', ms1.concat(['landing_outdoor_unit', 'ctx_mode_unsure', 'steam_or_smoke_unsure']));
 assert(wh5b.result === 'ms_hazard_now' && F.results[wh5b.result].outcome === 'emergency_exit' && F.results[wh5b.result].gate === 'ms_new_hazard', 'WH5b unsure steam is an emergency');
 assert(eventsOf(wh5b).indexOf('diy_tier_shown:basic') === -1, 'WH5b shows no DIY tier');
@@ -1065,7 +1073,7 @@ F.msV1.forEach(id => assert(heatCovered.has(id), 'MS-A2 covered ' + id));
 const openMs = walk('ask', ms1);
 const openAc = walk('ac', gate.concat(['split_central_cool_only']));
 F.stop(openMs); F.stop(openAc);
-assert(openMs.node === openAc.node && openMs.node === 'ac.gate.cluster_entry' && openMs.result === null && openMs.safetyCleared === false, 'MS-A14 stop on an open mini-split node matches the AC stop');
+assert(openMs.node === openAc.node && openMs.node === 'sw.co.fast_exit' && openMs.coReturn === 'ac.gate.cluster_entry' && openAc.coReturn === 'ac.gate.cluster_entry' && openMs.result === null && openMs.safetyCleared === false, 'MS-A14 stop on an open mini-split node matches the AC stop');
 const agreeEdges = [];
 Object.keys(F.nodes).forEach(id => F.nodes[id].options.forEach(op => { if (op.id === 'agree_18_terms') agreeEdges.push(id + ':' + op.next); }));
 assert(agreeEdges.length === 1 && agreeEdges[0] === 'ac.session.consent:ac.cool.intake.system_confirm', 'consent is not forked');
@@ -1313,9 +1321,9 @@ const tw6 = tsWalk(['brand_ecobee', 'ecb_premium', 'landing_em_aux_heat', 'eh_no
 assert(tw6.result === 'ts_installer_guard' && F.results[tw6.result].tier === 'Stop / professional', 'W6 result');
 assert(F.renderTsPanel('ECB-PRM', 'ts.settings.em_aux_heat').lc6 === F.tsLc.lc6 && F.presentResult(tw6).explanation === F.tsLc.lc6, 'W6 LC-6 inline and explanation');
 const ttw6Stopped = F.stop(JSON.parse(JSON.stringify(tw6)));
-assert(ttw6Stopped.result === null && ttw6Stopped.node === 'ac.gate.cluster_entry' && ttw6Stopped.noDiyLock === true && ttw6Stopped.priorResults.indexOf('ts_installer_guard') !== -1, 'TS-A15 stop from installer guard returns to hazards');
+assert(ttw6Stopped.result === null && ttw6Stopped.node === 'sw.co.fast_exit' && ttw6Stopped.coReturn === 'ac.gate.cluster_entry' && ttw6Stopped.noDiyLock === true && ttw6Stopped.priorResults.indexOf('ts_installer_guard') !== -1, 'TS-A15 stop from installer guard opens the CO screen');
 const ttw3Stopped = F.stop(JSON.parse(JSON.stringify(tw3)));
-assert(ttw3Stopped.result === null && ttw3Stopped.node === 'ac.gate.cluster_entry' && ttw3Stopped.noDiyLock === true && ttw3Stopped.priorResults.indexOf('ts_co_gas_now') !== -1, 'TS-A15 stop from CO returns to hazards');
+assert(ttw3Stopped.result === null && ttw3Stopped.node === 'sw.co.fast_exit' && ttw3Stopped.coReturn === 'ac.gate.cluster_entry' && ttw3Stopped.noDiyLock === true && ttw3Stopped.priorResults.indexOf('ts_co_gas_now') !== -1, 'TS-A15 stop from CO opens the CO screen');
 const tw7 = tsWalk(['brand_honeywell_smart', 'hw_t6', 'landing_schedule_hold', 'screen_looks_different']);
 assert(tw7.result === 'ts_screen_different' && F.results[tw7.result].outcome === 'insufficient_info', 'W7 result');
 assert(tsEvents(tw7).indexOf('flag:ts_mirror_mismatch=HOLD:HW-T6') !== -1, 'W7 mismatch flag');
@@ -1352,7 +1360,7 @@ assert(F.summary(liveNote).indexOf('TEST SCENARIO') === -1, 'TS-A38 live note');
 function assertFreshStop(state, resultId) {
   assert(state.result === resultId, 'TS-A39 ' + resultId + ' ' + (state.result || state.node));
   F.stop(state);
-  assert(state.result === null && state.node === 'ac.gate.cluster_entry' && state.noDiyLock === true && state.priorResults.indexOf(resultId) !== -1, 'TS-A39 stop ' + resultId);
+  assert(state.result === null && state.node === 'sw.co.fast_exit' && state.coReturn === 'ac.gate.cluster_entry' && state.noDiyLock === true && state.priorResults.indexOf(resultId) !== -1, 'TS-A39 stop ' + resultId);
 }
 assertFreshStop(walk('ask', tsGate.concat(['refrigerant_alarm'])), 'ts_refrigerant_alarm');
 assertFreshStop(tsWalk(['brand_honeywell_smart', 'hw_t6', 'landing_em_aux_heat', 'eh_tech_left_on']), 'ts_eheat_keep_pro');
@@ -2057,7 +2065,7 @@ function bootPage() {
     FT_CO_4,
     '6. Before using the heat again, have a licensed HVAC professional check the system.'
   ].join('\n');
-  const FT_SM_2 = "A dusty smell the first few times the heat runs each season is common. Dust on the heating parts burns off. It should fade in about an hour of running (POLICY, R18). If it hasn't faded after about an hour, keeps coming back, or changes to a plastic or electrical smell, turn the heat Off at the thermostat and call a licensed HVAC professional.";
+  const FT_SM_2 = "A dusty smell the first few times the heat runs each season is common. Dust on the heating parts burns off. It should fade in about an hour of running. If it hasn't faded after about an hour, keeps coming back, or changes to a plastic or electrical smell, turn the heat Off at the thermostat and call a licensed HVAC professional.";
   const FT_SM_4 = "Get everyone outside now and call 911 from outside. Don't go back in to turn anything off.";
   const FT_SM_5 = 'If the house is getting cold, call a licensed HVAC professional. If it’s dangerously cold and anyone is at risk, get them somewhere warm first.';
   const R11 = 'The house is getting cold, and someone at home is at risk from the cold (an infant, an older adult, or someone who is ill or medically fragile)';
@@ -2076,6 +2084,12 @@ function bootPage() {
   const fnMid = walk('ask', gate.concat(['furnace', 'none_of_these', 'gas_furnace', 'natural_gas', 'site_built']));
   F.stop(fnMid);
   assert(fnMid.node === 'sw.co.fast_exit' && fnMid.coReturn === 'fn.gate.combustion_co', 'S6 stop opens the CO screen for the furnace gate');
+  ['ask', 'ac', 'ms', 'ts', 'wshp', 'sd'].forEach(product => {
+    const stoppedLane = F.create('', 'test');
+    stoppedLane.product = product;
+    F.stop(stoppedLane);
+    assert(stoppedLane.node === 'sw.co.fast_exit' && stoppedLane.coReturn === 'ac.gate.cluster_entry', 'Get help now on ' + product + ' opens the CO screen');
+  });
   F.answer(fnMid, 'co_no', meta);
   assert(fnMid.node === 'fn.gate.combustion_co', 'S6 co_no returns to the furnace gate');
   assert(appText.includes('>Get help now</button>'), 'S6 Get help now control');
@@ -2123,6 +2137,17 @@ function bootPage() {
   const w8 = walk('ask', gate.concat(['furnace', 'none_of_these', 'gas_furnace', 'natural_gas', 'site_built', 'landing_first_heat_smell', 'smoke_or_stronger']));
   assert(w8.result === 'fn_smell_smoke_exit' && F.results[w8.result].outcome === 'emergency_exit', 'W8 smoke is get out and call 911');
   assert(/advancedRepairsEnabled:\s*false/.test(configText) && /catalogEnabled:\s*false/.test(configText) && /hvacContentReviewed:\s*false/.test(configText) && /termsAndPrivacyReviewed:\s*false/.test(configText), 'feature and review flags stay false');
+}
+{
+  const internalTag = /\(POLICY\b|\bPOLICY\b|\bR\d{2}\b|\bPL-[A-Z0-9]|\bFT-[A-Z0-9]|\bD-0\d{2}\b/;
+  ['assets/heating-data.js', 'assets/flow.js', 'assets/heating-lanes.js'].forEach(rel => {
+    const src = fs.readFileSync(path.join(__dirname, '..', rel), 'utf8');
+    const strings = src.match(/'(?:\\.|[^'\\])*'|"(?:\\.|[^"\\])*"|`(?:\\.|[^`\\])*`/g) || [];
+    strings.forEach(raw => {
+      const text = raw.slice(1, -1);
+      assert(!internalTag.test(text), 'user-facing copy in ' + rel + ' has an internal tag: ' + text.slice(0, 140));
+    });
+  });
 }
 function pageChecks() {
   const crypto = require('crypto');
@@ -2202,7 +2227,10 @@ function pageChecks() {
       assert(box && box.checked === false && cont && cont.disabled, id + ' stop path leaves the checkbox unticked');
       click(doc.querySelector('header [data-action="stop"]'));
       await flush();
-      assert(!doc.getElementById('agree') && doc.querySelector('h1').textContent === 'Is any of this happening right now?', 'Stop / get help returns to the hazard gate without the checkbox');
+      assert(!doc.getElementById('agree') && doc.querySelector('h1').textContent === F.nodes['sw.co.fast_exit'].title, 'Stop / get help opens the CO screen without the checkbox');
+      click(doc.querySelector('[data-answer="co_no"]'));
+      await flush();
+      assert(!doc.getElementById('agree') && doc.querySelector('h1').textContent === 'Is any of this happening right now?', 'No on the CO screen returns to the hazard gate without the checkbox');
       click(doc.querySelector('[data-answer="' + id + '"]'));
       await flush();
       emergencyOk('Stop / get help then ' + id);

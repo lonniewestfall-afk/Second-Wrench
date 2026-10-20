@@ -43,9 +43,11 @@ for(const [id,[node,product]] of Object.entries(expected)) {
   rejectsUnchanged(s,'boiler');
   F.stop(s);
   const heating=['furnace','boiler','heat_pump','water_heater'].includes(id);
-  assert.equal(s.node, heating ? 'sw.co.fast_exit' : 'ac.gate.cluster_entry');
-  if(!heating)assert.ok(F.viewNode(s.node,s).options.some(o=>o.id==='hazard_hot_water_steam'));
-  if(heating)assert.ok(F.viewNode(s.node,s).options.some(o=>o.id==='co_yes')&&s.coReturn);
+  const laneReturn={furnace:'fn.gate.combustion_co',boiler:'bl.gate.safety',heat_pump:'hp.intake.system_confirm',water_heater:'wh.gate.safety'}[id]||'ac.gate.cluster_entry';
+  assert.equal(s.node, 'sw.co.fast_exit');
+  assert.equal(s.coReturn, laneReturn);
+  assert.ok(F.viewNode(s.node,s).options.some(o=>o.id==='co_yes'));
+  if(!heating){F.answer(s,'co_no',meta);assert.equal(s.node,'ac.gate.cluster_entry');assert.ok(F.viewNode(s.node,s).options.some(o=>o.id==='hazard_hot_water_steam'));}
   for(const key of ['consent','safetyCleared']) {
     const blocked=ready(); blocked[key]=false; rejectsUnchanged(blocked,id);
   }
@@ -96,10 +98,12 @@ async function checkPage() {
     assert.equal(d.querySelector('h1').textContent,target.title,id+' opens its entry directly');
     assert.ok(!d.querySelector('#flow-error')?.textContent);
     await click('[data-action="stop"]');
-    if(['furnace','boiler','heat_pump','water_heater'].includes(id)){
-      assert.equal(d.querySelector('h1').textContent, F.nodes['sw.co.fast_exit'].title);
-      assert.ok(d.querySelector('[data-answer="co_yes"]') && d.querySelector('[data-answer="co_no"]'));
-    }else assert.ok(d.querySelector('[data-answer="hazard_hot_water_steam"]'));
+    assert.equal(d.querySelector('h1').textContent, F.nodes['sw.co.fast_exit'].title);
+    assert.ok(d.querySelector('[data-answer="co_yes"]') && d.querySelector('[data-answer="co_no"]'));
+    if(!['furnace','boiler','heat_pump','water_heater'].includes(id)){
+      await click('[data-answer="co_no"]');
+      assert.ok(d.querySelector('[data-answer="hazard_hot_water_steam"]'));
+    }
   }
   assert.deepEqual(errors,[]);
   dom.window.close();

@@ -30,7 +30,7 @@ function sweep() {
 const R = sweep();
 // The global Stop control must escalate from every compiled result, including
 // lanes walked separately and defensive results not normally reachable.
-for(const id of Object.keys(F.results)){const s=F.create('','test');s.result=id;s.node=null;F.stop(s);assert(s.node==='ac.gate.cluster_entry'&&!s.result,'B1-A01-all',id+' cannot escalate');F.answer(s,'hazard_gas_co',META);assert(s.result==='gas','B1-A01-all',id+' did not reach gas response');}
+for(const id of Object.keys(F.results)){const s=F.create('','test');s.result=id;s.node=null;F.stop(s);assert(s.node==='sw.co.fast_exit'&&!s.result,'B1-A01-all',id+' cannot escalate');F.answer(s,'co_no',META);assert(s.node==='ac.gate.cluster_entry','B1-A01-all',id+' did not return to hazards');F.answer(s,'hazard_gas_co',META);assert(s.result==='gas','B1-A01-all',id+' did not reach gas response');}
 const URGENT = ['Emergency', 'Stop / professional'];
 const REACH_TEXT = Object.keys(R.nodes).map(id => [id, textOf(F.viewNode(id, R.nodes[id]))]).concat(Object.entries(R.results).map(([id, s]) => [id, textOf(F.presentResult(s))]));
 const MS = ['cooling_only_ac', 'ductless_mini_split', 'ductless_single_zone'];
@@ -41,11 +41,9 @@ for (const [id, s0] of Object.entries(R.results).concat(Object.entries(R.nodes))
   const s = JSON.parse(JSON.stringify(s0)); const wasUrgent = !!(s.result && URGENT.includes(F.results[s.result].tier));
   F.stop(s);
   const v = s.node && F.viewNode(s.node, s);
-  const heatingStop = ['fn', 'bl', 'hp', 'wh'].includes(s.product);
-  const expectNode = heatingStop ? 'sw.co.fast_exit' : 'ac.gate.cluster_entry';
-  const hazards = heatingStop ? ['co_yes', 'co_no'] : ['hazard_gas_co', 'hazard_refrigerant_alarm', 'hazard_smoke_fire_sparks_burn'];
-  assert(!s.result && s.node === expectNode && v && hazards.every(h => v.options.some(o => o.id === h)), 'B1-A01', 'stop() from ' + id + ' did not reach hazard choices');
-  if (wasUrgent && s.node === 'ac.gate.cluster_entry') { const t = JSON.parse(JSON.stringify(s)); F.answer(t, 'none_of_these', META); assert(t.result && t.result !== null && !t.node, 'B1-A01b', 'after urgent ' + id + ', none_of_these must end at a no-DIY result, got node ' + t.node); }
+  const hazards = ['co_yes', 'co_no'];
+  assert(!s.result && s.node === 'sw.co.fast_exit' && v && hazards.every(h => v.options.some(o => o.id === h)), 'B1-A01', 'stop() from ' + id + ' did not open the CO screen');
+  if (wasUrgent) { const t = JSON.parse(JSON.stringify(s)); F.answer(t, 'co_no', META); if (t.node === 'ac.gate.cluster_entry') { F.answer(t, 'none_of_these', META); assert(t.result && t.result !== null && !t.node, 'B1-A01b', 'after urgent ' + id + ', none_of_these must end at a no-DIY result, got node ' + t.node); } }
 }
 // B1-A02 No string claims Aux stops the outdoor unit / no "Emergency or Aux Heat" instruction.
 REACH_TEXT.forEach(([id, t]) => { assert(!/Emergency or Aux Heat/i.test(t), 'B1-A02', id + ' still says "Emergency or Aux Heat"'); assert(!/Aux[^.]{0,40}stops the outdoor unit/i.test(t), 'B1-A02', id + ' says Aux stops the outdoor unit'); });
