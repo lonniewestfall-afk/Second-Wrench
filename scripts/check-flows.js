@@ -629,7 +629,7 @@ const HAZARDS = [
   ['hazard_unsure', 'Uncertainty is a good reason to stop.']
 ];
 const TERMS_BODY_SHA256 = '37efc0e6b1e272affa48119e1734606bba12f64cd7772d8f0afd831bc3b43838';
-const PRIVACY_BODY_SHA256 = 'bddf551072a5258fa09159c4bacd63d860d20e2e649cb13a349e53a4e574989c';
+const PRIVACY_BODY_SHA256 = '843ba39e40c93328ce825a321b0e39c1ccf1dc5d7bf1a4bb3425253bf319509c';
 
 // ---- WSHP Wave-1 PR-1 (A-1..A-28, T-1..T-26) ----
 const WSHP_IDS = ['wshp.hazard.flood_electrical', 'wshp.entry.equipment_gate', 'wshp.heat.cold_home_screen', 'wshp.openloop.complaint', 'wshp.openloop.chemistry_gate', 'wshp.handback.call_pro'];
