@@ -2,6 +2,7 @@ import { randomUUID, timingSafeEqual } from 'node:crypto';
 import copy from '../../data/referral/copy.json' with { type: 'json' };
 import blockedResults from '../../data/referral/blocked-results.json' with { type: 'json' };
 import { boschCodeClass, contractorError, directorySchema, equipmentTags, matchContractor } from './_referral-match.mjs';
+import { downloadContractorLogo, listPendingApplications } from './_contractor-join.mjs';
 
 export const referralEnabled = false;
 export const consentTextVersion = copy.consentTextVersion;
@@ -42,6 +43,9 @@ export function memoryStore() {
     async setJSON(key, value) {
       data.set(key, JSON.parse(JSON.stringify(value)));
       return { etag: '1' };
+    },
+    async delete(key) {
+      data.delete(key);
     },
     keys() {
       return [...data.keys()];
@@ -211,6 +215,8 @@ export async function handleReferralAdmin(request, deps) {
   if (!request || request.method !== 'GET') return json(405, { error: 'method' });
   if (!authorized(request, adminKey(extra))) return json(401, { error: 'unauthorized' });
   const store = extra.store || await openReferralStore();
+  const logoId = new URL(request.url).searchParams.get('logo');
+  if (logoId) return downloadContractorLogo(logoId, Object.assign({}, extra, { store }));
   const keys = await listKeys(store, 'referrals/');
   const referrals = [];
   for (const key of keys) {
@@ -229,10 +235,12 @@ export async function handleReferralAdmin(request, deps) {
     }, { today, includeExample: false });
     return { referral_id: row.referral_id, contractor_id: match ? match.contractor_id : null };
   });
+  const applications = await listPendingApplications(store, extra.logoStore || null);
   return json(200, {
     schema: storedSchema || directorySchema,
     contractors: contractors.filter(row => !contractorError(row)),
     referrals,
-    suggestions
+    suggestions,
+    applications
   });
 }

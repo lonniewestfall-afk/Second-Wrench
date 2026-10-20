@@ -11,6 +11,7 @@ for(const file of files){const dest=path.join(out,file);fs.mkdirSync(path.dirnam
 function copyDir(src,dest){fs.mkdirSync(dest,{recursive:true});for(const ent of fs.readdirSync(src,{withFileTypes:true})){const from=path.join(src,ent.name),to=path.join(dest,ent.name);if(ent.isDirectory())copyDir(from,to);else fs.copyFileSync(from,to);}}
 copyDir(path.join(root,'answers'),path.join(out,'answers'));
 copyDir(path.join(root,'maintenance'),path.join(out,'maintenance'));
+copyDir(path.join(root,'pros'),path.join(out,'pros'));
 const scan=[];
 (function walk(dir){for(const ent of fs.readdirSync(dir,{withFileTypes:true})){const p=path.join(dir,ent.name);if(ent.isDirectory())walk(p);else if(/\.(html|css|webmanifest)$/.test(ent.name))scan.push(p);}})(out);
 // Fail a local or hosted build for an omitted local HTML/CSS/manifest asset.

@@ -39,3 +39,9 @@
   to = "/.netlify/functions/referral-admin"
   status = 200
   force = true
+
+[[redirects]]
+  from = "/api/pros/join"
+  to = "/.netlify/functions/pros-join"
+  status = 200
+  force = true

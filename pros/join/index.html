@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="index, follow">
+  <title>Contractor application — Second Wrench</title>
+  <meta name="description" content="Apply to the Second Wrench contractor network. Applications stay pending and logos are not published.">
+  <link rel="canonical" href="https://secondwrench.co/pros/join/">
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/assets/styles.css?v=2026-10-20.7">
+  <style>
+    .join-form { max-width: 640px; }
+    .join-form .field { display: block; margin: 0 0 16px; }
+    .join-form input { width: 100%; margin-top: 6px; }
+    .join-note { max-width: 640px; }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="site-header">
+    <a href="https://secondwrench.co/" class="brand">Second Wrench</a>
+    <nav aria-label="Main navigation"><a href="https://secondwrench.co/">Home</a><a href="https://secondwrench.co/#/privacy">Privacy</a></nav>
+  </header>
+  <main id="main" class="content-wrap" tabindex="-1">
+    <p class="fine"><a href="https://secondwrench.co/">Home</a> › Contractor application</p>
+    <h1>Contractor application</h1>
+    <p class="join-note">This application stays pending. Second Wrench does not publish your company, send you leads, or show your logo from this page.</p>
+    <form id="join-form" class="join-form" method="post" action="/api/pros/join" enctype="multipart/form-data">
+      <label class="field" hidden>Leave this blank<input name="bot_field" tabindex="-1" autocomplete="off"></label>
+      <label class="field">Company name<input name="company_name" required maxlength="120" autocomplete="organization"></label>
+      <label class="field">Contact name<input name="contact_name" required maxlength="80" autocomplete="name"></label>
+      <label class="field">Email<input name="email" type="email" required maxlength="254" autocomplete="email"></label>
+      <label class="field">Phone (optional)<input name="phone" type="tel" maxlength="20" autocomplete="tel"></label>
+      <label class="field">Service ZIP codes (optional)<input name="service_zips" maxlength="200" inputmode="numeric" autocomplete="off"></label>
+      <label class="field">Equipment you service (optional)<input name="equipment" maxlength="200" autocomplete="off"></label>
+      <label class="field">Company logo (optional)
+        <input name="logo" type="file" accept=".pdf,.png,.jpg,.jpeg,.webp,.gif,.heic,application/pdf,image/png,image/jpeg,image/webp,image/gif,image/heic">
+      </label>
+      <p class="fine">PDF, PNG, JPG, WEBP, GIF, or HEIC. 5 MB maximum. The file type is checked from the file itself. SVG files are not accepted. The logo is stored for review and is not shown on the public site.</p>
+      <button class="button" type="submit">Submit application</button>
+      <p id="join-status" role="status"></p>
+    </form>
+  </main>
+  <script>
+    document.getElementById('join-form').addEventListener('submit', async function (event) {
+      event.preventDefault();
+      const status = document.getElementById('join-status');
+      status.textContent = 'Sending…';
+      try {
+        const response = await fetch('/api/pros/join', { method: 'POST', body: new FormData(event.target) });
+        const body = await response.json();
+        if (response.ok && body.stored) {
+          status.textContent = 'Application received. It stays pending. Reference ' + body.application_id + '.';
+          event.target.reset();
+        } else {
+          status.textContent = 'The application was not saved. Check the logo type and size, then try again.';
+        }
+      } catch (err) {
+        status.textContent = 'The application was not saved. Try again in a moment.';
+      }
+    });
+  </script>
+</body>
+</html>
