@@ -1,6 +1,6 @@
 /* Catalog phase 1. No network. */
 'use strict';
-globalThis.SW_CONFIG = { advancedRepairsEnabled: false, aiThermostatEnabled: false, mirrorsEnabled: false, stageLatchStepsEnabled: false, contentVersion: '2026-10-20.4' };
+globalThis.SW_CONFIG = { advancedRepairsEnabled: false, aiThermostatEnabled: false, mirrorsEnabled: false, stageLatchStepsEnabled: false, contentVersion: '2026-10-20.5' };
 const fs = require('fs');
 const path = require('path');
 const F = require('../assets/flow.js');
@@ -90,7 +90,7 @@ assert(stopped.stopCount === 1 && stopped.node === 'sw.co.fast_exit' && stopped.
 const basic = walk(BASIC);
 const shown = F.results[basic.result];
 assert(shown.tier === 'Basic homeowner check' && !F.catalogHazardResult(basic), 'basic result still offers the unit step');
-const payload = F.catalogPayload(basic, { appVersion: '0.1.0-beta', contentVersion: '2026-10-20.4', catalogConsentVersion: 'cat-consent-2026-10-18.1', unitStep: 'submitted', followupStatus: 'offered' });
+const payload = F.catalogPayload(basic, { appVersion: '0.1.0-beta', contentVersion: '2026-10-20.5', catalogConsentVersion: 'cat-consent-2026-10-18.1', unitStep: 'submitted', followupStatus: 'offered' });
 const fact = basic.answers.map(answer => answer.fact).find(Boolean);
 const label = basic.answers.map(answer => answer.label).find(Boolean);
 assert(fact && label, 'the sample check has a fact and a label');

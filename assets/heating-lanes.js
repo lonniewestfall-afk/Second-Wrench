@@ -12,12 +12,12 @@
     if(!next||typeof next!=='object')return next;
     if(next.bySd&&s.product==='sd'){const from=s.sdFrom||'none',mode=s.sdMode||'unsure';for(const k of [from+':'+mode,from+':*','*:'+mode])if(next.bySd[k])return choose(next.bySd[k],s);}
     const b=s.bl||{};
-    const checks={filterUnchanged:s.fnFilterUnchanged,afterHazardNow:b.retriage==='hazard_now',fromWhIndirect:b.entry==='wh_indirect',fromWhCode:b.entry==='wh_code',fromWhHeat:b.entry==='wh_heat',fromFnCoil:b.entry==='fn_coil',fromBl:s.product==='bl',waterHeaterSource:s.fnHydroSource==='water_heater_tank'||s.fnHydroSource==='tankless_or_combi',sourceKnown:['boiler','water_heater_tank','tankless_or_combi'].includes(s.fnHydroSource),coil:b.coil,steam:b.type==='steam',oil:s.product==='bl'?b.fuel==='oil':s.fnFuel==='oil',propane:s.fnGas==='propane',electric:s.fnFuel==='electric',hydronic:s.fnFuel==='hydronic',manufactured:s.fnHome==='manufactured_home',oneArea:s.fnLanding==='one_area_cold',codeUnseen:!(s.answers||[]).some(a=>a.node==='fn.code.window_look'),fragileNoHeat:b.fragile&&b.cold&&b.mode!=='dhw',resetEligible:b.fuel==='gas'&&b.type!=='steam'&&!(s.reset_count>=1),fuelGas:b.fuel==='gas',highEffGas:b.fuel==='gas'&&(b.type==='he'||b.type==='combi'),landingPressure:b.landing==='landing_pressure',dhw:b.mode==='dhw',viaCode:b.sawCode};
+    const checks={filterUnchanged:s.fnFilterUnchanged,afterHazardNow:b.retriage==='hazard_now',fromWhIndirect:b.entry==='wh_indirect',fromWhCode:b.entry==='wh_code',fromWhHeat:b.entry==='wh_heat',fromFnCoil:b.entry==='fn_coil',fromWhCoilOk:b.entry==='wh_coil_ok',fromBl:s.product==='bl',waterHeaterSource:s.fnHydroSource==='water_heater_tank'||s.fnHydroSource==='tankless_or_combi',sourceKnown:['boiler','water_heater_tank','tankless_or_combi'].includes(s.fnHydroSource),coil:b.coil,steam:b.type==='steam',oil:s.product==='bl'?b.fuel==='oil':s.fnFuel==='oil',propane:s.fnGas==='propane',electric:s.fnFuel==='electric',hydronic:s.fnFuel==='hydronic',manufactured:s.fnHome==='manufactured_home',oneArea:s.fnLanding==='one_area_cold',codeUnseen:!(s.answers||[]).some(a=>a.node==='fn.code.window_look'),fragileNoHeat:b.fragile&&b.cold&&b.mode!=='dhw',resetEligible:b.fuel==='gas'&&b.type!=='steam'&&!(s.reset_count>=1),fuelGas:b.fuel==='gas',highEffGas:b.fuel==='gas'&&(b.type==='he'||b.type==='combi'),landingPressure:b.landing==='landing_pressure',dhw:b.mode==='dhw',viaCode:b.sawCode};
     for(const k of Object.keys(next)){if(k==='default')continue;if(k==='byLanding'&&next[k][b.landing])return choose(next[k][b.landing],s);if(checks[k])return choose(next[k],s);}
     return choose(next.default,s);
   }
-  const handoffs={'>bl_to_fn':FN,'>fn_to_bl':'bl.gate.carryover','>bl_to_wh':WH,'>coil_to_wh':WH,'>fn_call_pro':'fn.conclude.call_pro'};
-  function mapTargets(v){if(typeof v==='string')return handoffs[v]||v;if(v&&typeof v==='object')for(const k of Object.keys(v))v[k]=mapTargets(v[k]);return v;}
+  const handoffs={'>bl_to_fn':FN,'>fn_to_bl':BL,'>bl_to_wh':WH,'>coil_to_wh':WH,'>fn_call_pro':'fn.conclude.call_pro'};
+  function mapTargets(v){if(typeof v==='string')return v==='bl.gate.carryover'?BL:(handoffs[v]||v);if(v&&typeof v==='object')for(const k of Object.keys(v))v[k]=mapTargets(v[k]);return v;}
   for(const node of Object.values(nodes))for(const o of node.options){o.heatingTarget=o.next; o.next=mapTargets(JSON.parse(JSON.stringify(o.next)));}
   function owns(id){return !!nodes[id];}
   function record(s,id,o){
@@ -35,6 +35,7 @@
     }
     if(id.startsWith('bl.')||id.startsWith('sw.handoff.')){
       s.bl=s.bl||{};Object.assign(s.bl,o.set||{});
+      if(o.id==='hazard_now'&&id!==BL&&id!=='bl.gate.carryover')s.bl.retriageFrom=id;
       const reason=choose(o.reason,s);if(reason)s.bl.reason=reason;
       if(o.set&&o.set.resetCount)s.reset_count=Math.max(s.reset_count||0,o.set.resetCount);
     }else Object.assign(s,o.set||{});
@@ -43,21 +44,23 @@
     if(id==='sd.entry.outdoor'&&o.set&&o.set.sdMode){if(s.sdModeHint&&s.sdModeHint!==o.set.sdMode)audit(s,'Mode answers differed between checks.');audit(s,'flag:sd_mode='+s.sdMode);}
     if(o.id==='hazard_now'||(id==='fn.airflow.after_filter'&&o.id==='hazard')){s.heatingHazardReported=true;s.noDiyLock=true; if(o.next==='ac.gate.cluster_entry')s.stopping=true;}
     if(id===FN||id===BL||id==='bl.gate.carryover'||id===WH)audit(s,'notes.gate:'+id+':'+o.id);
-    if(o.set&&o.set.whBoilerHandoff){s.bl=s.bl||{};Object.assign(s.bl,{mode:s.whCoil?'heat':'dhw',entry:s.whCoil?'fn_coil':s.whType==='indirect'?'wh_indirect':'wh_heat',type:s.whType==='combi'?'combi':s.bl.type});if(s.whCoil)s.bl.coil=true;}
+    if(o.set&&o.set.whBoilerHandoff){s.bl=s.bl||{};Object.assign(s.bl,{mode:s.whCoil?'heat':'dhw',entry:s.whCoil?'fn_coil':s.whType==='indirect'?'wh_indirect':'wh_heat',hwType:s.whType||s.bl.hwType,type:s.whType==='combi'?'combi':s.bl.type});if(s.whCoil)s.bl.coil=true;}
   }
   function target(s,id,o,fallback){
     let t=owns(id)&&!(id===FN&&s.product==='hp')?choose(o.heatingTarget===undefined?o.next:o.heatingTarget,s):fallback;
     if(t===undefined)t=fallback;
     if(id==='ac.cool.filter.check'&&s.product!=='fn'&&['filter_clean_ok','filter_clean_weak_airflow'].includes(o.id)){s.filterContinueTo=fallback;t='ac.cool.filter.clean_restart';}
     if(id==='ac.cool.filter.restore_request'&&o.id==='filter_settings_restored')t=s.filterContinueTo||'@filter_inaccessible';
-    if(t==='>bl_to_fn'){s.fnHandoff='hydro';s.fnFuel='hydronic';t=FN;}
-    if(t==='>fn_to_bl'){s.bl=s.bl||{};s.bl.entry='fn_coil';s.bl.coil=true;t='bl.gate.carryover';}
-    if(t==='>bl_to_wh'||t==='>coil_to_wh'){s.whFrom=s.product;s.whCoil=t==='>coil_to_wh';if(s.whCoil){s.bl=s.bl||{};s.bl.coil=true;}t=WH;}
+    if(t==='bl.gate.carryover')t=BL;
+    if(t==='>bl_to_fn'){s.fnHandoff='hydro';s.fnFuel='hydronic';s.bl=s.bl||{};s.bl.mode='heat';t=FN;}
+    if(t==='>fn_to_bl'){s.bl=s.bl||{};s.bl.entry='fn_coil';s.bl.coil=true;t=BL;}
+    if(t==='>bl_to_wh'||t==='>coil_to_wh'){s.whFrom=s.product;s.whCoil=t==='>coil_to_wh';s.bl=s.bl||{};s.bl.mode=s.whCoil?'heat':'dhw';if(s.whCoil)s.bl.coil=true;t=WH;}
     if(id==='wh.gate.warning_signs'&&o.id==='none_of_these'&&s.whCoil)t='wh.hydro.cold_home';
     if(s.whCoil&&['wh.tank.landing','wh.tankless.landing','wh.hpwh.landing'].includes(t))t='wh.hydro.observations';
     if(t==='>fn_call_pro')t='fn.conclude.call_pro';
     if(id===FN&&o.id==='none_of_these'&&s.fnHandoff==='hydro'){s.fnHandoff=null;t='fn.hydro.air_side';}
-    if(s.heatingHazardReported&&o.id==='none_of_these'&&[FN,BL,'bl.gate.carryover',WH,'wh.gate.warning_signs'].includes(id))t=s.product==='fn'?'@fn_gate_unsure':s.product==='wh'?'@wh_gate_unsure':'@bl_gate_unsure';
+    if(id===BL&&o.id==='none_of_these'&&s.bl&&s.bl.retriageFrom){t=s.bl.retriageFrom;s.bl.retriage=null;s.bl.retriageFrom=null;s.heatingHazardReported=false;}
+    else if(s.heatingHazardReported&&o.id==='none_of_these'&&[FN,BL,'bl.gate.carryover',WH,'wh.gate.warning_signs'].includes(id))t=s.product==='fn'?'@fn_gate_unsure':s.product==='wh'?'@wh_gate_unsure':'@bl_gate_unsure';
     // Heating-specific ordering: the filter step precedes a report of its result.
     if(s.product==='fn'){
       if(id==='fn.tstat.mode_setpoint'&&o.id==='settings_ok_still_problem'){
@@ -160,5 +163,12 @@
     return r;
   }
   function install(allNodes,allResults){delete allResults.ms_multi_zone_pr2;Object.assign(allNodes,nodes);Object.assign(allResults,results);}
-  return {nodes,results,owns,install,record,target,view,acknowledge,before,entered,present,co:data.co};
+  function reasonSentence(id,mode){
+    const table=data.boiler&&data.boiler.reasons||{};
+    const entry=table[id];
+    if(!entry)return '';
+    const row=Array.isArray(entry)?entry:(entry[mode]||entry.heat||entry.default);
+    return Array.isArray(row)?(row[0]||''):'';
+  }
+  return {nodes,results,owns,install,record,target,view,acknowledge,before,entered,present,co:data.co,reasonSentence};
 });

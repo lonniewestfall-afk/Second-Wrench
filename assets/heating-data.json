@@ -5459,164 +5459,11 @@
             "id": "none_of_these",
             "label": "None of these",
             "next": {
-              "afterHazardNow": "@bl_gate_unsure",
               "fromWhIndirect": "bl.dhw.indirect_call",
               "fromWhCode": "bl.cold.screen",
-              "fromFnCoil": "bl.coil.type",
               "fromWhHeat": "bl.intake.fuel",
-              "default": "bl.intake.type"
-            },
-            "hint": "Continue.",
-            "fact": "",
-            "gate": null,
-            "set": {
-              "gateCleared": true
-            },
-            "reason": null
-          }
-        ],
-        "diyTier": "basic",
-        "safetyGate": true,
-        "modes": [
-          "heat",
-          "dhw"
-        ],
-        "owner": "bl",
-        "caution": ""
-      },
-      "bl.gate.carryover": {
-        "section": "Boiler safety",
-        "title": "Check for hazards at the boiler",
-        "body": "Check again from what you already know. Conditions can differ at the boiler. Don’t approach a hazard or open equipment to answer.",
-        "options": [
-          {
-            "id": "gas_smell_or_unknown_smell",
-            "label": "Gas or rotten-egg smell, or a strong smell you can’t place",
-            "next": "@bl_gas_smell",
-            "hint": "Leave now.",
-            "fact": "Gas, rotten-egg, or unknown strong smell reported.",
-            "gate": "gas_co",
-            "set": {},
-            "reason": null
-          },
-          {
-            "id": "co_alarm_or_symptoms",
-            "label": "CO alarm, or headache, dizziness, nausea, or drowsiness",
-            "next": "@bl_co_alarm",
-            "hint": "Get to fresh air.",
-            "fact": "CO alarm or possible CO symptoms reported.",
-            "gate": "co_alarm_or_symptoms",
-            "set": {},
-            "reason": null
-          },
-          {
-            "id": "soot_scorch_flame",
-            "label": "Soot, scorch marks, flame outside the burner, or a heavy oil or exhaust smell",
-            "next": "@bl_soot_scorch",
-            "hint": "Stop using it.",
-            "fact": "Soot, scorch marks, flame outside the burner, or heavy oil or exhaust smell reported.",
-            "gate": "combustion_soot",
-            "set": {},
-            "reason": null
-          },
-          {
-            "id": "burning_smoke_sparks",
-            "label": "Burning or electrical smell, smoke, or sparks",
-            "next": "@bl_burning_sparks",
-            "hint": "Get away.",
-            "fact": "Burning or electrical smell, smoke, or sparks reported.",
-            "gate": "smoke_fire_sparks_burn",
-            "set": {},
-            "reason": null
-          },
-          {
-            "id": "water_steam_release",
-            "label": "Hot water or steam spraying or pouring from the boiler or pipes",
-            "next": "@bl_water_steam_release",
-            "hint": "Stay back.",
-            "fact": "Hot water or steam spraying or pouring reported.",
-            "gate": "water_steam_release",
-            "set": {},
-            "reason": null
-          },
-          {
-            "id": "water_near_electrical",
-            "label": "Water on or near the boiler’s wiring or outlet, or it’s been under water",
-            "next": "@bl_water_electrical",
-            "hint": "Stay out of the water.",
-            "fact": "Water near boiler electrical parts, or flooding, reported.",
-            "gate": "water_near_electrical",
-            "set": {},
-            "reason": null
-          },
-          {
-            "id": "pressure_at_relief",
-            "label": "The gauge is at a relief setting or warning mark identified for my boiler",
-            "next": "@bl_pressure_relief_stop",
-            "hint": "Don’t go touch it.",
-            "fact": "Homeowner reports the gauge at the installation’s identified relief setting or warning mark; the numerical setting is not stated.",
-            "gate": "pressure_at_relief",
-            "set": {},
-            "reason": null
-          },
-          {
-            "id": "steam_glass_empty",
-            "label": "Steam boiler: the glass tube shows no water",
-            "next": "@bl_steam_glass_empty",
-            "hint": "Don’t add water.",
-            "fact": "Steam boiler sight glass looked empty.",
-            "gate": "steam_low_water",
-            "set": {},
-            "reason": null
-          },
-          {
-            "id": "bang_or_puffback",
-            "label": "A bang, boom, or puff of smoke when it starts",
-            "next": "@bl_bang_puffback",
-            "hint": "Stop using it.",
-            "fact": "Bang, boom, or puffback at start reported.",
-            "gate": "delayed_ignition_puffback",
-            "set": {},
-            "reason": null
-          },
-          {
-            "id": "cold_exposure_risk",
-            "label": "Someone at risk from the cold (baby, older adult, medical need) without enough heat",
-            "next": "@bl_cold_exposure",
-            "hint": "Warm them first.",
-            "fact": "Someone at risk from the cold without enough heat.",
-            "gate": "cold_exposure_911",
-            "set": {},
-            "reason": null
-          },
-          {
-            "id": "refrigerant_alarm",
-            "label": "A refrigerant leak alarm is sounding",
-            "next": "@bl_refrigerant_alarm",
-            "hint": "Leave the affected area.",
-            "fact": "Refrigerant leak alarm reported.",
-            "set": {},
-            "gate": null
-          },
-          {
-            "id": "unsure",
-            "label": "I’m not sure",
-            "next": "@bl_gate_unsure",
-            "hint": "Not sure means stop.",
-            "fact": "Not sure whether a boiler hazard was present.",
-            "gate": "unsure_hazard",
-            "set": {},
-            "reason": null
-          },
-          {
-            "id": "none_of_these",
-            "label": "None of these",
-            "next": {
-              "afterHazardNow": "@bl_gate_unsure",
-              "fromWhIndirect": "bl.dhw.indirect_call",
-              "fromWhCode": "bl.cold.screen",
               "fromFnCoil": "bl.coil.type",
-              "fromWhHeat": "bl.intake.fuel",
+              "fromWhCoilOk": "bl.coil.type",
               "default": "bl.intake.type"
             },
             "hint": "Continue.",
@@ -6396,8 +6243,10 @@
             "label": "Stop and call a professional",
             "next": "bl.conclude.call_pro",
             "hint": "",
-            "fact": "",
-            "set": {},
+            "fact": "Thermostat screen blank; homeowner chose a professional.",
+            "set": {
+              "reason": "notice_declined"
+            },
             "gate": null
           },
           {
@@ -7594,10 +7443,7 @@
             "label": "It’s cold or barely warm",
             "next": {
               "waterHeaterSource": ">coil_to_wh",
-              "sourceKnown": {
-                "fromBl": "bl.landing.picker",
-                "default": ">fn_to_bl"
-              },
+              "sourceKnown": ">fn_to_bl",
               "fromBl": "sw.handoff.hydronic_coil.source",
               "default": ">fn_to_bl"
             },
@@ -7676,10 +7522,7 @@
           {
             "id": "src_boiler",
             "label": "A boiler",
-            "next": {
-              "fromBl": "bl.coil.type",
-              "default": ">fn_to_bl"
-            },
+            "next": ">fn_to_bl",
             "hint": "",
             "fact": "A boiler heats the water for the coil (reported).",
             "gate": null,
@@ -7701,10 +7544,7 @@
           {
             "id": "src_combi",
             "label": "A combi boiler that also heats tap water",
-            "next": {
-              "fromBl": "bl.coil.type",
-              "default": ">fn_to_bl"
-            },
+            "next": ">fn_to_bl",
             "hint": "",
             "fact": "A combi boiler heats the water for the coil (reported).",
             "gate": null,
@@ -7854,7 +7694,7 @@
             "next": {
               "waterHeaterSource": ">coil_to_wh",
               "sourceKnown": ">fn_to_bl",
-              "fromBl": "bl.landing.picker",
+              "fromBl": ">fn_to_bl",
               "default": "sw.handoff.hydronic_coil.source"
             },
             "hint": "",
@@ -8025,7 +7865,7 @@
         "continueTo": null
       },
       "bl_water_electrical": {
-        "tier": "Emergency",
+        "tier": "Stop / professional",
         "urgency": "Stay out of the water",
         "title": "Stay clear of the water and the boiler.",
         "explanation": "Water near wiring can shock, and a boiler that has been under water needs its controls checked before it runs.",
@@ -8508,7 +8348,7 @@
           "Do not DIY-seal a leak or add refrigerant."
         ],
         "avoid": "Do not turn off a mitigation blower, cycle power, bypass a sensor, use flames, or open refrigerant lines.",
-        "tier": "Emergency",
+        "tier": "Stop / professional",
         "outcome": "emergency_exit",
         "diyTier": "pro_only",
         "reason": "refrigerant_alarm_or_release",
@@ -12680,7 +12520,7 @@
           {
             "id": "continue",
             "label": "Continue to the boiler hazard check",
-            "next": "bl.gate.carryover",
+            "next": "bl.gate.safety",
             "fact": "Water-heater concern handed to boiler; both sides unconfirmed.",
             "set": {
               "whBoilerHandoff": true

@@ -57,7 +57,9 @@ for(const id of ['other_heat_or_ductless','__proto__','', 'not-a-choice']) rejec
 // Both direct menu entries retain the receiving gate for a hydronic handoff.
 let coil=ready(); F.selectSystem(coil,'furnace',meta);
 for(const c of ['none_of_these','air_handler_hot_water','boiler','pipe_cold']) reply(coil,c);
-assert.equal(coil.node,'bl.gate.carryover');
+assert.equal(coil.node,'sw.co.fast_exit');
+reply(coil,'co_no');
+assert.equal(coil.node,'bl.gate.safety');
 coil=ready(); F.selectSystem(coil,'boiler',meta);
 for(const c of ['none_of_these','hydro_air','pipe_hot_no_air','co_no']) reply(coil,c);
 assert.equal(coil.node,'fn.gate.combustion_co');

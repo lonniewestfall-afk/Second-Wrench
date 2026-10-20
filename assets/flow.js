@@ -2592,6 +2592,7 @@
     ];
   }
   function selectSystem(state, id, meta = {}) {
+    if (id === 'boiler_hot_water_steam') id = 'boiler';
     if (!state || state.result || state.node !== 'sw.intake.system_type') throw new Error('Choose a system only from the system menu.');
     const selected = systemMenu().flatMap(group => group.choices).find(choice => choice.id === id);
     if (!selected) throw new Error('That system choice is not available.');
@@ -2806,6 +2807,7 @@
     return state ? HEAT.view(id, state, view) : view;
   }
   function answer(state, choice, meta = {}) {
+    if (choice === 'boiler_hot_water_steam') choice = 'boiler';
     if (!state || state.result || !nodes[state.node]) throw new Error('This check has ended or is invalid.');
     if (state.node === 'sw.intake.system_type') {
       const onNode = nodes[state.node].options.some(op => op.id === choice);
@@ -3128,6 +3130,31 @@
     pushAudit(state, 'node_entered:' + state.node);
     return state;
   }
+  function boilerTypeLine(bl) {
+    if (!bl || !bl.type) return '';
+    const words = { he: 'high-efficiency hot-water', std: 'standard hot-water', combi: 'combi', steam: 'steam' }[bl.type];
+    if (!words) return '';
+    const fuel = ['gas', 'oil', 'electric', 'propane'].indexOf(bl.fuel) !== -1 ? bl.fuel : 'unknown';
+    return 'Boiler type (reported): ' + words + '; fuel: ' + fuel;
+  }
+  function stopReasonLine(state, shown) {
+    if (!shown || !(shown.outcome === 'call_pro' || shown.tier === 'Emergency' || shown.tier === 'Stop / professional')) return '';
+    const boilerNote = state.product === 'bl' || String(state.result || '').indexOf('bl_') === 0;
+    if (!boilerNote) return 'Stop reason: ' + (shown.reason || '');
+    const mode = (state.bl && state.bl.mode) || 'heat';
+    let sentence = HEAT.reasonSentence ? HEAT.reasonSentence((state.bl && state.bl.reason) || '', mode) : '';
+    if (!sentence || /^[a-z0-9_]+$/.test(sentence)) {
+      const explanation = String(shown.explanation || '').trim();
+      if (explanation && !/^[a-z0-9_.]+$/.test(explanation)) sentence = explanation;
+    }
+    if (!sentence || /^[a-z0-9_]+$/.test(sentence)) {
+      const events = (state.audit || []).map(function (row) { return row.event; });
+      if (events.indexOf('handoff:bl_to_fn') !== -1 || events.indexOf('handoff:wh_to_fn') !== -1) sentence = 'sent to the furnace check';
+      else if (events.indexOf('handoff:bl_to_wh') !== -1 || events.indexOf('handoff:coil_to_wh') !== -1) sentence = 'sent to the water heater check';
+      else sentence = 'sent to the boiler check';
+    }
+    return 'Stop reason: ' + sentence;
+  }
   function summary(state, extra = {}) {
     if (state && state.product === 'ts') {
       const version = (typeof globalThis !== 'undefined' && globalThis.SW_CONFIG && globalThis.SW_CONFIG.contentVersion) || '';
@@ -3185,7 +3212,7 @@
       equipment,
       state.product==='sd' ? 'Outdoor fan position (reported): '+(state.sdSideConfirmed?'side-discharge':'not confirmed')+'. Mode: '+(state.sdMode||'not confirmed')+'. Incoming check: '+(state.sdFrom||'not stated')+'.' : '',
       state.fnHome ? 'Home type (reported): ' + state.fnHome.replace(/_/g,' ') : '',
-      state.bl && state.bl.type ? 'Boiler type (reported): ' + state.bl.type + '; fuel: ' + (state.bl.fuel || 'unknown') : '',
+      boilerTypeLine(state.bl),
       state.whType ? 'Water-heater type (reported): ' + state.whType + '; fuel: ' + (state.whFuel || 'unknown') : '',
       (state.fnFuel === 'hydronic' || state.bl && state.bl.coil) ? 'Water circulation and coil temperature have not been confirmed by this guide.' : '',
       state.product==='ms'?'Mode (reported): '+(state.msMode||'unknown')+'. Units affected (reported): '+(state.msZone||'not stated')+'.':'',
@@ -3202,7 +3229,7 @@
       state.mode === 'test' ? 'TEST SCENARIO — not an actual equipment report.' : '',
       (state.priorResults || []).map(id => results[id] ? 'Earlier result: ' + results[id].title + ' (' + results[id].tier + ')' : '').filter(Boolean).join('\n'),
       shown ? 'Result: ' + shown.title + ' (' + shown.tier + ')' : '',
-      shown && (shown.outcome === 'call_pro' || shown.tier === 'Emergency' || shown.tier === 'Stop / professional') ? 'Stop reason: ' + (shown.reason || '') : '',
+      stopReasonLine(state, shown),
       'Version: ' + ((typeof globalThis !== 'undefined' && globalThis.SW_CONFIG && globalThis.SW_CONFIG.contentVersion) || '')
     ].filter(Boolean).join('\n');
   }
