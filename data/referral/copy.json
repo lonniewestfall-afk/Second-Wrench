@@ -1,0 +1,23 @@
+{
+  "consentTextVersion": "referral-consent-pending-legal-2026-10-20.1",
+  "cardTitle": "PENDING LEGAL Find a pro for your equipment",
+  "cardBody": "PENDING LEGAL This optional step asks whether you want help finding one contractor for the equipment in this check. It does not book a visit.",
+  "yesLabel": "PENDING LEGAL Yes",
+  "noLabel": "PENDING LEGAL No thanks",
+  "consentTitle": "PENDING LEGAL Share this check with one contractor",
+  "zipLabel": "PENDING LEGAL ZIP code",
+  "nameLabel": "PENDING LEGAL Name",
+  "emailLabel": "PENDING LEGAL Email",
+  "phoneLabel": "PENDING LEGAL Phone (optional)",
+  "shareLabel": "PENDING LEGAL Share my check summary and contact info with one contractor Second Wrench matches me with, so they can contact me about this repair.",
+  "phoneBoxLabel": "PENDING LEGAL The contractor may call or text me at this number about this request. Message and data rates may apply. Reply STOP to opt out.",
+  "disclosure": "PENDING LEGAL Second Wrench may be paid by contractors in this network. We do not do the repair, we do not guarantee work by the contractor, and you contract and pay the contractor directly.",
+  "submitLabel": "PENDING LEGAL Send request",
+  "privacyHeading": "PENDING LEGAL Contractor referrals",
+  "privacyBody": "PENDING LEGAL If a referral request is offered later, this note will describe what is shared, with whom, and how long it is kept. This placeholder is not in effect.",
+  "zipError": "PENDING LEGAL Enter a ZIP code, name, and email.",
+  "shareError": "PENDING LEGAL Check the box to share this check with one contractor.",
+  "phoneError": "PENDING LEGAL Enter a phone number before allowing a call or text.",
+  "saved": "PENDING LEGAL Request saved. A person at Second Wrench will match it by hand. Nothing is emailed from this page.",
+  "failed": "PENDING LEGAL That request was not saved."
+}

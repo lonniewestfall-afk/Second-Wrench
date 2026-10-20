@@ -1,0 +1,39 @@
+{
+  "store": "referrals",
+  "directory_key": "directory/contractors.json",
+  "schema_key": "directory/schema.json",
+  "description": "Contractor directory record stored in Netlify Blobs. Sample fixtures are example data and are not live contractors.",
+  "required": [
+    "contractor_id",
+    "example",
+    "data_notice",
+    "company_name",
+    "active",
+    "paused",
+    "license",
+    "insurance",
+    "brand_certs",
+    "service_zip3s",
+    "equipment_tags",
+    "capacity_per_week",
+    "leads_this_week"
+  ],
+  "license_required": ["state", "authority", "number", "status", "expires_on", "checked_on", "source_url"],
+  "insurance_required": ["general_liability_expires_on"],
+  "brand_cert_required": ["program", "brand", "verified_on", "evidence_url"],
+  "fields": {
+    "contractor_id": "Stable id, lowercase letters, digits, and hyphens.",
+    "example": "True on sample fixtures. Example rows are not suggested for a live lead.",
+    "data_notice": "Fixtures must say they are example data.",
+    "company_name": "Display name for concierge matching.",
+    "active": "False removes the contractor from matching.",
+    "paused": "True removes the contractor from matching.",
+    "license": "License record: authority, number, status, expiration, the date it was checked, and the lookup URL.",
+    "insurance": "General liability expiration. Workers comp expiration is optional.",
+    "brand_certs": "Brand program listings with the date checked and an evidence URL. Not an endorsement.",
+    "service_zip3s": "Three-digit ZIP prefixes this contractor serves.",
+    "equipment_tags": "Equipment, brand, furnace skill, and Bosch series tags used for matching. Furnace skill tags include gas_combustion, propane, oil, electrical, any_hvac, manufactured_home, hydronic_hydro_air, and replacement.",
+    "capacity_per_week": "Weekly lead cap.",
+    "leads_this_week": "Leads already counted this week."
+  }
+}

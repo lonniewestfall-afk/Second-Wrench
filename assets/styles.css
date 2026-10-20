@@ -145,5 +145,6 @@ input::placeholder,textarea::placeholder{color:#aaaab4;opacity:1}
 .serial-actions .serial-choice{flex:1 1 0}
 .button.serial-choice{background:var(--scarlet);color:var(--white);border-color:transparent}
 .catalog-block{margin-top:22px}
+.referral-card{margin-top:22px}
 .nameplate-preview{max-width:100%;margin-top:12px}
 .catalog-block .button-row .button{flex:1 1 0}
