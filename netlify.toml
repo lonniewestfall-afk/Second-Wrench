@@ -45,3 +45,9 @@
   to = "/.netlify/functions/pros-join"
   status = 200
   force = true
+
+[[redirects]]
+  from = "/api/pro-signup"
+  to = "/.netlify/functions/pro-signup"
+  status = 200
+  force = true

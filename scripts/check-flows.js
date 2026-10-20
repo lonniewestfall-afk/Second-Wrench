@@ -1,6 +1,6 @@
 /* Local sanity for AC Wave-2 and HP Wave-1. No network. */
 'use strict';
-globalThis.SW_CONFIG = { advancedRepairsEnabled: false, aiThermostatEnabled: false, mirrorsEnabled: false, stageLatchStepsEnabled: false, contentVersion: '2026-10-20.8' };
+globalThis.SW_CONFIG = { advancedRepairsEnabled: false, aiThermostatEnabled: false, mirrorsEnabled: false, stageLatchStepsEnabled: false, contentVersion: '2026-10-20.9' };
 const fs = require('fs');
 const path = require('path');
 const F = require('../assets/flow.js');
@@ -90,7 +90,7 @@ const gate = ['none_of_these', 'agree_18_terms'];
 
 assert(/advancedRepairsEnabled:\s*false/.test(configText), 'public advanced flag must stay false');
 assert(/referralEnabled:\s*false/.test(configText) && !/referralEnabled:\s*true/.test(configText), 'referral flag must stay false');
-const SHIP = '2026-10-20.8';
+const SHIP = '2026-10-20.9';
 assert(configText.includes("contentVersion: '" + SHIP + "'"), 'content version must be ' + SHIP);
 assert(['config', 'flow', 'app'].every(f => indexText.includes(f + '.js?v=' + SHIP)), 'script cache-bust must match content version');
 assert(indexText.includes('HOME HVAC CHECKS') && !indexText.includes('AC + HEAT PUMP'), 'header lockup is HOME HVAC CHECKS');
@@ -629,7 +629,7 @@ const HAZARDS = [
   ['hazard_unsure', 'Uncertainty is a good reason to stop.']
 ];
 const TERMS_BODY_SHA256 = '37efc0e6b1e272affa48119e1734606bba12f64cd7772d8f0afd831bc3b43838';
-const PRIVACY_BODY_SHA256 = 'bddf551072a5258fa09159c4bacd63d860d20e2e649cb13a349e53a4e574989c';
+const PRIVACY_BODY_SHA256 = '843ba39e40c93328ce825a321b0e39c1ccf1dc5d7bf1a4bb3425253bf319509c';
 
 // ---- WSHP Wave-1 PR-1 (A-1..A-28, T-1..T-26) ----
 const WSHP_IDS = ['wshp.hazard.flood_electrical', 'wshp.entry.equipment_gate', 'wshp.heat.cold_home_screen', 'wshp.openloop.complaint', 'wshp.openloop.chemistry_gate', 'wshp.handback.call_pro'];

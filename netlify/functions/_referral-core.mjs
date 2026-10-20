@@ -3,6 +3,7 @@ import copy from '../../data/referral/copy.json' with { type: 'json' };
 import blockedResults from '../../data/referral/blocked-results.json' with { type: 'json' };
 import { boschCodeClass, contractorError, directorySchema, equipmentTags, matchContractor } from './_referral-match.mjs';
 import { downloadContractorLogo, listPendingApplications } from './_contractor-join.mjs';
+import { listProApplications, openProSignupStore } from './_pro-signup.mjs';
 
 export const referralEnabled = false;
 export const consentTextVersion = copy.consentTextVersion;
@@ -209,9 +210,21 @@ export async function handleReferral(request, deps) {
   return json(200, { stored: true, referral_id: prepared.record.referral_id });
 }
 
+async function signupApplications(extra) {
+  if (extra.applicationStore) return listProApplications(extra.applicationStore);
+  if (Object.keys(extra).length) return [];
+  return listProApplications(await openProSignupStore());
+}
+
 export async function handleReferralAdmin(request, deps) {
   const extra = deps || {};
-  if (!enabled(extra)) return json(503, { error: 'referral_off' });
+  if (!enabled(extra)) {
+    const logoId = request && request.url ? new URL(request.url).searchParams.get('logo') : '';
+    if (request && request.method === 'GET' && !logoId && authorized(request, adminKey(extra))) {
+      return json(200, { referral_enabled: false, applications: await signupApplications(extra) });
+    }
+    return json(503, { error: 'referral_off' });
+  }
   if (!request || request.method !== 'GET') return json(405, { error: 'method' });
   if (!authorized(request, adminKey(extra))) return json(401, { error: 'unauthorized' });
   const store = extra.store || await openReferralStore();
@@ -235,7 +248,7 @@ export async function handleReferralAdmin(request, deps) {
     }, { today, includeExample: false });
     return { referral_id: row.referral_id, contractor_id: match ? match.contractor_id : null };
   });
-  const applications = await listPendingApplications(store, extra.logoStore || null);
+  const applications = (await signupApplications(extra)).concat(await listPendingApplications(store, extra.logoStore || null));
   return json(200, {
     schema: storedSchema || directorySchema,
     contractors: contractors.filter(row => !contractorError(row)),

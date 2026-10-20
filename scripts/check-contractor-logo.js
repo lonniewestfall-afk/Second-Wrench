@@ -17,8 +17,7 @@ const page = read('pros/join/index.html');
 const toml = read('netlify.toml');
 assert(/referralEnabled:\s*false/.test(configText) && !/referralEnabled:\s*true/.test(configText), 'referral flag stays false');
 assert(read('netlify/functions/_contractor-join.mjs').includes("export const LOGO_STORE = 'contractor-logos'"), 'logo store name');
-assert(page.includes('name="logo"') && page.includes('5 MB') && !/\bsafe\b/i.test(page), 'join page offers an optional logo and does not use safe');
-assert(!page.includes('contractor-logos') && !page.includes('/api/referral-admin'), 'join page does not publish a logo URL');
+assert(!/\bsafe\b/i.test(page) && !page.includes('contractor-logos') && !page.includes('/api/referral-admin'), 'join page does not publish a logo URL');
 assert(toml.includes('/api/pros/join') && !toml.includes('contractor-logos'), 'join API is redirected and logos have no public route');
 
 function png(extra) {

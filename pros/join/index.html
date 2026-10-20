@@ -3,63 +3,221 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="robots" content="index, follow">
+  <meta name="robots" content="noindex, nofollow">
   <title>Contractor application — Second Wrench</title>
-  <meta name="description" content="Apply to the Second Wrench contractor network. Applications stay pending and logos are not published.">
+  <meta name="description" content="Invite-only contractor application for the Second Wrench pilot.">
   <link rel="canonical" href="https://secondwrench.co/pros/join/">
   <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/assets/styles.css?v=2026-10-20.8">
+  <link rel="stylesheet" href="/assets/styles.css?v=2026-10-20.9">
   <style>
-    .join-form { max-width: 640px; }
-    .join-form .field { display: block; margin: 0 0 16px; }
-    .join-form input { width: 100%; margin-top: 6px; }
-    .join-note { max-width: 640px; }
+    .join-page { max-width: 760px; margin: 0 auto; padding: 28px 20px 64px; }
+    .join-page h1 { font-size: clamp(2rem, 6vw, 3.1rem); }
+    .join-lead { max-width: 42rem; }
+    .join-form { display: grid; gap: 18px; }
+    .join-form fieldset { border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin: 0; }
+    .join-form legend { padding: 0 6px; font-weight: 650; }
+    .join-grid, .hours-grid, .choice-grid { display: grid; gap: 12px; }
+    .join-grid { grid-template-columns: 1fr 1fr; }
+    .hours-grid { grid-template-columns: 1fr 1fr; }
+    .choice-grid { grid-template-columns: 1fr 1fr; }
+    .join-form label.field { display: block; }
+    .join-form input[type="text"], .join-form input[type="email"], .join-form input[type="tel"], .join-form input[type="url"], .join-form select, .join-form textarea {
+      width: 100%; min-height: 44px; margin-top: 6px; padding: 10px 12px; border-radius: 9px;
+      border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+    }
+    .join-form textarea { min-height: 96px; }
+    .choice { display: flex; align-items: center; gap: 10px; min-height: 44px; }
+    .choice input { width: 1.15rem; height: 1.15rem; accent-color: var(--scarlet); }
+    .consent { display: flex; gap: 12px; align-items: flex-start; }
+    .consent input { margin-top: 4px; width: 1.25rem; height: 1.25rem; flex: 0 0 auto; accent-color: var(--scarlet); }
+    .join-form .button { min-height: 48px; width: 100%; }
+    .thanks { border-left: 3px solid var(--scarlet); padding: 8px 0 8px 16px; }
+    .hp { position: absolute; left: -10000px; top: auto; width: 1px; height: 1px; overflow: hidden; }
+    .req { color: var(--scarlet); }
+    @media (max-width: 640px) {
+      .join-grid, .hours-grid, .choice-grid { grid-template-columns: 1fr; }
+      .join-page { padding: 20px 16px 48px; }
+    }
   </style>
 </head>
 <body>
   <a class="skip" href="#main">Skip to content</a>
   <header class="site-header">
-    <a href="https://secondwrench.co/" class="brand">Second Wrench</a>
-    <nav aria-label="Main navigation"><a href="https://secondwrench.co/">Home</a><a href="https://secondwrench.co/#/privacy">Privacy</a></nav>
+    <a href="https://secondwrench.co/" class="brand" aria-label="Second Wrench home"><span class="brand-mark" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-hidden="true" focusable="false"><rect width="64" height="64" rx="15" fill="#b82030"/><path d="M41 11a15 15 0 0 0-18 19L9 44a7 7 0 0 0 10 10l14-14a15 15 0 0 0 19-18L42 32l-9-3-3-9 11-9Z" fill="#fff"/><circle cx="14" cy="49" r="2.5" fill="#b82030"/></svg></span><span>Second Wrench<span class="brand-sub">HOME HVAC CHECKS</span></span></a>
   </header>
-  <main id="main" class="content-wrap" tabindex="-1">
-    <p class="fine"><a href="https://secondwrench.co/">Home</a> › Contractor application</p>
+  <main id="main" class="join-page" tabindex="-1">
     <h1>Contractor application</h1>
-    <p class="join-note">This application stays pending. Second Wrench does not publish your company, send you leads, or show your logo from this page.</p>
-    <form id="join-form" class="join-form" method="post" action="/api/pros/join" enctype="multipart/form-data">
-      <label class="field" hidden>Leave this blank<input name="bot_field" tabindex="-1" autocomplete="off"></label>
-      <label class="field">Company name<input name="company_name" required maxlength="120" autocomplete="organization"></label>
-      <label class="field">Contact name<input name="contact_name" required maxlength="80" autocomplete="name"></label>
-      <label class="field">Email<input name="email" type="email" required maxlength="254" autocomplete="email"></label>
-      <label class="field">Phone (optional)<input name="phone" type="tel" maxlength="20" autocomplete="tel"></label>
-      <label class="field">Service ZIP codes (optional)<input name="service_zips" maxlength="200" inputmode="numeric" autocomplete="off"></label>
-      <label class="field">Equipment you service (optional)<input name="equipment" maxlength="200" autocomplete="off"></label>
-      <label class="field">Company logo (optional)
-        <input name="logo" type="file" accept=".pdf,.png,.jpg,.jpeg,.webp,.gif,.heic,application/pdf,image/png,image/jpeg,image/webp,image/gif,image/heic">
-      </label>
-      <p class="fine">PDF, PNG, JPG, WEBP, GIF, or HEIC. 5 MB maximum. The file type is checked from the file itself. SVG files are not accepted. The logo is stored for review and is not shown on the public site.</p>
+    <p class="join-lead">This page is for an invited contractor. The application stays pending. Homeowners do not see it from this form.</p>
+    <form id="join-form" class="join-form" method="post" action="/api/pro-signup">
+      <div class="hp" aria-hidden="true"><label>Leave this blank<input name="bot_field" tabindex="-1" autocomplete="off"></label></div>
+      <label class="field">Business name <span class="req">*</span><input name="business_name" required maxlength="120" autocomplete="organization"></label>
+      <div class="join-grid">
+        <label class="field">Contact name <span class="req">*</span><input name="contact_name" required maxlength="80" autocomplete="name"></label>
+        <label class="field">Email <span class="req">*</span><input name="email" type="email" required maxlength="254" autocomplete="email"></label>
+      </div>
+      <div class="join-grid">
+        <label class="field">Phone <span class="req">*</span><input name="phone" type="tel" required maxlength="20" autocomplete="tel"><span class="fine">The public number for homeowners.</span></label>
+        <label class="field">Website<input name="website" type="text" maxlength="200" autocomplete="url" inputmode="url"></label>
+      </div>
+      <label class="field">Business street address<input name="street" maxlength="120" autocomplete="street-address"></label>
+      <div class="join-grid">
+        <label class="field">City<input name="city" maxlength="80" autocomplete="address-level2"></label>
+        <label class="field">State <span class="req">*</span><input name="state" required maxlength="2" autocomplete="address-level1" autocapitalize="characters"></label>
+      </div>
+      <label class="field">ZIP <span class="req">*</span><input name="zip" required inputmode="numeric" maxlength="5" pattern="[0-9]{5}" autocomplete="postal-code"></label>
+      <label class="field">Service area<input name="service_area" maxlength="400" placeholder="ZIP codes or a radius"><span class="fine">ZIP codes, ZIP prefixes, or a radius from the shop.</span></label>
+      <fieldset>
+        <legend>Hours</legend>
+        <div class="hours-grid">
+          <label class="field">Monday<input name="hours_monday" maxlength="40" autocomplete="off"></label>
+          <label class="field">Tuesday<input name="hours_tuesday" maxlength="40" autocomplete="off"></label>
+          <label class="field">Wednesday<input name="hours_wednesday" maxlength="40" autocomplete="off"></label>
+          <label class="field">Thursday<input name="hours_thursday" maxlength="40" autocomplete="off"></label>
+          <label class="field">Friday<input name="hours_friday" maxlength="40" autocomplete="off"></label>
+          <label class="field">Saturday<input name="hours_saturday" maxlength="40" autocomplete="off"></label>
+          <label class="field">Sunday<input name="hours_sunday" maxlength="40" autocomplete="off"></label>
+          <label class="field">Emergency / after-hours
+            <select name="emergency_after_hours" required>
+              <option value="">Choose</option>
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
+          </label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Brands you prefer or service</legend>
+        <div class="choice-grid" id="brand-list">
+          <label class="choice"><input type="checkbox" name="brands" value="Bosch"> Bosch</label>
+          <label class="choice"><input type="checkbox" name="brands" value="York"> York</label>
+          <label class="choice"><input type="checkbox" name="brands" value="Coleman"> Coleman</label>
+          <label class="choice"><input type="checkbox" name="brands" value="Luxaire"> Luxaire</label>
+          <label class="choice"><input type="checkbox" name="brands" value="Carrier"> Carrier</label>
+          <label class="choice"><input type="checkbox" name="brands" value="Bryant"> Bryant</label>
+          <label class="choice"><input type="checkbox" name="brands" value="Trane"> Trane</label>
+          <label class="choice"><input type="checkbox" name="brands" value="American Standard"> American Standard</label>
+          <label class="choice"><input type="checkbox" name="brands" value="Lennox"> Lennox</label>
+          <label class="choice"><input type="checkbox" name="brands" value="Goodman"> Goodman</label>
+          <label class="choice"><input type="checkbox" name="brands" value="Amana"> Amana</label>
+          <label class="choice"><input type="checkbox" name="brands" value="Rheem"> Rheem</label>
+          <label class="choice"><input type="checkbox" name="brands" value="Ruud"> Ruud</label>
+          <label class="choice"><input type="checkbox" name="brands" value="Daikin"> Daikin</label>
+          <label class="choice"><input type="checkbox" name="brands" value="Mitsubishi"> Mitsubishi</label>
+          <label class="choice"><input type="checkbox" name="brands" value="Fujitsu"> Fujitsu</label>
+          <label class="choice"><input type="checkbox" name="brands" value="LG"> LG</label>
+          <label class="choice"><input type="checkbox" name="brands" value="Rinnai"> Rinnai</label>
+          <label class="choice"><input type="checkbox" name="brands" value="Navien"> Navien</label>
+          <label class="choice"><input type="checkbox" name="brands" value="Noritz"> Noritz</label>
+          <label class="choice"><input type="checkbox" name="brands" value="Other"> Other</label>
+        </div>
+        <label class="field">Other brand<input name="brand_other" maxlength="80" autocomplete="off"></label>
+      </fieldset>
+      <fieldset>
+        <legend>Equipment types</legend>
+        <div class="choice-grid">
+          <label class="choice"><input type="checkbox" name="equipment" value="central_ac"> Central AC</label>
+          <label class="choice"><input type="checkbox" name="equipment" value="heat_pump"> Heat pump</label>
+          <label class="choice"><input type="checkbox" name="equipment" value="ductless"> Ductless</label>
+          <label class="choice"><input type="checkbox" name="equipment" value="furnace"> Furnace (gas, oil, or propane)</label>
+          <label class="choice"><input type="checkbox" name="equipment" value="manufactured_home"> Manufactured / mobile home</label>
+          <label class="choice"><input type="checkbox" name="equipment" value="boiler_hydronic"> Boiler / hydronic</label>
+          <label class="choice"><input type="checkbox" name="equipment" value="water_heater"> Water heater / tankless</label>
+          <label class="choice"><input type="checkbox" name="equipment" value="geothermal_wshp"> Geothermal / WSHP</label>
+        </div>
+      </fieldset>
+      <div class="join-grid">
+        <label class="field">State license number(s) <span class="req">*</span><input name="license_numbers" required maxlength="80" autocomplete="off"></label>
+        <label class="field">Issuing authority<input name="license_authority" maxlength="80" autocomplete="off"></label>
+      </div>
+      <div class="join-grid">
+        <fieldset>
+          <legend>Insured</legend>
+          <label class="choice"><input type="radio" name="insured" value="yes" required> Yes</label>
+          <label class="choice"><input type="radio" name="insured" value="no"> No</label>
+        </fieldset>
+        <fieldset>
+          <legend>EPA 608</legend>
+          <label class="choice"><input type="radio" name="epa_608" value="yes" required> Yes</label>
+          <label class="choice"><input type="radio" name="epa_608" value="no"> No</label>
+        </fieldset>
+      </div>
+      <label class="field">Brand dealer programs<textarea name="brand_programs" maxlength="400"></textarea></label>
+      <label class="field">Notes<textarea name="notes" maxlength="1000"></textarea></label>
+      <label class="consent"><input id="consent" name="consent" type="checkbox" required><span id="consent-text">I agree Second Wrench may show my business name, phone, hours, location and brands to homeowners once the referral network launches. This is a free pilot; nothing is charged. Second Wrench verifies licenses before listing.</span></label>
+      <p class="fine">Fields marked * are required. Questions: <a href="mailto:support@secondwrench.co">support@secondwrench.co</a>.</p>
+      <p id="join-status" class="fine" role="alert"></p>
       <button class="button" type="submit">Submit application</button>
-      <p id="join-status" role="status"></p>
     </form>
+    <section id="thanks" class="thanks" hidden>
+      <h2>Thanks</h2>
+      <p>We received your application and will be in touch. Nothing is shown to homeowners from this submission.</p>
+      <p class="fine">Questions: <a href="mailto:support@secondwrench.co">support@secondwrench.co</a>.</p>
+    </section>
   </main>
   <script>
-    document.getElementById('join-form').addEventListener('submit', async function (event) {
-      event.preventDefault();
-      const status = document.getElementById('join-status');
-      status.textContent = 'Sending…';
-      try {
-        const response = await fetch('/api/pros/join', { method: 'POST', body: new FormData(event.target) });
-        const body = await response.json();
-        if (response.ok && body.stored) {
-          status.textContent = 'Application received. It stays pending. Reference ' + body.application_id + '.';
-          event.target.reset();
-        } else {
-          status.textContent = 'The application was not saved. Check the logo type and size, then try again.';
+    (function () {
+      var form = document.getElementById('join-form');
+      var status = document.getElementById('join-status');
+      var days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+      form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        var consent = document.getElementById('consent');
+        if (!consent.checked) {
+          status.textContent = 'Check the agreement box to continue.';
+          return;
         }
-      } catch (err) {
-        status.textContent = 'The application was not saved. Try again in a moment.';
-      }
-    });
+        var data = new FormData(form);
+        var hours = {};
+        days.forEach(function (day) { hours[day] = data.get('hours_' + day) || ''; });
+        var payload = {
+          bot_field: data.get('bot_field') || '',
+          business_name: data.get('business_name') || '',
+          contact_name: data.get('contact_name') || '',
+          email: data.get('email') || '',
+          phone: data.get('phone') || '',
+          website: data.get('website') || '',
+          street: data.get('street') || '',
+          city: data.get('city') || '',
+          state: data.get('state') || '',
+          zip: data.get('zip') || '',
+          service_area: data.get('service_area') || '',
+          hours: hours,
+          emergency_after_hours: data.get('emergency_after_hours') || '',
+          brands: Array.prototype.map.call(form.querySelectorAll('input[name="brands"]:checked'), function (el) { return el.value; }),
+          brand_other: data.get('brand_other') || '',
+          equipment: Array.prototype.map.call(form.querySelectorAll('input[name="equipment"]:checked'), function (el) { return el.value; }),
+          license_numbers: data.get('license_numbers') || '',
+          license_authority: data.get('license_authority') || '',
+          insured: data.get('insured') || '',
+          epa_608: data.get('epa_608') || '',
+          brand_programs: data.get('brand_programs') || '',
+          notes: data.get('notes') || '',
+          consent: true,
+          consent_text_version: 'pro-signup-consent-2026-10-20.1',
+          consent_text: document.getElementById('consent-text').textContent.trim()
+        };
+        status.textContent = 'Sending…';
+        fetch('/api/pro-signup', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(payload)
+        }).then(function (response) {
+          return response.json().then(function (body) { return { ok: response.ok, status: response.status, body: body }; });
+        }).then(function (result) {
+          if (result.ok && result.body && result.body.stored) {
+            form.hidden = true;
+            document.getElementById('thanks').hidden = false;
+            status.textContent = '';
+          } else if (result.body && result.body.error === 'rate_limited') {
+            status.textContent = 'Please wait before sending another application.';
+          } else {
+            status.textContent = 'The application was not saved. Check the required fields and try again.';
+          }
+        }).catch(function () {
+          status.textContent = 'The application was not saved. Try again in a moment.';
+        });
+      });
+    }());
   </script>
 </body>
 </html>

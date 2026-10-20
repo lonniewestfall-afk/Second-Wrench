@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const root = path.join(__dirname, '..');
 const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
-globalThis.SW_CONFIG = { advancedRepairsEnabled: false, aiThermostatEnabled: false, mirrorsEnabled: false, stageLatchStepsEnabled: false, catalogEnabled: false, referralEnabled: false, contentVersion: '2026-10-20.8' };
+globalThis.SW_CONFIG = { advancedRepairsEnabled: false, aiThermostatEnabled: false, mirrorsEnabled: false, stageLatchStepsEnabled: false, catalogEnabled: false, referralEnabled: false, contentVersion: '2026-10-20.9' };
 const F = require('../assets/flow.js');
 
 let failed = 0;
@@ -25,7 +25,7 @@ const appText = read('assets/app.js');
 const flowText = read('assets/flow.js');
 const coreText = read('netlify/functions/_referral-core.mjs');
 const matchText = read('netlify/functions/_referral-match.mjs');
-const functionText = [coreText, matchText, read('netlify/functions/referral.mjs'), read('netlify/functions/referral-admin.mjs'), read('netlify/functions/_contractor-join.mjs'), read('netlify/functions/_logo-type.mjs'), read('netlify/functions/pros-join.mjs')].join('\n');
+const functionText = [coreText, matchText, read('netlify/functions/referral.mjs'), read('netlify/functions/referral-admin.mjs'), read('netlify/functions/_contractor-join.mjs'), read('netlify/functions/_logo-type.mjs'), read('netlify/functions/pros-join.mjs'), read('netlify/functions/_pro-signup.mjs'), read('netlify/functions/pro-signup.mjs')].join('\n');
 const copy = JSON.parse(read('data/referral/copy.json'));
 const blocked = JSON.parse(read('data/referral/blocked-results.json'));
 const examples = JSON.parse(read('data/referral/contractors.example.json'));
@@ -57,7 +57,7 @@ assert(/referralEnabled:\s*false/.test(configText) && !/referralEnabled:\s*true/
 assert(/export const referralEnabled = false/.test(coreText) && !/export const referralEnabled = true/.test(coreText), 'server referral flag stays false');
 assert(/advancedRepairsEnabled:\s*false/.test(configText) && !/advancedRepairsEnabled:\s*true/.test(configText), 'advanced repairs stay off');
 assert(/catalogEnabled:\s*false/.test(configText) && !/catalogEnabled:\s*true/.test(configText), 'catalog stays off');
-assert(configText.includes("contentVersion: '2026-10-20.8'"), 'content version is 2026-10-20.8');
+assert(configText.includes("contentVersion: '2026-10-20.9'"), 'content version is 2026-10-20.9');
 assert(copy.consentTextVersion === 'referral-consent-pending-legal-2026-10-20.1' && appText.includes(copy.consentTextVersion), 'consent text version is the pending-legal id');
 Object.keys(copy).forEach(key => {
   if (key === 'consentTextVersion') return;
