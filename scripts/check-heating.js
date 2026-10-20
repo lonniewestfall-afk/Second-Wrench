@@ -100,7 +100,7 @@ function key(s){if(s.result)return JSON.stringify([s.result,s.product,s.fnFuel,s
 const queue=[furnace(),boiler(),water(),coilWater(false),coilWater(true),act(water(),'none_of_these','none_of_these','combi','continue'),act(water(),'none_of_these','none_of_these','tank','indirect','continue'),act(boiler(),'none_of_these','hydro_air','pipe_hot_no_air'),act(furnace(),'none_of_these','air_handler_hot_water','boiler','pipe_cold')].map(s=>Object.assign(s,{walkLane:s.product})),seen=new Set(),visited=new Set(),leaves=new Set();
 while(queue.length){
  const a=queue.shift(),k=key(a);if(seen.has(k))continue;seen.add(k);if(seen.size%10000===0)console.log('Heating walk',seen.size,a.product,a.node,a.answers.length,queue.length);assert.ok(seen.size<100000,'bounded state walk');
- if(a.result){leaves.add(a.result);assert.match(F.summary(a),/TEST SCENARIO/);const stopped=clone(a);F.stop(stopped);assert.equal(stopped.node,['fn','bl','hp','wh'].includes(a.product)?'sw.co.fast_exit':'ac.gate.cluster_entry');assert.equal(stopped.result,null);continue;}
+ if(a.result){leaves.add(a.result);assert.match(F.summary(a),/TEST SCENARIO/);const stopped=clone(a);F.stop(stopped);assert.equal(stopped.node,'sw.co.fast_exit');assert.equal(stopped.result,null);continue;}
  if(!H.owns(a.node)||a.product!==a.walkLane)continue;
  visited.add(a.node);const view=F.viewNode(a.node,a);
  if(view.noticePrompt){const t=clone(a);F.acknowledgeStep(t);queue.push(t);}

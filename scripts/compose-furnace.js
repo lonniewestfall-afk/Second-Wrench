@@ -185,7 +185,7 @@ module.exports = function buildFurnace(base, draft, CO) {
     FT_CO_4,
     '6. Before using the heat again, have a licensed HVAC professional check the system.'
   ].join('\n');
-  const FT_SM_2 = "A dusty smell the first few times the heat runs each season is common. Dust on the heating parts burns off. It should fade in about an hour of running (POLICY, R18). If it hasn't faded after about an hour, keeps coming back, or changes to a plastic or electrical smell, turn the heat Off at the thermostat and call a licensed HVAC professional.";
+  const FT_SM_2 = "A dusty smell the first few times the heat runs each season is common. Dust on the heating parts burns off. It should fade in about an hour of running. If it hasn't faded after about an hour, keeps coming back, or changes to a plastic or electrical smell, turn the heat Off at the thermostat and call a licensed HVAC professional.";
   const FT_SM_3 = "Turn the heat Off at the thermostat now. Then switch off the furnace's service switch or its breaker (switch it Off only). Never open the panel cover. Don't reset a breaker that trips again. Don't run the heat again until a licensed HVAC professional has checked it. If you see smoke or the smell gets stronger, get everyone outside and call 911 from outside.";
   const FT_SM_4 = "Get everyone outside now and call 911 from outside. Don't go back in to turn anything off.";
   const FT_SM_5 = 'If the house is getting cold, call a licensed HVAC professional. If it’s dangerously cold and anyone is at risk, get them somewhere warm first.';

@@ -1,6 +1,6 @@
 /* Catalog phase 1. No network. */
 'use strict';
-globalThis.SW_CONFIG = { advancedRepairsEnabled: false, aiThermostatEnabled: false, mirrorsEnabled: false, stageLatchStepsEnabled: false, contentVersion: '2026-10-20.1' };
+globalThis.SW_CONFIG = { advancedRepairsEnabled: false, aiThermostatEnabled: false, mirrorsEnabled: false, stageLatchStepsEnabled: false, contentVersion: '2026-10-20.2' };
 const fs = require('fs');
 const path = require('path');
 const F = require('../assets/flow.js');
@@ -86,11 +86,11 @@ assert(F.nodes['ts.intake.brand_picker'].options.some(option => option.id === 'b
 
 const stopped = F.create();
 F.stop(stopped);
-assert(stopped.stopCount === 1 && stopped.node === 'ac.gate.cluster_entry', 'stop counts and returns to hazard choices');
+assert(stopped.stopCount === 1 && stopped.node === 'sw.co.fast_exit' && stopped.coReturn === 'ac.gate.cluster_entry', 'stop counts and opens the CO screen');
 const basic = walk(BASIC);
 const shown = F.results[basic.result];
 assert(shown.tier === 'Basic homeowner check' && !F.catalogHazardResult(basic), 'basic result still offers the unit step');
-const payload = F.catalogPayload(basic, { appVersion: '0.1.0-beta', contentVersion: '2026-10-20.1', catalogConsentVersion: 'cat-consent-2026-10-18.1', unitStep: 'submitted', followupStatus: 'offered' });
+const payload = F.catalogPayload(basic, { appVersion: '0.1.0-beta', contentVersion: '2026-10-20.2', catalogConsentVersion: 'cat-consent-2026-10-18.1', unitStep: 'submitted', followupStatus: 'offered' });
 const fact = basic.answers.map(answer => answer.fact).find(Boolean);
 const label = basic.answers.map(answer => answer.label).find(Boolean);
 assert(fact && label, 'the sample check has a fact and a label');
@@ -333,7 +333,10 @@ async function pageChecks() {
   const stopButton = on.doc.querySelector('#catalog-step [data-action="stop"]');
   click(stopButton);
   await flush();
-  assert(on.doc.querySelector('[data-answer="hazard_gas_co"]'), 'stop from the unit step reaches hazard choices');
+  assert(on.doc.querySelector('[data-answer="co_no"]'), 'stop from the unit step opens the CO screen');
+  click(on.doc.querySelector('[data-answer="co_no"]'));
+  await flush();
+  assert(on.doc.querySelector('[data-answer="hazard_gas_co"]'), 'No on the CO screen reaches hazard choices');
   on.window.close();
 
   const hazard = boot({ catalog: true });
@@ -358,7 +361,10 @@ async function pageChecks() {
   await flush();
   click(follow.doc.querySelector('#followup-step [data-action="stop"]'));
   await flush();
-  assert(follow.doc.querySelector('[data-answer="hazard_gas_co"]'), 'stop from the follow-up reaches hazard choices');
+  assert(follow.doc.querySelector('[data-answer="co_no"]'), 'stop from the follow-up opens the CO screen');
+  click(follow.doc.querySelector('[data-answer="co_no"]'));
+  await flush();
+  assert(follow.doc.querySelector('[data-answer="hazard_gas_co"]'), 'No on the CO screen reaches hazard choices');
   follow.window.close();
 
   const gpc = boot({ catalog: true, gpc: true });

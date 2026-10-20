@@ -3110,20 +3110,19 @@
       hpGasFurnace: state.hpGasFurnace, fnLanding: state.fnLanding, answers: state.answers, audit: state.audit
     };
     const fresh = create(keep.seed, keep.mode);
-    const heatingStop = laneGate(keep.product);
-    const reopen = heatingStop || ENTRY;
+    const returnTo = laneGate(keep.product) || ENTRY;
     const hadConsent = !!state.consent;
     const consentAt = state.consentAt;
     const termsVersion = state.termsVersion;
     const privacyVersion = state.privacyVersion;
     const nextStop = (state.stopCount || 0) + 1;
     Object.assign(state, fresh, keep, {
-      stopping: true, node: heatingStop ? CO_NODE : reopen, result: null, safetyCleared: false,
-      coReturn: heatingStop || null, coSkip: null,
-      consent: heatingStop ? hadConsent : false,
-      consentAt: heatingStop ? consentAt : null,
-      termsVersion: heatingStop ? termsVersion : null,
-      privacyVersion: heatingStop ? privacyVersion : null,
+      stopping: true, node: CO_NODE, result: null, safetyCleared: false,
+      coReturn: returnTo, coSkip: null,
+      consent: hadConsent,
+      consentAt: hadConsent ? consentAt : null,
+      termsVersion: hadConsent ? termsVersion : null,
+      privacyVersion: hadConsent ? privacyVersion : null,
       stopCount: nextStop,
       telemetry: false, preselectChoice: null, heatingHazardReported: false
     });

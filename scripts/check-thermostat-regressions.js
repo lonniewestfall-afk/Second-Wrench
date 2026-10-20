@@ -100,14 +100,14 @@ function tsResult(choices) {
 }
 const waiting = tsResult(['landing_wait_delay', 'wait_persists']);
 const escalated = clone(waiting);
-F.stop(escalated); F.answer(escalated, 'hazard_gas_co', meta);
+F.stop(escalated); F.answer(escalated, 'co_no', meta); F.answer(escalated, 'hazard_gas_co', meta);
 let note = F.summary(escalated);
 assert.equal(escalated.result, 'gas');
 assert(note.includes('Result: ' + F.results.gas.title + ' (Emergency)'), 'Global hazard result missing from TS note');
 assert(note.includes('Gas smell or CO alarm reported.'), 'New hazard observation missing from TS note');
 assert(!note.includes('Safety check at start:'), 'Earlier no-hazard statement obscures later report');
 assert(note.includes('Earlier result: ' + F.results.ts_wait_persists.title), 'Earlier TS result missing');
-F.stop(escalated); F.answer(escalated, 'none_of_these', meta);
+F.stop(escalated); F.answer(escalated, 'co_no', meta); F.answer(escalated, 'none_of_these', meta);
 note = F.summary(escalated);
 assert.equal(escalated.result, 'professional');
 assert(note.includes('Result: ' + F.results.professional.title), 'Locked professional result missing from TS note');
@@ -115,7 +115,7 @@ assert(note.includes('Earlier result: ' + F.results.gas.title), 'Earlier global 
 assert(note.includes('Gas smell or CO alarm reported.'), 'Prior hazard was lost after stopping again');
 assert(note.endsWith('TEST SCENARIO — not an actual equipment report.'), 'Escalated TS note lost test label');
 const urgent = tsResult(['landing_em_aux_heat', 'eh_tech_left_on']);
-F.stop(urgent); F.answer(urgent, 'none_of_these', meta);
+F.stop(urgent); F.answer(urgent, 'co_no', meta); F.answer(urgent, 'none_of_these', meta);
 assert.equal(urgent.result, 'professional');
 assert(F.summary(urgent).includes('Result: ' + F.results.professional.title), 'Intentional-emergency-heat stop lost global result');
 
