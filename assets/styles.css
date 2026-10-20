@@ -141,3 +141,9 @@ input::placeholder,textarea::placeholder{color:#aaaab4;opacity:1}
 .static-guides p{color:var(--muted);font-size:.95rem;margin-bottom:.4em}
 .warranty-note{border-left:3px solid var(--orange);background:var(--amber);padding:14px 16px;margin:20px 0}
 .warranty-note p{margin:0;font-size:.9rem}
+.serial-actions{display:flex;gap:10px;margin-top:12px}
+.serial-actions .serial-choice{flex:1 1 0}
+.button.serial-choice{background:var(--scarlet);color:var(--white);border-color:transparent}
+.catalog-block{margin-top:22px}
+.nameplate-preview{max-width:100%;margin-top:12px}
+.catalog-block .button-row .button{flex:1 1 0}
