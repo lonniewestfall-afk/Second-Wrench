@@ -17,7 +17,7 @@ function load() {
     mirrorsEnabled: false,
     stageLatchStepsEnabled: false,
     tsAnalogWave3Enabled: true,
-    contentVersion: '2026-10-20.17'
+    contentVersion: '2026-10-20.18'
   };
   const context = vm.createContext({ console, Date, URL, SW_CONFIG });
   function read(file) {
@@ -425,7 +425,7 @@ function check() {
 const configText = fs.readFileSync(path.join(root, 'assets/config.js'), 'utf8');
 assert(configText.includes('advancedRepairsEnabled: false'), 'advancedRepairsEnabled stays false');
 assert(configText.includes('tsAnalogWave3Enabled: true'), 'tsAnalogWave3Enabled is on after the asserts');
-assert(configText.includes("contentVersion: '2026-10-20.17'"), 'content version is 2026-10-20.17');
+assert(configText.includes("contentVersion: '2026-10-20.18'"), 'content version is 2026-10-20.18');
 const waveSource = fs.readFileSync(path.join(root, 'assets/ta-wave3.js'), 'utf8');
 assert(!/epa\.gov|tc\.canada\.ca/i.test(waveSource), 'analog lane has a dropped link');
 const appText = fs.readFileSync(path.join(root, 'assets/app.js'), 'utf8');

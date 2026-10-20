@@ -1,7 +1,7 @@
 /* Public configuration. Never place passwords, tokens, or API keys in this file. */
 window.SW_CONFIG = Object.freeze({
   version: '0.1.0-beta',
-  contentVersion: '2026-10-20.17',
+  contentVersion: '2026-10-20.18',
   privacyVersion: 'privacy-public-beta-2026-10-18.1',
   domain: 'secondwrench.co',
   contactEmail: 'support@secondwrench.co',
@@ -24,6 +24,8 @@ window.SW_CONFIG = Object.freeze({
   aiThermostatEnabled: false,
   mirrorsEnabled: false,
   stageLatchStepsEnabled: false,
+  // Blank-screen v2: one thermostat power check after the safety gate. Off keeps the battery alias.
+  tsBlankScreenV2Enabled: true,
   releaseChecks: {
     operatorDetailsConfirmed: false,
     contactEmailApproved: true,

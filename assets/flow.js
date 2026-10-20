@@ -2090,7 +2090,7 @@
           if (!target || typeof target !== 'string') throw new Error('Bad edge from ' + id + '/' + op.id);
           if (target.charAt(0) === '@') {
             if (!results[target.slice(1)]) throw new Error('Missing result ' + target + ' from ' + id);
-          } else if (!nodes[target] && target.indexOf('ac.adv.cap.') !== 0) throw new Error('Missing node ' + target + ' from ' + id);
+          } else if (!nodes[target] && target.indexOf('ac.adv.cap.') !== 0 && target !== 'ac.cool.condensate.symptom_screen' && target !== 'fn.drain.condensate_heat') throw new Error('Missing node ' + target + ' from ' + id);
         });
       });
     });
@@ -2602,7 +2602,365 @@
     o('boiler', 'Boiler, radiators, baseboard, or radiant floors', 'bl.gate.safety', 'Includes steam and hot-water heat, and water coils in air handlers.', 'Boiler or hydronic heating concern reported.')
   );
   nodes['sw.intake.other_system'].options.find(x => x.id === 'not_listed').label = 'None of these';
+  const blankRules = {
+    entry: 'ts.gate.safety_stops', fnRedirect: true, hpRedirect: true, fallback: true,
+    fnSwitch: true, fnDoorBlock: true, showFnDoor: false, hideAcDoor: false, fnNoAcBreaker: true,
+    hpOutdoor: true, coldFirst: true, hazardDone: false, deriveCold: false, defaultFuel: false,
+    skipCo: false, skipLanding: true, zeroReset: false, zeroFnReset: false, showEmHeat: false,
+    omitB4: false, useFnCo: false, forceFnHeat: false, alias: true
+  };
+  const B3_COLD = 'If the house is getting cold, call a licensed HVAC professional. If it\u2019s dangerously cold and anyone is at risk, get them somewhere warm first.';
+  const HP_CO_LINE = 'Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker\u2019s instructions, and keep it clear of anything that can burn.';
+  const HP_EM_HEAT = 'If your thermostat has an Emergency Heat setting, switch to it to keep heat on without the outdoor unit while you wait for a pro. It usually costs more to run.';
+  const HP_EM_OFF = 'Otherwise, or if there is no warm air in 15 minutes, set the thermostat Off.';
+  const DRAIN_COOL = { id: 'cool', label: 'It was cooling (or it\u2019s cooling season)', target: 'ac.cool.condensate.symptom_screen' };
+  const DRAIN_HEAT = { id: 'heat', label: 'It was heating (or it\u2019s heating season)', target: 'fn.drain.condensate_heat' };
+  const PN_NOTICE = 'These steps are optional. You can stop and call a licensed HVAC professional at any time.\nWrite down or photograph how things are set now. You\u2019ll need it to put things back.\nDo only the step shown, the way it\u2019s shown. Don\u2019t open panels, use tools on the equipment, or change anything else, even if it\u2019s on the same screen or nearby.\nIf anything looks different from these steps, stop. Your equipment may not match what we describe. Check your owner\u2019s manual.\nIf you smell gas or burning, hear a CO alarm, see smoke, or see water near wires, stop now and use the emergency steps.\nThese steps come from the equipment maker\u2019s documents and common trade practice. They\u2019re general information, not a diagnosis or an inspection of your system.';
+  const PN_ACK = 'I wrote down or photographed the current settings, I\u2019ll do only the step shown, and I\u2019ll stop if anything looks different or unsafe.';
+  const DOOR_UNDO = 'If you\u2019re not sure what you changed, put back what you wrote down. If you can\u2019t, leave it and call a licensed HVAC professional. Don\u2019t guess. For a hazard, follow the emergency instructions instead.';
+  function blankV2() {
+    const cfg = typeof globalThis !== 'undefined' ? globalThis.SW_CONFIG : null;
+    return !!(cfg && cfg.tsBlankScreenV2Enabled === true);
+  }
+  function blankFail(code, msg) { throw new Error(code + ': ' + msg); }
+  function reuseBlank(id, extra) {
+    const found = nodes['ts.power.blank_screen'].options.find(op => op.id === id);
+    return Object.assign({}, found, extra || {});
+  }
+  function tailBlank() {
+    return ['not_sure', 'screen_looks_different', 'installer_setting_came_up', 'hazard_now'].map(id => reuseBlank(id));
+  }
+  function heatCopy(text) {
+    return String(text || '')
+      .replace(/while cool is calling/gi, 'while Heat is calling')
+      .replace(/when cool is calling/gi, 'when Heat is calling')
+      .replace(/Cool is calling/g, 'Heat is calling');
+  }
+  function rememberOrigin(state) {
+    if (!state.originLane) {
+      const product = state.product;
+      state.originLane = product === 'hp' || product === 'fn' || product === 'ac' ? product : 'ac';
+    }
+    if (!state.hvacMode) {
+      if (state.originLane === 'ac') state.hvacMode = 'cool';
+      else if (state.originLane === 'fn') state.hvacMode = 'heat';
+      else if (state.hpLanding === 'no_heat') state.hvacMode = 'heat';
+      else if (state.hpLanding === 'no_cool') state.hvacMode = 'cool';
+      else state.hvacMode = 'unknown';
+    }
+    if (state.originLane === 'hp' && !state.equipment) state.equipment = 'heat_pump';
+  }
+  function allElectricHp(state) {
+    if (!state || blankRules.forceFnHeat) return false;
+    const hp = state.originLane === 'hp' || state.equipment === 'heat_pump';
+    if (!hp) return false;
+    return state.hpGasFurnace !== 'yes' && state.hpGasFurnace !== 'not_sure';
+  }
+  function heatPayload(state) {
+    const payload = {
+      mode: 'heat', equipment: 'unknown', symptom: 'float_alarm', ts_origin: 'ts.power.float_mode',
+      hazard_screen_done: blankRules.hazardDone === true,
+      cold_screen: blankRules.deriveCold ? false : 'unknown'
+    };
+    const fuel = state && state.fnFuel ? state.fnFuel : (blankRules.defaultFuel ? 'gas' : null);
+    if (fuel) payload.fuel = fuel;
+    return payload;
+  }
+  function furnaceSwitchNext(state) {
+    const fuelStop = state && (state.fnFuel === 'oil' || state.fnFuel === 'electric');
+    if (state && state.originLane === 'fn' && blankRules.fnSwitch !== false && !fuelStop) return 'fn.power.switch_breaker_visual';
+    return '@ts_power_breaker_pro';
+  }
+  function coolFloatTarget(state) {
+    const id = 'ac.cool.condensate.symptom_screen';
+    state.hvacMode = 'cool';
+    state.blankHandoff = { kind: 'H-C', mode: 'cool', hazard_screen_done: true, ts_origin: 'ts.power.float_mode', tsModel: state.tsModel || null };
+    if (!nodes[id]) return blankRules.fallback === false ? id : '@ts_float_switch_seen';
+    state.tsHandoffNext = id;
+    return 'ac.gate.cluster_entry';
+  }
+  function heatFloatTarget(state) {
+    state.hvacMode = 'heat';
+    if (allElectricHp(state)) {
+      state.floatLinks = 'air';
+      state.hpOutdoorNotRunning = true;
+      return '@ts_float_switch_seen';
+    }
+    if (state.fnFuel === 'oil' || state.fnFuel === 'electric') return '@ts_power_breaker_pro';
+    const drain = 'fn.drain.condensate_heat';
+    if (!nodes[drain]) {
+      state.floatLinks = state.floatLinks || 'both';
+      return blankRules.fallback === false ? drain : '@ts_float_switch_seen';
+    }
+    state.blankHandoff = heatPayload(state);
+    state.blankHandoffNext = drain;
+    pushAudit(state, 'handoff:ts_to_fn');
+    if (blankRules.skipCo) state.coSkip = 'fn.gate.combustion_co';
+    return 'fn.gate.combustion_co';
+  }
+  function blankRoute(state, nodeId, choice, option, target) {
+    if (target === 'ac.tstat.blank.batteries' && blankRules.alias !== false && nodes['ac.tstat.blank.batteries']) {
+      if (state.product === 'fn' && blankRules.fnRedirect === false) return target;
+      if (state.product === 'hp' && blankRules.hpRedirect === false) return target;
+      rememberOrigin(state);
+      state.tsBlankPreset = true;
+      state.tsLanding = 'blank_screen';
+      enterLane(state, 'ts');
+      pushAudit(state, 'alias:ac.tstat.blank.batteries');
+      return blankRules.entry || 'ts.gate.safety_stops';
+    }
+    if (state.tsBlankPreset && blankRules.skipLanding !== false && target === 'ts.landing.picker') {
+      state.tsLanding = 'blank_screen';
+      return 'ts.power.blank_screen';
+    }
+    if (nodeId === 'ts.power.blank_screen' && choice === 'furnace_switch_off') {
+      const next = furnaceSwitchNext(state);
+      if (next === 'fn.power.switch_breaker_visual') {
+        if (blankRules.zeroFnReset) state.reset_count = 0;
+        pushAudit(state, 'handoff:ts_to_fn');
+        state.product = 'fn';
+        state.treeVersion = 'fn.furnace.v3';
+      }
+      return next;
+    }
+    if (nodeId === 'ts.power.blank_screen' && choice === 'breaker_ac_outdoor') {
+      if (state.originLane === 'fn' && blankRules.fnNoAcBreaker !== false) return '@ts_power_breaker_pro';
+      if ((option && option.handoff && option.handoff.reset === 'zero') || blankRules.zeroReset) state.reset_count = 0;
+      state.fromBlankBreaker = true;
+      state.blankHandoff = { kind: 'H-B', ts_origin: 'ts.power.blank_screen', mode: state.hvacMode || 'unknown', reset_count: state.reset_count || 0 };
+      if ((state.originLane === 'hp' || state.equipment === 'heat_pump') && blankRules.hpOutdoor !== false) state.hpOutdoorNotRunning = true;
+      pushAudit(state, 'handoff:ts_to_ac');
+      return 'ac.cool.power.breaker_visual';
+    }
+    if (nodeId === 'ts.power.door_reseat' && choice === 'door_closed_still_blank') {
+      state.doorChecked = true;
+      return 'ts.power.blank_screen';
+    }
+    if ((target === 'ts.power.door_reseat' || (nodeId === 'ts.power.blank_screen' && choice === 'door_not_seated')) && state.originLane === 'fn' && blankRules.fnDoorBlock !== false) {
+      return '@ts_power_breaker_pro';
+    }
+    if (nodeId === 'ts.power.float_mode' && choice === 'mode_cool') {
+      state.floatLinks = 'both';
+      return coolFloatTarget(state);
+    }
+    if (nodeId === 'ts.power.float_mode' && choice === 'mode_heat') return heatFloatTarget(state);
+    if (nodeId === 'ts.power.float_mode' && choice === 'mode_unknown') {
+      state.floatLinks = 'both';
+      return '@ts_float_switch_seen';
+    }
+    if (nodeId === 'ac.gate.cluster_entry' && choice === 'none_of_these' && state.tsHandoffNext) {
+      const next = state.tsHandoffNext;
+      state.tsHandoffNext = null;
+      if (nodes[next]) return next;
+      return blankRules.fallback === false ? next : '@ts_float_switch_seen';
+    }
+    if (nodeId === 'fn.gate.combustion_co' && choice === 'none_of_these' && state.blankHandoffNext) {
+      const next = state.blankHandoffNext;
+      state.blankHandoffNext = null;
+      state.product = 'fn';
+      return nodes[next] ? next : '@ts_float_switch_seen';
+    }
+    return target;
+  }
+  function coldFirst(state) {
+    if (!state || blankRules.coldFirst === false) return false;
+    if (state.originLane !== 'hp' && state.originLane !== 'fn') return false;
+    if (state.hvacMode === 'cool') return false;
+    return state.hvacMode === 'heat' || state.hvacMode === 'unknown' || !state.hvacMode;
+  }
+  function blankOptions(state) {
+    return blankScreen.options.filter(op => {
+      if (op.id !== 'door_not_seated') return true;
+      if (state && state.doorChecked) return false;
+      if (state && state.originLane === 'fn' && !blankRules.showFnDoor) return false;
+      if (state && state.originLane === 'ac' && blankRules.hideAcDoor) return false;
+      return true;
+    }).map(op => {
+      if (op.id === 'furnace_switch_off') return Object.assign({}, op, { next: furnaceSwitchNext(state) });
+      if (op.id === 'breaker_ac_outdoor' && state && state.originLane === 'fn' && blankRules.fnNoAcBreaker !== false) {
+        return Object.assign({}, op, { next: '@ts_power_breaker_pro' });
+      }
+      return op;
+    });
+  }
+  function doorDecorate(state, view) {
+    if (state && state.originLane === 'fn' && blankRules.fnDoorBlock !== false) {
+      return Object.assign({}, view, { step: null, noticePrompt: null, ackLabel: null, options: view.options.filter(op => op.id === 'hazard_now' || op.id === 'cold_home_risk') });
+    }
+    const acked = state && state.notices && state.notices.ts && state.notices.ts.notice_ack;
+    if (acked) return view;
+    return Object.assign({}, view, {
+      body: 'Review this notice before revealing the optional step.',
+      step: null,
+      noticePrompt: PN_NOTICE,
+      ackLabel: PN_ACK,
+      options: view.options.map(op => (op.id === 'hazard_now' || op.id === 'cold_home_risk') ? op : Object.assign({}, op, { disabled: true }))
+    });
+  }
+  function breakerDecorate(state, view) {
+    let options = view.options.slice();
+    let body = view.body;
+    if (state && state.fromBlankBreaker && state.hpOutdoorNotRunning && state.hvacMode !== 'cool') {
+      body = heatCopy(body);
+      options = options.map(op => Object.assign({}, op, { label: heatCopy(op.label), hint: heatCopy(op.hint), fact: heatCopy(op.fact) }));
+    }
+    if (coldFirst(state)) options = [reuseBlank('cold_home_risk')].concat(options.filter(op => op.id !== 'cold_home_risk'));
+    return Object.assign({}, view, { body: body, options: options });
+  }
+  function blankDecorate(id, state, view) {
+    if (!view) return view;
+    if (id === 'ts.power.door_reseat') return doorDecorate(state, view);
+    if (!blankV2()) return view;
+    if (id === 'ts.power.blank_screen') return Object.assign({}, view, { body: blankScreen.body, options: blankOptions(state) });
+    if (id === 'ac.cool.power.breaker_visual' || id === 'ac.cool.power.breaker_reset_gate') return breakerDecorate(state, view);
+    return view;
+  }
+  function decorateBlankResult(state, res) {
+    if (!res || !state) return res;
+    let copy = res;
+    const hpHeat = state.originLane === 'hp' && state.hvacMode !== 'cool';
+    const overlayIds = { ts_power_breaker_pro: 1, ts_blank_after_basics: 1, ts_open_cabinet_stop: 1, ts_float_switch_seen: 1 };
+    if (hpHeat && overlayIds[state.result]) {
+      const actions = (res.actions || []).slice();
+      if (blankRules.showEmHeat) actions.push(HP_EM_HEAT, HP_EM_OFF);
+      if (!blankRules.omitB4) actions.push(B3_COLD, blankRules.useFnCo ? FN_CO_LINE : HP_CO_LINE);
+      copy = Object.assign({}, res, { actions: actions, coLine: blankRules.useFnCo ? 'FN_CO_LINE' : 'HP_CO_LINE' });
+    }
+    if (state.result === 'ts_float_switch_seen') {
+      const links = state.floatLinks === 'air' ? [DRAIN_COOL] : [DRAIN_COOL, DRAIN_HEAT];
+      copy = Object.assign({}, copy, { drainLinks: links, continueTo: null });
+    }
+    return copy;
+  }
+  function followDrain(state, which) {
+    if (!state || state.result !== 'ts_float_switch_seen') throw new Error('No drain check from here.');
+    const shown = decorateBlankResult(state, results[state.result]);
+    const link = (shown.drainLinks || []).find(item => item.id === which);
+    if (!link) throw new Error('That drain check is not available.');
+    if (!nodes[link.target]) return state;
+    state.result = null;
+    if (which === 'cool') {
+      state.tsHandoffNext = link.target;
+      if (state.originLane === 'hp' && state.hvacMode === 'heat') state.hpOutdoorNotRunning = true;
+      state.node = 'ac.gate.cluster_entry';
+    } else {
+      if (state.fnFuel === 'oil' || state.fnFuel === 'electric') {
+        state.result = 'ts_power_breaker_pro';
+        state.node = null;
+        return state;
+      }
+      state.blankHandoff = heatPayload(state);
+      state.blankHandoffNext = link.target;
+      state.coReturn = 'fn.gate.combustion_co';
+      state.node = CO_NODE;
+      pushAudit(state, 'handoff:ts_to_fn');
+    }
+    pushAudit(state, 'node_entered:' + state.node);
+    return state;
+  }
+  function lineOk(line) {
+    const ban = /\b(reset|switch(ed)? (it )?on|turn (it )?on|push|remove|re-?seat)\b/i;
+    const stripped = String(line || '').replace(/Don\u2019t reset/gi, '').replace(/don\u2019t switch it on/gi, '').replace(/didn\u2019t reset/gi, '').replace(/light switch/gi, '').replace(/float switch/gi, '');
+    return !ban.test(stripped);
+  }
+  function assertBlankScreen() {
+    const ids = blankScreen.options.map(op => op.id);
+    const order = ['cold_home_risk', 'power_back', 'float_or_pan_water', 'breaker_ac_outdoor', 'breaker_looks_tripped', 'furnace_switch_off', 'door_not_seated', 'other_power_off', 'app_power_alert', 'still_blank', 'power_code_or_restarting', 'told_cwire_or_kit', 'not_sure', 'screen_looks_different', 'installer_setting_came_up', 'hazard_now'];
+    if (ids.join('|') !== order.join('|') || ids[0] !== 'cold_home_risk' || ids[ids.length - 1] !== 'hazard_now') blankFail('TS-G67', 'order');
+    blankScreen.body.split('\n').concat(blankScreen.options.map(op => [op.label, op.hint])).reduce((all, item) => all.concat(item), []).forEach(line => {
+      if (!lineOk(line)) blankFail('TS-G67', line);
+    });
+    const float = nodes['ts.power.float_mode'];
+    const floatIds = float.options.map(op => op.id);
+    if (floatIds[0] !== 'cold_home_risk' || float.options.find(op => op.id === 'mode_cool').next !== 'ac.cool.condensate.symptom_screen') blankFail('TS-G68', 'cool');
+    if (float.options.find(op => op.id === 'mode_heat').next !== 'fn.drain.condensate_heat' || float.options.find(op => op.id === 'mode_unknown').next !== '@ts_float_switch_seen') blankFail('TS-G68', 'heat');
+    if (floatIds[floatIds.length - 1] !== 'hazard_now') blankFail('TS-G68', 'tail');
+    const sample = heatPayload({ fnFuel: null });
+    if (sample.hazard_screen_done !== false || sample.cold_screen !== 'unknown' || sample.fuel || blankRules.skipCo || blankRules.hazardDone || blankRules.deriveCold || blankRules.defaultFuel) blankFail('TS-G69', 'payload');
+    if (sample.mode !== 'heat' || sample.symptom !== 'float_alarm' || sample.ts_origin !== 'ts.power.float_mode') blankFail('TS-G69', 'fields');
+    const missing = heatFloatTarget({ fnFuel: null, originLane: 'ac', audit: [], hpGasFurnace: null, equipment: null });
+    if (nodes['fn.drain.condensate_heat']) {
+      if (missing !== 'fn.gate.combustion_co') blankFail('TS-G70', 'present');
+    } else if (missing !== '@ts_float_switch_seen') blankFail('TS-G70', 'fallback');
+    const seen = results.ts_float_switch_seen;
+    if (!seen || seen.continueTo != null || seen.diyTier !== 'basic' || seen.avoid !== 'Don\u2019t tape, bend, or hold the float switch down to make the system run.' || JSON.stringify(seen.actions) !== JSON.stringify(['Don\u2019t touch the float switch, its wires, or the thermostat wiring.', 'Use the drain check for cooling or for heating. Each has its own steps and stop lines.'])) blankFail('TS-G71', 'result');
+    ['breaker_ac_outdoor', 'breaker_looks_tripped', 'furnace_switch_off'].forEach(id => {
+      const fact = blankScreen.options.find(op => op.id === id).fact;
+      if (fact.indexOf('did not') === -1) blankFail('TS-G71', id);
+    });
+    const door = nodes['ts.power.door_reseat'];
+    const steps = (door.step && door.step.steps || []).join('\n');
+    if (door.options[0].id !== 'cold_home_risk' || door.options[door.options.length - 1].id !== 'hazard_now') blankFail('TS-G72', 'order');
+    if (door.options.find(op => op.id === 'door_off').next !== '@ts_open_cabinet_stop') blankFail('TS-G72', 'door_off');
+    if (door.options.find(op => op.id === 'door_closed_still_blank').next !== 'ts.power.blank_screen') blankFail('TS-G72', 'return');
+    if (steps.indexOf('never run the unit with the door off') === -1 || steps.toLowerCase().indexOf('don\u2019t take the door off') === -1) blankFail('TS-G72', 'steps');
+    if (/lift it onto its tabs|the way it came off/.test(steps + door.step.what + door.step.caution) || door.step.stop.indexOf('If you smell gas or burning, leave the home and call 911 or your gas utility from outside.') === -1) blankFail('TS-G72', 'stop');
+    if (door.step.watch.indexOf('MANUAL:') === -1) blankFail('TS-G72', 'manual');
+    if (blankScreen.options.find(op => op.id === 'breaker_ac_outdoor').next !== 'ac.cool.power.breaker_visual') blankFail('TS-G73', 'link');
+    if (blankScreen.options.find(op => op.id === 'breaker_looks_tripped').next.indexOf('ac.cool.power.breaker_') === 0) blankFail('TS-G73', 'furnace breaker');
+    if (blankRules.fnNoAcBreaker === false || blankRules.zeroReset) blankFail('TS-G73', 'guard');
+    if (blankRules.showFnDoor || blankRules.fnDoorBlock === false || blankRules.hideAcDoor) blankFail('TS-G74', 'door');
+    if (blankRules.fnSwitch === false || blankRules.zeroFnReset) blankFail('TS-G75', 'switch');
+    if (blankRules.hpOutdoor === false) blankFail('TS-G76', 'outdoor');
+    if (blankRules.showEmHeat || blankRules.omitB4 || blankRules.useFnCo) blankFail('TS-G77', 'overlay');
+    if (HP_EM_HEAT && blankRules.showEmHeat) blankFail('TS-G77', 'B1');
+    if (blankRules.coldFirst === false) blankFail('TS-G78', 'cold');
+    if (blankRules.entry !== 'ts.gate.safety_stops' || blankRules.skipLanding === false) blankFail('TS-A40', 'entry');
+    if (blankRules.alias === false || !nodes['ac.tstat.blank.batteries']) blankFail('TS-A42', 'alias');
+    if (blankRules.fnRedirect === false || blankRules.hpRedirect === false) blankFail('TS-A43', 'redirect');
+    if (blankRules.forceFnHeat) blankFail('TS-A44', 'electric');
+  }
+  const storedPower = nodes['ts.power.blank_screen'];
+  const blankBody = storedPower.body.replace('\n\n{step panel: POWER}', '\n6. Look under the indoor unit for a drain pan with water in it, or a small float switch on the drain line. Don\u2019t touch it.\n7. If your thermostat has an app, read what it says about power or connection. Don\u2019t open the thermostat or the equipment.\n\n{step panel: POWER}');
+  const blankScreen = {
+    body: blankBody,
+    options: [reuseBlank('cold_home_risk'), reuseBlank('power_back')].concat([
+      o('float_or_pan_water', 'There\u2019s water in the drain pan under the indoor unit, or a small float switch on the drain line or pan', 'ts.power.float_mode', 'Don\u2019t touch it. We\u2019ll send you to the drain check.', 'Water in the drain pan or a float switch seen. User did not touch it.'),
+      Object.assign(o('breaker_ac_outdoor', 'The breaker labeled for the outdoor unit or AC looks tripped or off', 'ac.cool.power.breaker_visual', 'Leave it as it is for now. The next screens ask a few questions first.', 'Breaker for the outdoor unit or AC looked tripped or off. User did not reset it here. Sent to the AC breaker check.'), { handoff: { kind: 'H-B', reset: 'carry' } }),
+      reuseBlank('breaker_looks_tripped'),
+      reuseBlank('furnace_switch_off'),
+      o('door_not_seated', 'The furnace or air-handler door doesn\u2019t look fully closed', 'ts.power.door_reseat', 'The next screen shows how to close it.', 'Furnace or air-handler door looked not fully closed.'),
+      reuseBlank('other_power_off'),
+      o('app_power_alert', 'The app or screen keeps showing a power alert, like POWER RESTORED or AC Power Resumed', '@ts_blank_after_basics', 'One alert after an outage is normal. Repeated ones need a pro.', 'Repeated power alerts reported (T9 POWER RESTORED / T6 175).'),
+      reuseBlank('still_blank'),
+      reuseBlank('power_code_or_restarting'),
+      reuseBlank('told_cwire_or_kit')
+    ], tailBlank())
+  };
+  nodes['ts.power.door_reseat'] = n('Power', 'Close the blower door firmly', 'Pushes the furnace or air-handler blower door fully into place so its door switch closes. Many systems stay off while that door is open.', [
+    reuseBlank('cold_home_risk'),
+    o('door_closed_screen_back', 'I closed the door and the screen came back on', '@ts_power_restored_basic', '', 'Blower door was not fully closed. User closed it and the screen came back.'),
+    o('door_closed_still_blank', 'The door is closed now, and the screen is still blank', 'ts.power.blank_screen', '', 'Blower door is closed. Screen still blank.'),
+    o('door_off', 'The door is off the furnace or air handler', '@ts_open_cabinet_stop', '', 'Blower door was off. User did not put it back on.'),
+    o('door_wont_close', 'The door won\u2019t close without force, or something looks damaged', '@ts_power_breaker_pro', '', 'Blower door would not close without force. User did not force it.')
+  ].concat(tailBlank()), { caution: 'If the door is bent or the latches are broken, it may not close. Don\u2019t force it.', safetyGate: true });
+  nodes['ts.power.door_reseat'].notice = 'pn-v1';
+  nodes['ts.power.door_reseat'].step = {
+    what: 'Pushes the furnace or air-handler blower door fully into place so its door switch closes. Many systems stay off while that door is open.',
+    caution: 'If the door is bent or the latches are broken, it may not close. Don\u2019t force it.',
+    source: 'From Honeywell Home T6 Pro Smart User Guide 33-00410EFS-03, page 30 (\u201CMake sure the furnace door is closed securely\u201D), and T9 Guide 33-00478-04, page 33 (\u201CMake sure furnace door is closed securely\u201D), checked October 15, 2026.',
+    steps: [
+      '1. Look at the blower door, the lower front panel of the furnace or air handler. If it\u2019s already fully closed, choose \u201CThe door is closed now, and the screen is still blank\u201D below.',
+      '2. If it isn\u2019t, press it firmly into place with flat hands until it sits flush and the outside latches catch. Use only the latches on the outside. Don\u2019t use tools, and don\u2019t take the door off.',
+      '3. Never tape, hold, or bypass the door switch, and never run the unit with the door off.'
+    ],
+    watch: 'Watch the thermostat screen for 5 minutes after the door is closed. (MANUAL: T9 Guide 33-00478-04, page 33: \u201CWait 5 minutes for the system to respond.\u201D T6 Pro Smart User Guide 33-00410EFS-03, page 30: \u201Cwait 5 minutes for the system to respond.\u201D)',
+    stop: 'Stop if the door is off, won\u2019t close without force, or the inside is open to wires. Leave it and call a licensed HVAC professional. If you smell gas or burning, leave the home and call 911 or your gas utility from outside.',
+    undo: DOOR_UNDO
+  };
+  nodes['ts.power.float_mode'] = n('Power', 'Is the system heating or cooling?', 'A float switch can turn the system off when the condensate drain backs up. The drain check depends on whether the system was cooling or heating. Look at the thermostat mode or the app, or answer from what you remember.', [
+    reuseBlank('cold_home_risk'),
+    o('mode_cool', 'It was cooling (or it\u2019s cooling season)', 'ac.cool.condensate.symptom_screen', '', 'Float or drain-pan water seen while cooling.'),
+    o('mode_heat', 'It was heating (or it\u2019s heating season)', 'fn.drain.condensate_heat', '', 'Float or drain-pan water seen while heating.'),
+    o('mode_unknown', 'I can\u2019t tell', '@ts_float_switch_seen', '', 'Float or drain-pan water seen; mode unknown.')
+  ].concat(tailBlank()), { safetyGate: true });
+  results.ts_float_switch_seen = r('Basic homeowner check', '', 'A full drain pan can shut your system off.',
+    'Many systems have a float switch that turns the cooling or heating off when the condensate drain backs up, so water doesn\u2019t overflow. When the drain clears and the pan empties, the system can usually run again. Clearing the drain is a separate check.',
+    ['Don\u2019t touch the float switch, its wires, or the thermostat wiring.', 'Use the drain check for cooling or for heating. Each has its own steps and stop lines.'],
+    'Don\u2019t tape, bend, or hold the float switch down to make the system run.',
+    'maintenance', 'next_step', 'ts_float_switch_seen', { diyTier: 'basic' });
   assertGraph();
+  assertBlankScreen();
 
   function systemMenu() {
     const direct = id => [id];
@@ -2685,7 +3043,7 @@
   };
   function redirectBreaker(state, target) {
     if (typeof target !== 'string' || !state) return target;
-    if (hpEntry(state) && BREAKER_ENTRY[target]) return '@hp_outdoor_not_running_wave1';
+    if (hpEntry(state) && BREAKER_ENTRY[target] && !state.fromBlankBreaker) return '@hp_outdoor_not_running_wave1';
     if (state.product === 'wshp' && BREAKER_ENTRY[target]) return '@wshp_advanced_off';
     if (!breakerResetOnceEnabled() && (target === '@breaker_reset_basic' || target === 'ac.cool.power.breaker_reset_step' || target === '@breaker_seasonal_restore_basic' || target === 'ac.cool.power.seasonal_restore_step')) {
       return '@breaker_off_unexplained_pro';
@@ -2709,7 +3067,7 @@
   function fnOverlay(state, nodeId, choice, target) {
     const key = nodeId + '/' + choice;
     const mapped = FN_EDGE[key];
-    if (mapped) target = typeof mapped === 'function' ? mapped(state) : mapped;
+    if (mapped && !(blankV2() && key.indexOf('ac.tstat.blank.batteries/') === 0)) target = typeof mapped === 'function' ? mapped(state) : mapped;
     if (FN_FORBIDDEN.indexOf(target) !== -1 || String(target).indexOf('ac.adv.cap.') === 0) {
       state.fnReason = 'fn_advanced_off';
       return FN_CONCLUDE;
@@ -2799,7 +3157,7 @@
   function viewNode(id, state) {
     const node = nodes[id];
     if (!node) return null;
-    if (state && hpEntry(state) && (id === 'ac.cool.power.breaker_visual' || id === 'ac.cool.power.breaker_reset_gate' || id === 'ac.cool.power.breaker_reset_step' || id === 'ac.cool.power.seasonal_restore_step')) return null;
+    if (state && hpEntry(state) && !state.fromBlankBreaker && (id === 'ac.cool.power.breaker_visual' || id === 'ac.cool.power.breaker_reset_gate' || id === 'ac.cool.power.breaker_reset_step' || id === 'ac.cool.power.seasonal_restore_step')) return null;
     let view = node;
     if (id === CONCLUDE) {
       view = {
@@ -2829,7 +3187,7 @@
         }))
       });
     }
-    if (state && state.product === 'fn' && id === 'ac.tstat.blank.batteries') {
+    if (state && state.product === 'fn' && id === 'ac.tstat.blank.batteries' && !blankV2()) {
       view = Object.assign({}, view, {
         options: view.options.map(op => {
           if (op.id === 'batteries_replaced_display_back') return Object.assign({}, op, { hint: 'Basic success — retest the heat call.' });
@@ -2881,12 +3239,13 @@
         })
       });
     }
+    view = blankDecorate(id, state, view);
     return TA.view(id, state, state ? HEAT.view(id, state, view) : view);
   }
   function answer(state, choice, meta = {}) {
     if (choice === 'boiler_hot_water_steam') choice = 'boiler';
     if (!state || state.result || !nodes[state.node]) throw new Error('This check has ended or is invalid.');
-    if (hpEntry(state) && BREAKER_ENTRY[state.node]) {
+    if (hpEntry(state) && BREAKER_ENTRY[state.node] && !state.fromBlankBreaker) {
       state.result = 'hp_outdoor_not_running_wave1';
       state.node = null;
       pushAudit(state, 'conclusion_reached:call_pro');
@@ -3054,6 +3413,7 @@
     target = applySessionOverlay(state, nodeId, choice, target);
     target = HEAT.target(state, nodeId, option, target);
     target = TA.route(state, nodeId, choice, option, target);
+    if (blankV2()) target = blankRoute(state, nodeId, choice, option, target);
     if (nodeId === 'wshp.diy.lockout_brand_gate' && (choice === 'brand_waterfurnace' || choice === 'brand_climatemaster' || choice === 'brand_other' || choice === 'brand_unsure')) {
       pushAudit(state, 'flag:wshp_brand=' + choice);
     }
@@ -3126,7 +3486,7 @@
       target = 'ac.cool.power.breaker_visual';
     }
     target = redirectBreaker(state, target);
-    if (!hpEntry(state)) {
+    if (!hpEntry(state) || state.fromBlankBreaker) {
       if (choice === 'breaker_reset_ok_still_silent') state.reset_count = Math.max(state.reset_count || 0, 1);
       if (target === '@breaker_reset_basic') {
         if ((state.reset_count || 0) >= 1) target = '@breaker_retrip_pro';
@@ -3136,6 +3496,10 @@
     state.preselectChoice = choice === 'fan_not_spinning_silent' ? 'outdoor_silent'
       : choice === 'outdoor_hum_cool_calling_fan_not_spinning' ? 'outdoor_hum_no_fan'
       : null;
+    if (blankV2() && target === 'ts.power.float_mode') {
+      if (state.hvacMode === 'heat') state.preselectChoice = 'mode_heat';
+      else if (state.hvacMode === 'cool') state.preselectChoice = 'mode_cool';
+    }
     if (typeof target !== 'string') throw new Error('Unknown next step.');
     if (target.indexOf('ac.adv.cap.') === 0 && !advancedEnabled()) {
       throw new Error('Advanced DIY is not available in this beta.');
@@ -3289,11 +3653,15 @@
       origin_lane: state.origin_lane, equipment: state.equipment, hpOutdoorNotRunning: state.hpOutdoorNotRunning,
       hpLanding: state.hpLanding, hpAmbient: state.hpAmbient, msLanding: state.msLanding, msMode:state.msMode,msMultiZone:state.msMultiZone,msSingleZone:state.msSingleZone,msZone:state.msZone,sdFrom:state.sdFrom,sdMode:state.sdMode,sdSideConfirmed:state.sdSideConfirmed,remoteCodeStepDone:state.remoteCodeStepDone,
       fnFuel: state.fnFuel, wshpLoop: state.wshpLoop, tsModel: state.tsModel,
+      originLane: state.originLane, hvacMode: state.hvacMode, doorChecked: state.doorChecked,
+      tsBlankPreset: state.tsBlankPreset, equipment: state.equipment, floatLinks: state.floatLinks,
+      hpOutdoorNotRunning: state.hpOutdoorNotRunning, fromBlankBreaker: state.fromBlankBreaker,
       treeVersion: state.treeVersion, id: state.id, startedAt: state.startedAt,
       hpGasFurnace: state.hpGasFurnace, fnLanding: state.fnLanding, answers: state.answers, audit: state.audit
     };
     const fresh = create(keep.seed, keep.mode);
-    const returnTo = laneGate(keep.product) || ENTRY;
+    const floatStop = state.node === 'ts.power.float_mode' || state.result === 'ts_float_switch_seen';
+    const returnTo = floatStop ? 'ts.gate.safety_stops' : (laneGate(keep.product) || ENTRY);
     const hadConsent = !!state.consent;
     const consentAt = state.consentAt;
     const termsVersion = state.termsVersion;
@@ -3441,7 +3809,7 @@
       const cold = nodes['hp.heat.cold_home_screen'];
       res = Object.assign({}, res, { explanation: cold.title + '\n\n' + cold.body + '\n\n' + res.explanation });
     }
-    if (state && state.product === 'ts') return TA.present(state, TS.presentResult(state, results), results);
+    if (state && state.product === 'ts') return decorateBlankResult(state, TA.present(state, TS.presentResult(state, results), results));
     if (state && (state.product === 'bl' || state.product === 'wh' || state.product === 'ms')) return HEAT.present(state, res);
     if (state && state.product === 'wshp' && state.result === 'gas') {
       return Object.assign({}, res, {
@@ -3774,7 +4142,15 @@
     return state;
   }
   return {
-    acknowledgeStep: state => { HEAT.acknowledge(state); HEAT.entered(state, state.node); return state; },
+    acknowledgeStep: state => {
+      if (state && state.node === 'ts.power.door_reseat') {
+        state.notices = state.notices || {};
+        state.notices.ts = { notice_ack: true, version: 'pn-v1' };
+        pushAudit(state, 'notice_ack:ts:pn-v1');
+        return state;
+      }
+      HEAT.acknowledge(state); HEAT.entered(state, state.node); return state;
+    },
     nodes, results, create, answer, selectSystem, systemMenu, stop, resume, followResult, summary, activity, viewNode, presentResult, normalizeSession, advancedEnabled,
     treeVersion: TREE_VERSION, treeVersionHp: TREE_HP, treeVersionWshp: TREE_WSHP, treeVersionMs: TREE_MS, treeVersionTs: TREE_TS, tsV0: TS_V0, tsV1: TS_V1, msPr1: MS_PR1, msV1: MS_V1, wave1: WAVE1, wave2: WAVE2, advanced: ADVANCED,
     tsSteps: TS.steps, tsModels: TS.models, tsLc: TS.lc, tsFallbacks: TS.fallbacks, tsMirrors: { records: TS.records, byId: TS.byId, serve: TS.serve, hold: TS.hold },
@@ -3783,6 +4159,7 @@
     tsWave2: TS.wave2ui, tsLatchBlocks: TS.latchBlocks, tsOptionVisible: TS.optionVisible, tsCards: TS.cards,
     hpWave1: HP_WAVE1, wshpWave1: WSHP_WAVE1, treeVersionFn: TREE_FN, fnWave1: FN_WAVE1, fnReused: FN_REUSED, fnForbidden: FN_FORBIDDEN,
     fnCoLine: FN_CO_LINE, fnReasonCopy: FN_REASON_COPY, fnEdge: FN_EDGE,
+    blankRules: blankRules, blankScreen: blankScreen, assertBlankScreen: assertBlankScreen, followDrain: followDrain, hpCoLine: HP_CO_LINE,
     catalogLane, catalogEquipmentType, catalogSymptom, catalogUnitRole, catalogFuel, catalogHazardResult,
     referralEligible, referralSummary, referralSafetyNode, referralCodeClass,
     catalogBrandChoices, catalogPayload, catalogReprompt, acceptReprompt

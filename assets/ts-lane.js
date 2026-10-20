@@ -107,7 +107,8 @@
     'Thermostat showed a refrigerant leak alert.': 1,
     'If anything new comes up, like a burning smell, smoke, a CO alarm, a refrigerant leak alarm, or water at electrical parts, choose the last option.': 1,
     'First: any burning smell, smoke, scorched wires, or a refrigerant leak alarm?': 1,
-    'This beta cannot identify the refrigerant, concentration, or alarm cause.': 1
+    'This beta cannot identify the refrigerant, concentration, or alarm cause.': 1,
+    'Many systems have a float switch that turns the cooling or heating off when the condensate drain backs up, so water doesn\u2019t overflow.': 1
   };
   /* Spec G12 treats the common noun "equipment" like an installer menu name.
    * These approved sentences stay verbatim. The allowlist is the adaptation. */

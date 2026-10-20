@@ -30,7 +30,7 @@ function sweep() {
 const R = sweep();
 // The global Stop control must escalate from every compiled result, including
 // lanes walked separately and defensive results not normally reachable.
-for(const id of Object.keys(F.results)){const s=F.create('','test');s.result=id;s.node=null;F.stop(s);assert(s.node==='sw.co.fast_exit'&&!s.result,'B1-A01-all',id+' cannot escalate');F.answer(s,'co_no',META);assert(s.node==='ac.gate.cluster_entry','B1-A01-all',id+' did not return to hazards');F.answer(s,'hazard_gas_co',META);assert(s.result==='gas','B1-A01-all',id+' did not reach gas response');}
+for(const id of Object.keys(F.results)){const s=F.create('','test');s.result=id;s.node=null;if(id==='ts_float_switch_seen')s.consent=true;F.stop(s);assert(s.node==='sw.co.fast_exit'&&!s.result,'B1-A01-all',id+' cannot escalate');F.answer(s,'co_no',META);if(id==='ts_float_switch_seen'){assert(s.node==='ts.gate.safety_stops','B1-A01-all',id+' did not return to the thermostat hazard gate');F.answer(s,'gas_smell',META);assert(s.result==='ts_co_gas_now','B1-A01-all',id+' did not reach the thermostat gas response');continue;}assert(s.node==='ac.gate.cluster_entry','B1-A01-all',id+' did not return to hazards');F.answer(s,'hazard_gas_co',META);assert(s.result==='gas','B1-A01-all',id+' did not reach gas response');}
 const URGENT = ['Emergency', 'Stop / professional'];
 const REACH_TEXT = Object.keys(R.nodes).map(id => [id, textOf(F.viewNode(id, R.nodes[id]))]).concat(Object.entries(R.results).map(([id, s]) => [id, textOf(F.presentResult(s))]));
 const MS = ['cooling_only_ac', 'ductless_mini_split', 'ductless_single_zone'];
