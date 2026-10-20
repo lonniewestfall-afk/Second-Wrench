@@ -1,6 +1,6 @@
 /* Local sanity for AC Wave-2 and HP Wave-1. No network. */
 'use strict';
-globalThis.SW_CONFIG = { advancedRepairsEnabled: false, aiThermostatEnabled: false, mirrorsEnabled: false, stageLatchStepsEnabled: false, contentVersion: '2026-10-20.9' };
+globalThis.SW_CONFIG = { advancedRepairsEnabled: false, aiThermostatEnabled: false, mirrorsEnabled: false, stageLatchStepsEnabled: false, contentVersion: '2026-10-20.10' };
 const fs = require('fs');
 const path = require('path');
 const F = require('../assets/flow.js');
@@ -90,7 +90,7 @@ const gate = ['none_of_these', 'agree_18_terms'];
 
 assert(/advancedRepairsEnabled:\s*false/.test(configText), 'public advanced flag must stay false');
 assert(/referralEnabled:\s*false/.test(configText) && !/referralEnabled:\s*true/.test(configText), 'referral flag must stay false');
-const SHIP = '2026-10-20.9';
+const SHIP = '2026-10-20.10';
 assert(configText.includes("contentVersion: '" + SHIP + "'"), 'content version must be ' + SHIP);
 assert(['config', 'flow', 'app'].every(f => indexText.includes(f + '.js?v=' + SHIP)), 'script cache-bust must match content version');
 assert(indexText.includes('HOME HVAC CHECKS') && !indexText.includes('AC + HEAT PUMP'), 'header lockup is HOME HVAC CHECKS');
@@ -232,10 +232,10 @@ assert(hpIntake.node === 'hp.intake.system_confirm', 'CO no returns to hp.intake
 
 const noHeat = walk('hp', gate.concat([
   'air_source_ducted_hp', 'landing_no_heat', 'mode_matches_complaint', 'emergency_already_off',
-  'band_mild_warm', 'cold_home_holding', 'no_heat_at_all', 'outdoor_not_running_when_should',
-  'breaker_on_confirmed', 'disconnect_appears_on'
+  'band_mild_warm', 'cold_home_holding', 'no_heat_at_all', 'outdoor_not_running_when_should'
 ]));
 assert(noHeat.result === 'hp_outdoor_not_running_wave1', 'outdoor silent ends hp_outdoor_not_running_wave1, got ' + noHeat.result);
+assert(!noHeat.answers.some(a => a.node === 'ac.cool.power.breaker_visual' || a.node === 'ac.cool.power.breaker_reset_gate'), 'heat pump outdoor-silent does not enter a breaker node');
 assert(!noHeat.answers.some(a => a.node === 'ac.cool.conclude.call_pro_capacitor_contactor' || String(a.node).indexOf('ac.adv.cap.') === 0), 'no cap conclude on HP outdoor path');
 assert(F.results[noHeat.result].outcome === 'call_pro', 'outdoor silent is call_pro');
 
@@ -435,10 +435,10 @@ assert(coolingOnly.answers[3].choice === 'cooling_only_ac' && coolingOnly.answer
 
 const hpSilent = walk('ask', gate.concat([
   'heat_pump', 'air_source_ducted_hp', 'landing_no_heat', 'mode_matches_complaint', 'emergency_already_off',
-  'band_mild_warm', 'cold_home_holding', 'no_heat_at_all', 'outdoor_not_running_when_should',
-  'breaker_on_confirmed', 'disconnect_appears_on'
+  'band_mild_warm', 'cold_home_holding', 'no_heat_at_all', 'outdoor_not_running_when_should'
 ]));
 assert(hpSilent.result === 'hp_outdoor_not_running_wave1', 'heat pump outdoor-silent still ends call_pro, got ' + hpSilent.result);
+assert(!hpSilent.answers.some(a => a.node === 'ac.cool.power.breaker_visual'), 'heat pump outdoor-silent does not render the breaker screen');
 assertNoCap(hpSilent, 'HP path');
 
 function identify(winter, em, heat) {
@@ -479,10 +479,10 @@ assert(acFromIdentify.node === 'ac.noise.clarify_outdoor_hum', 'identified cooli
 const unsureSilent = walk('ask', gate.concat([
   'not_sure', 'winter_outdoor_unsure', 'em_aux_unsure', 'heat_source_unsure',
   'air_source_ducted_hp', 'landing_no_heat', 'mode_matches_complaint', 'emergency_already_off',
-  'band_mild_warm', 'cold_home_holding', 'no_heat_at_all', 'outdoor_not_running_when_should',
-  'breaker_on_confirmed', 'disconnect_appears_on'
+  'band_mild_warm', 'cold_home_holding', 'no_heat_at_all', 'outdoor_not_running_when_should'
 ]));
 assert(unsureSilent.product === 'hp' && unsureSilent.result === 'hp_outdoor_not_running_wave1', 'still-unsure outdoor silent is the HP call_pro, got ' + unsureSilent.result);
+assert(!unsureSilent.answers.some(a => a.node === 'ac.cool.power.breaker_visual'), 'still-unsure outdoor silent does not enter the breaker screen');
 assertNoCap(unsureSilent, 'still-unsure path');
 assert(!unsureSilent.answers.some(a => a.node === 'ac.noise.clarify_outdoor_hum' || a.node === 'ac.cool.outdoor.fan_spinning'), 'still-unsure does not enter AC outdoor checks');
 
@@ -490,7 +490,7 @@ assert(!JSON.stringify(F.nodes).includes('2W'), 'no 2W brand');
 const joined = JSON.stringify(F.hpWave1.map(id => F.nodes[id]));
 assert(!/replace the capacitor/i.test(joined), 'HP nodes do not instruct capacitor replacement');
 
-assert(/termsVersion:\s*'public-beta-2026-10-18.1'/.test(configText), 'termsVersion matches the October 18 terms');
+assert(/termsVersion:\s*'public-beta-2026-10-20.1'/.test(configText), 'termsVersion matches the October 20 terms');
 assert(/advancedRepairsEnabled:\s*false/.test(configText) && !/advancedRepairsEnabled:\s*true/.test(configText), 'public advanced flag must stay false');
 assert(appText.includes("'/terms'") && appText.includes("'/privacy'"), 'terms and privacy routes exist');
 const termsRoute = appText.slice(appText.indexOf("'/terms':"), appText.indexOf("'/privacy':"));
@@ -628,7 +628,7 @@ const HAZARDS = [
   ['hazard_refrigerant_alarm', 'Do not reset a refrigerant-leak alarm.'],
   ['hazard_unsure', 'Uncertainty is a good reason to stop.']
 ];
-const TERMS_BODY_SHA256 = '37efc0e6b1e272affa48119e1734606bba12f64cd7772d8f0afd831bc3b43838';
+const TERMS_BODY_SHA256 = '0781cb70a24ed4d7b27b162f7d812356d71f18314d06a288d27ac02db6d2aaae';
 const PRIVACY_BODY_SHA256 = '843ba39e40c93328ce825a321b0e39c1ccf1dc5d7bf1a4bb3425253bf319509c';
 
 // ---- WSHP Wave-1 PR-1 (A-1..A-28, T-1..T-26) ----
@@ -977,7 +977,7 @@ const words = t => String(t || '').split(/\s+/).filter(Boolean).length;
 assert(F.treeVersionMs === 'ms.ductless.v2', 'MS-A1 mini-split tree version');
 assert(Array.isArray(F.msPr1) && F.msPr1.length === 10, 'MS-G1 ten original mini-split nodes exported');
 assert(Array.isArray(F.msV1) && F.msV1.join('|') === 'ms.heat.mode_setpoint|ms.heat.force_heat|ms.heat.defrost_sanity|ms.outdoor.safe_observe', 'MS-G1 heat and outdoor nodes');
-assert(Object.keys(F.nodes).length === 246, 'node count is ' + Object.keys(F.nodes).length);
+assert(Object.keys(F.nodes).length === 247, 'node count is ' + Object.keys(F.nodes).length);
 assert(Object.keys(F.results).length === 413, 'result count is ' + Object.keys(F.results).length);
 assert(!Object.keys(F.nodes).some(id => id.indexOf('ac.adv.cap.') === 0), 'advanced capacitor nodes are absent from the public bundle');
 const ms1 = ['none_of_these', 'agree_18_terms', 'other_heat_or_ductless', 'ductless_mini_split', 'ductless_single_zone'];

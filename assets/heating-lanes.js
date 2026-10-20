@@ -93,7 +93,7 @@
       }
     }
     if(t==='ms.error.restart_once'&&(s.reset_count||0)>=1)t='@ms_error_code_returned_pro';
-    if(['fn.power.switch_on_step','ac.cool.power.seasonal_restore_step'].includes(t)&&(s.reset_count||0)>=1)t=s.product==='fn'?'@fn_breaker_tripped_pro':'@breaker_retrip_pro';
+    if(['fn.power.switch_on_step','ac.cool.power.seasonal_restore_step','ac.cool.power.breaker_reset_step'].includes(t)&&(s.reset_count||0)>=1)t=s.product==='fn'?'@fn_breaker_tripped_pro':'@breaker_retrip_pro';
     const homeHeat=!!(s.whCoil||s.whType==='combi'||(s.bl&&s.bl.mode==='heat'));
     if(t==='@wh_too_hot'&&s.whFuel==='gas'&&s.whType==='tank'&&!homeHeat){s.whDialDir='down';t='wh.tank.gas.dial';}
     if(t==='wh.tank.gas.dial'&&(s.whFuel!=='gas'||homeHeat||['tankless','hpwh','combi','indirect'].includes(s.whType)))t='wh.conclude.call_pro';
@@ -105,7 +105,7 @@
     if(id==='wh.power.look'&&o.id==='element'&&s.whFuel!=='electric')t='@wh_power_pro';
     return t;
   }
-  function needsNotice(node,s){return node&&node.step&&(node.notice==='pn-full'||node.notice==='pn-reset')&&!(s.notices&&s.notices[node.owner]);}
+  function needsNotice(node,s){return node&&node.step&&(node.notice==='pn-full'||node.notice==='pn-reset'||node.notice==='pn-breaker')&&!(s.notices&&s.notices[node.owner]);}
   function view(id,s,original){
     if(!owns(id))return original;
     const node=Object.assign({},original);
@@ -197,7 +197,7 @@
     if(!node||!needsNotice(node,s))throw Error('No step notice is pending.');
     if(node.coldGuard&&!(s.coldGuardAck&&s.coldGuardAck[s.node]))throw Error('Cold-weather screen comes first.');
     if(['pn-reset','pn-full'].includes(node.notice)&&(node.owner!=='ms'||node.warranty)&&!(s.warrantyAck&&s.warrantyAck[s.node]))throw Error('Installer question comes first.');
-    if(node.notice==='pn-reset'&&(s.reset_count||0)>=1)throw Error('Only one restoration attempt is allowed.');
+    if((node.notice==='pn-reset'||node.notice==='pn-breaker')&&(s.reset_count||0)>=1)throw Error('Only one restoration attempt is allowed.');
     (s.notices||(s.notices={}))[node.owner]={notice_ack:true,version:'pn-v1',at:new Date().toISOString()};
     audit(s,'notice_ack:'+node.owner+':pn-v1');
   }

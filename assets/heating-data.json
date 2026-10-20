@@ -205,6 +205,50 @@
           "undo": "If you’re not sure what you changed, put back what you wrote down. If you can’t, leave it and call a licensed HVAC professional. Don’t guess. For a hazard, follow the emergency instructions instead.",
           "locked": "Do not change wiring, equipment setup, safety controls, gas valves, fuses, or an outdoor disconnect. Do not open an equipment compartment."
         }
+      },
+      "ac.cool.power.breaker_reset_step": {
+        "section": "Optional homeowner step",
+        "title": "One reset, only once",
+        "body": "The notice comes first. The next screen is the one reset of the breaker you already identified.",
+        "options": [
+          {
+            "id": "show_reset",
+            "label": "Show the one-time reset steps",
+            "next": "@breaker_reset_basic",
+            "fact": "Homeowner continued to the one-time breaker reset after the notice.",
+            "hint": ""
+          },
+          {
+            "id": "reset_cancel",
+            "label": "Stop and call a pro instead",
+            "next": "@breaker_off_unexplained_pro",
+            "fact": "Homeowner chose not to reset the breaker.",
+            "hint": ""
+          },
+          {
+            "id": "hazard_now",
+            "label": "New hazard now (gas smell, CO alarm, refrigerant leak alarm, smoke, sparks, or water at electrical parts)",
+            "next": "@hp_hazard_now",
+            "fact": "New hazard reported during an owner step."
+          }
+        ],
+        "owner": "breaker_ac_outdoor",
+        "diyTier": "basic",
+        "notice": "pn-breaker",
+        "step": {
+          "what": "Turns power back on to the outdoor unit one time.",
+          "caution": "If something is wrong with the unit or its wiring, the breaker may trip again.",
+          "source": "Goodman’s homeowner page says to check the panel for tripped breakers and reset them, and to contact a qualified servicer if the breaker opens again within thirty days (Goodman Condensing Unit Installation & Service Reference IOG-4036B, page 12, checked 2026-10-20). Your unit’s manual may say more. Resetting only once is our own, stricter rule.",
+          "steps": [
+            "Stand on a dry floor with dry hands.",
+            "Leave the panel’s cover on. Touch only the one breaker handle.",
+            "The next screen is the one reset. If it trips again, stop."
+          ],
+          "watch": "Watch the breaker and the outdoor unit for the next 15 minutes. Some devices hold the compressor off for a while on purpose.",
+          "stop": "Stop if the breaker trips again, buzzes, or gets hot, or you smell burning.",
+          "undo": "If you’re not sure what you changed, put back what you wrote down. If you can’t, leave it and call a licensed HVAC professional. Don’t guess. For a hazard, follow the emergency instructions instead.",
+          "locked": "Do not change wiring, equipment setup, safety controls, gas valves, fuses, or an outdoor disconnect. Do not open an equipment compartment."
+        }
       }
     },
     "results": {}
