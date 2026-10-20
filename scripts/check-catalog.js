@@ -1,6 +1,6 @@
 /* Catalog phase 1. No network. */
 'use strict';
-globalThis.SW_CONFIG = { advancedRepairsEnabled: false, aiThermostatEnabled: false, mirrorsEnabled: false, stageLatchStepsEnabled: false, contentVersion: '2026-10-20.10' };
+globalThis.SW_CONFIG = { advancedRepairsEnabled: false, aiThermostatEnabled: false, mirrorsEnabled: false, stageLatchStepsEnabled: false, contentVersion: '2026-10-20.11' };
 const fs = require('fs');
 const path = require('path');
 const F = require('../assets/flow.js');
@@ -91,7 +91,7 @@ assert(stopped.stopCount === 1 && stopped.node === 'sw.co.fast_exit' && stopped.
 const basic = walk(BASIC);
 const shown = F.results[basic.result];
 assert(shown.tier === 'Basic homeowner check' && !F.catalogHazardResult(basic), 'basic result still offers the unit step');
-const payload = F.catalogPayload(basic, { appVersion: '0.1.0-beta', contentVersion: '2026-10-20.10', catalogConsentVersion: 'cat-consent-2026-10-18.1', unitStep: 'submitted', followupStatus: 'offered' });
+const payload = F.catalogPayload(basic, { appVersion: '0.1.0-beta', contentVersion: '2026-10-20.11', catalogConsentVersion: 'cat-consent-2026-10-18.1', unitStep: 'submitted', followupStatus: 'offered' });
 const fact = basic.answers.map(answer => answer.fact).find(Boolean);
 const label = basic.answers.map(answer => answer.label).find(Boolean);
 assert(fact && label, 'the sample check has a fact and a label');
@@ -222,8 +222,8 @@ function boot(options) {
     flow = flow.replace('function catalogReprompt(state, versions) {', 'function catalogReprompt(state, versions) {\n    if (globalThis.SW_FORCE_REPROMPT) return { stale: true, catalogStale: false };');
   }
   const html = read('index.html')
-    .replace(/\s*<script src="assets\/(?:config|ts-runtime|ts-lane|heating-data|heating-lanes|flow|app)\.js\?v=[^"]+" defer><\/script>/g, '')
-    .replace('</body>', '<script>' + config + '</script><script>' + read('assets/ts-runtime.js') + '</script><script>' + read('assets/ts-lane.js') + '</script><script>' + read('assets/heating-data.js') + '</script><script>' + read('assets/heating-lanes.js') + '</script><script>' + flow + '</script><script>' + read('assets/app.js') + '</script></body>');
+    .replace(/\s*<script src="assets\/(?:config|ts-runtime|ts-lane|ta-wave3|heating-data|heating-lanes|flow|app)\.js\?v=[^"]+" defer><\/script>/g, '')
+    .replace('</body>', '<script>' + config + '</script><script>' + read('assets/ts-runtime.js') + '</script><script>' + read('assets/ts-lane.js') + '</script><script>' + read('assets/heating-data.js') + '</script><script>' + read('assets/heating-lanes.js') + '</script><script>' + read('assets/ta-wave3.js') + '</script><script>' + flow + '</script><script>' + read('assets/app.js') + '</script></body>');
   const dom = new JSDOM(html, {
     url: 'http://127.0.0.1:8765/#/',
     runScripts: 'dangerously',

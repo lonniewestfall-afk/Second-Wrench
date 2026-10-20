@@ -74,6 +74,10 @@
   if (!TS) throw new Error('Thermostat lane failed to load');
   const HEAT = (typeof module === 'object' && module.exports) ? require('./heating-lanes.js') : globalThis.SW_HEATING;
   if (!HEAT) throw new Error('Heating lanes failed to load');
+  const TA = (typeof module === 'object' && module.exports && typeof require === 'function')
+    ? require('./ta-wave3.js')
+    : globalThis.SW_TA;
+  if (!TA) throw new Error('Analog thermostat lane failed to load');
   const TREE_TS = 'ts.settings.v1';
   const TS_V0 = TS.v0;
   const TS_V1 = TS.v1;
@@ -2536,6 +2540,7 @@
   }
   Object.keys(TS.nodes).forEach(id => { nodes[id] = TS.nodes[id]; });
   Object.keys(TS.results).forEach(id => { results[id] = TS.results[id]; });
+  TA.install(nodes, results);
   HEAT.install(nodes, results);
   (function assertFilterPowerOff() {
     const pathNode = nodes['ms.head.filter_path_ok'];
@@ -2865,7 +2870,7 @@
         })
       });
     }
-    return state ? HEAT.view(id, state, view) : view;
+    return TA.view(id, state, state ? HEAT.view(id, state, view) : view);
   }
   function answer(state, choice, meta = {}) {
     if (choice === 'boiler_hot_water_steam') choice = 'boiler';
@@ -3037,6 +3042,7 @@
     let target = resolveTarget(option, state);
     target = applySessionOverlay(state, nodeId, choice, target);
     target = HEAT.target(state, nodeId, option, target);
+    target = TA.route(state, nodeId, choice, option, target);
     if (state.whHandoffEntry) {
       const enterWh = target === 'wh.gate.safety' && nodeId !== CO_NODE;
       state.whHandoffEntry = false;
@@ -3175,6 +3181,38 @@
     }
     return state;
   }
+  function followResult(state, choice) {
+    if (!state || !state.result) throw new Error('This check has ended or is invalid.');
+    const presented = presentResult(state);
+    const exits = presented && presented.exits || [];
+    const picked = exits.find(op => op.id === choice);
+    if (!picked) throw new Error('Choose an answer shown on the current screen.');
+    state.answers.push({ node: '@' + state.result, choice: choice, label: picked.label, fact: picked.fact || '', at: new Date().toISOString() });
+    pushAudit(state, 'answer_selected:' + choice);
+    if (picked.gate) {
+      pushAudit(state, 'gate_fired:' + picked.gate);
+      pushAudit(state, 'exit_ramp:' + picked.gate);
+    }
+    const target = picked.next;
+    if (typeof target !== 'string') throw new Error('Unknown next step.');
+    if (target.charAt(0) === '@') {
+      const id = target.slice(1);
+      const res = results[id];
+      if (!res) throw new Error('Unknown result.');
+      state.result = id;
+      state.node = null;
+      if (res.outcome === 'emergency_exit') pushAudit(state, 'conclusion_reached:emergency_exit');
+      else if (res.outcome === 'call_pro') pushAudit(state, 'conclusion_reached:call_pro');
+      else if (res.outcome === 'insufficient_info') pushAudit(state, 'conclusion_reached:insufficient_info');
+      else pushAudit(state, 'conclusion_reached:next_step_basic');
+    } else {
+      if (!nodes[target]) throw new Error('Unknown step.');
+      state.result = null;
+      state.node = target;
+      pushAudit(state, 'node_entered:' + target);
+    }
+    return state;
+  }
   function resume(state) {
     if (!state || !state.result) throw new Error('This check has ended or is invalid.');
     const res = results[state.result];
@@ -3263,7 +3301,11 @@
   function summary(state, extra = {}) {
     if (state && state.product === 'ts') {
       const version = (typeof globalThis !== 'undefined' && globalThis.SW_CONFIG && globalThis.SW_CONFIG.contentVersion) || '';
-      return TS.summary(state, extra, version, { nodes, results });
+      const note = TS.summary(state, extra, version, { nodes, results });
+      if (state.tsAnalog && TA.enabled()) {
+        return note.replace('Thermostat: unconfirmed model (homeowner reported).', 'Thermostat: Old dial or lever thermostat (homeowner reported).');
+      }
+      return note;
     }
     const clean = x => String(x || '').replace(/[\r\n\t]+/g, ' ').trim().slice(0, 140);
     const facts = state.answers.map(x => x.fact).filter(Boolean);
@@ -3355,7 +3397,7 @@
       const cold = nodes['hp.heat.cold_home_screen'];
       res = Object.assign({}, res, { explanation: cold.title + '\n\n' + cold.body + '\n\n' + res.explanation });
     }
-    if (state && state.product === 'ts') return TS.presentResult(state, results);
+    if (state && state.product === 'ts') return TA.present(state, TS.presentResult(state, results), results);
     if (state && (state.product === 'bl' || state.product === 'wh' || state.product === 'ms')) return HEAT.present(state, res);
     if (state && state.product === 'wshp' && state.result === 'gas') {
       return Object.assign({}, res, {
@@ -3689,10 +3731,10 @@
   }
   return {
     acknowledgeStep: state => { HEAT.acknowledge(state); HEAT.entered(state, state.node); return state; },
-    nodes, results, create, answer, selectSystem, systemMenu, stop, resume, summary, activity, viewNode, presentResult, advancedEnabled,
+    nodes, results, create, answer, selectSystem, systemMenu, stop, resume, followResult, summary, activity, viewNode, presentResult, advancedEnabled,
     treeVersion: TREE_VERSION, treeVersionHp: TREE_HP, treeVersionWshp: TREE_WSHP, treeVersionMs: TREE_MS, treeVersionTs: TREE_TS, tsV0: TS_V0, tsV1: TS_V1, msPr1: MS_PR1, msV1: MS_V1, wave1: WAVE1, wave2: WAVE2, advanced: ADVANCED,
     tsSteps: TS.steps, tsModels: TS.models, tsLc: TS.lc, tsFallbacks: TS.fallbacks, tsMirrors: { records: TS.records, byId: TS.byId, serve: TS.serve, hold: TS.hold },
-    tsMirrorRenderable: TS.tsMirrorRenderable, renderTsPanel: TS.renderTsPanel, assertTs: TS.assertTs, assertGraph: assertGraph,
+    tsMirrorRenderable: TS.tsMirrorRenderable, renderTsPanel: (modelKey, nodeId, opts) => TA.decoratePanel(TS.renderTsPanel(modelKey, nodeId, opts), modelKey, nodeId, opts), assertTs: TS.assertTs, assertGraph: assertGraph,
     tsFnOf: TS.fnOf, tsModelOf: TS.modelOf, tsLandingOf: TS.landingOf, tsU1: TS.u1, tsU2: TS.u2, tsTellPro: TS.tellPro, tsForbiddenScan: TS.forbiddenScan,
     tsWave2: TS.wave2ui, tsLatchBlocks: TS.latchBlocks, tsOptionVisible: TS.optionVisible, tsCards: TS.cards,
     hpWave1: HP_WAVE1, wshpWave1: WSHP_WAVE1, treeVersionFn: TREE_FN, fnWave1: FN_WAVE1, fnReused: FN_REUSED, fnForbidden: FN_FORBIDDEN,

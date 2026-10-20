@@ -5,7 +5,7 @@ require('./render-static-pages');
 // Only this script's generated output directory is replaced.
 fs.rmSync(out,{recursive:true,force:true});fs.mkdirSync(out);
 const files=['index.html','404.html','thanks.html','robots.txt','sitemap.xml','manifest.webmanifest','_headers','_redirects',
- 'assets/config.js','assets/ts-runtime.js','assets/ts-lane.js','assets/heating-data.js','assets/heating-lanes.js','assets/flow.js','assets/app.js','assets/styles.css','assets/favicon.svg','assets/walnut-grain.svg',
+ 'assets/config.js','assets/ts-runtime.js','assets/ts-lane.js','assets/ta-wave3.js','assets/heating-data.js','assets/heating-lanes.js','assets/flow.js','assets/app.js','assets/styles.css','assets/favicon.svg','assets/walnut-grain.svg',
  'assets/icons/icon-512.png','assets/icons/icon-maskable-512.png','assets/icons/icon-192.png','assets/icons/apple-touch-icon.png'];
 for(const file of files){const dest=path.join(out,file);fs.mkdirSync(path.dirname(dest),{recursive:true});fs.copyFileSync(path.join(root,file),dest);}
 function copyDir(src,dest){fs.mkdirSync(dest,{recursive:true});for(const ent of fs.readdirSync(src,{withFileTypes:true})){const from=path.join(src,ent.name),to=path.join(dest,ent.name);if(ent.isDirectory())copyDir(from,to);else fs.copyFileSync(from,to);}}

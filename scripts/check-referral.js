@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const root = path.join(__dirname, '..');
 const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
-globalThis.SW_CONFIG = { advancedRepairsEnabled: false, aiThermostatEnabled: false, mirrorsEnabled: false, stageLatchStepsEnabled: false, catalogEnabled: false, referralEnabled: false, contentVersion: '2026-10-20.10' };
+globalThis.SW_CONFIG = { advancedRepairsEnabled: false, aiThermostatEnabled: false, mirrorsEnabled: false, stageLatchStepsEnabled: false, catalogEnabled: false, referralEnabled: false, contentVersion: '2026-10-20.11' };
 const F = require('../assets/flow.js');
 
 let failed = 0;
@@ -57,7 +57,7 @@ assert(/referralEnabled:\s*false/.test(configText) && !/referralEnabled:\s*true/
 assert(/export const referralEnabled = false/.test(coreText) && !/export const referralEnabled = true/.test(coreText), 'server referral flag stays false');
 assert(/advancedRepairsEnabled:\s*false/.test(configText) && !/advancedRepairsEnabled:\s*true/.test(configText), 'advanced repairs stay off');
 assert(/catalogEnabled:\s*false/.test(configText) && !/catalogEnabled:\s*true/.test(configText), 'catalog stays off');
-assert(configText.includes("contentVersion: '2026-10-20.10'"), 'content version is 2026-10-20.10');
+assert(configText.includes("contentVersion: '2026-10-20.11'"), 'content version is 2026-10-20.11');
 assert(copy.consentTextVersion === 'referral-consent-pending-legal-2026-10-20.1' && appText.includes(copy.consentTextVersion), 'consent text version is the pending-legal id');
 Object.keys(copy).forEach(key => {
   if (key === 'consentTextVersion') return;
@@ -216,8 +216,8 @@ function boot(flag) {
   let config = read('assets/config.js');
   if (flag) config = config.replace('referralEnabled: false', 'referralEnabled: true');
   const html = read('index.html')
-    .replace(/\s*<script src="assets\/(?:config|ts-runtime|ts-lane|heating-data|heating-lanes|flow|app)\.js\?v=[^"]+" defer><\/script>/g, '')
-    .replace('</body>', '<script>' + config + '</script><script>' + read('assets/ts-runtime.js') + '</script><script>' + read('assets/ts-lane.js') + '</script><script>' + read('assets/heating-data.js') + '</script><script>' + read('assets/heating-lanes.js') + '</script><script>' + read('assets/flow.js') + '</script><script>' + read('assets/app.js') + '</script></body>');
+    .replace(/\s*<script src="assets\/(?:config|ts-runtime|ts-lane|ta-wave3|heating-data|heating-lanes|flow|app)\.js\?v=[^"]+" defer><\/script>/g, '')
+    .replace('</body>', '<script>' + config + '</script><script>' + read('assets/ts-runtime.js') + '</script><script>' + read('assets/ts-lane.js') + '</script><script>' + read('assets/heating-data.js') + '</script><script>' + read('assets/heating-lanes.js') + '</script><script>' + read('assets/ta-wave3.js') + '</script><script>' + read('assets/flow.js') + '</script><script>' + read('assets/app.js') + '</script></body>');
   const dom = new JSDOM(html, {
     url: 'http://127.0.0.1:8765/#/',
     runScripts: 'dangerously',

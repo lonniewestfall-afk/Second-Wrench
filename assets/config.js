@@ -1,7 +1,7 @@
 /* Public configuration. Never place passwords, tokens, or API keys in this file. */
 window.SW_CONFIG = Object.freeze({
   version: '0.1.0-beta',
-  contentVersion: '2026-10-20.10',
+  contentVersion: '2026-10-20.11',
   privacyVersion: 'privacy-public-beta-2026-10-18.1',
   domain: 'secondwrench.co',
   contactEmail: 'support@secondwrench.co',
@@ -19,6 +19,8 @@ window.SW_CONFIG = Object.freeze({
   // Public runtime. Capacitor steps exist in the tree and run only when this is true.
   // Do not set true on main. The private sandbox zip is the only flag-on copy.
   advancedRepairsEnabled: false,
+  // Analog dial and lever thermostats. Stays off in suites that omit this key.
+  tsAnalogWave3Enabled: true,
   aiThermostatEnabled: false,
   mirrorsEnabled: false,
   stageLatchStepsEnabled: false,
