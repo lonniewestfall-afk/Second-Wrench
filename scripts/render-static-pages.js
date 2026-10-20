@@ -599,7 +599,7 @@ function pageHtml(page) {
   <meta name="twitter:description" content="${esc(page.description)}">
   <meta name="twitter:image" content="${ICON}">
   <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/assets/styles.css?v=2026-10-20.9">
+  <link rel="stylesheet" href="/assets/styles.css?v=2026-10-20.10">
   <script type="application/ld+json">${jsonLd(page)}</script>
 </head>
 <body>

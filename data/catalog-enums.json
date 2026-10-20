@@ -1,7 +1,7 @@
 {
   "schema_version": "cat-v1",
   "versions": {
-    "terms": "public-beta-2026-10-18.1",
+    "terms": "public-beta-2026-10-20.1",
     "privacy": "privacy-public-beta-2026-10-18.1",
     "catalog_consent": "cat-consent-2026-10-18.1"
   },

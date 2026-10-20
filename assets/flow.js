@@ -202,7 +202,7 @@
     'ac.cool.power.breaker_visual', 'ac.cool.power.disconnect_visual', 'ac.cool.tstat.mode_setpoint',
     'ac.cool.landing.picker', CONCLUDE,
     '@next_step_advanced', '@suspected_capacitor_contactor_advanced_off', '@hp_advanced_electrical_off',
-    '@breaker_reset_basic', '@breaker_seasonal_restore_basic', 'ac.cool.power.breaker_reset_gate', '@mode_setpoint_basic', '@filter_replace_basic', '@filter_missing_basic',
+    '@breaker_reset_basic', '@breaker_seasonal_restore_basic', 'ac.cool.power.breaker_reset_gate', 'ac.cool.power.breaker_reset_step', 'ac.cool.power.seasonal_restore_step', '@mode_setpoint_basic', '@filter_replace_basic', '@filter_missing_basic',
     '@batteries_display_back', '@returns_supplies_cleared', '@filter_inaccessible',
     '@blank_tstat_after_batteries', '@blank_tstat_hardwired_power', '@tstat_inaccessible',
     '@weak_airflow_after_returns_supplies', '@airflow_check_inaccessible', '@unusual_noise_unresolved',
@@ -414,14 +414,14 @@
       ], { diyTier: 'pro_only' }),
 
     'ac.noise.hazard_screen': n('Unusual noise', 'Hazard screen first',
-      'Before clarifying the sound, rule out danger. Choose from what you already know. Do not approach equipment to find sparks or smoke.\n\nIf any of these are happening now:\n\n- Burning smell or electrical heat smell from equipment\n- Sparks\n- Smoke or fire\n- Grinding metal-on-metal (violent, new, or worsening)\n\n…stop troubleshooting. Prefer emergency help or a licensed professional over continuing.\n\nFor immediate danger, get clear and call 911.', [
+      'Before clarifying the sound, rule out danger. Choose from what you already know. Do not approach equipment to find sparks or smoke.\n\nIf any of these are happening now:\n\n- Burning smell or electrical heat smell from equipment\n- Sparks\n- Smoke or fire\n- Grinding metal-on-metal (violent, new, or worsening)\n\n…stop troubleshooting. Prefer emergency help or a licensed professional over continuing.\n\nFor immediate danger: get away from the equipment and call 911 from outside.', [
         o('noise_burning_sparks_smoke', 'Burning smell, sparks, smoke, or fire', '@noise_burning_sparks_smoke', 'Emergency stop. Do not keep diagnosing.', 'Burning smell, sparks, smoke, or fire with the noise.', { gate: 'burning_smell' }),
-        o('noise_grinding_metal', 'Grinding metal-on-metal', '@grinding_metal_noise', 'Turn the system Off if you can do it without getting closer, then call a pro.', 'Grinding metal-on-metal noise.', { gate: 'grinding_metal_noise' }),
+        o('noise_grinding_metal', 'Grinding metal-on-metal', '@grinding_metal_noise', 'Turn the system Off at the thermostat, then call a pro.', 'Grinding metal-on-metal noise.', { gate: 'grinding_metal_noise' }),
         o('noise_no_hazard_symptoms', 'None of those hazard signs — noise only', {
           hpClear: '@unusual_noise_hp_wave1',
           default: 'ac.noise.clarify_outdoor_hum'
         }, 'Cooling-only AC continues to the outdoor hum check. A heat pump noise with no hazard stops for a professional.'),
-        o('noise_unsure_hazard', 'Not sure if it is a hazard', '@uncertain', 'Prefer a stop. Do not continue into DIY.', 'Homeowner was not sure whether the noise was a hazard.', { gate: 'unsure_hazard' })
+        o('noise_unsure_hazard', 'Not sure if it is a hazard', '@uncertain', 'Stop here. Don’t go near the equipment to check.', 'Homeowner was not sure whether the noise was a hazard.', { gate: 'unsure_hazard' })
       ], { safetyGate: true }),
 
     'ac.noise.clarify_outdoor_hum': n('Unusual noise', 'Which noise is it?',
@@ -468,10 +468,10 @@
       ], { safetyGate: true }),
 
     'ac.cool.power.breaker_visual': n('Breaker panel', 'Visual check only (door open)',
-      'You are confirming whether the outdoor / AC circuit breaker looks tripped, Off, or On. This is a panel-door check only.\n\n- Stand on a dry floor with dry hands.\n- Open only the outer door of the breaker panel if you already know how and it is meant for reading labels.\n- Do not remove the deadfront / cover that exposes bus bars.\n- Do not probe, meter, or touch screw terminals.\n- Find the breaker labeled for the outdoor unit, AC, or condenser. If you cannot tell which breaker it is, stop and call a professional.\n\nA tripped handle is often midway between On and Off. That varies by brand.\n\nDon’t reset anything yet. If the breaker looks tripped or Off, the next screen asks a few questions first. Never touch fuses or the outdoor disconnect.', [
+      'You are confirming whether the outdoor / AC circuit breaker looks tripped, Off, or On. This is a panel-door check only.\n\n- Stand on a dry floor with dry hands.\n- Open only the outer door of the breaker panel if you already know how and it is meant for reading labels.\n- Do not remove the deadfront / cover that exposes bus bars.\n- Do not probe, meter, or touch screw terminals.\n- Find the breaker labeled for the outdoor unit, AC, condenser, or heat pump. If you cannot tell which breaker it is, stop and call a professional.\n\nA tripped handle is often midway between On and Off. That varies by brand.\n\nDon’t reset anything yet. If the breaker looks tripped or Off, the next screen asks a few questions first. Never open the disconnect box or touch any fuses.', [
         o('breaker_on_confirmed', 'Breaker for outdoor/AC looks On', 'ac.cool.power.disconnect_visual', 'Continue to the disconnect visual.', 'Outdoor/AC breaker looks On.'),
         o('breaker_tripped_or_off', 'Breaker looks tripped or Off', 'ac.cool.power.breaker_reset_gate', 'A few questions come before any reset.', 'Outdoor/AC breaker looks tripped or Off.'),
-        o('breaker_reset_ok_still_silent', 'I already reset it once, it stayed On, and the outdoor unit is still silent', 'ac.cool.power.disconnect_visual', 'Continue to the disconnect visual.', 'Breaker was reset once and stayed On. Outdoor unit still silent while the thermostat is calling.'),
+        o('breaker_reset_ok_still_silent', 'Someone already reset this breaker, or it tripped again after a reset', '@breaker_retrip_pro', 'Don’t reset it again. A pro takes it from here.', 'Breaker had already been reset, or tripped again after a reset (homeowner reported).'),
         o('breaker_tripped_again', 'The breaker tripped again', '@breaker_retrip_pro', 'Don’t reset it again.', 'The breaker tripped again.', { gate: 'breaker_wont_reset' }),
         o('unsure_which_breaker', 'I cannot tell which breaker is for the outdoor unit', '@cannot_identify_ac_breaker', 'Do not guess.', 'Could not identify the outdoor/AC breaker.'),
         o('cannot_open_or_wet_unsafe', 'Wet floor or hands, flood, damaged panel, or I cannot open the door', '@breaker_unsafe_stop', 'Hard stop. No panel work.', 'Wet, flood, damaged panel, or breaker door could not be opened.', { gate: 'cannot_kill_power' }),
@@ -491,7 +491,8 @@
         o('cannot_see_position_safely', 'I cannot see Off/On from dry ground', '@disconnect_visual_inaccessible', 'Do not force the approach.'),
         o('need_to_operate_lever', 'I would need to flip or operate the exterior lever to continue', '@disconnect_operate_not_basic', 'Basic does not include operating the lever.', 'Would need to operate the disconnect lever.', { gate: 'disconnect_operate_not_basic' }),
         o('fused_pullout_or_open_door', 'It is a fused pull-out, or I would need to open the door or see inside', '@disconnect_open_or_fused', 'Always a professional.', 'Fused pull-out or open-door disconnect.', { gate: 'high_voltage_intent' }),
-        o('wet_damaged_or_unsafe', 'Wet, damaged, buzzing, or otherwise unsafe to approach', '@disconnect_unsafe_approach', 'Hard stop.', 'Outdoor disconnect is wet, damaged, buzzing, or unsafe to approach.', { gate: 'wet_hands_flood' })
+        o('wet_damaged_or_unsafe', 'Wet, damaged, buzzing, or otherwise unsafe to approach', '@disconnect_unsafe_approach', 'Hard stop.', 'Outdoor disconnect is wet, damaged, buzzing, or unsafe to approach.', { gate: 'wet_hands_flood' }),
+        o('breaker_tripped_again', 'The breaker tripped again', '@breaker_retrip_pro', 'Don’t reset it again.', 'The breaker tripped again.', { gate: 'breaker_wont_reset' })
       ], { caution: 'Visual only. This step does not tell you to flip, pull, or open the disconnect.', safetyGate: true }),
 
     'ac.cool.filter.restart_check': n('Air filter', 'After the new filter is in',
@@ -505,10 +506,10 @@
       ], { diyTier: 'basic' }),
 
     'ac.cool.power.breaker_reset_gate': n('Breaker panel', 'Before you touch that breaker',
-      'A breaker can be Off for a reason. Answer from what you already know; do not touch it while deciding. A first trip, an unknown or intentional shutdown, a prior reset, or an uncertain panel condition needs a professional. A known seasonal Off position has a separate notice before any restoration instructions.', [
-        o('breaker_panel_warning', 'There\u2019s a burning smell, smoke, scorch marks, buzzing, or heat at the panel, or water near the panel or where I\u2019d stand', '@breaker_unsafe_stop', 'Stop. Don\u2019t touch it.', 'Panel warning sign reported: burning smell, smoke, scorch marks, buzzing, heat, or water.', { gate: 'breaker_panel_hazard' }),
-        o('breaker_tripped_first_time', 'It tripped by itself. Nobody turned it off on purpose, nobody has reset it, and none of the warning signs above are there', '@breaker_off_unexplained_pro', 'A pro takes a first trip until the maker\u2019s own reset caption is on file.', 'Outdoor/AC breaker tripped by itself. Not reset on this check. No panel warning signs reported.'),
-        o('breaker_off_seasonal_by_me', 'I turned it off myself for the season, and nothing else is going on', 'ac.cool.power.seasonal_restore_step', 'Review the installer question and notice before any instructions. This is not a reset of a breaker that tripped.', 'Homeowner had turned the outdoor/AC breaker off for the season, and nothing else was going on.'),
+      'A breaker can be Off for a reason. Answer from what you already know, and don’t touch the panel while you decide.\n\nA tripped handle usually sits between On and Off, or it may look Off. That varies by brand.\n\nYou can reset it once only if all of these are true:\n- There’s no burning smell, smoke, scorch marks, buzzing, or heat at the panel.\n- There’s no water near the panel or where you’re standing, and your hands are dry.\n- You know which breaker feeds this equipment.\n- The panel’s own cover stays on. You use the handle only.\n- Nobody turned it off on purpose, and it hasn’t already been reset or tripped before.\n\nDon’t open the disconnect box or touch any fuses.', [
+        o('breaker_panel_warning', 'There’s a burning smell, smoke, scorch marks, buzzing, or heat at the panel, or water near the panel or where I’d stand', '@breaker_unsafe_stop', 'Stop. Don’t touch it.', 'Panel warning sign reported: burning smell, smoke, scorch marks, buzzing, heat, or water.', { gate: 'breaker_panel_hazard' }),
+        o('breaker_tripped_first_time', 'It tripped by itself. Nobody turned it off on purpose, nobody has reset it, and none of the warning signs above are there', 'ac.cool.power.breaker_reset_step', 'One reset only, with the steps on the next screen.', 'Outdoor/AC breaker tripped by itself. Not reset before this check. No panel warning signs reported.'),
+        o('breaker_off_seasonal_by_me', 'I turned it off myself for the season or a trip, and nothing was wrong', 'ac.cool.power.seasonal_restore_step', 'Turn it back on once, then wait before using it.', 'Homeowner turned the breaker off for the season.'),
         o('breaker_off_on_purpose_or_unknown', 'It\u2019s Off and I don\u2019t know why, or someone turned it off for a reason (a technician, a tag or lock, a storm, a leak, or a smell)', '@breaker_off_unexplained_pro', 'Leave it Off. A pro checks first.', 'Outdoor/AC breaker Off for an unknown or deliberate reason. Left Off.'),
         o('breaker_already_reset', 'Someone already reset it, or it has tripped before, including the last time the equipment started', '@breaker_retrip_pro', 'Don\u2019t reset it again. A pro takes it from here.', 'Outdoor/AC breaker already reset or has tripped before. Not reset again.'),
         o('panel_has_fuses', 'My home has fuses, not breaker handles', '@fuse_panel_pro', 'Leave the fuses alone.', 'Home has a fuse panel. Fuses not touched.'),
@@ -959,22 +960,22 @@
   const results = {
     gas: r('Emergency', 'Leave now · call from outside', 'Get everyone to fresh air.',
       'A gas smell or carbon monoxide alarm takes priority over troubleshooting.',
-      ['Leave the building immediately. Do not operate lights, thermostats, appliances, or phones inside.', 'From outside, call 911; for a gas smell, also contact the gas utility’s emergency line. Stay out until responders say you can go back in.'],
+      ['Leave the building immediately. Do not operate lights, thermostats, appliances, or phones inside.', 'Don’t touch any switches, phones or flames on the way out. Once you’re outside and away from the building, call 911. For a gas smell, also call the gas utility’s emergency line. Stay out until responders tell you it’s OK to go back in.'],
       'Do not search for the leak, reset an alarm, or re-enter to switch the AC off.', 'gas',
       'emergency_exit', 'gas_co', { gate: 'gas_co' }),
     fire: r('Emergency', 'Move away · call 911', 'Stop. Treat smoke, sparks, or burning as a hazard.',
       'The source cannot be assessed remotely. Do not stay at the equipment to collect more information.',
-      ['Leave the affected area and get others away. For smoke, fire, sparks, or an active burning smell, call 911 from safety.', 'Turn off the power only if you already know which breaker or disconnect switch feeds this equipment, and you can reach it without touching water, opening any panel or box cover (opening the breaker panel’s door is fine), or going near the burning or smoking equipment. Use the handle only. If you can’t, don’t try. Get everyone out and call 911 from outside.', 'Do not return to operate equipment until the hazard has been assessed and the appropriate professional has cleared it.'],
+      ['Leave the affected area and get others away. For smoke, fire, sparks, or an active burning smell, call 911 from safety.', 'If you see smoke or flames, get everyone outside now and call 911 from outside. Don’t stop to shut off power. If there’s only a burning smell and no smoke, turn the system Off at the thermostat and call a licensed HVAC professional.', 'Do not return to operate equipment until the hazard has been assessed and the appropriate professional has cleared it.'],
       'Do not stay and troubleshoot, and do not attempt an electrical repair.', 'fire',
       'emergency_exit', 'smoke_fire_sparks_burn', { gate: 'smoke_fire_sparks_burn' }),
     heat: r('Emergency', 'Call 911 now', 'Help the person before the AC.',
       'Confusion, fainting, seizures, or severe illness during heat exposure can require emergency medical care.',
-      ['Call 911. Move the person to a cooler place if you can do it without getting closer, begin cooling with cool wet cloths, and follow the dispatcher’s instructions.', 'Stay with the person. Do not delay help while trying to repair the AC.'],
+      ['Call 911. If you can move the person without putting yourself at risk, move them to a cooler place. Begin cooling with cool wet cloths, and follow the dispatcher’s instructions.', 'Stay with the person. Do not delay help while trying to repair the AC.'],
       'Do not leave a seriously ill person alone or wait for a troubleshooting result.', 'heat',
       'emergency_exit', 'heat_illness_911', { gate: 'heat_illness_911' }),
     electrical: r('Stop / professional', 'Keep away · urgent help', 'Do not touch wet or damaged electrical equipment.',
       'Water and damaged wiring create risks that this tool cannot assess.',
-      ['Stay clear of standing water and the equipment. Keep other people away.', 'Shut off main power only if you can do it from a dry place away from the water. Otherwise leave and get help.', 'Contact a licensed HVAC professional or electrician. For sparking, smoke, shock, or an immediate danger, call 911 from safety.'],
+      ['Stay clear of standing water and the equipment. Keep other people away.', 'Stay away from the equipment and the breaker panel if there’s water nearby. Leave the area and call a licensed electrician or HVAC professional. If there are sparks, smoke, or anyone is hurt, call 911 from outside.'],
       'Do not step through water, touch switches on wet equipment, open an electrical cover, or try a reset.', 'electrical',
       'emergency_exit', 'water_near_electrical', { gate: 'water_near_electrical' }),
     leak: r('Stop / professional', 'Leave the affected area', 'Do not reset a refrigerant-leak alarm.',
@@ -984,7 +985,7 @@
       'emergency_exit', 'refrigerant_alarm_or_release', { gate: 'refrigerant_alarm_or_release' }),
     uncertain: r('Stop / professional', 'Do not continue the check', 'Uncertainty is a good reason to stop.',
       'You do not need to approach equipment or guess an answer. This is a hard stop, not a path into DIY.',
-      ['Stay away from the equipment and describe what you already observed to a qualified professional.', 'If gas, smoke, an alarm, electrical danger, or serious heat illness may be present, get away and seek emergency help.'],
+      ['Stay away from the equipment and describe what you already saw to a licensed HVAC professional.', 'If gas, smoke, an alarm, electrical danger, or serious heat illness may be present, get away and seek emergency help.'],
       'Do not operate equipment or controls just to find out whether a hazard exists.', 'safety',
       'emergency_exit', 'unsure_hazard', { gate: 'unsure_hazard' }),
     unsure_water_electrical: r('Stop / professional', 'Do not continue the check', 'Uncertainty around water and electricity is a reason to stop.',
@@ -1133,13 +1134,13 @@
       'Do not cut ducts, open a chase, or remove the blower panel.', 'maintenance',
       'next_step', 'returns_supplies_cleared', { diyTier: 'basic' }),
     breaker_reset_basic: r('Basic homeowner check', 'One reset only', 'Reset that breaker one time only.',
-      'A breaker that tripped once can be reset one time. If it trips again, it’s protecting against a fault, and that’s a job for a licensed HVAC professional or electrician.',
+      'You may switch a breaker or disconnect off at any time. If a breaker has tripped, you may reset it once: push it firmly all the way to OFF, then back to ON, by hand at the breaker face. Never open the panel cover. If it trips again, won’t stay on, or you notice a burning smell, heat, buzzing, scorch marks or water near the panel, stop and call a licensed pro. Never reset it a second time.',
       ['Set the thermostat to Off first.',
        'Stand on a dry floor with dry hands. Leave the panel’s cover on, and touch only the handle of that one breaker.',
        'Push the handle fully to Off, then fully to On. Do this once.',
        'Wait 15 minutes. Then set the thermostat back to the mode you were using and listen for the outdoor unit.',
        'If the breaker trips again, right away or the next time the equipment starts, don’t reset it again. Leave it Off and call a licensed HVAC professional or electrician.',
-       'If it stays On and the outdoor unit is still silent, continue to the outdoor disconnect check. That step only asks what you can already see. Don’t touch the disconnect or any fuses.'],
+       'If it stays On and the outdoor unit is still silent, continue to the outdoor disconnect check. That step only asks what you can already see. Don’t open the disconnect box or touch any fuses.'],
       'Don’t reset it more than once, hold the handle On, swap breakers, remove the panel cover, reset a breaker you can’t identify, or touch fuses or the outdoor disconnect.', 'electrical',
       'next_step', 'breaker_reset_basic', { diyTier: 'basic', continueTo: 'ac.cool.power.disconnect_visual' }),
     debris_past_grille_pro: r('Professional guidance', 'Arrange HVAC service', 'Debris inside the grille needs a pro.',
@@ -1284,12 +1285,12 @@
       'call_pro', 'high_voltage_intent', { gate: 'high_voltage_intent' }),
     noise_burning_sparks_smoke: r('Emergency', 'Move away · call from safety', 'Burning, sparks, smoke, or fire is not a noise diagnosis.',
       'Stop troubleshooting. Do not stay at the equipment to listen again.',
-      ['Get people away from the equipment. If smoke or fire continues, leave and call 911 from safety.', 'Turn off the power only if you already know which breaker or disconnect switch feeds this equipment, and you can reach it without touching water, opening any panel or box cover (opening the breaker panel’s door is fine), or going near the burning or smoking equipment. Use the handle only. If you can’t, don’t try. Get everyone out and call 911 from outside.', 'After the hazard is handled, a licensed HVAC professional can inspect the equipment. Do not restart it to hear the noise again.'],
+      ['If you see smoke or flames, get everyone outside now and call 911 from outside. Don’t stop to shut off power. If there’s only a burning smell and no smoke, turn the system Off at the thermostat and call a licensed HVAC professional.', 'Stay away from the equipment and the breaker panel if there’s water nearby. Leave the area and call a licensed electrician or HVAC professional. If there are sparks, smoke, or anyone is hurt, call 911 from outside.', 'After the hazard is handled, a licensed HVAC professional can inspect the equipment. Do not restart it to hear the noise again.'],
       'Do not keep the system running, open covers, or keep diagnosing the sound.', 'fire',
       'emergency_exit', 'burning_smell', { gate: 'burning_smell' }),
-    grinding_metal_noise: r('Stop / professional', 'Turn it Off if you can · call a pro', 'Grinding metal-on-metal needs a professional.',
+    grinding_metal_noise: r('Stop / professional', 'Turn it Off at the thermostat · call a pro', 'Grinding metal-on-metal needs a professional.',
       'Do not keep it running to hear the sound more clearly, and do not take a cover off to find the part.',
-      ['If you can do it without getting closer, set the thermostat to Off and stay away from the fan and electrical covers.', 'Call a licensed HVAC professional. Tell them you heard grinding metal-on-metal and whether the fan was moving.', 'If sparks, smoke, or a burning smell show up with the grind, get to safety and call 911.'],
+      ['If you can reach the thermostat without going near the unit, set it to Off. Stay away from the fan and electrical covers.', 'Call a licensed HVAC professional. Tell them you heard grinding metal-on-metal and whether the fan was moving.', 'If sparks, smoke, or a burning smell show up with the grind, get to safety and call 911.'],
       'Do not open covers, spin the fan by hand, or order a part from the sound.', 'safety',
       'call_pro', 'grinding_metal_noise', { gate: 'grinding_metal_noise' }),
     unusual_noise_unresolved: r('Professional guidance', 'This noise is not a homeowner parts path', 'The sound is not the outdoor hum with Cool calling and the fan stopped.',
@@ -2572,9 +2573,9 @@
     if (openNext !== 'wshp.openloop.complaint') throw new Error('Open loop must capture the complaint before the chemistry gate');
   })();
   results.owner_ask_installer=r('Professional guidance','Ask your installer first.','The optional step can wait.','Check the equipment instructions and any active installer agreement before changing it.', ['Ask your installer or licensed HVAC professional whether this step applies to the equipment.','For any new hazard, use Stop / get help.'], 'Do not change equipment while its condition or instructions are uncertain.', 'professional', 'call_pro','installer_first');
-  results.breaker_seasonal_restore_basic.title='Power restored · keep the start-up wait';
-  results.breaker_seasonal_restore_basic.explanation='You reported one seasonal power restoration. Equipment operation has not been confirmed.';
-  results.breaker_seasonal_restore_basic.actions=['Keep the thermostat Off for the exact manual’s start-up wait. Second Wrench uses 24 hours before cooling after seasonal power restoration. If it’s urgent, wait as long as you can.','After the required wait, restore your normal thermostat settings only if no hazard or fault has appeared.','If the outdoor unit is still silent about 15 minutes after you start it, leave it Off and call a licensed HVAC professional.','If the breaker trips immediately or at the next start, do not reset it; leave it stopped and call a licensed HVAC professional or electrician.'];
+  results.breaker_seasonal_restore_basic.title='You turned the breaker for the outdoor unit off yourself for the season.';
+  results.breaker_seasonal_restore_basic.explanation='Turning the breaker back on is not a repair, and it does not change any setting. Some outdoor units need power for a while before cooling starts, so the compressor can warm up first. Your owner’s manual may say how long.';
+  results.breaker_seasonal_restore_basic.actions=['Set the thermostat to Off.', 'Stand on a dry floor with dry hands. Leave the panel’s cover on, and push that one handle fully to On, once.', 'Wait 24 hours after turning the power back on before you run cooling. If it’s urgent, wait as long as you can. If your outdoor unit’s manual gives a different wait, follow the manual.', 'Then set it back to the mode you want and listen for the outdoor unit.', 'If the breaker trips, right away or the next time the equipment starts, don’t reset it. Leave it Off and call a licensed HVAC professional or electrician.', 'If it stays On and the outdoor unit is still silent, continue to the outdoor disconnect check. That step only asks what you can already see. Don’t open the disconnect box or touch any fuses.'];
   results.filter_replace_basic.title='Observe after the filter change';
   results.filter_replace_basic.explanation='The filter change and closed access are reported; operation has not yet been confirmed.';
   results.filter_replace_basic.actions=['With no warning signs, the specified filter in place, and its access closed, restore the thermostat settings you recorded.','Observe from where you normally stand for 10–15 minutes, only if the home has enough heating or cooling and nobody is at risk.','If ice, water, an alarm, an unusual noise, or a smell appears, stop the check and use Stop / get help. If airflow or comfort stays poor, call a licensed HVAC professional.'];
@@ -2646,7 +2647,34 @@
   function enterLane(state, lane) {
     state.product = lane;
     state.treeVersion = lane === 'hp' ? TREE_HP : lane === 'wshp' ? TREE_WSHP : lane === 'fn' ? TREE_FN : lane === 'ms' ? TREE_MS : lane === 'ts' ? TREE_TS : TREE_VERSION;
+    if (lane === 'hp') {
+      state.origin_lane = 'hp';
+      state.equipment = 'heat_pump';
+    }
     pushAudit(state, 'product_lane:' + lane);
+  }
+  function breakerResetOnceEnabled() {
+    return !!(typeof globalThis !== 'undefined' && globalThis.SW_CONFIG && globalThis.SW_CONFIG.breakerResetOnceEnabled === true);
+  }
+  function hpEntry(state) {
+    return !!(state && (state.origin_lane === 'hp' || state.equipment === 'heat_pump' || state.hpOutdoorNotRunning === true || state.product === 'hp'));
+  }
+  const BREAKER_ENTRY = {
+    'ac.cool.power.breaker_visual': 1,
+    'ac.cool.power.breaker_reset_gate': 1,
+    'ac.cool.power.breaker_reset_step': 1,
+    'ac.cool.power.seasonal_restore_step': 1,
+    '@breaker_reset_basic': 1,
+    '@breaker_seasonal_restore_basic': 1
+  };
+  function redirectBreaker(state, target) {
+    if (typeof target !== 'string' || !state) return target;
+    if (hpEntry(state) && BREAKER_ENTRY[target]) return '@hp_outdoor_not_running_wave1';
+    if (state.product === 'wshp' && BREAKER_ENTRY[target]) return '@wshp_advanced_off';
+    if (!breakerResetOnceEnabled() && (target === '@breaker_reset_basic' || target === 'ac.cool.power.breaker_reset_step' || target === '@breaker_seasonal_restore_basic' || target === 'ac.cool.power.seasonal_restore_step')) {
+      return '@breaker_off_unexplained_pro';
+    }
+    return target;
   }
   function uuid() {
     if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
@@ -2745,8 +2773,9 @@
     return target;
   }
   function breakerVisualPassed(state) {
-    return state.answers.some(a => a.node === 'ac.cool.power.breaker_visual' &&
-      (a.choice === 'breaker_on_confirmed' || a.choice === 'breaker_reset_ok_still_silent'));
+    return state.answers.some(a =>
+      (a.node === 'ac.cool.power.breaker_visual' && a.choice === 'breaker_on_confirmed') ||
+      (a.node === 'ac.cool.power.breaker_reset_gate' && (a.choice === 'breaker_tripped_first_time' || a.choice === 'breaker_off_seasonal_by_me') && (state.reset_count || 0) >= 1 && !hpEntry(state)));
   }
   function concludeBody() {
     return nodes[CONCLUDE].body;
@@ -2754,6 +2783,7 @@
   function viewNode(id, state) {
     const node = nodes[id];
     if (!node) return null;
+    if (state && hpEntry(state) && (id === 'ac.cool.power.breaker_visual' || id === 'ac.cool.power.breaker_reset_gate' || id === 'ac.cool.power.breaker_reset_step' || id === 'ac.cool.power.seasonal_restore_step')) return null;
     let view = node;
     if (id === CONCLUDE) {
       view = {
@@ -2809,7 +2839,17 @@
     }
     if (state && id === 'ac.cool.power.breaker_reset_gate') {
       const hazardNext = state.product === 'wshp' ? '@wshp_hazard_now' : state.product === 'fn' ? '@fn_hazard_now' : '@hp_hazard_now';
-      view = Object.assign({}, view, { options: view.options.map(op => op.id === 'hazard_now' ? Object.assign({}, op, { next: hazardNext }) : op) });
+      let body = view.body;
+      let options = view.options.slice();
+      if (!breakerResetOnceEnabled()) {
+        options = options.filter(op => op.id !== 'breaker_tripped_first_time' && op.id !== 'breaker_off_seasonal_by_me');
+        body = body.replace(/\n\nYou can reset it once only if all of these are true:[\s\S]*?\n\n(?=Don’t open the disconnect box)/, '\n\n');
+      }
+      if ((state.reset_count || 0) >= 1) {
+        options = options.map(op => (op.id === 'breaker_tripped_first_time' || op.id === 'breaker_off_seasonal_by_me') ? Object.assign({}, op, { next: '@breaker_retrip_pro' }) : op);
+      }
+      options = options.map(op => op.id === 'hazard_now' ? Object.assign({}, op, { next: hazardNext }) : op);
+      view = Object.assign({}, view, { body: body, options: options });
     }
     if (state && String(id).indexOf('ts.') === 0 && TS.optionVisible) {
       const options = view.options.filter(op => TS.optionVisible(op, state)).map(op =>
@@ -2830,6 +2870,12 @@
   function answer(state, choice, meta = {}) {
     if (choice === 'boiler_hot_water_steam') choice = 'boiler';
     if (!state || state.result || !nodes[state.node]) throw new Error('This check has ended or is invalid.');
+    if (hpEntry(state) && BREAKER_ENTRY[state.node]) {
+      state.result = 'hp_outdoor_not_running_wave1';
+      state.node = null;
+      pushAudit(state, 'conclusion_reached:call_pro');
+      return state;
+    }
     if (state.node === 'sw.intake.system_type') {
       const onNode = nodes[state.node].options.some(op => op.id === choice);
       const menuChoice = systemMenu().flatMap(group => group.choices).some(item => item.id === choice);
@@ -2894,10 +2940,7 @@
       const coolingOnly = choice === 'separate_furnace_boiler' && state.idWinter === 'never' && state.idEm === 'no';
       enterLane(state, coolingOnly ? 'ac' : 'hp');
     }
-    if (nodeId === 'ac.cool.intake.system_confirm' && choice === 'heat_pump') {
-      state.product = 'hp';
-      state.treeVersion = TREE_HP;
-    }
+    if (nodeId === 'ac.cool.intake.system_confirm' && choice === 'heat_pump') enterLane(state, 'hp');
     if (nodeId === 'hp.handback.ac_filter_airflow' && choice === 'proceed_ac_filter') state.hpHandback = 'filter_airflow';
     if ((nodeId === 'hp.observe.leaving_air_vs_mode' && choice === 'outdoor_not_running_when_should') ||
         (nodeId === 'hp.rv.mode_asymmetric' && choice === 'pattern_outdoor_not_running')) {
@@ -2928,6 +2971,8 @@
     }
     if (option.flag === 'ts_hp_air') {
       state.tsHpAir = true;
+      state.origin_lane = 'hp';
+      state.equipment = 'heat_pump';
       pushAudit(state, 'flag:ts_hp_air');
     }
     if (option.flag && String(option.flag).indexOf('ts_rated_min=') === 0) {
@@ -3041,12 +3086,9 @@
       if (gate) state.coReturn = gate;
     }
     if (target === '@fn_co_alarm') target = '@sw_co_symptom_exit';
-    if (state.product === 'sd' && ['@breaker_reset_basic', 'ac.cool.power.breaker_reset_gate', 'ac.cool.power.seasonal_restore_step', '@breaker_seasonal_restore_basic'].indexOf(target) !== -1) {
+    if (state.product === 'sd' && ['@breaker_reset_basic', 'ac.cool.power.breaker_reset_gate', 'ac.cool.power.breaker_reset_step', 'ac.cool.power.seasonal_restore_step', '@breaker_seasonal_restore_basic'].indexOf(target) !== -1) {
       target = '@sd_breaker_not_guided';
     }
-    if (choice === 'breaker_reset_ok_still_silent') state.reset_count = 1;
-    if (target === '@breaker_reset_basic' && (state.reset_count || 0) >= 1) target = '@breaker_retrip_pro';
-    if (target === '@breaker_reset_basic') state.reset_count = 1;
     if (option.gate) {
       pushAudit(state, 'gate_fired:' + option.gate);
       pushAudit(state, 'exit_ramp:' + option.gate);
@@ -3054,6 +3096,14 @@
     if (nodeId === CONSENT && choice === 'decline_terms') pushAudit(state, 'session_closed:consent_declined');
     if (nodeId === 'ac.start.breaker_disconnect' && choice === 'already_did_breaker_go_disconnect' && !breakerVisualPassed(state)) {
       target = 'ac.cool.power.breaker_visual';
+    }
+    target = redirectBreaker(state, target);
+    if (!hpEntry(state)) {
+      if (choice === 'breaker_reset_ok_still_silent') state.reset_count = Math.max(state.reset_count || 0, 1);
+      if (target === '@breaker_reset_basic') {
+        if ((state.reset_count || 0) >= 1) target = '@breaker_retrip_pro';
+        else state.reset_count = (state.reset_count || 0) + 1;
+      }
     }
     state.preselectChoice = choice === 'fan_not_spinning_silent' ? 'outdoor_silent'
       : choice === 'outdoor_hum_cool_calling_fan_not_spinning' ? 'outdoor_hum_no_fan'
@@ -3131,6 +3181,12 @@
     const target = res && res.continueTo;
     if (!target || !nodes[target]) throw new Error('This result does not continue.');
     if (state.product === 'sd') throw new Error('This outdoor-unit check does not continue from a result.');
+    if (hpEntry(state) && (target === 'ac.cool.power.breaker_visual' || target === 'ac.cool.power.breaker_reset_gate')) {
+      state.result = 'hp_outdoor_not_running_wave1';
+      state.node = null;
+      pushAudit(state, 'conclusion_reached:call_pro');
+      return state;
+    }
     if (target.indexOf('ac.adv.cap.') === 0 && !advancedEnabled()) throw new Error('Advanced DIY is not available in this beta.');
     if (state.product === 'fn' && FN_FORBIDDEN.indexOf(target) !== -1) throw new Error('That step is not part of this check.');
     if (state.product !== 'ac' && (target.indexOf('ac.adv.cap.') === 0 || target === CONCLUDE || (state.product === 'hp' && (target === 'ac.cool.outdoor.fan_spinning' || target === 'ac.cool.outdoor.debris_clearance' || target === 'ac.cool.indoor.ice_lines_coil' || target === 'ac.noise.clarify_outdoor_hum')))) {
@@ -3152,6 +3208,7 @@
       priorResults: (state.priorResults || []).concat(prior),
       noDiyLock: !!state.noDiyLock || lock,
       reset_count: state.reset_count || 0,
+      origin_lane: state.origin_lane, equipment: state.equipment, hpOutdoorNotRunning: state.hpOutdoorNotRunning,
       hpLanding: state.hpLanding, hpAmbient: state.hpAmbient, msLanding: state.msLanding, msMode:state.msMode,msMultiZone:state.msMultiZone,msSingleZone:state.msSingleZone,msZone:state.msZone,sdFrom:state.sdFrom,sdMode:state.sdMode,sdSideConfirmed:state.sdSideConfirmed,remoteCodeStepDone:state.remoteCodeStepDone,
       fnFuel: state.fnFuel, wshpLoop: state.wshpLoop, tsModel: state.tsModel,
       treeVersion: state.treeVersion, id: state.id, startedAt: state.startedAt,
@@ -3292,8 +3349,12 @@
       tree_version: state.treeVersion || '' };
   }
   function presentResult(state) {
-    const res = state && results[state.result];
+    let res = state && results[state.result];
     if (!res) return null;
+    if (state.result === 'hp_outdoor_not_running_wave1' && (state.hpLanding === 'no_heat' || state.hpLanding === 'both_modes_fail')) {
+      const cold = nodes['hp.heat.cold_home_screen'];
+      res = Object.assign({}, res, { explanation: cold.title + '\n\n' + cold.body + '\n\n' + res.explanation });
+    }
     if (state && state.product === 'ts') return TS.presentResult(state, results);
     if (state && (state.product === 'bl' || state.product === 'wh' || state.product === 'ms')) return HEAT.present(state, res);
     if (state && state.product === 'wshp' && state.result === 'gas') {
