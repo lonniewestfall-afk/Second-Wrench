@@ -4,12 +4,13 @@ global.SW_CONFIG={advancedRepairsEnabled:false,aiThermostatEnabled:false,mirrors
 const F=require('../assets/flow'),H=require('../assets/heating-lanes');
 const clone=x=>JSON.parse(JSON.stringify(x));
 const meta={agreed:true,termsVersion:'test'};
-function go(...choices){const s=F.create('','test');for(const c of choices)F.answer(s,c,meta);return s;}
+function reply(s,c){if(s.node==='sw.co.fast_exit'&&c!=='co_yes'&&c!=='co_no')F.answer(s,'co_no',meta);F.answer(s,c,meta);}
+function go(...choices){const s=F.create('','test');for(const c of choices)reply(s,c);return s;}
 const base=['none_of_these','agree_18_terms'];
-const boiler=()=>go(...base,'other_heat_or_ductless','boiler');
-const furnace=()=>go(...base,'furnace');
-const water=()=>go(...base,'other_heat_or_ductless','water_heater');
-function act(s,...choices){for(const c of choices)F.answer(s,c,meta);return s;}
+const boiler=()=>go(...base,'other_heat_or_ductless','boiler','co_no');
+const furnace=()=>go(...base,'furnace','co_no');
+const water=()=>go(...base,'other_heat_or_ductless','water_heater','co_no');
+function act(s,...choices){for(const c of choices)reply(s,c);return s;}
 assert.equal(boiler().node,'bl.gate.safety');assert.equal(boiler().product,'bl');
 assert.equal(water().node,'wh.gate.safety');assert.equal(water().product,'wh');
 assert.equal(F.nodes['sw.intake.system_type'].options.length,5);
@@ -17,7 +18,7 @@ assert.equal(F.nodes['sw.intake.system_type'].options.length,5);
 let s=act(furnace(),'none_of_these','air_handler_hot_water','boiler','pipe_cold');
 assert.equal(s.node,'bl.gate.carryover');assert.equal(s.product,'bl');assert.equal(s.bl.hydroPipe,'cold');
 act(s,'none_of_these');assert.equal(s.node,'bl.coil.type');
-s=act(boiler(),'none_of_these','hydro_air','pipe_hot_no_air');assert.equal(s.node,'fn.gate.combustion_co');assert.equal(s.product,'fn');
+s=act(boiler(),'none_of_these','hydro_air','pipe_hot_no_air','co_no');assert.equal(s.node,'fn.gate.combustion_co');assert.equal(s.product,'fn');
 act(s,'none_of_these');assert.equal(s.node,'fn.hydro.air_side');
 assert.match(F.summary(s),/circulation and coil temperature have not been confirmed/);
 assert.ok(!/hot water is reaching/i.test(F.viewNode(s.node,s).body));
@@ -36,13 +37,13 @@ for(const fromBoiler of [false,true]){
  assert.equal(s.answers.filter(a=>a.node==='wh.intake.type').length,1,'combi identification does not repeat');
 }
 // Coil-fed heating is not silently converted into a complaint about tap water.
-const coilWater=fromBoiler=>fromBoiler?act(boiler(),'none_of_these','hydro_air','pipe_cold','src_water_heater'):act(furnace(),'none_of_these','air_handler_hot_water','water_heater_tank','pipe_cold');
+const coilWater=fromBoiler=>fromBoiler?act(boiler(),'none_of_these','hydro_air','pipe_cold','src_water_heater','co_no'):act(furnace(),'none_of_these','air_handler_hot_water','water_heater_tank','pipe_cold','co_no');
 for(const fromBoiler of [false,true]){
  s=coilWater(fromBoiler);assert.equal(s.node,'wh.gate.safety');assert.equal(s.whCoil,true);
  act(s,'none_of_these','none_of_these');assert.equal(s.node,'wh.hydro.cold_home');
  const cold=clone(s);act(cold,'home_cooling');assert.equal(cold.result,'bl_cold_home_urgent');
  act(s,'holding','tank','gas');assert.equal(s.node,'wh.hydro.observations');
- const air=clone(s);act(air,'no_air');assert.equal(air.node,'fn.gate.combustion_co');act(air,'none_of_these');assert.equal(air.node,'fn.hydro.air_side');
+ const air=clone(s);act(air,'no_air','co_no');assert.equal(air.node,'fn.gate.combustion_co');act(air,'none_of_these');assert.equal(air.node,'fn.hydro.air_side');
  act(s,'taps_work');assert.equal(s.result,'wh_hydro_delivery_pro');assert.match(F.summary(s),/Water circulation and coil temperature have not been confirmed/);assert.match(F.summary(s),/Tap hot water reportedly works/);
 }
 s=coilWater(false);act(s,'none_of_these','none_of_these','holding','combi','continue');assert.equal(s.node,'bl.gate.carryover');act(s,'none_of_these');assert.equal(s.node,'bl.coil.type');assert.equal(s.bl.mode,'heat');
@@ -95,11 +96,11 @@ s=act(furnace(),'none_of_these','gas_furnace','natural_gas','site_built','landin
 for(const n of Object.values(H.nodes))for(const o of n.options)assert.doesNotMatch(o.fact||'',/audit handoff:|flag tankless_lead|reset_count|reuses existing stop|replaces oil_or_other/,'No authoring markers in service-note facts');
 // State walk includes all new lanes. Dedupe only on route-affecting state;
 // timestamps and repeated narrative history cannot create infinite cycles.
-function key(s){if(s.result)return JSON.stringify([s.result,s.product,s.fnFuel,s.fnReason,(s.bl||{}).reason,s.whFuel]);const b={};for(const k of ['type','fuel','landing','mode','entry','coil','fragile','cold','sawCode','retriage'])b[k]=(s.bl||{})[k];const selected={node:s.node,result:s.result,product:s.product,fnFuel:s.fnFuel,fnGas:s.fnGas,fnHome:s.fnHome,fnLanding:s.fnLanding,fnHandoff:s.fnHandoff,fnFilterUnchanged:s.fnFilterUnchanged,fnFilterChecked:s.fnFilterChecked,whType:s.whType,whFuel:s.whFuel,whFrom:s.whFrom,whCoil:s.whCoil,bl:b,reset:s.reset_count,notice:!!(s.notices&&s.notices.fn),warranty:Object.keys(s.warrantyAck||{}).sort(),reserved:s.switchStepReserved,hazard:s.heatingHazardReported,codeSeen:s.answers.some(x=>x.node==='fn.code.window_look')};return JSON.stringify(selected);}
+function key(s){if(s.result)return JSON.stringify([s.result,s.product,s.fnFuel,s.fnReason,s.fnNoHeat,(s.bl||{}).reason,s.whFuel]);const b={};for(const k of ['type','fuel','landing','mode','entry','coil','fragile','cold','sawCode','retriage'])b[k]=(s.bl||{})[k];const selected={node:s.node,result:s.result,product:s.product,fnFuel:s.fnFuel,fnGas:s.fnGas,fnHome:s.fnHome,fnLanding:s.fnLanding,fnHandoff:s.fnHandoff,fnNoHeat:s.fnNoHeat,fnAfterWarmup:s.fnAfterWarmup,coReturn:s.coReturn,fnFilterUnchanged:s.fnFilterUnchanged,fnFilterChecked:s.fnFilterChecked,whType:s.whType,whFuel:s.whFuel,whFrom:s.whFrom,whCoil:s.whCoil,bl:b,reset:s.reset_count,notice:!!(s.notices&&s.notices.fn),warranty:Object.keys(s.warrantyAck||{}).sort(),reserved:s.switchStepReserved,hazard:s.heatingHazardReported,codeSeen:s.answers.some(x=>x.node==='fn.code.window_look')};return JSON.stringify(selected);}
 const queue=[furnace(),boiler(),water(),coilWater(false),coilWater(true),act(water(),'none_of_these','none_of_these','combi','continue'),act(water(),'none_of_these','none_of_these','tank','indirect','continue'),act(boiler(),'none_of_these','hydro_air','pipe_hot_no_air'),act(furnace(),'none_of_these','air_handler_hot_water','boiler','pipe_cold')].map(s=>Object.assign(s,{walkLane:s.product})),seen=new Set(),visited=new Set(),leaves=new Set();
 while(queue.length){
  const a=queue.shift(),k=key(a);if(seen.has(k))continue;seen.add(k);if(seen.size%10000===0)console.log('Heating walk',seen.size,a.product,a.node,a.answers.length,queue.length);assert.ok(seen.size<100000,'bounded state walk');
- if(a.result){leaves.add(a.result);assert.match(F.summary(a),/TEST SCENARIO/);const stopped=clone(a);F.stop(stopped);assert.equal(stopped.node,a.product==='bl'?'bl.gate.safety':'ac.gate.cluster_entry');assert.equal(stopped.result,null);continue;}
+ if(a.result){leaves.add(a.result);assert.match(F.summary(a),/TEST SCENARIO/);const stopped=clone(a);F.stop(stopped);assert.equal(stopped.node,['fn','bl','hp','wh'].includes(a.product)?'sw.co.fast_exit':'ac.gate.cluster_entry');assert.equal(stopped.result,null);continue;}
  if(!H.owns(a.node)||a.product!==a.walkLane)continue;
  visited.add(a.node);const view=F.viewNode(a.node,a);
  if(view.noticePrompt){const t=clone(a);F.acknowledgeStep(t);queue.push(t);}

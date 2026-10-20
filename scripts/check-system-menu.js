@@ -9,21 +9,25 @@ const meta = { agreed: true, termsVersion: 'test' };
 const expected = {
   thermostat_settings: ['ts.gate.safety_stops', 'ts'],
   cooling_only_ac: ['ac.cool.intake.system_confirm', 'ac'],
-  heat_pump: ['hp.intake.system_confirm', 'hp'],
-  furnace: ['fn.gate.combustion_co', 'fn'],
+  heat_pump: ['sw.co.fast_exit', 'hp'],
+  furnace: ['sw.co.fast_exit', 'fn'],
   ductless_mini_split: ['ms.intake.system_confirm', 'ms'],
-  boiler: ['bl.gate.safety', 'bl'],
+  boiler: ['sw.co.fast_exit', 'bl'],
   water_source_geo: ['wshp.hazard.flood_electrical', 'wshp'],
-  water_heater: ['wh.gate.safety', 'wh'],
+  water_heater: ['sw.co.fast_exit', 'wh'],
   not_sure: ['sw.identify.winter_outdoor', 'ask'],
   not_listed: ['@sw_other_not_listed', 'ask']
 };
 const menu = F.systemMenu();
 assert.deepEqual(menu.map(g => g.title), ['Thermostat & controls', 'Heating & cooling', 'Hot water', 'Need help choosing?']);
 assert.deepEqual(menu.flatMap(g => g.choices.map(c => c.id)), Object.keys(expected));
+function reply(s,id) {
+  if (s.node === 'sw.co.fast_exit' && id !== 'co_yes' && id !== 'co_no') F.answer(s, 'co_no', meta);
+  F.answer(s, id, meta);
+}
 function ready() {
   const s=F.create('', 'test');
-  F.answer(s,'none_of_these',meta); F.answer(s,'agree_18_terms',meta);
+  reply(s,'none_of_these'); reply(s,'agree_18_terms');
   return s;
 }
 function rejectsUnchanged(s,id) {
@@ -37,8 +41,11 @@ for(const [id,[node,product]] of Object.entries(expected)) {
   assert.equal(s.product,product,id);
   assert.ok(!F.summary(s).includes('Something else reported'),id+' records actual equipment only');
   rejectsUnchanged(s,'boiler');
-  F.stop(s); assert.equal(s.node,id==='boiler'?'bl.gate.safety':'ac.gate.cluster_entry');
-  if(s.node==='ac.gate.cluster_entry')assert.ok(F.viewNode(s.node,s).options.some(o=>o.id==='hazard_hot_water_steam'));
+  F.stop(s);
+  const heating=['furnace','boiler','heat_pump','water_heater'].includes(id);
+  assert.equal(s.node, heating ? 'sw.co.fast_exit' : 'ac.gate.cluster_entry');
+  if(!heating)assert.ok(F.viewNode(s.node,s).options.some(o=>o.id==='hazard_hot_water_steam'));
+  if(heating)assert.ok(F.viewNode(s.node,s).options.some(o=>o.id==='co_yes')&&s.coReturn);
   for(const key of ['consent','safetyCleared']) {
     const blocked=ready(); blocked[key]=false; rejectsUnchanged(blocked,id);
   }
@@ -47,10 +54,10 @@ rejectsUnchanged(F.create(),'thermostat_settings');
 for(const id of ['other_heat_or_ductless','__proto__','', 'not-a-choice']) rejectsUnchanged(ready(),id);
 // Both direct menu entries retain the receiving gate for a hydronic handoff.
 let coil=ready(); F.selectSystem(coil,'furnace',meta);
-for(const c of ['none_of_these','air_handler_hot_water','boiler','pipe_cold']) F.answer(coil,c,meta);
+for(const c of ['none_of_these','air_handler_hot_water','boiler','pipe_cold']) reply(coil,c);
 assert.equal(coil.node,'bl.gate.carryover');
 coil=ready(); F.selectSystem(coil,'boiler',meta);
-for(const c of ['none_of_these','hydro_air','pipe_hot_no_air']) F.answer(coil,c,meta);
+for(const c of ['none_of_these','hydro_air','pipe_hot_no_air','co_no']) reply(coil,c);
 assert.equal(coil.node,'fn.gate.combustion_co');
 
 async function checkPage() {
@@ -63,7 +70,15 @@ async function checkPage() {
     .replace('</body>',files.map(f=>'<script>'+fs.readFileSync(path.join(root,'assets',f+'.js'),'utf8')+'</script>').join('')+'</body>');
   const dom=new JSDOM(html,{url:'http://127.0.0.1:8765/#/',runScripts:'dangerously',pretendToBeVisual:true,virtualConsole:vc,beforeParse(w){w.scrollTo=()=>{};}});
   const w=dom.window,d=w.document,flush=()=>new Promise(r=>setTimeout(r,0));
-  async function click(selector) {const el=d.querySelector(selector);assert.ok(el,selector);el.click();await flush();}
+  async function click(selector) {
+    let el=d.querySelector(selector);
+    if(!el && selector.includes('data-answer') && !selector.includes('co_')) {
+      const skip=d.querySelector('[data-answer="co_no"]');
+      if(skip){skip.click();await flush();el=d.querySelector(selector);}
+    }
+    assert.ok(el,selector+' h1='+(d.querySelector('h1')&&d.querySelector('h1').textContent));
+    el.click();await flush();
+  }
   for(const [id,[node]] of Object.entries(expected)) {
     w.location.hash='#/';await flush();
     await click('[data-action="test"]');await click('[data-answer="none_of_these"]');
@@ -81,8 +96,9 @@ async function checkPage() {
     assert.equal(d.querySelector('h1').textContent,target.title,id+' opens its entry directly');
     assert.ok(!d.querySelector('#flow-error')?.textContent);
     await click('[data-action="stop"]');
-    if(id==='boiler'){
-      for(const choice of ['water_steam_release','steam_glass_empty','bang_or_puffback','soot_scorch_flame','pressure_at_relief'])assert.ok(d.querySelector('[data-answer="'+choice+'"]'),choice);
+    if(['furnace','boiler','heat_pump','water_heater'].includes(id)){
+      assert.equal(d.querySelector('h1').textContent, F.nodes['sw.co.fast_exit'].title);
+      assert.ok(d.querySelector('[data-answer="co_yes"]') && d.querySelector('[data-answer="co_no"]'));
     }else assert.ok(d.querySelector('[data-answer="hazard_hot_water_steam"]'));
   }
   assert.deepEqual(errors,[]);

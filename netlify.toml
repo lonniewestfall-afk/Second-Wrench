@@ -7,6 +7,9 @@
 [build.environment]
   NODE_VERSION = "24"
 
+[functions]
+  external_node_modules = ["@netlify/blobs"]
+
 [[redirects]]
   from = "/api/catalog/record"
   to = "/.netlify/functions/catalog-record"

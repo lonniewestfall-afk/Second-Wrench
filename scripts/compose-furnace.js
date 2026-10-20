@@ -173,7 +173,102 @@ module.exports = function buildFurnace(base, draft, CO) {
     v.owner='fn';v.options=v.options.map(o=>o.id==='hazard_now'?{...hazard}:o);
     if(v.step){v.step.undo='If you’re not sure what you changed, put back what you wrote down. If you can’t, leave it and call a licensed HVAC professional. Don’t guess. For a hazard, follow the emergency instructions instead of going back to equipment.';v.step.locked='Do not change gas valves, burner controls, wiring, blower or heat-stage setup, limits, rollout or pressure switches, freezestats, or stored error history. Do not enter installer passwords or access codes.';}
   }
-  for(const r of Object.values(results)){if(!(r.actions||[]).includes(CO))r.actions.push(CO);}
+  const R11 = 'The house is getting cold, and someone at home is at risk from the cold (an infant, an older adult, or someone who is ill or medically fragile)';
+  const FT_CO_1 = 'Is a carbon monoxide (CO) alarm going off, or does anyone in the home have a headache, dizziness, nausea, unusual tiredness, or confusion that gets better when they leave the house?';
+  const FT_CO_2 = 'Get everyone outside to fresh air now.';
+  const FT_CO_4 = "5. In an emergency, call 911 first. For questions about symptoms when it isn't an emergency, call Poison Control: U.S. 1-800-222-1222. Canada 1-844-POISON-X (1-844-764-7669). Quebec 1-800-463-5060. Nunavut: your local health centre.";
+  const FT_CO_BODY = [
+    "1. Get everyone, including pets, out of the house now. Don't stop to open windows or look for the problem.",
+    '2. From outside, call 911 or your fire department. If anyone is very sleepy, confused, vomiting, has chest pain, or passes out, call 911 right away.',
+    "3. Don't go back inside until the fire department or your gas utility says it's OK.",
+    '4. Anyone with symptoms should get checked by a doctor, even if they feel better outside. Tell them you may have been exposed to carbon monoxide.',
+    FT_CO_4,
+    '6. Before using the heat again, have a licensed HVAC professional check the system.'
+  ].join('\n');
+  const FT_SM_2 = "A dusty smell the first few times the heat runs each season is common. Dust on the heating parts burns off. It should fade in about an hour of running (POLICY, R18). If it hasn't faded after about an hour, keeps coming back, or changes to a plastic or electrical smell, turn the heat Off at the thermostat and call a licensed HVAC professional.";
+  const FT_SM_3 = "Turn the heat Off at the thermostat now. Then switch off the furnace's service switch or its breaker (switch it Off only). Never open the panel cover. Don't reset a breaker that trips again. Don't run the heat again until a licensed HVAC professional has checked it. If you see smoke or the smell gets stronger, get everyone outside and call 911 from outside.";
+  const FT_SM_4 = "Get everyone outside now and call 911 from outside. Don't go back in to turn anything off.";
+  const FT_SM_5 = 'If the house is getting cold, call a licensed HVAC professional. If it’s dangerously cold and anyone is at risk, get them somewhere warm first.';
+  const coExit = {
+    tier: 'Emergency', urgency: 'Get to fresh air · call 911', title: FT_CO_2, explanation: '',
+    body: FT_CO_BODY, footer: CO, actions: FT_CO_BODY.split('\n').concat(CO),
+    avoid: "Don't go back inside to troubleshoot, open windows, or silence the alarm.",
+    source: 'gas', outcome: 'emergency_exit', reason: 'co_alarm_or_symptoms', diyTier: null,
+    gate: 'co_alarm_or_symptoms', continueTo: null, owner: 'shared'
+  };
+  results.sw_co_symptom_exit = coExit;
+  results.fn_co_alarm = JSON.parse(JSON.stringify(coExit));
+  results.fn_co_alarm.aliasOf = 'sw_co_symptom_exit';
+  results.fn_smell_dust_normal = {
+    tier: 'Basic homeowner check', urgency: 'Keep an eye on it', title: 'A dusty smell can fade',
+    explanation: '', body: FT_SM_2, footer: CO, actions: [FT_SM_2, CO], avoid: '',
+    source: 'maintenance', sourceCaption: 'Carrier Canada + Trane', outcome: 'next_step',
+    reason: 'fn_smell_dust_normal', diyTier: 'basic', gate: null, continueTo: 'fn.landing.picker', owner: 'fn'
+  };
+  results.fn_smell_shutoff = {
+    tier: 'Stop / professional', urgency: 'Turn the heat off', title: 'Turn the heat off and call',
+    explanation: '', body: FT_SM_3 + '\n' + FT_SM_5, footer: CO, actions: [FT_SM_3, FT_SM_5, CO],
+    avoid: "Don't open the panel cover.",
+    source: 'gas', outcome: 'call_pro', reason: 'fn_smell_shutoff', diyTier: 'pro_only',
+    gate: null, continueTo: null, owner: 'fn'
+  };
+  results.fn_smell_smoke_exit = {
+    tier: 'Emergency', urgency: 'Leave now · call 911', title: 'Get everyone outside now and call 911 from outside.',
+    explanation: '', body: FT_SM_4, footer: CO, actions: [FT_SM_4, CO],
+    avoid: "Don't go back in to turn anything off.",
+    source: 'fire', outcome: 'emergency_exit', reason: 'smoke_fire_sparks_burn', diyTier: null,
+    gate: 'smoke_fire_sparks_burn', continueTo: null, owner: 'fn'
+  };
+  nodes['sw.co.fast_exit'] = {
+    section: 'Safety first', title: FT_CO_1, body: '',
+    options: [
+      { id: 'co_yes', label: "Yes, or I'm not sure", next: '@sw_co_symptom_exit', hint: '', fact: 'CO alarm or possible CO symptoms reported.', gate: 'co_alarm_or_symptoms' },
+      { id: 'co_no', label: 'No', next: 'ac.gate.cluster_entry', hint: '', fact: '', gate: null }
+    ],
+    caution: '', diyTier: 'basic', safetyGate: true, owner: 'shared'
+  };
+  n('fn.noheat.split', 'When the heat should be on, what does the furnace do?', '', [
+    op('cold_risk', R11, '@fn_cold_exposure', 'Cold exposure reported.'),
+    op('silent', "Nothing happens. It's silent.", 'fn.tstat.mode_setpoint', 'Furnace silent on a call for heat.'),
+    op('blowing_cold', 'The blower runs, but the air is cold', 'fn.tstat.mode_setpoint', 'Blower runs; air not warm.')
+  ], { notice: 'look' });
+  get('fn.noheat.split', 'silent').set = { fnNoHeat: 'silent' };
+  get('fn.noheat.split', 'blowing_cold').set = { fnNoHeat: 'cold_air' };
+  n('fn.noheat.warmup_wait', 'Give it a few minutes', '', [
+    op('cold_risk', R11, '@fn_cold_exposure', 'Cold exposure reported.'),
+    op('warm_now', 'The air is warm now', '@fn_tstat_set_heat_basic', 'The air is warm after a short wait.'),
+    op('still_cold', 'Still cold after 5 minutes', 'ac.cool.filter.check', 'Air still cold after 5 minutes.')
+  ], { notice: 'look' });
+  get('fn.noheat.warmup_wait', 'still_cold').set = { fnAfterWarmup: true };
+  n('fn.smell.first_heat', 'What does it smell like, and how long has it lasted?', '', [
+    op('dust', 'A dusty, slightly burnt smell that started when the heat first came on this season', 'fn.smell.dust_time', 'Dusty smell at the first heat of the season.'),
+    op('plastic_electrical', 'Burning plastic, rubber, or wiring, or an electrical smell', '@fn_smell_shutoff', 'Burning plastic, rubber, wiring, or an electrical smell.'),
+    op('gas', 'Rotten eggs, sulfur, or gas', '@fn_gas_smell', 'Rotten eggs, sulfur, or gas smell.'),
+    op('smoke_or_stronger', 'Smoke I can see, or the smell keeps getting stronger', '@fn_smell_smoke_exit', 'Visible smoke, or a smell that keeps getting stronger.'),
+    op('co_alarm', 'A CO alarm is going off', '@sw_co_symptom_exit', 'CO alarm reported during the smell check.')
+  ], { notice: 'look' });
+  n('fn.smell.dust_time', 'Is the smell light and fading, and has the heat run less than about an hour?', '', [
+    op('fading_under_hour', "Yes, it's light and fading", '@fn_smell_dust_normal', 'Dusty smell is light and fading.'),
+    op('over_hour_or_stronger', "No, it's lasted about an hour or more, or it's not fading", '@fn_smell_shutoff', 'Dusty smell lasted about an hour or is not fading.')
+  ], { notice: 'look' });
+  for (const id of ['fn.noheat.split', 'fn.noheat.warmup_wait', 'fn.smell.first_heat', 'fn.smell.dust_time']) {
+    const hazardChoice = nodes[id].options.find(o => o.id === 'hazard_now');
+    if (hazardChoice) hazardChoice.next = 'sw.co.fast_exit';
+  }
+  const tstat = nodes['fn.tstat.mode_setpoint'];
+  const tstatHazard = tstat.options.findIndex(o => o.id === 'hazard_now');
+  tstat.options.splice(tstatHazard < 0 ? tstat.options.length : tstatHazard, 0, Object.assign(op('fan_settings_more', 'More about fan settings', 'ts.settings.fan', 'More about the fan setting during a heating check.'), { set: { fnFanContext: 'heat' } }));
+  set('fn.landing.picker', 'landing_no_heat', 'fn.noheat.split');
+  set('fn.landing.picker', 'landing_cold_air', 'fn.noheat.split');
+  const landing = nodes['fn.landing.picker'];
+  const hazardAt = landing.options.findIndex(o => o.id === 'hazard_now');
+  landing.options.splice(hazardAt < 0 ? landing.options.length : hazardAt, 0, op('landing_first_heat_smell', 'A smell when the heat first came on this season', 'fn.smell.first_heat', 'A smell when the heat first came on this season.'));
+  for (const node of Object.values(nodes)) {
+    const coChoice = (node.options || []).find(o => o.next === '@fn_co_alarm');
+    if (coChoice) coChoice.next = '@sw_co_symptom_exit';
+  }
+  nodes['sw.co.fast_exit'].owner = 'shared';
+  for (const r of Object.values(results)) { if (!(r.actions || []).includes(CO)) r.actions.push(CO); }
   const serialized=JSON.stringify({nodes,results}).replace(/safely from the ground/g,'from dry, level ground').replace(/safely/g,'without approaching a hazard').replace(/a safe place/g,'outside');
   const compiled=JSON.parse(serialized);
   for(const [id,v] of Object.entries(compiled.nodes))for(const o of v.options)if(typeof o.next==='string'&&(/\(router\)|\(path|\(reason|FN_CODE|unchanged|→/.test(o.next)))throw Error('Unresolved furnace route '+id+'/'+o.id+': '+o.next);

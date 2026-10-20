@@ -1,6 +1,6 @@
 /* Catalog phase 1. No network. */
 'use strict';
-globalThis.SW_CONFIG = { advancedRepairsEnabled: false, aiThermostatEnabled: false, mirrorsEnabled: false, stageLatchStepsEnabled: false, contentVersion: '2026-10-13.2' };
+globalThis.SW_CONFIG = { advancedRepairsEnabled: false, aiThermostatEnabled: false, mirrorsEnabled: false, stageLatchStepsEnabled: false, contentVersion: '2026-10-20.1' };
 const fs = require('fs');
 const path = require('path');
 const F = require('../assets/flow.js');
@@ -24,7 +24,10 @@ function assert(cond, msg) {
 const META = { agreed: true, termsVersion: 'public-beta-2026-10-18.1', privacyVersion: 'privacy-public-beta-2026-10-18.1' };
 function walk(choices) {
   const state = F.create();
-  choices.forEach(choice => F.answer(state, choice, META));
+  choices.forEach(choice => {
+    if (state.node === 'sw.co.fast_exit' && choice !== 'co_yes' && choice !== 'co_no') F.answer(state, 'co_no', META);
+    F.answer(state, choice, META);
+  });
   state.privacyVersion = META.privacyVersion;
   state.catalogConsent = true;
   state.catalogConsentVersion = 'cat-consent-2026-10-18.1';
@@ -87,7 +90,7 @@ assert(stopped.stopCount === 1 && stopped.node === 'ac.gate.cluster_entry', 'sto
 const basic = walk(BASIC);
 const shown = F.results[basic.result];
 assert(shown.tier === 'Basic homeowner check' && !F.catalogHazardResult(basic), 'basic result still offers the unit step');
-const payload = F.catalogPayload(basic, { appVersion: '0.1.0-beta', contentVersion: '2026-10-13.2', catalogConsentVersion: 'cat-consent-2026-10-18.1', unitStep: 'submitted', followupStatus: 'offered' });
+const payload = F.catalogPayload(basic, { appVersion: '0.1.0-beta', contentVersion: '2026-10-20.1', catalogConsentVersion: 'cat-consent-2026-10-18.1', unitStep: 'submitted', followupStatus: 'offered' });
 const fact = basic.answers.map(answer => answer.fact).find(Boolean);
 const label = basic.answers.map(answer => answer.label).find(Boolean);
 assert(fact && label, 'the sample check has a fact and a label');
@@ -101,6 +104,7 @@ assert(F.catalogHazardResult(emergency) && F.results[emergency.result].tier === 
 const professional = walk(STOP_PRO);
 assert(F.catalogHazardResult(professional) && F.results[professional.result].tier === 'Stop / professional', 'stop / professional is marked to skip the unit step');
 const stale = F.create();
+F.answer(stale, 'co_no');
 F.answer(stale, 'none_of_these');
 F.answer(stale, 'agree_18_terms', { agreed: true, termsVersion: 'public-beta-2026-10-15.1', privacyVersion: 'privacy-public-beta-2026-10-12.1' });
 F.answer(stale, 'cooling_only_ac', META);
@@ -253,6 +257,8 @@ async function pageChecks() {
   async function start(page) {
     click(page.doc.querySelector('[data-action="start"]'));
     await flush();
+    const co = page.doc.querySelector('[data-answer="co_no"]');
+    if (co) { click(co); await flush(); }
     click(page.doc.querySelector('[data-answer="none_of_these"]'));
     await flush();
   }
@@ -332,6 +338,8 @@ async function pageChecks() {
 
   const hazard = boot({ catalog: true });
   click(hazard.doc.querySelector('[data-action="start"]'));
+  await flush();
+  click(hazard.doc.querySelector('[data-answer="co_no"]'));
   await flush();
   click(hazard.doc.querySelector('[data-answer="hazard_gas_co"]'));
   await flush();

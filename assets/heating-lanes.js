@@ -4,7 +4,7 @@
   if(!data)throw Error('Heating data failed to load');
   const nodes=Object.assign({},data.boiler.nodes,data.furnace.nodes,data.waterHeater.nodes,data.basic.nodes,data.wshp.nodes,data.sideDischarge.nodes,data.miniSplit.nodes), results=Object.assign({},data.boiler.results,data.furnace.results,data.waterHeater.results,data.wshp.results,data.sideDischarge.results,data.miniSplit.results);
   const FN='fn.gate.combustion_co', BL='bl.gate.safety', WH='wh.gate.safety';
-  const lanes={fn:'fn.furnace.v2',bl:'bl.boiler.v1',wh:'wh.water_heater.v1'};
+  const lanes={fn:'fn.furnace.v3',bl:'bl.boiler.v1',wh:'wh.water_heater.v1'};
   const text='These steps are optional. You can stop and call a licensed HVAC professional at any time.\nWrite down or photograph how things are set now. You’ll need it to put things back.\nDo only the step shown, the way it’s shown. Don’t open panels, use tools on the equipment, or change anything else, even if it’s on the same screen or nearby.\nIf anything looks different from these steps, stop. Your equipment may not match what we describe. Check your owner’s manual.\nIf you smell gas or burning, hear a CO alarm, see smoke, or see water near wires, stop now and use the emergency steps.\nThese steps come from the equipment maker’s documents and common trade practice. They’re general information, not a diagnosis or an inspection of your system.';
   const ackLabel='I wrote down or photographed the current settings, I’ll do only the step shown, and I’ll stop if anything looks different or unsafe.';
   function audit(s,event){(s.audit||(s.audit=[])).push({event,at:new Date().toISOString(),tree:s.treeVersion});}
@@ -60,8 +60,12 @@
     if(s.heatingHazardReported&&o.id==='none_of_these'&&[FN,BL,'bl.gate.carryover',WH,'wh.gate.warning_signs'].includes(id))t=s.product==='fn'?'@fn_gate_unsure':s.product==='wh'?'@wh_gate_unsure':'@bl_gate_unsure';
     // Heating-specific ordering: the filter step precedes a report of its result.
     if(s.product==='fn'){
-      if(id==='fn.tstat.mode_setpoint'&&o.id==='settings_ok_still_problem')t=s.fnFuel==='hydronic'?'fn.hydro.air_side':s.fnFuel==='electric'?'fn.elec.pattern':(s.answers||[]).some(a=>a.node==='fn.code.window_look')?'fn.airflow.filter_fit':'fn.code.window_look';
-      if(id==='ac.cool.filter.check'&&o.id!=='hazard_now'&&!o.gate)t='fn.airflow.filter_fit';
+      if(id==='fn.tstat.mode_setpoint'&&o.id==='settings_ok_still_problem'){
+        if(s.fnNoHeat==='silent')t='fn.power.switch_breaker_visual';
+        else if(s.fnNoHeat==='cold_air')t='fn.noheat.warmup_wait';
+        else t=s.fnFuel==='hydronic'?'fn.hydro.air_side':s.fnFuel==='electric'?'fn.elec.pattern':(s.answers||[]).some(a=>a.node==='fn.code.window_look')?'fn.airflow.filter_fit':'fn.code.window_look';
+      }
+      if(id==='ac.cool.filter.check'&&o.id!=='hazard_now'&&!o.gate)t=s.fnAfterWarmup?'fn.code.window_look':'fn.airflow.filter_fit';
     }
     if(s.product==='fn'&&t==='fn.airflow.filter_fit'&&s.fnFilterChecked){t='fn.conclude.call_pro';s.fnReason='airflow_after_filter';}
     if(t==='sd.entry.outdoor'){
@@ -92,6 +96,10 @@
     if(id==='ms.controls.remote_app'&&s.remoteCodeStepDone){node.step=null;node.body='You already did the remote signal-code step once in this check. Don’t repeat it.';node.options=node.options.filter(o=>['remote_still_dead','app_only_problem','hazard_now'].includes(o.id));}
     if(id==='ms.head.airflow_result')node.options=node.options.filter(o=>s.msMode==='heat'?o.id!=='air_ok_not_cooling':s.msMode==='cool'?o.id!=='air_ok_not_heating':true);
     if(typeof node.body==='object')node.body=node.body[(s.bl||{}).mode||'heat']||node.body.heat||'';
+    if(id==='fn.tstat.mode_setpoint'&&s.fnNoHeat==='cold_air'){
+      const fan=node.options.find(o=>o.id==='fan_on_not_auto');
+      if(fan)node.options=[fan].concat(node.options.filter(o=>o.id!=='fan_on_not_auto'));
+    }
     if(needsNotice(node,s)){
       node.body='Review this notice before revealing the optional step.';node.step=null;node.noticePrompt=text;node.ackLabel=ackLabel;
       node.options=node.options.map(o=>o.id==='hazard_now'||o.id==='cold_exposure_risk'||/cold_or_fragile|cold_risk/.test(o.id)?o:Object.assign({},o,{disabled:true}));

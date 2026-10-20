@@ -12,7 +12,7 @@ const META = { agreed: true, termsVersion: 'public-beta-test' };
 let failed = 0; const fails = {};
 function assert(cond, id, msg) { if (!cond) { failed++; fails[id] = (fails[id] || 0) + 1; if (fails[id] <= 3) console.error('FAIL', id, msg); } }
 const GATE = ['none_of_these', 'agree_18_terms'];
-function go(choices, mode) { const s = F.create('', mode || 'test'); for (const c of choices) { if (s.result) throw new Error('ended early at ' + s.result + ' before ' + c); F.answer(s, c, META); } return s; }
+function go(choices, mode) { const s = F.create('', mode || 'test'); for (const c of choices) { if (s.result) throw new Error('ended early at ' + s.result + ' before ' + c); if (s.node === 'sw.co.fast_exit' && c !== 'co_yes' && c !== 'co_no') F.answer(s, 'co_no', META); F.answer(s, c, META); } return s; }
 function tryGo(choices, mode) { try { return go(choices, mode); } catch (e) { return { error: e.message, result: null, node: null, answers: [] }; } }
 function textOf(o) { const out = []; (function rec(x) { if (typeof x === 'string') out.push(x); else if (Array.isArray(x)) x.forEach(rec); else if (x && typeof x === 'object') for (const k in x) if (!['next', 'id', 'reason', 'gate', 'source', 'outcome', 'diyTier', 'tier', 'continueTo'].includes(k)) rec(x[k]); })(o); return out.join('\n'); }
 const ALL_TEXT = Object.keys(F.nodes).filter(id => !id.startsWith('ac.adv.')).map(id => [id, textOf(F.nodes[id])]).concat(Object.keys(F.results).map(id => [id, textOf(F.results[id])]));
@@ -41,9 +41,9 @@ for (const [id, s0] of Object.entries(R.results).concat(Object.entries(R.nodes))
   const s = JSON.parse(JSON.stringify(s0)); const wasUrgent = !!(s.result && URGENT.includes(F.results[s.result].tier));
   F.stop(s);
   const v = s.node && F.viewNode(s.node, s);
-  const boilerStop = s.product === 'bl';
-  const expectNode = boilerStop ? 'bl.gate.safety' : 'ac.gate.cluster_entry';
-  const hazards = boilerStop ? ['gas_smell_or_unknown_smell', 'refrigerant_alarm', 'water_steam_release', 'steam_glass_empty', 'bang_or_puffback', 'soot_scorch_flame'] : ['hazard_gas_co', 'hazard_refrigerant_alarm', 'hazard_smoke_fire_sparks_burn'];
+  const heatingStop = ['fn', 'bl', 'hp', 'wh'].includes(s.product);
+  const expectNode = heatingStop ? 'sw.co.fast_exit' : 'ac.gate.cluster_entry';
+  const hazards = heatingStop ? ['co_yes', 'co_no'] : ['hazard_gas_co', 'hazard_refrigerant_alarm', 'hazard_smoke_fire_sparks_burn'];
   assert(!s.result && s.node === expectNode && v && hazards.every(h => v.options.some(o => o.id === h)), 'B1-A01', 'stop() from ' + id + ' did not reach hazard choices');
   if (wasUrgent && s.node === 'ac.gate.cluster_entry') { const t = JSON.parse(JSON.stringify(s)); F.answer(t, 'none_of_these', META); assert(t.result && t.result !== null && !t.node, 'B1-A01b', 'after urgent ' + id + ', none_of_these must end at a no-DIY result, got node ' + t.node); }
 }

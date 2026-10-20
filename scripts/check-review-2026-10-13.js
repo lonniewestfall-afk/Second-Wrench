@@ -2,13 +2,14 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-global.SW_CONFIG = { advancedRepairsEnabled: false, aiThermostatEnabled: false, mirrorsEnabled: false, stageLatchStepsEnabled: false, contentVersion: '2026-10-13.2' };
+global.SW_CONFIG = { advancedRepairsEnabled: false, aiThermostatEnabled: false, mirrorsEnabled: false, stageLatchStepsEnabled: false, contentVersion: '2026-10-20.1' };
 const F = require('../assets/flow');
 const meta = { agreed: true, termsVersion: 'test' };
 function go(choices) {
   const s = F.create('', 'test');
   for (const c of choices) {
     if (s.result) throw new Error('ended at ' + s.result + ' before ' + c);
+    if (s.node === 'sw.co.fast_exit' && c !== 'co_yes' && c !== 'co_no') F.answer(s, 'co_no', meta);
     F.answer(s, c, meta);
   }
   return s;
@@ -64,6 +65,9 @@ const boiler = go(gate.concat(['other_heat_or_ductless', 'boiler', 'none_of_thes
 boiler.result = 'bl_call_pro';
 boiler.node = null;
 F.stop(boiler);
+assert.equal(boiler.node, 'sw.co.fast_exit');
+assert.equal(boiler.coReturn, 'bl.gate.safety');
+F.answer(boiler, 'co_no', meta);
 assert.equal(boiler.node, 'bl.gate.safety');
 assert.equal(boiler.heatingHazardReported, false);
 const ids = F.viewNode(boiler.node, boiler).options.map(o => o.id);
