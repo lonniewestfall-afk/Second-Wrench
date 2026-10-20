@@ -25,14 +25,14 @@ assert.match(F.summary(s),/circulation and coil temperature have not been confir
 assert.ok(!/hot water is reaching/i.test(F.viewNode(s.node,s).body));
 s=act(furnace(),'none_of_these','air_handler_hot_water','not_sure','unsure');assert.equal(s.node,'sw.handoff.hydronic_both');
 act(s,'water_side','src_not_sure');assert.equal(s.node,'fn.conclude.call_pro');
-s=act(water(),'none_of_these','none_of_these','tank','indirect','continue');assert.equal(s.node,'sw.co.fast_exit');
+s=act(water(),'none_of_these','none_of_these','tank','indirect','continue');assert.equal(s.node,'sw.co.fast_exit');assert.equal(s.coReturn,'bl.gate.safety');
 act(s,'co_no');assert.equal(s.node,'bl.gate.safety');assert.equal(s.bl.mode,'dhw');assert.equal(s.bl.hwType,'indirect');
 act(s,'none_of_these');assert.equal(s.node,'bl.dhw.indirect_call');assert.equal(s.bl.mode,'dhw');assert.equal(s.mode,'test');
 // A combi DHW complaint must make progress after WH -> BL, including when
 // the session started in BL. It must not return to the same generic landing.
 for(const fromBoiler of [false,true]){
  s=fromBoiler?act(boiler(),'none_of_these','combi','fuel_gas','landing_no_hot_water','dhw_combi'):water();
- act(s,'none_of_these','none_of_these','combi','continue');assert.equal(s.node,'sw.co.fast_exit');
+ act(s,'none_of_these','none_of_these','combi','continue');assert.equal(s.node,'sw.co.fast_exit');assert.equal(s.coReturn,'bl.gate.safety');
  act(s,'co_no');assert.equal(s.node,'bl.gate.safety');assert.equal(s.bl.mode,'dhw');assert.equal(s.bl.hwType,'combi');
  act(s,'none_of_these','fuel_gas');assert.equal(s.node,'bl.dhw.combi_call');
  const heat=clone(s);act(heat,'home_also_cold','cold_getting_colder');assert.equal(heat.result,'bl_cold_home_urgent');assert.equal(heat.bl.mode,'heat');
@@ -45,11 +45,12 @@ for(const fromBoiler of [false,true]){
  s=coilWater(fromBoiler);assert.equal(s.node,'wh.gate.safety');assert.equal(s.whCoil,true);
  act(s,'none_of_these','none_of_these');assert.equal(s.node,'wh.hydro.cold_home');
  const cold=clone(s);act(cold,'home_cooling');assert.equal(cold.result,'bl_cold_home_urgent');
- act(s,'holding','tank','gas');assert.equal(s.node,'wh.hydro.observations');
+ act(s,'holding');assert.equal(s.node,'wh.hydro.tap');
+ act(s,'no','tank','gas');assert.equal(s.node,'wh.hydro.observations');
  const air=clone(s);act(air,'no_air','co_no');assert.equal(air.node,'fn.gate.combustion_co');act(air,'none_of_these');assert.equal(air.node,'fn.hydro.air_side');
- act(s,'taps_work');assert.equal(s.result,'wh_hydro_delivery_pro');assert.match(F.summary(s),/Water circulation and coil temperature have not been confirmed/);assert.match(F.summary(s),/Tap hot water reportedly works/);
+ const hot=clone(s);act(hot,'taps_work');assert.equal(hot.node,'sw.co.fast_exit');assert.equal(hot.coReturn,'fn.gate.combustion_co');act(hot,'co_no');assert.equal(hot.node,'fn.gate.combustion_co');assert.equal(hot.heaterOk,'yes');assert.match(F.summary(hot),/Water circulation and coil temperature have not been confirmed/);assert.match(F.summary(hot),/Tap hot water reportedly works/);
 }
-s=coilWater(false);act(s,'none_of_these','none_of_these','holding','combi','continue');assert.equal(s.node,'sw.co.fast_exit');act(s,'co_no');assert.equal(s.node,'bl.gate.safety');act(s,'none_of_these');assert.equal(s.node,'bl.coil.type');assert.equal(s.bl.mode,'heat');
+s=coilWater(false);act(s,'none_of_these','none_of_these','holding','no','combi','continue');assert.equal(s.node,'sw.co.fast_exit');assert.equal(s.coReturn,'bl.gate.safety');act(s,'co_no');assert.equal(s.node,'bl.gate.safety');act(s,'none_of_these');assert.equal(s.node,'bl.coil.type');assert.equal(s.bl.mode,'heat');
 for(const risk of ['cold_getting_colder','cold_not_sure']){s=act(boiler(),'none_of_these','hot_water_standard','fuel_gas','landing_no_heat',risk);assert.equal(s.result,'bl_cold_home_urgent');assert.ok(!s.answers.some(a=>a.node==='bl.cold.weather'));}
 {const pressure=F.nodes['bl.gate.safety'].options.find(o=>o.id==='pressure_at_relief');assert.doesNotMatch(pressure.label+' '+pressure.fact,/30 psi|15 psi/);assert.match(pressure.fact,/numerical setting is not stated/);}
 assert.equal(F.nodes['bl.gate.carryover'],undefined);

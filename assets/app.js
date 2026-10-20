@@ -104,7 +104,7 @@
     const limit = onBl
         ? 'Observe only. Do not touch hot pipes, add or drain water, bleed radiators, open valves, reset controls, or open equipment. A thermostat set to Off may not stop other zones or hot-water calls.'
       : onWh
-        ? 'Keep away from hot water and steam. Do not open covers, relight, reset, change temperature or valves, test a relief valve, or flush the heater.'
+        ? 'Keep away from hot water and steam. Do not open covers, relight a pilot, cycle a breaker, or flush the heater. Change a temperature dial, reset once, or lift a relief lever only when this guide shows that step.'
       : onSd
         ? 'Look from dry, level ground. Keep hands and tools outside grilles and away from fins. No ice removal, mounting changes, refrigerant, or electrical work.'
       : onFn

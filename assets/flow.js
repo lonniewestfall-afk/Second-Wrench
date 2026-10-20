@@ -2971,6 +2971,33 @@
     let target = resolveTarget(option, state);
     target = applySessionOverlay(state, nodeId, choice, target);
     target = HEAT.target(state, nodeId, option, target);
+    if (state.whHandoffEntry) {
+      const enterWh = target === 'wh.gate.safety' && nodeId !== CO_NODE;
+      state.whHandoffEntry = false;
+      if (enterWh) {
+        state.coSkip = null;
+        state.coReturn = 'wh.gate.safety';
+        target = CO_NODE;
+      }
+    }
+    if (state.blHandoffEntry) {
+      const enterBl = target === 'bl.gate.safety' && nodeId !== CO_NODE;
+      state.blHandoffEntry = false;
+      if (enterBl) {
+        state.coSkip = null;
+        state.coReturn = 'bl.gate.safety';
+        target = CO_NODE;
+      }
+    }
+    if (state.fnHandoffEntry) {
+      const enterFn = target === 'fn.gate.combustion_co' && nodeId !== CO_NODE;
+      state.fnHandoffEntry = false;
+      if (enterFn) {
+        state.coSkip = null;
+        state.coReturn = 'fn.gate.combustion_co';
+        target = CO_NODE;
+      }
+    }
     if (state.product === 'fn' && (FN_FORBIDDEN.indexOf(target) !== -1 || String(target).indexOf('ac.adv.cap.') === 0)) {
       throw new Error('That step is not part of this check.');
     }
