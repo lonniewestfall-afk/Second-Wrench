@@ -39,6 +39,8 @@
       const reason=choose(o.reason,s);if(reason)s.bl.reason=reason;
       if(o.set&&o.set.resetCount)s.reset_count=Math.max(s.reset_count||0,o.set.resetCount);
     }else Object.assign(s,o.set||{});
+    if(id==='wh.conclude.call_pro'&&o.id==='diy')s.whWantedRepair=true;
+    if(['wh.tankless.reset_once','wh.tankless.reset_rheem','wh.tankless.reset_noritz'].includes(id)&&['done','again'].includes(o.id))s.reset_count=Math.max(s.reset_count||0,1);
     if(id==='fn.airflow.filter_fit'&&['fixed_fit','fits_fine'].includes(o.id))s.fnFilterChecked=true;
     if(id==='fn.landing.picker'&&o.id.startsWith('landing_'))s.fnLanding=o.id.slice(8);
     if(id==='sd.entry.outdoor'&&o.set&&o.set.sdMode){if(s.sdModeHint&&s.sdModeHint!==o.set.sdMode)audit(s,'Mode answers differed between checks.');audit(s,'flag:sd_mode='+s.sdMode);}
@@ -54,7 +56,7 @@
     if(t==='bl.gate.carryover')t=BL;
     if(t==='>bl_to_fn'){s.fnHandoff='hydro';s.fnFuel='hydronic';s.bl=s.bl||{};s.bl.mode='heat';t=FN;}
     if(t==='>fn_to_bl'){s.bl=s.bl||{};s.bl.entry='fn_coil';s.bl.coil=true;t=BL;}
-    if(t==='>bl_to_wh'||t==='>coil_to_wh'){s.whFrom=s.product;s.whCoil=t==='>coil_to_wh';s.bl=s.bl||{};s.bl.mode=s.whCoil?'heat':'dhw';if(s.whCoil)s.bl.coil=true;t=WH;}
+    if(t==='>bl_to_wh'||t==='>coil_to_wh'){if(s.product!=='wh')s.whHandoffEntry=true;s.whFrom=s.product;s.whCoil=t==='>coil_to_wh';s.bl=s.bl||{};if(s.whCoil)s.bl.coil=true;if(s.bl.hwType)s.hwType=s.bl.hwType;s.bl.mode=s.whCoil?'heat':'dhw';if(s.whCoil)audit(s,'flag:tankless_lead');t=WH;}
     if(id==='wh.gate.warning_signs'&&o.id==='none_of_these'&&s.whCoil)t='wh.hydro.cold_home';
     if(s.whCoil&&['wh.tank.landing','wh.tankless.landing','wh.hpwh.landing'].includes(t))t='wh.hydro.observations';
     if(t==='>fn_call_pro')t='fn.conclude.call_pro';
@@ -79,14 +81,28 @@
     if(id.startsWith('sd.')&&s.heatingHazardReported&&o.id==='none_of_these')t='@uncertain';
     if(id.startsWith('sd.')&&(t.startsWith('ms.')||t.startsWith('@ms_'))){s.product='ms';s.msMode=s.sdMode==='unsure'?'unknown':s.sdMode;s.treeVersion='ms.ductless.v2';audit(s,'handoff:sd_to_ms');}
     if(id.startsWith('sd.')&&t==='@hp_cold_exposure'){s.product='hp';s.treeVersion='hp.air_source.v1';audit(s,'handoff:sd_to_hp');}
+    if(id==='fn.hydro.air_side'&&o.id==='air_cool'&&s.heaterOk==='yes'){s.bl=s.bl||{};s.bl.entry='wh_coil_ok';s.bl.coil=true;t=BL;}
     const nextLane=t===FN?'fn':t===BL||t==='bl.gate.carryover'?'bl':t===WH?'wh':t==='ts.gate.safety_stops'?'ts':t==='ms.intake.system_confirm'?'ms':t==='hp.intake.system_confirm'?'hp':null;
     // Dual-fuel heat-pump sessions visit the furnace gate while retaining HP context.
     if(nextLane&&!(t===FN&&s.product==='hp'&&id==='hp.intake.system_confirm')){
       const before=s.product;
-      if(before!==nextLane){s.product=nextLane;s.treeVersion=lanes[nextLane]||s.treeVersion;audit(s,'handoff:'+before+'_to_'+nextLane);}
+      if(before!==nextLane){
+        if(nextLane==='bl'&&t===BL)s.blHandoffEntry=true;
+        if(before==='wh'&&nextLane==='fn'&&t===FN)s.fnHandoffEntry=true;
+        s.product=nextLane;s.treeVersion=lanes[nextLane]||s.treeVersion;audit(s,'handoff:'+before+'_to_'+nextLane);
+      }
     }
     if(t==='ms.error.restart_once'&&(s.reset_count||0)>=1)t='@ms_error_code_returned_pro';
     if(['fn.power.switch_on_step','ac.cool.power.seasonal_restore_step'].includes(t)&&(s.reset_count||0)>=1)t=s.product==='fn'?'@fn_breaker_tripped_pro':'@breaker_retrip_pro';
+    const homeHeat=!!(s.whCoil||s.whType==='combi'||(s.bl&&s.bl.mode==='heat'));
+    if(t==='@wh_too_hot'&&s.whFuel==='gas'&&s.whType==='tank'&&!homeHeat){s.whDialDir='down';t='wh.tank.gas.dial';}
+    if(t==='wh.tank.gas.dial'&&(s.whFuel!=='gas'||homeHeat||['tankless','hpwh','combi','indirect'].includes(s.whType)))t='wh.conclude.call_pro';
+    if(id==='wh.usage.pattern'&&o.id==='short'&&s.whType==='tankless')t='wh.tankless.flow_check';
+    if(id==='wh.water.shutoff'&&o.id==='cannot')t=s.whLeakKind==='relief'?'@wh_relief_valve':s.whLeakKind==='frozen'?'@wh_frozen':'@wh_tank_leak';
+    if(['wh.tankless.reset_once','wh.tankless.reset_rheem','wh.tankless.reset_noritz'].includes(t)&&(s.reset_count||0)>=1){s.whReason='tankless_code_repeat';t='wh.conclude.call_pro';}
+    if(t==='wh.tankless.reset_noritz'&&!(s.whBrand==='noritz'&&s.whModel==='ncc199'&&String(s.whCode||'').toUpperCase()==='11'))t='wh.conclude.call_pro';
+    if((t==='wh.tank.tp_test'||t==='wh.tank.tp_ask')&&(s.whLeakReported||['tankless','combi','indirect'].includes(s.whType)))t='wh.conclude.call_pro';
+    if(id==='wh.power.look'&&o.id==='element'&&s.whFuel!=='electric')t='@wh_power_pro';
     return t;
   }
   function needsNotice(node,s){return node&&node.step&&(node.notice==='pn-full'||node.notice==='pn-reset')&&!(s.notices&&s.notices[node.owner]);}
@@ -117,6 +133,62 @@
       node.body=original.coldPolicy;node.step=null;delete node.noticePrompt;delete node.warrantyPrompt;delete node.ackLabel;
       node.options=original.options.filter(o=>o.id==='hazard_now'||o.id==='cold_exposure_risk'||/cold_or_fragile/.test(o.id)).map(o=>({...o,disabled:false}));
       node.options.splice(-1,0,{id:'cold_guard_ok',label:'None of those conditions applies; the home can tolerate this brief step',hint:'',next:id,fact:'Homeowner reports no cold-weather or vulnerable-occupant restriction for this step.'},{id:'cold_guard_unsure',label:'I’m not sure; stop this step',hint:'',next:'@ms_cold_weather_stop'});
+    }
+    const hazard=original.options.find(o=>o.id==='hazard_now');
+    const whRows=((data.waterHeater&&data.waterHeater.codes)||[]).filter(item=>item.brand===s.whBrand&&(!item.model||item.model===s.whModel)&&!(item.proGuide&&item.brand==='noritz'&&s.whModel!=='gq-c59'));
+    if(id==='wh.code.list'){
+      const rows=whRows.slice().sort((a,b)=>Number(!!b.proGuide)-Number(!!a.proGuide)||String(a.code).localeCompare(String(b.code)));
+      node.options=rows.map(item=>({id:'c_'+item.brand+'_'+String(item.code),label:item.code+' — '+item.meaning,next:'wh.code.detail',hint:'',fact:'Code selected from the maker list.',set:{whCode:item.code,whBrand:item.brand,whModel:item.model||s.whModel||''}}));
+      node.options.push({id:'unlisted',label:'My code isn’t in this list',next:'@wh_code_unlisted',hint:'',fact:'The code is not in the maker list loaded for this model.',set:{}});
+      node.options.push({id:'back',label:'Choose a different brand',next:'wh.code.brand',hint:'',fact:'Returning to the maker list.',set:{}});
+      if(hazard)node.options.push(hazard);
+    }
+    if(id==='wh.code.detail'){
+      const row=whRows.find(item=>String(item.code).toUpperCase()===String(s.whCode||'').toUpperCase());
+      const call={id:'call_pro',label:'Call a licensed plumber or water heater professional',next:'@wh_call_pro',hint:'',fact:'A pro is needed for this code.',set:{}};
+      const back={id:'back',label:'Back to the code list',next:'wh.code.list',hint:'',fact:'Returning to the code list.',set:{}};
+      if(!row){
+        node.body='We only list codes from the maker’s own manual. Yours isn’t in our list yet. Tell your pro the exact code.';
+        node.step=null;
+        node.options=[call,back];
+      }else if(row.proGuide){
+        node.body=row.meaning+'\n\n'+row.caption+'\n\n'+row.citation;
+        node.step=null;
+        node.options=[call,back];
+      }else{
+        node.body=row.meaning+(row.ownerStep?'\n\nOwner step: '+row.ownerStep:'')+'\n\n'+row.citation;
+        node.step=null;
+        node.options=[];
+        if(row.step)node.options.push({id:'owner_step',label:'Show the owner step',next:row.step,hint:'',fact:'Owner step from the maker manual.',set:{whCode:row.code}});
+        if(s.whBrand==='rheem')node.options.push({id:'rheem_reset',label:'My manual says one unplug on a cord-and-plug unit',next:'wh.tankless.reset_rheem_ask',hint:'',fact:'Cord-and-plug reset requested from the Rheem manual.',set:{}});
+        const scale=['00','LC','1L','88','SS','C1'].includes(String(row.code).toUpperCase());
+        if(scale)call.set={whReason:'scale'};
+        node.options.push(call,back);
+      }
+      if(hazard)node.options.push(hazard);
+    }
+    if(id==='wh.pm.menu'){
+      const tank=['tank','hpwh'].includes(s.whType)&&!s.whLeakReported;
+      node.options=original.options.filter(opt=>opt.id!=='tp'||tank);
+    }
+    if(id==='wh.power.look'&&s.whFuel!=='electric')node.options=node.options.filter(opt=>opt.id!=='element');
+    if((id==='wh.tank.tp_ask'||id==='wh.tank.tp_test')&&(s.whLeakReported||['tankless','combi','indirect'].includes(s.whType))){
+      node.body='This check doesn’t include a relief-valve lever test after a leak, or on a tankless, combi, or indirect heater. Call a licensed plumber or water heater professional.';
+      node.step=null;node.noticePrompt=null;node.warrantyPrompt=false;
+      node.options=[{id:'call_pro',label:'Call a licensed plumber or water heater professional',next:'wh.conclude.call_pro',hint:'',fact:'Relief lever test is not available on this path.',set:{whReason:'relief_skipped'}}];
+      if(hazard)node.options.push(hazard);
+    }
+    if(id==='wh.hpwh.anode_reset'&&!s.whAnodeServiced){
+      node.step=null;
+      node.body='Has the anode rod been serviced or replaced since this light came on? Only yes shows the hold step.';
+      node.options=[{id:'back',label:'Answer the service question',next:'wh.hpwh.anode_ask',hint:'',fact:'Returning to the anode service question.',set:{}}];
+      if(hazard)node.options.push(hazard);
+    }
+    if(id==='wh.tankless.reset_noritz'&&!(s.whBrand==='noritz'&&s.whModel==='ncc199'&&String(s.whCode||'').toUpperCase()==='11')){
+      node.step=null;
+      node.body='This restart is only for code 11 on an NCC199CDV. Note the code and call a licensed plumber or water heater professional.';
+      node.options=[{id:'call_pro',label:'Call a licensed plumber or water heater professional',next:'@wh_call_pro',hint:'',fact:'Noritz restart is not for this code or model.',set:{}}];
+      if(hazard)node.options.push(hazard);
     }
     return node;
   }
@@ -159,6 +231,11 @@
     if(s.result==='bl_call_pro'){
       const why=(s.bl||{}).reason;
       return Object.assign({},r,{reason:why||r.reason,explanation:'The cause has not been confirmed. A licensed heating professional needs to check the equipment and water-side controls.'});
+    }
+    if(s.product==='wh'&&s.whWantedRepair&&s.result==='wh_call_pro'){
+      const reason=String(s.whReason||'');
+      const line=reason.indexOf('gas')===0?'Gas parts need a gas-qualified pro and leak testing.':reason==='hpwh_sealed_system'?'Refrigerant work requires a certified technician.':reason.indexOf('element')===0?'Elements sit behind covers at 240 volts.':reason==='tank_leak'?'A tank that leaks from its body can’t be patched; the tank has to be replaced. A leak at a fitting or valve may be repairable, but it needs the tank drained and depressurized first.':reason==='tankless_code_repeat'?'A code that comes back after one reset means the heater found a real fault, such as gas supply, flame sensing, venting or a sensor. Finding which needs gas pressure and electrical testing inside the cover.':reason.indexOf('tp')===0?'A valve that sticks or won’t reseat must be replaced, and that means draining the tank and working on a pressure-safety part. It’s a plumber job.':reason==='scale'?'Descaling means isolating the heater’s water valves and pumping cleaner through it; Rinnai and Rheem tell owners to call a pro (Rinnai LC p.67; Rheem 1L p.75).':'';
+      if(line)return Object.assign({},r,{explanation:line});
     }
     return r;
   }

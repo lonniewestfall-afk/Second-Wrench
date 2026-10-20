@@ -17,6 +17,7 @@ const WARRANTY = '**Warranty note:** Your warranty may require professional main
 const SCHEDULE = 'Pick a time you’ll remember. Your manual sets how often.';
 const HERO = 'Free home maintenance checklists — see what your manual asks for between pro visits.';
 const WH_SAFETY = '**Safety first:** If you smell gas, leave now and call the gas utility or 911 from outside. If a CO alarm sounds, get everyone outside and call 911. If hot water or steam is spraying from the heater or its relief pipe, stay back. For a serious burn, call 911.';
+const { RINNAI_PRO, RINNAI_CAPTION, RINNAI_TITLE, RINNAI_URL } = require('./wh-codes');
 const GUIDE = ORIGIN + '/#/';
 
 function esc(s) {
@@ -220,6 +221,11 @@ add({
     { h2: 'Know exactly why not' },
     { p: 'Ignition codes that repeat need gas-pressure and flame-sensor testing inside the sealed combustion section. Fan, gas valve, sensor and board codes are parts behind the cover with live wiring. Scale codes need the water valves isolated and a descaling pump. Descaling means isolating the heater’s water valves and pumping cleaner through it; Rinnai and Rheem tell owners to call a pro (Rinnai LC p. 67; Rheem 1L p. 75).' },
     { p: 'We only list codes from the maker’s own manual. If yours isn’t in this list yet, tell your pro the exact code. Don’t clear it.' },
+    { h2: 'Rinnai codes for trained professionals' },
+    { p: RINNAI_CAPTION },
+    { p: RINNAI_TITLE },
+    { p: RINNAI_URL },
+    { ul: RINNAI_PRO.map(row => `**${row.code}** — ${row.meaning}. ${row.citation}`) },
     { p: link(GUIDE, 'Start the guided check') + ' and choose Water heater, then a code on the display.' },
     { h2: 'Sources' },
     { ul: [
