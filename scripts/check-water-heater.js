@@ -2,7 +2,7 @@
 const assert = require('assert/strict');
 const fs = require('fs');
 const path = require('path');
-global.SW_CONFIG = { advancedRepairsEnabled: false, aiThermostatEnabled: false, mirrorsEnabled: false, stageLatchStepsEnabled: false, catalogEnabled: false, contentVersion: '2026-10-20.14' };
+global.SW_CONFIG = { advancedRepairsEnabled: false, aiThermostatEnabled: false, mirrorsEnabled: false, stageLatchStepsEnabled: false, catalogEnabled: false, contentVersion: '2026-10-20.15' };
 const F = require('../assets/flow');
 const heating = require('../assets/heating-data.json');
 const codes = require('./wh-codes');
@@ -34,7 +34,7 @@ assert.equal(heating.waterHeater.codes.filter(row => row.proGuide && row.brand =
 const config = fs.readFileSync(path.join(__dirname, '../assets/config.js'), 'utf8');
 assert.match(config, /advancedRepairsEnabled:\s*false/);
 assert.match(config, /catalogEnabled:\s*false/);
-assert.match(config, /contentVersion:\s*'2026-10-20\.14'/);
+assert.match(config, /contentVersion:\s*'2026-10-20\.15'/);
 
 const gate = F.nodes['wh.gate.safety'].options;
 assert.deepEqual(gate.slice(-2).map(o => o.id), ['unsure', 'none_of_these']);
@@ -255,8 +255,9 @@ assert.notEqual(coilLoop.result, 'bl_call_pro');
 F.answer(coilLoop, 'co_no', meta);
 assert.equal(coilLoop.node, 'bl.gate.safety');
 F.answer(coilLoop, 'none_of_these', meta);
-assert.equal(coilLoop.node, 'bl.coil.type');
+assert.equal(coilLoop.node, 'bl.conclude.call_pro');
 assert.equal(coilLoop.bl.entry, 'wh_coil_ok');
+assert.equal(coilLoop.bl.reason, 'coil_loop_wh_source');
 assert.notEqual(coilLoop.result, 'bl_call_pro');
 
 const page = fs.readFileSync(path.join(__dirname, '../answers/tankless-water-heater-error-code/index.html'), 'utf8');

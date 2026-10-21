@@ -36,7 +36,8 @@ for(const fromBoiler of [false,true]){
  act(s,'co_no');assert.equal(s.node,'bl.gate.safety');assert.equal(s.bl.mode,'dhw');assert.equal(s.bl.hwType,'combi');
  act(s,'none_of_these','fuel_gas');assert.equal(s.node,'bl.dhw.combi_call');
  const heat=clone(s);act(heat,'home_also_cold','cold_getting_colder');assert.equal(heat.result,'bl_cold_home_urgent');assert.equal(heat.bl.mode,'heat');
- act(s,'tap_only','display_normal','pressure_normal','ack_call_pro');assert.equal(s.result,'bl_call_pro');assert.equal(s.bl.mode,'dhw');
+ act(s,'tap_only');assert.equal(s.node,'sw.co.fast_exit');assert.equal(s.coReturn,'wh.gate.safety');
+ act(s,'co_no');assert.equal(s.node,'wh.gate.safety');assert.equal(s.product,'wh');assert.equal(s.hwType,'combi');assert.equal(s.bl.mode,'dhw');
  assert.equal(s.answers.filter(a=>a.node==='wh.intake.type').length,1,'combi identification does not repeat');
 }
 // Coil-fed heating is not silently converted into a complaint about tap water.
@@ -81,8 +82,8 @@ assert.equal(gateRoute.fromWhIndirect,'bl.dhw.indirect_call');
 assert.equal(gateRoute.fromWhCode,'bl.cold.screen');
 assert.equal(gateRoute.fromWhHeat,'bl.intake.fuel');
 assert.equal(gateRoute.fromFnCoil,'bl.coil.type');
-assert.equal(gateRoute.fromWhCoilOk,'bl.coil.type');
-assert.equal(JSON.stringify(gateRoute).includes('coil_loop_wh_source'),false);
+assert.equal(gateRoute.fromWhCoilOk,'bl.conclude.call_pro');
+assert.equal(gateNone.reason.fromWhCoilOk,'coil_loop_wh_source');
 // M31 / M39 / M40. A mis-tapped hazard returns to the step left, stays in the note, and the next boiler entry runs the gate again.
 s=act(boiler(),'none_of_these','hydro_air','hazard_now');
 assert.equal(s.node,'sw.co.fast_exit');assert.equal(s.bl.retriageFrom,'sw.handoff.hydronic_coil');
@@ -195,7 +196,7 @@ s=act(furnace(),'none_of_these','gas_furnace','natural_gas','site_built','landin
 for(const n of Object.values(H.nodes))for(const o of n.options)assert.doesNotMatch(o.fact||'',/audit handoff:|flag tankless_lead|reset_count|reuses existing stop|replaces oil_or_other/,'No authoring markers in service-note facts');
 // State walk includes all new lanes. Dedupe only on route-affecting state;
 // timestamps and repeated narrative history cannot create infinite cycles.
-function key(s){if(s.result)return JSON.stringify([s.result,s.product,s.fnFuel,s.fnReason,s.fnNoHeat,(s.bl||{}).reason,s.whFuel]);const b={};for(const k of ['type','fuel','landing','mode','entry','coil','fragile','cold','sawCode','retriage','retriageFrom'])b[k]=(s.bl||{})[k];const selected={node:s.node,result:s.result,product:s.product,fnFuel:s.fnFuel,fnGas:s.fnGas,fnHome:s.fnHome,fnLanding:s.fnLanding,fnHandoff:s.fnHandoff,fnNoHeat:s.fnNoHeat,fnAfterWarmup:s.fnAfterWarmup,coReturn:s.coReturn,fnFilterUnchanged:s.fnFilterUnchanged,fnFilterChecked:s.fnFilterChecked,whType:s.whType,whFuel:s.whFuel,whFrom:s.whFrom,whCoil:s.whCoil,bl:b,reset:s.reset_count,notice:!!(s.notices&&s.notices.fn),warranty:Object.keys(s.warrantyAck||{}).sort(),reserved:s.switchStepReserved,hazard:s.heatingHazardReported,codeSeen:s.answers.some(x=>x.node==='fn.code.window_look')};return JSON.stringify(selected);}
+function key(s){if(s.result)return JSON.stringify([s.result,s.product,s.fnFuel,s.fnReason,s.fnNoHeat,(s.bl||{}).reason,s.whFuel]);const b={};for(const k of ['type','fuel','landing','mode','entry','coil','fragile','cold','sawCode','retriage','retriageFrom','pnStep','resetBrand'])b[k]=(s.bl||{})[k];const selected={node:s.node,result:s.result,product:s.product,fnFuel:s.fnFuel,fnGas:s.fnGas,fnHome:s.fnHome,fnLanding:s.fnLanding,fnHandoff:s.fnHandoff,fnNoHeat:s.fnNoHeat,fnAfterWarmup:s.fnAfterWarmup,coReturn:s.coReturn,fnFilterUnchanged:s.fnFilterUnchanged,fnFilterChecked:s.fnFilterChecked,whType:s.whType,whFuel:s.whFuel,whFrom:s.whFrom,whCoil:s.whCoil,bl:b,reset:s.reset_count,notice:!!(s.notices&&s.notices.fn),warranty:Object.keys(s.warrantyAck||{}).sort(),reserved:s.switchStepReserved,hazard:s.heatingHazardReported,codeSeen:s.answers.some(x=>x.node==='fn.code.window_look')};return JSON.stringify(selected);}
 const queue=[furnace(),boiler(),water(),coilWater(false),coilWater(true),act(water(),'none_of_these','none_of_these','combi','continue'),act(water(),'none_of_these','none_of_these','tank','indirect','continue'),act(boiler(),'none_of_these','hydro_air','pipe_hot_no_air'),act(furnace(),'none_of_these','air_handler_hot_water','boiler','pipe_cold')].map(s=>Object.assign(s,{walkLane:s.product})),seen=new Set(),visited=new Set(),leaves=new Set();
 while(queue.length){
  const a=queue.shift(),k=key(a);if(seen.has(k))continue;seen.add(k);if(seen.size%10000===0)console.log('Heating walk',seen.size,a.product,a.node,a.answers.length,queue.length);assert.ok(seen.size<100000,'bounded state walk');
@@ -218,7 +219,8 @@ for(const [id,node] of Object.entries(H.nodes)){
  }
 }
 const heldTap=H.nodes['bl.dhw.combi_call'].options.find(o=>o.id==='tap_only');
-assert.equal(heldTap.next,'bl.power.look');
+assert.equal(heldTap.heatingTarget,'>bl_to_wh');
+assert.equal(heldTap.next,'wh.gate.safety');
 function instructs(text){
  const lines=String(text||'').split(/\n/);
  return lines.some(line=>{
@@ -226,13 +228,16 @@ function instructs(text){
   return /\b(?:turn|adjust|change)\b[^.]{0,40}\b(?:aquastat|temperature dial)\b/i.test(say)||/\bbleed\b/i.test(say)||/\badd water\b/i.test(say)||/\bdrain\b[^.]{0,40}\bfreeze/i.test(say)||/\breset (?:the|it|a)\b/i.test(say);
  });
 }
+const clearedStep=new Set(['bl.bleed.step','bl.reset.do','bl.reset.brand','bl.reset.check','bl.pn.notice','bl.pn.warranty','bl_bleed_done_basic','bl_reset_ok_basic','bl_vent_wont_close','bl_ask_installer']);
 for(const [id,node] of Object.entries(H.nodes)){
  if(!(id.startsWith('bl.')||id==='sw.handoff.hydronic_coil'||id==='sw.handoff.hydronic_both'))continue;
- const blob=[node.title,node.body,node.caution].concat((node.options||[]).map(o=>[o.label,o.hint,o.fact].join(' '))).join('\n');
+ if(clearedStep.has(id))continue;
+ const bodyText=typeof node.body==='string'?node.body:Object.values(node.body||{}).join('\n');
+ const blob=[node.title,bodyText,node.caution].concat((node.options||[]).map(o=>[o.label,o.hint,o.fact].join(' '))).join('\n');
  assert.equal(instructs(blob),false,'BH-6 '+id);
 }
 for(const [id,res] of Object.entries(H.results)){
- if(!id.startsWith('bl_'))continue;
+ if(!id.startsWith('bl_')||clearedStep.has(id))continue;
  assert.equal(instructs([res.title,res.explanation,res.avoid].concat(res.actions||[]).join('\n')),false,'BH-6 '+id);
 }
 const required=['fn.airflow.after_filter','fn.airflow.restore_request','fn.airflow.returns','fn.hydro.air_side','fn.mh.closet_return','fn.elec.pattern','bl.gate.safety','bl.dhw.combi_call','wh.hydro.cold_home','wh.hydro.observations'];for(const id of required)assert.ok(visited.has(id),'walk reaches '+id);

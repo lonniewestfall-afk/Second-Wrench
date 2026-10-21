@@ -5700,13 +5700,22 @@
         "options": [
           {
             "id": "gas_smell_or_unknown_smell",
-            "label": "Gas or rotten-egg smell, or a strong smell you can’t place",
+            "label": "A gas or rotten-egg smell in the air, a gasoline, paint, or solvent smell near the boiler, or a strong smell I can’t place",
             "next": "@bl_gas_smell",
             "hint": "Leave now.",
-            "fact": "Gas, rotten-egg, or unknown strong smell reported.",
+            "fact": "Gas, rotten-egg in air, flammable-vapor, or unknown strong smell reported.",
             "gate": "gas_co",
             "set": {},
             "reason": null
+          },
+          {
+            "id": "egg_sulfur_smell",
+            "label": "A rotten-egg or sulfur smell that may be only from the hot water",
+            "next": "bl.gate.egg_split",
+            "hint": "One quick question about where you smell it. If it’s in the air, choose the gas choice above.",
+            "fact": "Rotten-egg or sulfur smell reported; asked where.",
+            "set": {},
+            "gate": null
           },
           {
             "id": "co_alarm_or_symptoms",
@@ -5766,7 +5775,9 @@
             "fact": "Homeowner reports the gauge at the installation’s identified relief setting or warning mark; the numerical setting is not stated.",
             "gate": "pressure_at_relief",
             "set": {},
-            "reason": null
+            "reason": null,
+            "caption": "(Most home hot-water boilers have a 30 psi relief valve, and steam boilers 15 psi.)",
+            "source": "MANUAL: Weil-McLain Evergreen Series 2 User’s Information Manual 550-100-580/0325, page 6 (hot water): “Make sure the pressure reading on the boiler pressure/temperature gauge does not exceed 24 psig if using a 30 psig relief valve (typical installation).” Weil-McLain SGO Series 4 Boiler Manual 550-142-330/0225, page 7 (steam): “Incorrect or defective relief valve. Check for proper relief valve (15 psi).” Checked October 20, 2026."
           },
           {
             "id": "steam_glass_empty",
@@ -5825,7 +5836,7 @@
               "fromWhCode": "bl.cold.screen",
               "fromWhHeat": "bl.intake.fuel",
               "fromFnCoil": "bl.coil.type",
-              "fromWhCoilOk": "bl.coil.type",
+              "fromWhCoilOk": "bl.conclude.call_pro",
               "default": "bl.intake.type"
             },
             "hint": "Continue.",
@@ -5834,7 +5845,9 @@
             "set": {
               "gateCleared": true
             },
-            "reason": null
+            "reason": {
+              "fromWhCoilOk": "coil_loop_wh_source"
+            }
           }
         ],
         "diyTier": "basic",
@@ -5844,6 +5857,7 @@
           "dhw"
         ],
         "owner": "bl",
+        "handoffBody": "The other check already covered gas, CO, and smoke. These are boiler-only. Answer from what you already know.",
         "caution": ""
       },
       "bl.intake.type": {
@@ -6715,7 +6729,7 @@
       "bl.code.read": {
         "section": "Boiler code",
         "title": "What does the code or message point to?",
-        "body": "Record the full code and already-known model. Use the meaning in the exact owner’s manual; if you cannot match it, select not sure. A code is not a parts diagnosis. Do not clear error history or reset the boiler.",
+        "body": "Write down the exact code and the boiler’s brand and model, or take a photo. Your owner’s manual explains it.\n\nPick the closest match. Don’t reset anything on this screen.",
         "options": [
           {
             "id": "code_low_pressure",
@@ -6743,6 +6757,7 @@
             "set": {},
             "reason": {
               "oil": "oil_lockout",
+              "resetUsed": "reset_already_used",
               "default": null
             }
           },
@@ -6828,13 +6843,22 @@
         "options": [
           {
             "id": "reset_gas_smell",
-            "label": "Gas or rotten-egg smell, or a strong smell you can’t place",
+            "label": "A gas or rotten-egg smell in the air, a gasoline, paint, or solvent smell near the boiler, or a strong smell I can’t place",
             "next": "@bl_gas_smell",
             "hint": "Leave now.",
-            "fact": "Gas, rotten-egg, or unknown strong smell reported.",
+            "fact": "Gas, rotten-egg in air, flammable-vapor, or unknown strong smell reported.",
             "gate": "gas_co",
             "set": {},
             "reason": null
+          },
+          {
+            "id": "reset_egg_smell",
+            "label": "A rotten-egg or sulfur smell that may be only from the hot water",
+            "next": "bl.gate.egg_split",
+            "hint": "One quick question about where you smell it. If it’s in the air, choose the gas choice above.",
+            "fact": "Rotten-egg or sulfur smell reported; asked where.",
+            "set": {},
+            "gate": null
           },
           {
             "id": "reset_soot_exhaust",
@@ -6871,7 +6895,7 @@
           {
             "id": "reset_none",
             "label": "None of these",
-            "next": "bl.reset.brand",
+            "next": "bl.pn.notice",
             "hint": "",
             "fact": "",
             "gate": null,
@@ -6902,32 +6926,47 @@
         "owner": "bl",
         "caution": ""
       },
-      "bl.reset.brand": {
-        "section": "Reset once",
-        "title": "Match the exact boiler and owner’s instructions",
-        "body": "This release can help record the fault, but does not provide brand-wide reset instructions. Different models use different controls. Don’t clear the code or reset the boiler from a generic internet sequence.",
+      "bl.pn.notice": {
+        "section": "Before you start",
+        "title": "Before you start",
+        "body": "- **These steps are optional.** You can stop and call a licensed HVAC professional at any time.\n- **Write down or photograph how things are set now.** You’ll need it to put things back.\n- **Do only the step shown, the way it’s shown.** Don’t open panels, use tools on the equipment, or change anything else, even if it’s on the same screen or nearby.\n- **If anything looks different from these steps, stop.** Your equipment may not match what we describe. Check your owner’s manual.\n- **If you smell gas or burning, hear a CO alarm, see smoke, or see water near wires, stop now** and use the emergency steps.\n- These steps come from the equipment maker’s documents and common trade practice. They’re general information, not a diagnosis or an inspection of your system.",
         "options": [
           {
-            "id": "rs_not_listed",
-            "label": "Record the code and contact a professional",
+            "id": "notice_ack",
+            "label": "I wrote down or photographed the current settings, I’ll do only the step shown, and I’ll stop if anything looks different or unsafe.",
+            "next": {
+              "pnReset": "bl.reset.brand",
+              "pnBleed": "bl.pn.warranty"
+            },
+            "hint": "",
+            "fact": "Proper-notice acknowledgement given (pn-v1).",
+            "gate": null,
+            "set": {
+              "noticeAck": true
+            },
+            "reason": null
+          },
+          {
+            "id": "notice_decline",
+            "label": "I’d rather call a pro",
             "next": "bl.conclude.call_pro",
             "hint": "",
-            "fact": "Model-specific reset instructions not established.",
-            "set": {
-              "reason": "reset_not_on_model"
-            },
-            "gate": null
+            "fact": "Chose a pro instead of the homeowner step.",
+            "gate": null,
+            "set": {},
+            "reason": "notice_declined"
           },
           {
             "id": "hazard_now",
             "label": "New gas smell, CO alarm, refrigerant leak alarm, smoke, sparks, leaking hot water or steam, or another hazard",
             "next": "bl.gate.safety",
-            "hint": "Return to the hazard check.",
-            "fact": "New hazard reported.",
+            "hint": "Back to the safety check.",
+            "fact": "New hazard reported during the boiler check.",
+            "gate": null,
             "set": {
               "retriage": "hazard_now"
             },
-            "gate": null
+            "reason": null
           }
         ],
         "diyTier": "basic",
@@ -6939,10 +6978,356 @@
         "owner": "bl",
         "caution": ""
       },
+      "bl.reset.brand": {
+        "section": "Reset once",
+        "title": "Which matches your boiler and its screen?",
+        "body": "**Reset once, only once.** If it stops or shows the same code again, don’t reset it again. Repeated shutdowns mean a safety device is doing its job. Call a licensed HVAC professional and tell them the code and what you saw.\n\nWe show resets only for owner’s manuals we’ve checked. If yours isn’t listed, skip the reset.",
+        "options": [
+          {
+            "id": "rs_wm",
+            "label": "Weil-McLain Evergreen: the screen is red and shows LOCKOUT",
+            "next": "bl.reset.do",
+            "hint": "",
+            "fact": "Brand reported: Weil-McLain Evergreen (LOCKOUT screen).",
+            "gate": null,
+            "set": {
+              "resetBrand": "wm"
+            },
+            "reason": null
+          },
+          {
+            "id": "rs_bosch",
+            "label": "Bosch Greenstar combi: a fault code shows",
+            "next": "bl.reset.do",
+            "hint": "",
+            "fact": "Brand reported: Bosch Greenstar combi.",
+            "gate": null,
+            "set": {
+              "resetBrand": "bosch"
+            },
+            "reason": null
+          },
+          {
+            "id": "rs_buderus",
+            "label": "Buderus GB142: an error code flashes on the display",
+            "next": "bl.reset.do",
+            "hint": "",
+            "fact": "Brand reported: Buderus GB142.",
+            "gate": null,
+            "set": {
+              "resetBrand": "buderus"
+            },
+            "reason": null
+          },
+          {
+            "id": "rs_rinnai",
+            "label": "Rinnai I-Series combi: the Central Heating or Domestic Hot Water button is blinking",
+            "next": "bl.reset.do",
+            "hint": "",
+            "fact": "Brand reported: Rinnai I-Series combi.",
+            "gate": null,
+            "set": {
+              "resetBrand": "rinnai"
+            },
+            "reason": null
+          },
+          {
+            "id": "rs_viessmann",
+            "label": "Viessmann Vitodens 100-W: the screen shows a burner fault",
+            "next": "bl.reset.do",
+            "hint": "",
+            "fact": "Brand reported: Viessmann Vitodens 100-W.",
+            "gate": null,
+            "set": {
+              "resetBrand": "viessmann"
+            },
+            "reason": null
+          },
+          {
+            "id": "rs_not_listed",
+            "label": "Another brand, or mine doesn’t look like this",
+            "next": "bl.conclude.call_pro",
+            "hint": "Skip the reset.",
+            "fact": "Brand or screen not on the checked reset list.",
+            "gate": null,
+            "set": {},
+            "reason": "reset_not_on_model"
+          },
+          {
+            "id": "hazard_now",
+            "label": "New gas smell, CO alarm, refrigerant leak alarm, smoke, sparks, leaking hot water or steam, or another hazard",
+            "next": "bl.gate.safety",
+            "hint": "Back to the safety check.",
+            "fact": "New hazard reported during the boiler check.",
+            "gate": null,
+            "set": {
+              "retriage": "hazard_now"
+            },
+            "reason": null
+          }
+        ],
+        "diyTier": "basic",
+        "safetyGate": false,
+        "modes": [
+          "heat",
+          "dhw"
+        ],
+        "owner": "bl",
+        "caution": ""
+      },
+      "bl.reset.do": {
+        "section": "Reset once",
+        "title": "Reset it once",
+        "body": "**Don’t change these. They protect your equipment and your safety, and they’re for professionals only:** the relief valve and its lever, the gas valve and gas piping, the low-water cutoff and its buttons, an oil burner’s red reset button, the water feed (fill) valve and its lever, the expansion tank’s air valve, zone valve levers and buttons, the temperature dial on a tank the boiler heats, and the boiler’s installer menus and temperature limits. If a step would take you to one of these, stop. If you see a password or code prompt, stop. That’s for installers.",
+        "options": [
+          {
+            "id": "reset_ok",
+            "label": "It started, and the code hasn’t come back",
+            "next": "@bl_reset_ok_basic",
+            "hint": "",
+            "fact": "One owner-manual reset done; boiler restarted and the code has not come back so far.",
+            "gate": null,
+            "set": {
+              "resetCount": "+1"
+            },
+            "reason": null
+          },
+          {
+            "id": "reset_same_code",
+            "label": "The same code came back",
+            "next": "bl.conclude.call_pro",
+            "hint": "Don’t reset it again.",
+            "fact": "One owner-manual reset done; the same code came back.",
+            "gate": null,
+            "set": {
+              "resetCount": "+1"
+            },
+            "reason": "reset_failed"
+          },
+          {
+            "id": "reset_new_code",
+            "label": "A different code showed up",
+            "next": "bl.conclude.call_pro",
+            "hint": "Don’t reset it again.",
+            "fact": "One owner-manual reset done; a different code showed up.",
+            "gate": null,
+            "set": {
+              "resetCount": "+1"
+            },
+            "reason": "reset_new_code"
+          },
+          {
+            "id": "reset_no_match",
+            "label": "My screen or buttons don’t match these steps",
+            "next": "bl.conclude.call_pro",
+            "hint": "Skip the reset.",
+            "fact": "Screen or buttons did not match the manual’s reset steps; no reset done.",
+            "gate": null,
+            "set": {},
+            "reason": "reset_not_on_model"
+          },
+          {
+            "id": "hazard_now",
+            "label": "New gas smell, CO alarm, refrigerant leak alarm, smoke, sparks, leaking hot water or steam, or another hazard",
+            "next": "bl.gate.safety",
+            "hint": "Back to the safety check.",
+            "fact": "New hazard reported during the boiler check.",
+            "gate": null,
+            "set": {
+              "retriage": "hazard_now"
+            },
+            "reason": null
+          }
+        ],
+        "diyTier": "basic",
+        "safetyGate": false,
+        "modes": [
+          "heat",
+          "dhw"
+        ],
+        "owner": "bl",
+        "resetSteps": {
+          "wm": {
+            "name": "Weil-McLain Evergreen",
+            "source": "From Weil-McLain Evergreen Series 2 User’s Manual, page 12, checked 2026-10-11.",
+            "steps": "1. On the screen, select **MANUAL RESET**.\n2. On the next screen, press **Reset**."
+          },
+          "bosch": {
+            "name": "Bosch Greenstar combi",
+            "source": "From Bosch Greenstar combi 100 p / 151 p Operating instructions, page 9, checked 2026-10-11.",
+            "steps": "1. If the reset button is flashing, press and hold it until the display changes, as your manual shows.\n2. If it isn’t flashing, switch the boiler **OFF** and **ON** again, the way your manual shows."
+          },
+          "buderus": {
+            "name": "Buderus GB142",
+            "source": "From Buderus GB142 User’s instructions, page 23, checked 2026-10-11.",
+            "steps": "1. Press and hold the **Reset** button for about 5 seconds.\n2. The display shows **rE** while it resets."
+          },
+          "rinnai": {
+            "name": "Rinnai I-Series combi",
+            "source": "From Rinnai I-Series Condensing Combi Boiler User’s Information Manual, page 26, checked 2026-10-11.",
+            "steps": "1. Press the blinking button once: **Central Heating** or **Domestic Hot Water**."
+          },
+          "viessmann": {
+            "name": "Viessmann Vitodens 100-W",
+            "source": "From Viessmann Vitodens 100-W B1HE/B1KE Operating instructions, page 25, checked 2026-10-11.",
+            "steps": "1. On the home screen, tap **Unlock**.\n2. Tap **OK** twice to confirm."
+          }
+        },
+        "watch": {
+          "heat": "Watch the screen for about 15 minutes with the thermostat calling for heat.",
+          "dhw": "Watch the screen for about 15 minutes with a hot tap running."
+        },
+        "caution": ""
+      },
+      "bl.pn.warranty": {
+        "section": "Before you start",
+        "title": "Was it installed recently?",
+        "body": "**If your system or this part was installed recently, check with your installer first.** Some warranties and installer agreements expect them to make changes. Changing things yourself may affect what they’ll cover.",
+        "options": [
+          {
+            "id": "ask_installer",
+            "label": "Ask my installer first",
+            "next": "@bl_ask_installer",
+            "hint": "",
+            "fact": "Chose to ask the installer first.",
+            "gate": null,
+            "set": {},
+            "reason": null
+          },
+          {
+            "id": "warranty_ok",
+            "label": "Not under warranty, or my installer said it’s OK",
+            "next": "bl.bleed.step",
+            "hint": "",
+            "fact": "Warranty: not under warranty, or the installer said it’s OK (reported).",
+            "gate": null,
+            "set": {
+              "warrantyAck": true
+            },
+            "reason": null
+          },
+          {
+            "id": "warranty_unsure",
+            "label": "I’m not sure",
+            "next": "@bl_ask_installer",
+            "hint": "",
+            "fact": "Not sure about warranty; asking the installer first.",
+            "gate": null,
+            "set": {},
+            "reason": null
+          },
+          {
+            "id": "hazard_now",
+            "label": "New gas smell, CO alarm, refrigerant leak alarm, smoke, sparks, leaking hot water or steam, or another hazard",
+            "next": "bl.gate.safety",
+            "hint": "Back to the safety check.",
+            "fact": "New hazard reported during the boiler check.",
+            "gate": null,
+            "set": {
+              "retriage": "hazard_now"
+            },
+            "reason": null
+          }
+        ],
+        "diyTier": "basic",
+        "safetyGate": false,
+        "modes": [
+          "heat"
+        ],
+        "owner": "bl",
+        "caution": ""
+      },
+      "bl.bleed.step": {
+        "section": "Let air out",
+        "title": "Bleed air from a cold radiator or baseboard",
+        "body": "1. Write down the boiler gauge reading. Set the thermostat to Off, and wait until the radiators are cool to the touch.\n2. Find the small vent at the top or end of the cold radiator or baseboard. Some baseboard vents sit behind a hinged end cap. Use only the radiator key made for the vent, or a coin for a coin-slot vent.\n3. Hold a cup and a towel under it. Turn the vent slowly until air hisses out.\n4. When water flows steadily for a few seconds, close the vent.\n5. Read the gauge again. Then set the thermostat back the way you wrote it down.",
+        "options": [
+          {
+            "id": "bleed_done_ok",
+            "label": "Done: the gauge stayed in range, and the heat is coming back",
+            "next": "@bl_bleed_done_basic",
+            "hint": "",
+            "fact": "Air let out of a radiator or baseboard vent; gauge stayed in range; heat coming back.",
+            "gate": null,
+            "set": {},
+            "reason": null
+          },
+          {
+            "id": "bleed_still_cold",
+            "label": "Done, but it’s still cold or still gurgling",
+            "next": "bl.conclude.call_pro",
+            "hint": "",
+            "fact": "Air let out of a vent; still cold or gurgling.",
+            "gate": null,
+            "set": {},
+            "reason": "air_after_bleed"
+          },
+          {
+            "id": "bleed_pressure_low",
+            "label": "The gauge dropped below my manual’s minimum",
+            "next": "bl.conclude.call_pro",
+            "hint": "Don’t add water.",
+            "fact": "Gauge dropped below the manual’s minimum after letting air out.",
+            "gate": null,
+            "set": {},
+            "reason": "pressure_low_after_bleed"
+          },
+          {
+            "id": "bleed_wont_close",
+            "label": "Water keeps coming, or the vent won’t close",
+            "next": "@bl_vent_wont_close",
+            "hint": "Catch the water.",
+            "fact": "Radiator or baseboard vent would not close.",
+            "gate": null,
+            "set": {},
+            "reason": null
+          },
+          {
+            "id": "bleed_water_electrical",
+            "label": "Water got near wiring, a switch, or an outlet",
+            "next": "@bl_water_electrical",
+            "hint": "Stay out of the water.",
+            "fact": "Water near electrical parts reported.",
+            "gate": "water_near_electrical",
+            "set": {},
+            "reason": null
+          },
+          {
+            "id": "bleed_no_vent",
+            "label": "I can’t find a vent, or it needs a tool I don’t have",
+            "next": "bl.conclude.call_pro",
+            "hint": "",
+            "fact": "No reachable vent, or it needs a tool the homeowner does not have.",
+            "gate": null,
+            "set": {},
+            "reason": "air_in_system"
+          },
+          {
+            "id": "hazard_now",
+            "label": "New gas smell, CO alarm, refrigerant leak alarm, smoke, sparks, leaking hot water or steam, or another hazard",
+            "next": "bl.gate.safety",
+            "hint": "Back to the safety check.",
+            "fact": "New hazard reported during the boiler check.",
+            "gate": null,
+            "set": {
+              "retriage": "hazard_now"
+            },
+            "reason": null
+          }
+        ],
+        "diyTier": "basic",
+        "safetyGate": false,
+        "modes": [
+          "heat"
+        ],
+        "owner": "bl",
+        "coldPolicy": "Second Wrench doesn’t guide these changes when it’s 40 °F (4 °C) or colder outside, or will be in the next few days. That’s our own cautious cutoff, not a rating for your equipment. If anyone at home is an infant, elderly, or medically fragile, leave these to a professional.",
+        "caution": ""
+      },
       "bl.pressure.read": {
         "section": "Pressure gauge",
         "title": "What does the pressure gauge read?",
-        "body": "Read only an already-visible gauge without touching it or nearby pipes. Record the number, units, and whether the boiler is running. Compare it with the range in the exact owner’s manual for this installation. This hot-water question does not apply to a steam boiler. Do not add or drain water.",
+        "body": "Look at the round gauge on the boiler or a nearby pipe. Many show psi and temperature together. Some combis show bar: 1 bar is about 14.5 psi.\n\nMany makers ask for about 12 psi or more when the system is cold, and not over about 24 to 25 psi when hot. Your manual’s numbers come first. Don’t tap or adjust anything.",
         "options": [
           {
             "id": "pressure_low",
@@ -7115,7 +7500,7 @@
       "bl.heat.where": {
         "section": "Where the heat stops",
         "title": "Is the boiler hot while the rooms stay cold?",
-        "body": "Read only an already-visible temperature display or gauge from dry ground. Do not approach, hover a hand near, or touch a pipe to judge temperature. Do not wait here if the home is losing needed heat.",
+        "body": "Look at the pipe where it leaves the boiler. Don’t touch it or put your hand on or near it. If the boiler is running but that zone’s rooms stay cold, note what you see and call a licensed HVAC professional.",
         "options": [
           {
             "id": "boiler_hot_rooms_cold",
@@ -7217,7 +7602,11 @@
           {
             "id": "gurgle_or_cold_top",
             "label": "Gurgling, or radiators warm at the bottom and cold at the top",
-            "next": "bl.conclude.call_pro",
+            "next": {
+              "steam": "bl.conclude.call_pro",
+              "bleedOk": "bl.pn.notice",
+              "default": "bl.conclude.call_pro"
+            },
             "hint": "",
             "fact": "Gurgling or radiators cold at the top reported.",
             "gate": null,
@@ -7226,6 +7615,8 @@
             },
             "reason": {
               "steam": "steam_distribution_after_basics",
+              "bleedOk": null,
+              "guarded": "guard_blocked",
               "default": "air_in_system"
             }
           },
@@ -7289,37 +7680,40 @@
       "bl.zone.valve": {
         "section": "Zone valve",
         "title": "Look at the zone valve’s light",
-        "body": "If a zone indicator is already visible, record its label and light pattern without touching the valve, lever, button, or pipes. Do not open a control box. A light alone does not prove a valve opened or water circulated.",
+        "body": {
+          "heat": "1. With the cold zone’s thermostat calling for heat, find that zone’s valve on the pipes near the boiler. Many are labeled by zone.\n2. Look at the light on top. Don’t press the button on top or move any lever.",
+          "dhw": "1. With a hot tap running, find the valve for the hot water tank on the pipes near the boiler. It may be labeled for the tank.\n2. Look at the light on top. Don’t press the button on top or move any lever."
+        },
         "options": [
           {
             "id": "zv_solid",
-            "label": "A light is on steady",
+            "label": "Taco: the green light is on steady",
             "next": "bl.conclude.call_pro",
             "hint": "",
-            "fact": "Visible zone-indicator light reported steady; function unconfirmed.",
+            "fact": "Taco zone valve light on steady (valve powered).",
             "gate": null,
             "set": {},
-            "reason": "zone_after_basics"
+            "reason": "zone_valve_calling"
           },
           {
             "id": "zv_off",
-            "label": "A light is off",
+            "label": "Taco: the light is off",
             "next": "bl.conclude.call_pro",
             "hint": "",
-            "fact": "Visible zone-indicator light reported off; cause unconfirmed.",
+            "fact": "Taco zone valve light off.",
             "gate": null,
             "set": {},
-            "reason": "zone_after_basics"
+            "reason": "zone_no_call"
           },
           {
             "id": "zv_slow_or_double",
-            "label": "A light is blinking",
+            "label": "Taco: it blinks slowly (about every 5 seconds) or double-blinks",
             "next": "bl.conclude.call_pro",
             "hint": "",
-            "fact": "Visible zone-indicator light reported blinking; meaning unconfirmed.",
+            "fact": "Taco zone valve light slow-blinking or double-blinking.",
             "gate": null,
             "set": {},
-            "reason": "zone_after_basics"
+            "reason": "zone_valve_fault"
           },
           {
             "id": "zv_other",
@@ -7751,7 +8145,7 @@
       "bl.conclude.call_pro": {
         "section": "Call a professional",
         "title": "Time for a licensed pro",
-        "body": "The next checks need a licensed heating professional. Record what you could observe and what remains unknown. Do not reset, add water, open compartments, or operate gas or water valves. A thermostat set to Off may not stop a boiler that also serves other zones or hot water.",
+        "body": "You’ve done the homeowner checks this guide offers. What’s left is inside the boiler or its piping, and that’s work for a licensed heating pro.\n\nDon’t press reset buttons, keep restarting the boiler, add water, or open any boiler door or panel. If it’s acting strangely, set the thermostat to Off.\n\nThe next screen has a note to share with the pro.",
         "options": [
           {
             "id": "ack_call_pro",
@@ -7797,12 +8191,12 @@
       },
       "sw.handoff.hydronic_coil": {
         "section": "Boiler and hot-water heat",
-        "title": "Is the pipe into the air handler hot?",
-        "body": "With the heat calling for at least 5 minutes, find the pipe that carries hot water into the air handler. Check it without grabbing: hold your hand near it, or touch it briefly with the back of your hand. These pipes can be hotter than 160 °F and can burn you. Don’t grab the pipe. Don’t touch bare copper fittings near valves, and don’t open anything.",
+        "title": "Look at the pipe into the air handler",
+        "body": "Look, don’t touch. From where you already stand, look toward the pipe that carries hot water into the air handler. Answer from what you have already noticed in ordinary use. Do not hold a hand near the pipe, grab it, or touch it. Do not open a cover or move insulation.",
         "options": [
           {
             "id": "pipe_cold",
-            "label": "It’s cold or barely warm",
+            "label": "It has seemed cold or barely warm",
             "next": {
               "waterHeaterSource": ">coil_to_wh",
               "sourceKnown": ">fn_to_bl",
@@ -7810,7 +8204,7 @@
               "default": ">fn_to_bl"
             },
             "hint": "Water side.",
-            "fact": "Coil supply pipe is cold or barely warm.",
+            "fact": "Coil supply pipe has seemed cold or barely warm.",
             "set": {
               "hydroPipe": "cold"
             },
@@ -7818,13 +8212,13 @@
           },
           {
             "id": "pipe_hot_no_air",
-            "label": "It’s hot, but little or no warm air comes out",
+            "label": "It has seemed hot, but little or no warm air comes out",
             "next": {
               "fromBl": ">bl_to_fn",
               "default": "fn.hydro.air_side"
             },
             "hint": "Air side.",
-            "fact": "Coil supply pipe is hot, with little or no warm air.",
+            "fact": "Coil supply pipe has seemed hot, with little or no warm air.",
             "set": {
               "hydroPipe": "hot"
             },
@@ -7832,13 +8226,13 @@
           },
           {
             "id": "pipe_hot_air_warm",
-            "label": "It’s hot, and warm air comes out, but rooms fall behind",
+            "label": "It has seemed hot and warm air comes out, but rooms fall behind",
             "next": {
               "fromBl": ">bl_to_fn",
               "default": "fn.hydro.air_side"
             },
             "hint": "Air side.",
-            "fact": "Coil supply pipe is hot and warm air comes out, but rooms fall behind.",
+            "fact": "Coil supply pipe has seemed hot and warm air comes out, but rooms fall behind.",
             "set": {
               "hydroPipe": "hot"
             },
@@ -7846,7 +8240,7 @@
           },
           {
             "id": "unsure",
-            "label": "I’m not sure, or I can’t reach it without climbing or reaching past other equipment",
+            "label": "I’m not sure, or I can’t see it without climbing or reaching past other equipment",
             "next": "sw.handoff.hydronic_both",
             "hint": "We’ll treat the pipe as not hot.",
             "fact": "Hydronic-coil pipe temperature unconfirmed.",
@@ -7952,6 +8346,61 @@
         "owner": "shared",
         "caution": ""
       },
+      "bl.gate.egg_split": {
+        "section": "Boiler safety",
+        "title": "Where do you notice the rotten-egg or sulfur smell?",
+        "body": "Answer from what you already know. Don’t go near the boiler or its gas line to check. If you have any doubt, choose Not sure.",
+        "options": [
+          {
+            "id": "override_hiss_pilot_headache",
+            "label": "I hear hissing, there’s a problem with the pilot, or someone has a headache",
+            "next": "@bl_gas_smell",
+            "hint": "Leave now. Call from outside.",
+            "fact": "Egg/sulfur smell with hissing, a pilot problem, or a headache reported.",
+            "set": {},
+            "gate": null
+          },
+          {
+            "id": "smell_in_air",
+            "label": "I smell it in the air near the boiler or gas lines, or anywhere in the house, even with no water running.",
+            "next": "@bl_gas_smell",
+            "hint": "Leave now. Call from outside.",
+            "fact": "Egg/sulfur smell in the air reported.",
+            "set": {},
+            "gate": null
+          },
+          {
+            "id": "not_sure",
+            "label": "Not sure.",
+            "next": "@bl_gas_smell",
+            "hint": "Not sure means stop.",
+            "fact": "Not sure where the egg/sulfur smell is.",
+            "set": {},
+            "gate": null
+          },
+          {
+            "id": "hot_water_only",
+            "label": "Only when hot water runs from a faucet; cold water and the air smell fine.",
+            "next": ">bl_to_wh",
+            "hint": "The water heater check takes it from here.",
+            "fact": "Egg/sulfur smell only from hot water reported (homeowner report).",
+            "set": {
+              "mode": "dhw",
+              "hotTapOdor": true,
+              "whOdor": "hot_tap"
+            },
+            "gate": null
+          }
+        ],
+        "diyTier": "basic",
+        "safetyGate": true,
+        "owner": "bl",
+        "modes": [
+          "heat",
+          "dhw"
+        ],
+        "caution": ""
+      },
       "bl.dhw.combi_call": {
         "section": "Boiler and hot-water heat",
         "title": "Tap water, room heat, or both?",
@@ -7981,11 +8430,12 @@
           {
             "id": "tap_only",
             "label": "The home has enough heat; the tap hot water is the problem",
-            "next": "bl.power.look",
-            "hint": "",
+            "next": ">bl_to_wh",
+            "hint": "The water heater check takes the tap-water complaint.",
             "fact": "Hot-water complaint; homeowner reports enough room heat.",
             "set": {
-              "mode": "dhw"
+              "mode": "dhw",
+              "hwType": "combi"
             },
             "gate": null
           },
@@ -8020,9 +8470,11 @@
             "hint": "",
             "fact": "Combi operating pattern unconfirmed.",
             "set": {
-              "mode": "dhw"
+              "mode": "dhw",
+              "reason": "combi_pattern_unclear"
             },
-            "gate": null
+            "gate": null,
+            "reason": "combi_pattern_unclear"
           },
           {
             "id": "hazard_now",
@@ -8106,7 +8558,7 @@
         "explanation": "A gas smell comes before anything else.",
         "actions": [
           "Get everyone, and pets, out now.",
-          "Don’t touch light switches, the thermostat, phones, or anything that could spark while you’re inside.",
+          "Don’t touch light switches or phones, or use lighters, matches, or anything that could spark or flame while you’re inside.",
           "Don’t try to find the leak.",
           "From outside or a neighbor’s, call the gas utility’s emergency line or 911.",
           "Don’t go back in until emergency responders say you may return.",
@@ -8495,6 +8947,54 @@
         "legal": "L-35",
         "continueTo": null
       },
+      "bl_bleed_done_basic": {
+        "tier": "Basic homeowner check",
+        "urgency": "Air’s out",
+        "title": "Give the heat time to come back.",
+        "explanation": "Letting trapped air out helps hot water fill the radiator or baseboard.",
+        "actions": [
+          "Give it an hour with the thermostat calling for heat.",
+          "Read the gauge again later. If it keeps dropping, call a licensed heating professional.",
+          "Still cold or gurgling? Call a licensed heating professional.",
+          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+        ],
+        "avoid": "Don’t add water to raise the pressure.",
+        "source": "maintenance",
+        "outcome": "next_step",
+        "reason": "bl_bleed_done_basic",
+        "gate": null,
+        "cond": null,
+        "diyTier": "basic",
+        "modes": [
+          "heat"
+        ],
+        "legal": "L-23",
+        "continueTo": null
+      },
+      "bl_reset_ok_basic": {
+        "tier": "Basic homeowner check",
+        "urgency": "It restarted",
+        "title": "It restarted after one reset.",
+        "explanation": "That doesn’t fix the cause.",
+        "actions": [
+          "**Reset once, only once.** If it stops or shows the same code again, don’t reset it again. Repeated shutdowns mean a safety device is doing its job. Call a licensed HVAC professional and tell them the code and what you saw.",
+          "Call a licensed heating professional to find the cause.",
+          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+        ],
+        "avoid": "Don’t open the boiler.",
+        "source": "maintenance",
+        "outcome": "next_step",
+        "reason": "bl_reset_ok_basic",
+        "gate": null,
+        "cond": null,
+        "diyTier": "basic",
+        "modes": [
+          "heat",
+          "dhw"
+        ],
+        "legal": "L-18",
+        "continueTo": null
+      },
       "bl_tstat_unsure": {
         "tier": "More information needed",
         "urgency": "Check the thermostat first",
@@ -8660,17 +9160,41 @@
         "legal": "L-21",
         "continueTo": null
       },
+      "bl_vent_wont_close": {
+        "tier": "Professional guidance",
+        "urgency": "Call a pro now · catch the water",
+        "title": "Catch the water and call a pro now.",
+        "explanation": "A vent that won’t close keeps letting water out, and the pressure will drop.",
+        "actions": [
+          "Keep people away from the leak. Do not put your hands under hot water.",
+          "Call a licensed heating professional now. Tell them which vent is leaking.",
+          "If water reaches electrical parts, stay out of the water. Switch power off only at a known breaker or disconnect you can reach from dry ground, without touching water or going near the affected equipment. Use the handle only; do not remove covers. Otherwise, move away and call 911 from outside if there is immediate danger.",
+          "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
+        ],
+        "avoid": "Don’t force the vent or use other tools on it.",
+        "source": "safety",
+        "outcome": "call_pro",
+        "reason": "bl_vent_wont_close",
+        "gate": null,
+        "cond": null,
+        "diyTier": "pro_only",
+        "modes": [
+          "heat"
+        ],
+        "legal": "L-23",
+        "continueTo": null
+      },
       "bl_call_pro": {
         "tier": "Professional guidance",
         "urgency": "Call a licensed heating professional",
         "title": "Call a licensed heating professional.",
-        "explanation": "The cause has not been confirmed. The next checks need a licensed heating professional.",
+        "explanation": "The homeowner checks are done. The next checks are inside the boiler or its piping.",
         "actions": [
           "Call a licensed heating professional and describe the observations and remaining unknowns.",
           "If a new smell, alarm, smoke, leak, steam, or bang appears, use Stop / get help immediately.",
           "Never heat with an oven, stove, grill, or generator indoors (carbon monoxide). If you use an electric space heater, plug it straight into a wall outlet, follow its maker’s instructions, and keep it clear of anything that can burn."
         ],
-        "avoid": "Don’t press reset buttons again, restart, add water, or open panels.",
+        "avoid": "Don’t press reset buttons, restart, add water, or open panels.",
         "source": "safety",
         "outcome": "call_pro",
         "reason": "bl_call_pro",

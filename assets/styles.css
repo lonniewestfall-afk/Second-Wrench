@@ -136,6 +136,8 @@ input::placeholder,textarea::placeholder{color:#aaaab4;opacity:1}
 .button.danger:hover{background:#64101b}
 .option.stop-option{border-color:#7e1522;background:#3a1820;color:#fff}
 .option.stop-option strong,.option.stop-option small{color:#fff}
+.option .option-caption,.option .option-source{display:block;font-size:.78rem;line-height:1.35;margin-top:4px}
+.option .option-source{font-weight:450}
 .site-header nav a.nav-maintenance{color:var(--accent);font-weight:750}
 .static-guides{max-width:1160px;margin:0 auto;padding:18px 40px 0}
 .static-guides p{color:var(--muted);font-size:.95rem;margin-bottom:.4em}
