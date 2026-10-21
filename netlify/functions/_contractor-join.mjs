@@ -198,19 +198,7 @@ export async function downloadContractorLogo(applicationId, deps) {
   const logoStore = extra.logoStore || await openLogoStore();
   const logo = await readLogo(logoStore, row.logo_key);
   if (!logo) return json(404, { error: 'not_found' });
-  const kind = Object.keys(EXT).find(name => EXT[name] && logo.metadata.content_type === {
-    pdf: 'application/pdf', png: 'image/png', jpeg: 'image/jpeg', webp: 'image/webp', gif: 'image/gif', heic: 'image/heic'
-  }[name]);
-  const filename = downloadName(logo.metadata.original_file_name || 'logo', kind || '');
-  return new Response(logo.bytes, {
-    status: 200,
-    headers: {
-      'content-type': logo.metadata.content_type || 'application/octet-stream',
-      'content-disposition': 'attachment; filename="' + filename + '"',
-      'cache-control': 'no-store',
-      'x-content-type-options': 'nosniff'
-    }
-  });
+  return logoDownloadResponse(logo.bytes, logo.metadata);
 }
 
 function fieldError(form) {
@@ -234,8 +222,7 @@ function fieldError(form) {
   return { company, contact, email, phone, zips, equipment };
 }
 
-async function logoBytes(form) {
-  const logo = form.get('logo');
+export async function inspectLogo(logo) {
   if (logo == null || logo === '') return { bytes: null };
   if (typeof logo === 'string') return { error: 'logo_type' };
   if (typeof logo.arrayBuffer !== 'function') return { error: 'logo_type' };
@@ -245,6 +232,47 @@ async function logoBytes(form) {
   const sniffed = sniffLogo(bytes);
   if (sniffed.error) return sniffed;
   return { bytes, sniffed, original: originalName(logo.name) };
+}
+
+async function logoBytes(form) {
+  return inspectLogo(form.get('logo'));
+}
+
+export async function readStoredLogo(store, key) {
+  return readLogo(store, key);
+}
+
+export async function logoSummary(store, key) {
+  const metadata = await logoMetadata(store, key);
+  if (!metadata) return null;
+  return {
+    content_type: metadata.content_type || '',
+    original_file_name: metadata.original_file_name || '',
+    size: Number(metadata.size || 0),
+    uploaded_at: metadata.uploaded_at || ''
+  };
+}
+
+export function logoDownloadResponse(bytes, metadata) {
+  const types = {
+    'application/pdf': 'pdf',
+    'image/png': 'png',
+    'image/jpeg': 'jpeg',
+    'image/webp': 'webp',
+    'image/gif': 'gif',
+    'image/heic': 'heic'
+  };
+  const kind = types[(metadata && metadata.content_type) || ''] || '';
+  const filename = downloadName((metadata && metadata.original_file_name) || 'logo', kind);
+  return new Response(bytes, {
+    status: 200,
+    headers: {
+      'content-type': (metadata && metadata.content_type) || 'application/octet-stream',
+      'content-disposition': 'attachment; filename="' + filename + '"',
+      'cache-control': 'no-store',
+      'x-content-type-options': 'nosniff'
+    }
+  });
 }
 
 export async function handleProsJoin(request, deps) {
