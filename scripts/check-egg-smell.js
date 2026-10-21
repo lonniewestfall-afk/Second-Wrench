@@ -1,6 +1,6 @@
 'use strict';
 const assert = require('assert/strict');
-global.SW_CONFIG = { advancedRepairsEnabled: false, aiThermostatEnabled: false, mirrorsEnabled: false, stageLatchStepsEnabled: false, catalogEnabled: false, contentVersion: '2026-10-20.14' };
+global.SW_CONFIG = { advancedRepairsEnabled: false, aiThermostatEnabled: false, mirrorsEnabled: false, stageLatchStepsEnabled: false, catalogEnabled: false, contentVersion: '2026-10-20.15' };
 const F = require('../assets/flow');
 const meta = { agreed: true, termsVersion: 'test' };
 const ACTION2 = 'Don’t touch light switches or phones, or use lighters, matches, or anything that could spark or flame while you’re inside.';
