@@ -112,7 +112,7 @@
       : onFn
         ? fnLimit
       : onWshp
-        ? 'Water-source / geothermal heat pumps, 6 tons or less, in a home. This beta gives safety screens and a service note for a pro. It gives no loop, well, water-treatment, refrigerant, or electrical steps.'
+        ? 'Water-source / geothermal heat pumps, 6 tons or less, in a home. This beta gives safety screens, look-only checks, a one-time thermostat reset for WaterFurnace and ClimateMaster, and a service note for a pro. It gives no well, water-treatment, refrigerant, or electrical steps, and no breaker or disconnect reset.'
       : onTs
         ? 'Settings only. No wires, no covers. Some installer settings have steps; the ones that protect your equipment don’t. Low-voltage thermostats only.'
       : onMs
@@ -180,7 +180,8 @@
     const nextBtn = r.nextAction ? '<div class="button-row"><button class="button small" data-action="ts-next">'+esc(r.nextAction.label)+'</button></div>' : '';
     const bodyLines = r.body ? String(r.body).split('\n').map(x => x.trim()).filter(Boolean) : [];
     const bodyBlock = bodyLines.length ? '<h2>What to do now</h2>'+bodyLines.map(x => '<p>'+esc(x)+'</p>').join('')+(r.footer ? '<p>'+esc(r.footer)+'</p>' : '') : '';
-    const actionBlock = bodyBlock || ((r.actions && r.actions.length) ? '<h2>What to do now</h2><ol class="action-list">'+r.actions.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ol>' : '');
+    const wshpIntro = state.product === 'wshp' ? '<p class="intro">A few straightforward questions for a cooling-only central air conditioner, an air-source ducted heat pump, a ductless mini-split, a gas or electric furnace, or a water-source / geothermal heat pump (limited checks and a note for your pro). Basic homeowner checks that need no tools and no open equipment. A useful summary when it is time for a professional.</p>' : '';
+    const actionBlock = wshpIntro + (bodyBlock || ((r.actions && r.actions.length) ? '<h2>What to do now</h2><ol class="action-list">'+r.actions.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ol>' : ''));
     const explainHtml = '<p class="explanation">'+esc(r.explanation)+'</p>';
     const headingExplain = r.actionsFirst ? '' : explainHtml;
     const boxExplain = r.actionsFirst ? explainHtml : '';

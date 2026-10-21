@@ -56,7 +56,7 @@ s=act(mini(),'landing_error_code','code_check_manual','manual_normal_status');A.
 s=act(mini(),'landing_no_heat','mode_was_auto');A.equal(F.viewNode(s.node,s).options[0].id,'cold_exposure_risk');act(s,'cold_exposure_risk');A.equal(s.result,'ms_cold_exposure');
 // Geothermal cold and well-water conditions remain distinct from normal operation.
 s=start('other_heat_or_ductless','water_source_geo','wshp_hz_none','home_pipes_at_risk');A.equal(s.result,'wshp_cold_home_urgent');A.ok(!/6 tons/.test(F.summary(s)));
-s=start('other_heat_or_ductless','water_source_geo','wshp_hz_none','home_holding','wshp_open_loop','wshp_cx_well_water_out');A.equal(s.result,'wshp_well_water_out');A.match(F.presentResult(s).actions[0],/Off/);
+s=start('other_heat_or_ductless','water_source_geo','wshp_hz_none','home_holding','wshp_open_loop','wshp_cx_well_water_out');A.equal(s.result,'wshp_well_water_out');A.match(F.presentResult(s).actions[0],/Emergency Heat[\s\S]*\bOff\b/);A.match(F.presentResult(s).actions.join('\n'),/wfom\.pdf\) p\.14\/27/);A.doesNotMatch(F.presentResult(s).actions.join('\n'),/OM1500MW/);
 // All AC side-fan entry points reach the SD mode and hazard screens.
 for(const cs of [
  ['landing_will_not_start','fan_on_side'],

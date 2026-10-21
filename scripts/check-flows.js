@@ -1,6 +1,6 @@
 /* Local sanity for AC Wave-2 and HP Wave-1. No network. */
 'use strict';
-globalThis.SW_CONFIG = { advancedRepairsEnabled: false, aiThermostatEnabled: false, mirrorsEnabled: false, stageLatchStepsEnabled: false, contentVersion: '2026-10-20.12' };
+globalThis.SW_CONFIG = { advancedRepairsEnabled: false, aiThermostatEnabled: false, mirrorsEnabled: false, stageLatchStepsEnabled: false, contentVersion: '2026-10-20.13' };
 const fs = require('fs');
 const path = require('path');
 const F = require('../assets/flow.js');
@@ -90,7 +90,7 @@ const gate = ['none_of_these', 'agree_18_terms'];
 
 assert(/advancedRepairsEnabled:\s*false/.test(configText), 'public advanced flag must stay false');
 assert(/referralEnabled:\s*false/.test(configText) && !/referralEnabled:\s*true/.test(configText), 'referral flag must stay false');
-const SHIP = '2026-10-20.12';
+const SHIP = '2026-10-20.13';
 assert(configText.includes("contentVersion: '" + SHIP + "'"), 'content version must be ' + SHIP);
 assert(['config', 'flow', 'app'].every(f => indexText.includes(f + '.js?v=' + SHIP)), 'script cache-bust must match content version');
 assert(indexText.includes('HOME HVAC CHECKS') && !indexText.includes('AC + HEAT PUMP'), 'header lockup is HOME HVAC CHECKS');
@@ -632,7 +632,7 @@ const TERMS_BODY_SHA256 = '0781cb70a24ed4d7b27b162f7d812356d71f18314d06a288d27ac
 const PRIVACY_BODY_SHA256 = '843ba39e40c93328ce825a321b0e39c1ccf1dc5d7bf1a4bb3425253bf319509c';
 
 // ---- WSHP Wave-1 PR-1 (A-1..A-28, T-1..T-26) ----
-const WSHP_IDS = ['wshp.hazard.flood_electrical', 'wshp.entry.equipment_gate', 'wshp.heat.cold_home_screen', 'wshp.openloop.complaint', 'wshp.openloop.chemistry_gate', 'wshp.handback.call_pro'];
+const WSHP_IDS = ['wshp.hazard.flood_electrical', 'wshp.entry.equipment_gate', 'wshp.heat.cold_home_screen', 'wshp.openloop.complaint', 'wshp.openloop.chemistry_gate', 'wshp.handback.call_pro', 'wshp.diy.thermostat_check', 'wshp.diy.filter_check', 'wshp.diy.condensate_check', 'wshp.diy.loop_gauge_look', 'wshp.diy.lockout_brand_gate', 'wshp.diy.lockout_reset_once'];
 assert(Array.isArray(F.wshpWave1) && F.wshpWave1.join('|') === WSHP_IDS.join('|'), 'A-2 WSHP_WAVE1 export');
 WSHP_IDS.forEach(id => {
   assert(!!F.nodes[id], 'A-2 node exists ' + id);
@@ -662,23 +662,23 @@ assert(hz.safetyGate === true, 'A-10 hazard safety gate');
 hz.options.forEach(op => {
   if (op.id === 'wshp_hz_none') {
     assert(op.next === 'wshp.heat.cold_home_screen', 'A-10 none continues to cold-home screen');
-    assert(op.hint === 'Check the people and the home before the equipment.', 'A-10 none hint');
+    assert(op.hint === 'Continue.', 'A-10 none hint');
     return;
   }
   assert(!!op.gate, 'A-11 hazard gate ' + op.id);
   assert(F.results[op.next.slice(1)].outcome === 'emergency_exit', 'A-10 hazard exits ' + op.id);
 });
 const wshpRefrigerant = hz.options.find(op => op.id === 'wshp_hz_refrigerant_alarm');
-assert(wshpRefrigerant && wshpRefrigerant.label === 'A refrigerant leak alarm is sounding' && wshpRefrigerant.hint === 'Leave the affected area.' && wshpRefrigerant.next === '@leak' && wshpRefrigerant.gate === 'refrigerant_alarm_or_release', 'F5-a refrigerant alarm option');
+assert(wshpRefrigerant && wshpRefrigerant.label === 'A refrigerant leak alarm is sounding or showing' && wshpRefrigerant.hint === 'Leave that area. Don’t reset or silence the alarm.' && wshpRefrigerant.next === '@leak' && wshpRefrigerant.gate === 'refrigerant_alarm_or_release', 'F5-a refrigerant alarm option');
 assert(hz.options.findIndex(op => op.id === 'wshp_hz_refrigerant_alarm') < hz.options.findIndex(op => op.id === 'wshp_hz_unsure'), 'F5-a sits before not sure');
 const handbackBullet = 'If your thermostat shows Emergency Heat and no one chose it, write that down too. Some geothermal units turn it on by themselves when they lock out.';
 assert(F.results.wshp_handback_call_pro.actions.indexOf(handbackBullet) !== -1, 'handback keeps the Emergency Heat that no one chose bullet');
-assert(F.results.wshp_handback_call_pro.actions[5] === 'If the system keeps stopping or shows a lockout, leave it as it is. Do not reset it again.', 'handback lockout line stays the live wording');
-assert(!F.results.wshp_openloop_water_quality_pro.actions.some(action => /not normal Heat/.test(action)), 'open-loop well-out line is unchanged');
+assert(F.results.wshp_handback_call_pro.actions[5] === 'If it shows a lockout light or code, write it down exactly. Don’t reset it at the breaker or disconnect. If this guide walked you through a one-time reset from the thermostat, don’t reset it again. Some geothermal units run backup heat by themselves during a lockout, so the thermostat may show Emergency Heat even though no one chose it. Tell the pro if you see that. If warm air is still coming out, you can leave the thermostat as it is until the pro comes. If there is no warm air, or the unit keeps starting and stopping, call the pro now, and follow the cold-home and carbon monoxide lines above. (MANUAL: WaterFurnace Residential Owner’s Manual, pages 24–25: “During lock out mode, Emergency Heat will be activated.”)', 'PL-WSHP-004 lockout line');
+assert(F.results.wshp_openloop_water_quality_pro.actions.some(action => /not normal Heat/.test(action)), 'PL-WSHP-003 open-loop well-out line');
 const eq = F.nodes['wshp.entry.equipment_gate'];
 const eqNext = id => eq.options.find(o => o.id === id).next;
 assert(eqNext('wshp_open_loop') === 'wshp.openloop.complaint', 'A-12 open loop');
-assert(eqNext('wshp_closed_loop') === 'wshp.handback.call_pro' && eqNext('wshp_loop_unsure') === 'wshp.handback.call_pro', 'A-12 closed and unsure loops');
+assert(eqNext('wshp_closed_loop') === 'wshp.diy.thermostat_check' && eqNext('wshp_loop_unsure') === 'wshp.diy.thermostat_check', 'A-12 closed and unsure loops reach the look steps');
 assert(eqNext('wshp_air_source') === 'hp.intake.system_confirm', 'A-12 air-source divert');
 assert(F.results[eqNext('wshp_out_of_scope_size').slice(1)].outcome === 'call_pro', 'A-12 oversize call_pro');
 assert(F.results[eqNext('wshp_system_unsure').slice(1)].outcome === 'insufficient_info', 'A-12 unsure system');
@@ -695,7 +695,7 @@ chemGate.options.forEach(op => {
 const handbackNode = F.nodes['wshp.handback.call_pro'];
 assert(handbackNode.diyTier === 'pro_only', 'A-16 handback pro_only');
 handbackNode.options.forEach(op => {
-  assert(op.next === (op.id === 'hazard_now' ? '@wshp_hazard_now' : '@wshp_handback_call_pro'), 'A-16 handback edge ' + op.id);
+  assert(op.next === (op.id === 'hazard_now' ? '@wshp_hazard_now' : op.id === 'wshp_cx_cycle_lockout' ? 'wshp.diy.lockout_brand_gate' : '@wshp_handback_call_pro'), 'A-16 handback edge ' + op.id);
 });
 WSHP_IDS.forEach(id => {
   if (id === 'wshp.hazard.flood_electrical') return;
@@ -732,13 +732,17 @@ Object.keys(F.results).forEach(id => {
   if (id.indexOf('wshp_') !== 0) return;
   assert(F.results[id].outcome !== 'next_step' && F.results[id].diyTier !== 'advanced', 'A-19 ' + id);
 });
-['wshp.hazard.flood_electrical', 'wshp.entry.equipment_gate', 'wshp.openloop.chemistry_gate', 'wshp.handback.call_pro', '@fire', '@electrical', '@gas', '@uncertain', '@wshp_hazard_now', '@wshp_mech_room_flood', '@wshp_breaker_wont_reset', '@wshp_openloop_water_quality_pro', '@wshp_handback_call_pro', '@wshp_out_of_scope_call_pro', '@wshp_system_unconfirmed', '@wshp_divert_mini_split', '@wshp_divert_furnace'].forEach(id => {
+['wshp.hazard.flood_electrical', 'wshp.entry.equipment_gate', 'wshp.heat.cold_home_screen', 'wshp.openloop.complaint', 'wshp.openloop.chemistry_gate', 'wshp.handback.call_pro', 'wshp.diy.thermostat_check', 'wshp.diy.filter_check', 'wshp.diy.condensate_check', 'wshp.diy.loop_gauge_look', 'wshp.diy.lockout_brand_gate', 'wshp.diy.lockout_reset_once', '@fire', '@electrical', '@gas', '@uncertain', '@leak', '@wshp_hazard_now', '@wshp_mech_room_flood', '@wshp_breaker_wont_reset', '@wshp_openloop_water_quality_pro', '@wshp_handback_call_pro', '@wshp_out_of_scope_call_pro', '@wshp_system_unconfirmed', '@wshp_divert_mini_split', '@wshp_divert_furnace', '@wshp_cold_exposure', '@wshp_cold_home_urgent', '@wshp_well_water_out', '@wshp_ts_fixed', '@wshp_filter_replaced_retest', '@wshp_drain_cleared_retest', '@wshp_loop_reading_logged', '@wshp_lockout_reset_ok', '@wshp_openloop_filter_drain_link'].forEach(id => {
   assert(wshpSeen.has(id), 'A-20 reachable ' + id);
 });
 const bannedDiy = /\b(acid|bleach|chlorin\w*|biocide|descal\w*|flush\w*|purg\w*|glycol|antifreeze|refrigerant|gauges?|jump\w*|bypass\w*)\b/ig;
 const allowedPhrase = 'The water loop, pump, refrigerant, and controls';
 const allowedStart = /^(?:Do not|Don’t|Don't|Never|Not offered|This check will not|No |If a refrigerant leak alarm)/;
-const allowedExact = 'Capacitor, contactor, pump, wiring, and refrigerant work need a trained technician.';
+const allowedExact = [
+  'Capacitor, contactor, pump, wiring, and refrigerant work need a trained technician.',
+  'Gas smell, a CO alarm, a refrigerant leak alarm, smoke, sparks, a burning smell, flooding, or water at electrical equipment: choose New hazard now.',
+  'Gas, a CO alarm, a refrigerant leak alarm, smoke, sparks, a burning smell, flooding, water at electrical equipment, or a breaker that will not stay on is not a do-it-yourself path.'
+];
 function checkBanned(text, where, labelId) {
   if (!text) return;
   if (labelId && (labelId.indexOf('want_diy_') === 0 || labelId === 'openloop_want_diy_treatment' || labelId === 'hazard_now' || labelId === 'wshp_hz_refrigerant_alarm')) return;
@@ -751,7 +755,7 @@ function checkBanned(text, where, labelId) {
     const prior = text.slice(0, at);
     const start = Math.max(prior.lastIndexOf('.'), prior.lastIndexOf('!'), prior.lastIndexOf('?'), prior.lastIndexOf('\n'));
     const sentence = text.slice(start + 1).replace(/^[\s\-•]+/, '');
-    assert(allowedStart.test(sentence) || sentence.indexOf(allowedExact) === 0, 'A-21 ' + match[0] + ' in ' + where);
+    assert(allowedStart.test(sentence) || allowedExact.some(exact => sentence.indexOf(exact) === 0), 'A-21 ' + match[0] + ' in ' + where);
   }
 }
 WSHP_IDS.forEach(id => {
@@ -770,12 +774,12 @@ const colorCallout = /\b(green|red|amber|yellow|blue)\b/i;
 WSHP_IDS.forEach(id => {
   const node = F.nodes[id];
   const blob = [node.section, node.title, node.body, node.caution].concat(node.options.map(op => [op.label, op.hint, op.fact].join(' '))).join('\n');
-  assert(!colorCallout.test(blob), 'A-22 color in ' + id);
+  assert(!colorCallout.test(blob.replace(/Red Cross/g, '')), 'A-22 color in ' + id);
 });
 Object.keys(F.results).forEach(id => {
   if (id.indexOf('wshp_') !== 0) return;
   const res = F.results[id];
-  assert(!colorCallout.test([res.title, res.urgency, res.explanation, res.avoid].concat(res.actions || []).join('\n')), 'A-22 color in ' + id);
+  assert(!colorCallout.test([res.title, res.urgency, res.explanation, res.avoid].concat(res.actions || []).join('\n').replace(/Red Cross/g, '')), 'A-22 color in ' + id);
 });
 assert(F.results.wshp_advanced_off && F.results.wshp_advanced_off.outcome === 'call_pro' && F.results.wshp_advanced_off.reason === 'wshp_advanced_off', 'A-26 overlay terminal is call_pro');
 
@@ -796,7 +800,8 @@ const t6 = walk('ask', gate.concat(['other_heat_or_ductless', 'water_source_geo'
 assert(t6.result === 'gas', 'T-6 gas');
 const t7 = walk('ask', gate.concat(['other_heat_or_ductless', 'water_source_geo', 'wshp_hz_unsure']));
 assert(t7.result === 'uncertain', 'T-7 unsure hazard');
-const t8 = walk('ask', gate.concat(['other_heat_or_ductless', 'water_source_geo', 'wshp_hz_none', 'not_heat_problem', 'wshp_closed_loop', 'wshp_cx_no_heat']));
+const wshpLooks = ['wshp_ts_ok', 'wshp_filter_ok', 'wshp_drain_ok', 'wshp_loop_no_tag'];
+const t8 = walk('ask', gate.concat(['other_heat_or_ductless', 'water_source_geo', 'wshp_hz_none', 'not_heat_problem', 'wshp_closed_loop']).concat(wshpLooks).concat(['wshp_cx_no_heat']));
 assert(t8.result === 'wshp_handback_call_pro' && F.results[t8.result].outcome === 'call_pro', 'T-8 handback');
 const t8note = F.summary(t8);
 assert(t8note.indexOf('Loop type: closed loop.') !== -1 && t8note.indexOf('Complaint: No heat or not enough heat') !== -1, 'T-8 summary');
@@ -813,7 +818,9 @@ const t10 = walk('ask', gate.concat(['other_heat_or_ductless', 'water_source_geo
 assert(t10.result === 'wshp_openloop_water_quality_pro' && wshpEvents(t10).indexOf('notes.wshp_openloop_diy:refused') !== -1, 'T-10 DIY treatment refused');
 const t11 = walk('ask', gate.concat(['other_heat_or_ductless', 'water_source_geo', 'wshp_hz_none', 'not_heat_problem', 'wshp_open_loop', 'wshp_cx_other', 'hazard_now']));
 assert(t11.result === 'wshp_hazard_now' && F.results[t11.result].outcome === 'emergency_exit', 'T-11 chemistry hazard');
-const t12 = walk('ask', gate.concat(['other_heat_or_ductless', 'water_source_geo', 'wshp_hz_none', 'not_heat_problem', 'wshp_loop_unsure', 'wshp_cx_cycle_lockout']));
+const t12 = walk('ask', gate.concat(['other_heat_or_ductless', 'water_source_geo', 'wshp_hz_none', 'not_heat_problem', 'wshp_loop_unsure']).concat(wshpLooks).concat(['wshp_cx_cycle_lockout']));
+assert(t12.node === 'wshp.diy.lockout_brand_gate' && !t12.result, 'T-12 lockout opens the brand gate');
+F.answer(t12, 'brand_unsure', { agreed: true, termsVersion: 'public-beta-2026-10-18.1' });
 assert(t12.result === 'wshp_handback_call_pro' && F.summary(t12).indexOf('Loop type: not sure.') !== -1, 'T-12 unsure loop');
 const t13 = walk('ask', gate.concat(['other_heat_or_ductless', 'water_source_geo', 'wshp_hz_none', 'not_heat_problem', 'wshp_air_source']));
 assert(t13.node === 'sw.co.fast_exit' && t13.coReturn === 'hp.intake.system_confirm' && t13.product === 'hp' && t13.treeVersion === 'hp.air_source.v1', 'T-13 air-source divert');
@@ -829,11 +836,11 @@ const t18 = walk('ask', gate.concat(['other_heat_or_ductless', 'water_source_geo
 assert(t18.result === 'wshp_system_unconfirmed' && F.results[t18.result].outcome === 'insufficient_info', 'T-18 system unsure');
 const t19 = walk('ask', gate.concat(['other_heat_or_ductless', 'water_source_geo', 'wshp_hz_none', 'not_heat_problem', 'hazard_now']));
 assert(t19.result === 'wshp_hazard_now', 'T-19 equipment hazard');
-const t20 = walk('ask', gate.concat(['other_heat_or_ductless', 'water_source_geo', 'wshp_hz_none', 'not_heat_problem', 'wshp_closed_loop', 'want_diy_refrigerant_anyway']));
+const t20 = walk('ask', gate.concat(['other_heat_or_ductless', 'water_source_geo', 'wshp_hz_none', 'not_heat_problem', 'wshp_closed_loop']).concat(wshpLooks).concat(['want_diy_refrigerant_anyway']));
 assert(t20.result === 'wshp_handback_call_pro' && wshpEvents(t20).indexOf('gate_fired:refrigerant_intent') !== -1, 'T-20 refrigerant intent');
-const t21 = walk('ask', gate.concat(['other_heat_or_ductless', 'water_source_geo', 'wshp_hz_none', 'not_heat_problem', 'wshp_closed_loop', 'want_diy_pro_only']));
+const t21 = walk('ask', gate.concat(['other_heat_or_ductless', 'water_source_geo', 'wshp_hz_none', 'not_heat_problem', 'wshp_closed_loop']).concat(wshpLooks).concat(['want_diy_pro_only']));
 assert(t21.result === 'wshp_handback_call_pro' && wshpEvents(t21).indexOf('notes.advanced_diy:off') !== -1, 'T-21 advanced DIY off');
-const t22 = walk('ask', gate.concat(['other_heat_or_ductless', 'water_source_geo', 'wshp_hz_none', 'not_heat_problem', 'wshp_closed_loop', 'hazard_now']));
+const t22 = walk('ask', gate.concat(['other_heat_or_ductless', 'water_source_geo', 'wshp_hz_none', 'not_heat_problem', 'wshp_closed_loop']).concat(wshpLooks).concat(['hazard_now']));
 assert(t22.result === 'wshp_hazard_now', 'T-22 handback hazard');
 let t23 = false;
 try { F.answer(F.create(), 'water_source_geo', { agreed: true, termsVersion: 'public-beta-2026-10-08' }); }
@@ -873,6 +880,62 @@ const t26 = F.summary(t9, { codes: 'Lockout light; EWT 41' });
 assert(t26.indexOf('Loop type: open loop (well, lake, or pond water).') !== -1 && t26.indexOf('Codes / lights / water temps already showing (homeowner supplied): Lockout light; EWT 41') !== -1, 'T-26 codes note');
 assert(t26.indexOf('Safety screen: none of the listed hazards reported. This guide asked for no covers off and no loop, well, refrigerant, or electrical work.') !== -1, 'T-26 checked line');
 assert((t26.split('Loop type:').length - 1) === 1, 'T-26 loop line once');
+
+const PL003 = 'If the house well water is also out, tell the pro. Until the well works again, set the thermostat to Emergency Heat (it may say Em Heat), not normal Heat. If it has no Emergency Heat setting, set it to Off. In normal Heat the heat pump may still try to run without well water. (MANUAL: WaterFurnace Residential Owner’s Manual, pages 14 and 27: if the well pumping system “is inoperable, your unit should be turned off or placed into emergency heat until an adequate water supply is restored.”)';
+const POWER045 = 'Turn off the power only if you already know which breaker or disconnect switch feeds this equipment, and you can reach it without touching water or standing in it, opening any panel or box cover (opening the breaker panel’s door is fine), or going near the water. Use the handle only. If you can’t, don’t try. Get everyone out of the area and call 911 from outside.';
+assert(F.results.wshp_openloop_water_quality_pro.actions.indexOf(PL003) !== -1, 'PL-WSHP-003 exact');
+assert(F.results.wshp_well_water_out.actions[0] === PL003, 'well water out uses PL-WSHP-003 first');
+assert(F.results.wshp_well_water_out.actions.indexOf('Source: WaterFurnace Residential Owner’s Manual (wfom.pdf) p.14/27.') !== -1, 'well water out cites wfom.pdf p.14/27');
+assert(!/OM1500MW|page 13/.test(F.results.wshp_well_water_out.actions.join('\n')), 'well water out drops the rejected page cite');
+assert(F.results.wshp_hazard_now.actions[3] === POWER045, 'hazard action 3b');
+assert(F.results.wshp_mech_room_flood.actions[1] === POWER045, 'PL-WSHP-045');
+assert(F.results.wshp_mech_room_flood.actions[3] === 'Call a licensed HVAC professional who works on geothermal systems, or an electrician or plumber. For sparks, smoke, shock, or immediate danger, get everyone out and call 911 from outside.', 'PL-WSHP-046');
+assert(F.results.wshp_hazard_now.actions[1] === 'If there is smoke, fire, or sparks, get everyone out and call 911 from outside.', 'PL-WSHP-044');
+assert(F.results.wshp_hazard_now.explanation === 'Gas, a CO alarm, a refrigerant leak alarm, smoke, sparks, a burning smell, flooding, water at electrical equipment, or a breaker that will not stay on is not a do-it-yourself path.', 'PL-WSHP-028c');
+assert(F.nodes['wshp.handback.call_pro'].body.indexOf('- If the thermostat shows Emergency Heat and no one chose it, write that down too. Some geothermal units turn it on by themselves when they lock out.') !== -1, 'PL-WSHP-005');
+assert(F.nodes['wshp.heat.cold_home_screen'].body.indexOf('This guide treats below 64 °F (18 °C) as a cold home. (POLICY: our cutoff. The World Health Organization recommends at least 18 °C (64 °F) indoors in cold weather.)') !== -1, 'PL-WSHP-007 caption');
+assert(F.nodes['wshp.heat.cold_home_screen'].options.find(o => o.id === 'home_holding').label === 'The home is holding steady (maybe a little below the setting), it’s 64°F (18°C) or warmer, no pipes are at risk, and no one is at risk', 'PL-WSHP-014');
+assert(F.nodes['wshp.openloop.complaint'].options.find(o => o.id === 'wshp_cx_well_water_out').hint === 'Use Emergency Heat (or Off if you don’t have it), not normal Heat, until the well works.', 'PL-WSHP-032');
+assert(F.results.wshp_cold_home_urgent.actions.indexOf('If your system uses well water and the house well water is out, set the thermostat to Emergency Heat, not normal Heat. If it has no Emergency Heat setting, set it to Off, and use the cold-home line above. (MANUAL: WaterFurnace Residential Owner’s Manual, pages 14 and 27.)') !== -1, 'PL-WSHP-025');
+assert(F.results.wshp_cold_home_urgent.actions.some(a => a.indexOf('American Red Cross') !== -1), 'PL-WSHP-026');
+const holding = walk('ask', gate.concat(['other_heat_or_ductless', 'water_source_geo', 'wshp_hz_none', 'home_holding', 'wshp_closed_loop']).concat(wshpLooks).concat(['wshp_cx_no_heat']));
+assert(/^Home temperature: The home is holding steady \(maybe a little below the setting\), it’s 64°F \(18°C\) or warmer/m.test(F.summary(holding, {})), 'W-17 home temperature 64°F');
+assert(!/^Observed:.*Cold home:/m.test(F.summary(holding, {})), 'W-17 cold-home fact stays off the observed line');
+Object.keys(F.results).filter(id => id.indexOf('wshp_') === 0).forEach(id => {
+  const stopped = JSON.parse(JSON.stringify(holding));
+  stopped.result = id;
+  stopped.node = null;
+  F.stop(stopped);
+  assert(stopped.result === null && stopped.safetyCleared === false && stopped.node === 'sw.co.fast_exit' && stopped.coReturn === 'ac.gate.cluster_entry' && stopped.audit.some(row => row.event === 'exit_ramp:stop_get_help'), 'W-13 ' + id);
+  F.answer(stopped, 'co_no', { agreed: true, termsVersion: 'public-beta-2026-10-18.1' });
+  assert(stopped.node === 'ac.gate.cluster_entry' && stopped.safetyCleared === false, 'W-13 returns ' + id);
+});
+function wshpBrand(choice) {
+  return walk('ask', gate.concat(['other_heat_or_ductless', 'water_source_geo', 'wshp_hz_none', 'not_heat_problem', 'wshp_closed_loop', 'wshp_ts_lockout', choice]));
+}
+assert(wshpBrand('brand_waterfurnace').node === 'wshp.diy.lockout_reset_once', 'T-BG WaterFurnace reaches the one-time reset');
+assert(wshpBrand('brand_climatemaster').node === 'wshp.diy.lockout_reset_once', 'T-BG ClimateMaster reaches the one-time reset');
+assert(wshpBrand('brand_other').result === 'wshp_handback_call_pro', 'T-BG another brand calls a pro');
+assert(wshpBrand('brand_unsure').result === 'wshp_handback_call_pro', 'T-BG unknown brand calls a pro');
+const resetEdges = [];
+Object.keys(F.nodes).forEach(id => F.nodes[id].options.forEach(op => { if (op.next === 'wshp.diy.lockout_reset_once') resetEdges.push(id + ':' + op.id); }));
+assert(resetEdges.join('|') === 'wshp.diy.lockout_brand_gate:brand_waterfurnace|wshp.diy.lockout_brand_gate:brand_climatemaster', 'no path reaches the reset without a cleared brand');
+const limited = walk('ask', gate.concat(['other_heat_or_ductless', 'water_source_geo', 'wshp_hz_none', 'not_heat_problem', 'wshp_closed_loop', 'wshp_ts_lockout']));
+limited.reset_count = 1;
+F.answer(limited, 'brand_waterfurnace', { agreed: true, termsVersion: 'public-beta-2026-10-18.1' });
+assert(limited.result === 'wshp_handback_call_pro' && limited.node !== 'wshp.diy.lockout_reset_once', 'reset_count>=1 goes to a pro');
+const once = wshpBrand('brand_waterfurnace');
+F.answer(once, 'wshp_reset_once_done', { agreed: true, termsVersion: 'public-beta-2026-10-18.1' });
+assert(once.result === 'wshp_lockout_reset_ok' && once.reset_count === 1, 'one thermostat reset is recorded');
+const resetCopy = [F.nodes['wshp.diy.lockout_reset_once'].body].concat(F.results.wshp_lockout_reset_ok.actions).join('\n');
+assert(!/reset the breaker|reset the disconnect|flip the breaker|flip the disconnect|turn off the breaker/i.test(resetCopy), 'the reset step does not offer a breaker or disconnect reset');
+assert(F.nodes['wshp.diy.lockout_brand_gate'].body.indexOf('Read it only from a label you can already see. Don’t open any door, panel, or cover to find it.') !== -1, 'LN-WSHP-15g-h helper');
+assert(F.advancedEnabled && F.advancedEnabled() === false, 'advancedRepairsEnabled stays false');
+const wshpBlob = WSHP_IDS.map(id => {
+  const node = F.nodes[id];
+  return [node.title, node.body, node.caution].concat(node.options.map(op => [op.label, op.hint].join(' '))).join('\n');
+}).concat(Object.keys(F.results).filter(id => id.indexOf('wshp_') === 0).map(id => [F.results[id].title, F.results[id].explanation, F.results[id].avoid].concat(F.results[id].actions || []).join('\n'))).join('\n');
+assert(!/\b(safe|safely|safer|safest)\b/i.test(wshpBlob), 'WSHP copy does not say safe');
 
 const floodShutoff = F.results.wshp_mech_room_flood.actions.find(action => action.indexOf('main water shutoff') !== -1);
 assert(floodShutoff && floodShutoff.indexOf('only if you can reach it on a dry floor away from the equipment and any wiring') !== -1, 'N5 flood main-shutoff condition');
@@ -977,8 +1040,8 @@ const words = t => String(t || '').split(/\s+/).filter(Boolean).length;
 assert(F.treeVersionMs === 'ms.ductless.v2', 'MS-A1 mini-split tree version');
 assert(Array.isArray(F.msPr1) && F.msPr1.length === 10, 'MS-G1 ten original mini-split nodes exported');
 assert(Array.isArray(F.msV1) && F.msV1.join('|') === 'ms.heat.mode_setpoint|ms.heat.force_heat|ms.heat.defrost_sanity|ms.outdoor.safe_observe', 'MS-G1 heat and outdoor nodes');
-assert(Object.keys(F.nodes).length === 261, 'node count is ' + Object.keys(F.nodes).length);
-assert(Object.keys(F.results).length === 423, 'result count is ' + Object.keys(F.results).length);
+assert(Object.keys(F.nodes).length === 267, 'node count is ' + Object.keys(F.nodes).length);
+assert(Object.keys(F.results).length === 429, 'result count is ' + Object.keys(F.results).length);
 assert(!Object.keys(F.nodes).some(id => id.indexOf('ac.adv.cap.') === 0), 'advanced capacitor nodes are absent from the public bundle');
 const ms1 = ['none_of_these', 'agree_18_terms', 'other_heat_or_ductless', 'ductless_mini_split', 'ductless_single_zone'];
 const msGate = ms1.slice(0, 4);
@@ -2240,11 +2303,13 @@ function bootPage() {
 }
 {
   const internalTag = /\(POLICY\b|\bPOLICY\b|\bR\d{2}\b|\bPL-[A-Z0-9]|\bFT-[A-Z0-9]|\bD-0\d{2}\b/;
+  // PL-WSHP-007 puts this caption on the cold-home screen on purpose. Strip only that sentence.
+  const ruledPolicyCaption = '(POLICY: our cutoff. The World Health Organization recommends at least 18 °C (64 °F) indoors in cold weather.)';
   ['assets/heating-data.js', 'assets/flow.js', 'assets/heating-lanes.js'].forEach(rel => {
     const src = fs.readFileSync(path.join(__dirname, '..', rel), 'utf8');
     const strings = src.match(/'(?:\\.|[^'\\])*'|"(?:\\.|[^"\\])*"|`(?:\\.|[^`\\])*`/g) || [];
     strings.forEach(raw => {
-      const text = raw.slice(1, -1);
+      const text = raw.slice(1, -1).split(ruledPolicyCaption).join('');
       assert(!internalTag.test(text), 'user-facing copy in ' + rel + ' has an internal tag: ' + text.slice(0, 140));
     });
   });
@@ -2383,6 +2448,14 @@ function pageChecks() {
     answer('not_heat_problem');
     await flush();
     answer('wshp_closed_loop');
+    await flush();
+    answer('wshp_ts_ok');
+    await flush();
+    answer('wshp_filter_ok');
+    await flush();
+    answer('wshp_drain_ok');
+    await flush();
+    answer('wshp_loop_no_tag');
     await flush();
     answer('wshp_cx_no_heat');
     await flush();
