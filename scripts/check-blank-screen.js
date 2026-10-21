@@ -75,6 +75,7 @@ assert(acHeatBlank.originLane === 'ac', 'mode-screen blank stays an AC origin');
 const hpBlank = toBlank(gate.concat(['heat_pump', 'air_source_ducted_hp', 'landing_no_heat', 'tstat_blank_or_unreadable']));
 assert(hpBlank.originLane === 'hp' && hpBlank.hvacMode === 'heat' && hpBlank.equipment === 'heat_pump', 'HP no-heat origin');
 assert(!hpBlank.answers.some(row => row.choice === 'hardwired_or_no_batteries'), 'HP blank does not reach the battery dead end');
+assert(F.viewNode(hpBlank.node, hpBlank).options.some(op => op.id === 'door_not_seated'), 'heat-pump origin shows the door step');
 
 const hpCool = toBlank(gate.concat(['heat_pump', 'air_source_ducted_hp', 'landing_no_cool', 'tstat_blank_or_unreadable']));
 assert(hpCool.hvacMode === 'cool', 'HP no-cool origin is cool');
@@ -97,15 +98,19 @@ assert(fnBlank.audit.some(row => row.event === 'handoff:ts_to_fn'), 'switch hand
 const hpPower = toBlank(gate.concat(['heat_pump', 'air_source_ducted_hp', 'landing_no_heat', 'tstat_blank_or_unreadable']));
 hpPower.reset_count = 1;
 F.answer(hpPower, 'breaker_ac_outdoor', meta);
-assert(hpPower.hpOutdoorNotRunning === true && hpPower.node === 'ac.cool.power.breaker_visual', 'HP breaker sets outdoor-not-running before the screen');
-assert(hpPower.reset_count === 1 && hpPower.blankHandoff.reset_count === 1, 'AC breaker handoff carries reset_count');
-const hpBreaker = F.viewNode(hpPower.node, hpPower);
-assert(hpBreaker.options[0].id === 'cold_home_risk' && hpBreaker.options[0].next === '@ts_cold_home_urgent', 'heat HP breaker leads with cold-home');
-assert(!/while Cool is calling/i.test(JSON.stringify(hpBreaker)), 'heat HP breaker does not render cool-only copy');
+assert(hpPower.result === 'hp_outdoor_not_running_wave1' && !hpPower.node, 'thermostat heat-pump origin redirects off the breaker screen, got ' + (hpPower.node || hpPower.result));
+assert(hpPower.hpOutdoorNotRunning === true && hpPower.reset_count === 1, 'HP handoff sets outdoor-not-running and keeps reset_count');
+assert(!hpPower.answers.some(row => row.node === 'ac.cool.power.breaker_visual' || row.node === 'ac.cool.power.breaker_reset_gate'), 'thermostat HP origin enters no breaker node');
+assert(F.viewNode('ac.cool.power.breaker_visual', hpPower) === null && F.viewNode('ac.cool.power.breaker_reset_gate', hpPower) === null, 'thermostat HP origin renders no breaker node');
+const hpShown = F.presentResult(hpPower);
+const coldHome = F.nodes['hp.heat.cold_home_screen'];
+assert(hpShown.explanation.indexOf(coldHome.title) === 0 && hpShown.explanation.indexOf(coldHome.body) > 0 && hpShown.explanation.indexOf(coldHome.body) < hpShown.explanation.indexOf('You can look at the breaker door'), 'heat-mode HP result leads with cold-home');
+assert(!/while Cool is calling/i.test(JSON.stringify(hpShown)), 'heat HP result does not render cool-only copy');
+const acPower = toBlank(gate.concat(['cooling_only_ac', 'split_central_cool_only', 'landing_blank_tstat']));
+F.answer(acPower, 'breaker_ac_outdoor', meta);
+assert(acPower.node === 'ac.cool.power.breaker_visual', 'cooling origin still opens the breaker screen, got ' + (acPower.node || acPower.result));
 const coolBreaker = F.viewNode('ac.cool.power.breaker_visual', { product: 'ac', hvacMode: 'cool', originLane: 'ac' });
-assert(coolBreaker.options[0].id !== 'cold_home_risk', 'cool breaker render stays unchanged');
-const gateView = F.viewNode('ac.cool.power.breaker_reset_gate', hpPower);
-assert(gateView.options[0].id === 'cold_home_risk', 'heat HP reset gate leads with cold-home');
+assert(coolBreaker && coolBreaker.options[0].id !== 'cold_home_risk', 'cool breaker render stays unchanged');
 
 F.answer(acBlank, 'door_not_seated', meta);
 assert(acBlank.node === 'ts.power.door_reseat', 'AC door choice opens the reseat step');

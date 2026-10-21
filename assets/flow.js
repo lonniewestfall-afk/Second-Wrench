@@ -2726,7 +2726,6 @@
     if (nodeId === 'ts.power.blank_screen' && choice === 'breaker_ac_outdoor') {
       if (state.originLane === 'fn' && blankRules.fnNoAcBreaker !== false) return '@ts_power_breaker_pro';
       if ((option && option.handoff && option.handoff.reset === 'zero') || blankRules.zeroReset) state.reset_count = 0;
-      state.fromBlankBreaker = true;
       state.blankHandoff = { kind: 'H-B', ts_origin: 'ts.power.blank_screen', mode: state.hvacMode || 'unknown', reset_count: state.reset_count || 0 };
       if ((state.originLane === 'hp' || state.equipment === 'heat_pump') && blankRules.hpOutdoor !== false) state.hpOutdoorNotRunning = true;
       pushAudit(state, 'handoff:ts_to_ac');
@@ -3043,7 +3042,7 @@
   };
   function redirectBreaker(state, target) {
     if (typeof target !== 'string' || !state) return target;
-    if (hpEntry(state) && BREAKER_ENTRY[target] && !state.fromBlankBreaker) return '@hp_outdoor_not_running_wave1';
+    if (hpEntry(state) && BREAKER_ENTRY[target]) return '@hp_outdoor_not_running_wave1';
     if (state.product === 'wshp' && BREAKER_ENTRY[target]) return '@wshp_advanced_off';
     if (!breakerResetOnceEnabled() && (target === '@breaker_reset_basic' || target === 'ac.cool.power.breaker_reset_step' || target === '@breaker_seasonal_restore_basic' || target === 'ac.cool.power.seasonal_restore_step')) {
       return '@breaker_off_unexplained_pro';
@@ -3157,7 +3156,7 @@
   function viewNode(id, state) {
     const node = nodes[id];
     if (!node) return null;
-    if (state && hpEntry(state) && !state.fromBlankBreaker && (id === 'ac.cool.power.breaker_visual' || id === 'ac.cool.power.breaker_reset_gate' || id === 'ac.cool.power.breaker_reset_step' || id === 'ac.cool.power.seasonal_restore_step')) return null;
+    if (state && hpEntry(state) && (id === 'ac.cool.power.breaker_visual' || id === 'ac.cool.power.breaker_reset_gate' || id === 'ac.cool.power.breaker_reset_step' || id === 'ac.cool.power.seasonal_restore_step')) return null;
     let view = node;
     if (id === CONCLUDE) {
       view = {
@@ -3245,7 +3244,7 @@
   function answer(state, choice, meta = {}) {
     if (choice === 'boiler_hot_water_steam') choice = 'boiler';
     if (!state || state.result || !nodes[state.node]) throw new Error('This check has ended or is invalid.');
-    if (hpEntry(state) && BREAKER_ENTRY[state.node] && !state.fromBlankBreaker) {
+    if (hpEntry(state) && BREAKER_ENTRY[state.node]) {
       state.result = 'hp_outdoor_not_running_wave1';
       state.node = null;
       pushAudit(state, 'conclusion_reached:call_pro');
@@ -3486,7 +3485,7 @@
       target = 'ac.cool.power.breaker_visual';
     }
     target = redirectBreaker(state, target);
-    if (!hpEntry(state) || state.fromBlankBreaker) {
+    if (!hpEntry(state)) {
       if (choice === 'breaker_reset_ok_still_silent') state.reset_count = Math.max(state.reset_count || 0, 1);
       if (target === '@breaker_reset_basic') {
         if ((state.reset_count || 0) >= 1) target = '@breaker_retrip_pro';
@@ -3809,7 +3808,11 @@
       const cold = nodes['hp.heat.cold_home_screen'];
       res = Object.assign({}, res, { explanation: cold.title + '\n\n' + cold.body + '\n\n' + res.explanation });
     }
-    if (state && state.product === 'ts') return decorateBlankResult(state, TA.present(state, TS.presentResult(state, results), results));
+    if (state && state.product === 'ts') {
+      const base = TA.present(state, TS.presentResult(state, results), results);
+      const shown = res !== results[state.result] && base ? Object.assign({}, base, { explanation: res.explanation }) : base;
+      return decorateBlankResult(state, shown);
+    }
     if (state && (state.product === 'bl' || state.product === 'wh' || state.product === 'ms')) return HEAT.present(state, res);
     if (state && state.product === 'wshp' && state.result === 'gas') {
       return Object.assign({}, res, {
