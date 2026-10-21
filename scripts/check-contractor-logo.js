@@ -17,6 +17,7 @@ const page = read('pros/join/index.html');
 const toml = read('netlify.toml');
 assert(/referralEnabled:\s*false/.test(configText) && !/referralEnabled:\s*true/.test(configText), 'referral flag stays false');
 assert(read('netlify/functions/_contractor-join.mjs').includes("export const LOGO_STORE = 'contractor-logos'"), 'logo store name');
+assert(page.includes('name="logo"') && page.includes('5 MB'), 'join page offers an optional logo');
 assert(!/\bsafe\b/i.test(page) && !page.includes('contractor-logos') && !page.includes('/api/referral-admin'), 'join page does not publish a logo URL');
 assert(toml.includes('/api/pros/join') && !toml.includes('contractor-logos'), 'join API is redirected and logos have no public route');
 
@@ -147,6 +148,90 @@ async function main() {
   assert(logos.keys().indexOf(exactBody.application_id) === -1 && !await store.get('applications/' + exactBody.application_id + '.json', { type: 'json' }), 'logo and application are gone');
   const again = await core.handleReferralAdmin(new Request('http://127.0.0.1:8765/api/referral-admin?logo=' + exactBody.application_id, { headers: { 'x-referral-admin-key': 'secret' } }), { enabled: true, store, logoStore: logos, adminKey: 'secret' });
   assert(again.status === 404, 'a deleted logo is not in the admin download');
+
+  const signup = await import('../netlify/functions/_pro-signup.mjs');
+  function signupRequest(bytes, filename, type, email) {
+    const form = new FormData();
+    const fields = {
+      bot_field: '',
+      business_name: 'Example HVAC',
+      contact_name: 'Ada Lovelace',
+      email: email || 'logo@example.com',
+      phone: '614-555-0100',
+      website: '',
+      street: '10 Main St',
+      city: 'Columbus',
+      state: 'OH',
+      zip: '43215',
+      service_area: '43215',
+      emergency_after_hours: 'no',
+      brand_other: '',
+      license_numbers: 'HV.12345',
+      license_authority: 'Ohio OCILB',
+      insured: 'yes',
+      epa_608: 'no',
+      brand_programs: '',
+      notes: 'Pilot logo',
+      consent: 'true',
+      consent_text_version: signup.CONSENT_TEXT_VERSION,
+      consent_text: signup.CONSENT_TEXT
+    };
+    Object.keys(fields).forEach(key => form.set(key, fields[key]));
+    form.set('hours', JSON.stringify({ monday: '8-5', tuesday: '8-5', wednesday: '8-5', thursday: '8-5', friday: '8-5', saturday: '', sunday: '' }));
+    form.append('brands', 'Bosch');
+    form.append('equipment', 'central_ac');
+    if (bytes) form.set('logo', new File([bytes], filename, { type: type || 'application/octet-stream' }));
+    return new Request('http://127.0.0.1:8765/api/pro-signup', { method: 'POST', body: form });
+  }
+
+  for (const [label, bytes, contentType, filename] of accepted) {
+    const apps = core.memoryStore();
+    const logosForSignup = join.memoryLogoStore();
+    const response = await signup.handleProSignup(signupRequest(bytes, filename, 'image/svg+xml', label + '@example.com'), { store: apps, logoStore: logosForSignup, now });
+    const body = await response.json();
+    assert(response.status === 200 && body.stored === true && body.pending === true && body.status === 'pending_verification' && body.logo_key === body.application_id, 'signup ' + label + ' stores a pending application');
+    const saved = await apps.get(body.application_id, { type: 'json' });
+    assert(saved && saved.status === 'pending_verification' && saved.logo_key === body.application_id && !saved.ip, 'signup ' + label + ' record stays pending with logo_key');
+    const meta = await logosForSignup.getMetadata(body.logo_key);
+    assert(meta && meta.metadata.content_type === contentType && meta.metadata.original_file_name === filename && meta.metadata.size === String(bytes.length) && meta.metadata.uploaded_at === now.toISOString(), 'signup ' + label + ' logo metadata');
+    assert(logosForSignup.keys().indexOf(body.application_id) === 0 && String(body.application_id).indexOf('/') === -1, 'signup ' + label + ' logo key is the application id');
+  }
+
+  const signupApps = core.memoryStore();
+  const signupLogos = join.memoryLogoStore();
+  const signupDisguised = await signup.handleProSignup(signupRequest(svg(), 'photo.png', 'image/png', 'svg@example.com'), { store: signupApps, logoStore: signupLogos, now });
+  assert(signupDisguised.status === 400 && (await signupDisguised.json()).error === 'logo_type', 'signup rejects an SVG disguised as PNG');
+  assert(signupApps.keys().length === 0 && signupLogos.keys().length === 0, 'a rejected signup logo stores nothing');
+  const signupScript = await signup.handleProSignup(signupRequest(png(Buffer.from('<script>alert(1)</script>')), 'clean.png', 'image/png', 'script@example.com'), { store: signupApps, logoStore: signupLogos, now });
+  assert(signupScript.status === 400 && (await signupScript.json()).error === 'logo_type', 'signup rejects a PNG with a script payload');
+  const signupOver = await signup.handleProSignup(signupRequest(over, 'over.png', 'image/png', 'over@example.com'), { store: signupApps, logoStore: signupLogos, now });
+  assert(signupOver.status === 400 && (await signupOver.json()).error === 'logo_too_large', 'signup rejects a logo over 5 MB');
+  const signupExact = await signup.handleProSignup(signupRequest(exact, 'big.png', 'image/png', 'exact@example.com'), { store: signupApps, logoStore: signupLogos, now });
+  const signupExactBody = await signupExact.json();
+  assert(signupExact.status === 200 && signupExactBody.logo_key === signupExactBody.application_id, 'signup accepts a 5 MB logo');
+  const signupPlain = await signup.handleProSignup(signupRequest(null, '', '', 'plain@example.com'), { store: signupApps, logoStore: signupLogos, now });
+  const signupPlainBody = await signupPlain.json();
+  assert(signupPlain.status === 200 && signupPlainBody.pending === true && signupPlainBody.logo_key === null, 'signup logo is optional');
+
+  const signupHidden = await core.handleReferralAdmin(new Request('http://127.0.0.1:8765/api/referral-admin?logo=' + signupExactBody.application_id), { applicationStore: signupApps, logoStore: signupLogos, adminKey: 'secret' });
+  assert(signupHidden.status === 503, 'signup logo download without the admin key stays off');
+  const signupListed = await core.handleReferralAdmin(new Request('http://127.0.0.1:8765/api/referral-admin', { headers: { 'x-referral-admin-key': 'secret' } }), { applicationStore: signupApps, logoStore: signupLogos, adminKey: 'secret' });
+  const signupListedBody = await signupListed.json();
+  const signupRow = signupListedBody.applications.find(row => row.contractor_id === signupExactBody.application_id);
+  assert(signupListed.status === 200 && signupListedBody.referral_enabled === false && signupRow && signupRow.status === 'pending_verification' && signupRow.logo_key === signupExactBody.application_id && signupRow.logo.content_type === 'image/png' && signupRow.logo.download.indexOf('/api/referral-admin?logo=') === 0, 'admin export lists the pending signup logo while referrals are off');
+  const signupDownload = await core.handleReferralAdmin(new Request('http://127.0.0.1:8765/api/referral-admin?logo=' + signupExactBody.application_id, { headers: { 'x-referral-admin-key': 'secret' } }), { applicationStore: signupApps, logoStore: signupLogos, adminKey: 'secret' });
+  const signupBytes = new Uint8Array(await signupDownload.arrayBuffer());
+  assert(signupDownload.status === 200 && signupDownload.headers.get('content-type') === 'image/png' && /attachment/i.test(signupDownload.headers.get('content-disposition')) && signupBytes[0] === 0x89 && signupBytes.length === exact.length, 'admin key downloads the signup logo while referrals are off');
+  const signupPublic = await signup.handleProSignup(new Request('http://127.0.0.1:8765/api/pro-signup?logo=' + signupExactBody.application_id));
+  assert(signupPublic.status === 405, 'the signup route does not serve the logo');
+  const signupRemoved = await signup.handleProSignup(new Request('http://127.0.0.1:8765/api/pro-signup', {
+    method: 'DELETE',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ application_id: signupExactBody.application_id, delete_token: signupExactBody.delete_token })
+  }), { store: signupApps, logoStore: signupLogos });
+  const signupRemovedBody = await signupRemoved.json();
+  assert(signupRemoved.status === 200 && signupRemovedBody.deleted === true && signupRemovedBody.logo_deleted === true, 'the delete token removes the signup logo');
+  assert(signupLogos.keys().indexOf(signupExactBody.application_id) === -1 && !await signupApps.get(signupExactBody.application_id, { type: 'json' }), 'signup logo and application are gone');
 
   if (failed) {
     console.error(failed + ' contractor logo check(s) failed');

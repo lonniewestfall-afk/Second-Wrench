@@ -2,8 +2,8 @@ import { randomUUID, timingSafeEqual } from 'node:crypto';
 import copy from '../../data/referral/copy.json' with { type: 'json' };
 import blockedResults from '../../data/referral/blocked-results.json' with { type: 'json' };
 import { boschCodeClass, contractorError, directorySchema, equipmentTags, matchContractor } from './_referral-match.mjs';
-import { downloadContractorLogo, listPendingApplications } from './_contractor-join.mjs';
-import { listProApplications, openProSignupStore } from './_pro-signup.mjs';
+import { downloadContractorLogo, listPendingApplications, openLogoStore } from './_contractor-join.mjs';
+import { downloadProLogo, listProApplications, openProSignupStore } from './_pro-signup.mjs';
 
 export const referralEnabled = false;
 export const consentTextVersion = copy.consentTextVersion;
@@ -211,17 +211,21 @@ export async function handleReferral(request, deps) {
 }
 
 async function signupApplications(extra) {
-  if (extra.applicationStore) return listProApplications(extra.applicationStore);
+  if (extra.applicationStore) return listProApplications(extra.applicationStore, extra.logoStore || null);
   if (Object.keys(extra).length) return [];
-  return listProApplications(await openProSignupStore());
+  return listProApplications(await openProSignupStore(), await openLogoStore());
 }
 
 export async function handleReferralAdmin(request, deps) {
   const extra = deps || {};
   if (!enabled(extra)) {
     const logoId = request && request.url ? new URL(request.url).searchParams.get('logo') : '';
-    if (request && request.method === 'GET' && !logoId && authorized(request, adminKey(extra))) {
+    const authed = request && request.method === 'GET' && authorized(request, adminKey(extra));
+    if (authed && !logoId) {
       return json(200, { referral_enabled: false, applications: await signupApplications(extra) });
+    }
+    if (authed && logoId && (extra.applicationStore || Object.keys(extra).length === 0)) {
+      return downloadProLogo(logoId, extra);
     }
     return json(503, { error: 'referral_off' });
   }
@@ -229,7 +233,11 @@ export async function handleReferralAdmin(request, deps) {
   if (!authorized(request, adminKey(extra))) return json(401, { error: 'unauthorized' });
   const store = extra.store || await openReferralStore();
   const logoId = new URL(request.url).searchParams.get('logo');
-  if (logoId) return downloadContractorLogo(logoId, Object.assign({}, extra, { store }));
+  if (logoId) {
+    const fromSignup = await downloadProLogo(logoId, extra);
+    if (fromSignup.status !== 404) return fromSignup;
+    return downloadContractorLogo(logoId, Object.assign({}, extra, { store }));
+  }
   const keys = await listKeys(store, 'referrals/');
   const referrals = [];
   for (const key of keys) {

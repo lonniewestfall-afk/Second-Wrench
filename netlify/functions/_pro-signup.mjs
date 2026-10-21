@@ -1,4 +1,6 @@
 import { createHash, randomBytes, randomUUID, timingSafeEqual } from 'node:crypto';
+import { LOGO_LIMIT } from './_logo-type.mjs';
+import { inspectLogo, logoDownloadResponse, logoSummary, openLogoStore, readStoredLogo } from './_contractor-join.mjs';
 
 export const STORE = 'contractor-applications';
 export const CONSENT_TEXT_VERSION = 'pro-signup-consent-2026-10-20.1';
@@ -170,6 +172,7 @@ export function prepareProSignup(body, now) {
     leads_this_week: 0,
     status: 'pending_verification',
     submitted_at: stamp,
+    logo_key: null,
     consent_text_version: CONSENT_TEXT_VERSION,
     consent_text: CONSENT_TEXT,
     contact_name: contact,
@@ -215,7 +218,7 @@ export function publicApplication(row) {
   return copy;
 }
 
-export async function listProApplications(store) {
+export async function listProApplications(store, logoStore) {
   const keys = await listKeys(store);
   const rows = [];
   for (const key of keys) {
@@ -224,7 +227,111 @@ export async function listProApplications(store) {
     if (row && row.status === 'pending_verification') rows.push(publicApplication(row));
   }
   rows.sort((a, b) => String(a.submitted_at).localeCompare(String(b.submitted_at)));
+  if (!logoStore) return rows;
+  for (const row of rows) {
+    if (!row.logo_key) continue;
+    const summary = await logoSummary(logoStore, row.logo_key);
+    if (!summary) continue;
+    summary.download = '/api/referral-admin?logo=' + row.contractor_id;
+    row.logo = summary;
+  }
   return rows;
+}
+
+function textField(form, key) {
+  const value = form.get(key);
+  if (value == null) return '';
+  if (typeof value !== 'string') return null;
+  return value;
+}
+
+function listField(form, key) {
+  const values = form.getAll(key);
+  if (values.some(value => typeof value !== 'string')) return null;
+  return values;
+}
+
+async function bodyFromMultipart(form) {
+  for (const key of new Set(form.keys())) {
+    if (ipKey(key)) return { error: 'forbidden_field' };
+    if (key !== 'logo' && !FIELDS.has(key)) return { error: 'unknown_field' };
+  }
+  const hoursRaw = textField(form, 'hours');
+  if (typeof hoursRaw !== 'string') return { error: 'invalid_field' };
+  let hours;
+  try {
+    hours = JSON.parse(hoursRaw);
+  } catch (err) {
+    return { error: 'invalid_field' };
+  }
+  const brands = listField(form, 'brands');
+  const equipment = listField(form, 'equipment');
+  if (!brands || !equipment) return { error: 'invalid_field' };
+  const bot = textField(form, 'bot_field');
+  if (typeof bot === 'string' && bot.trim()) return { error: 'bot' };
+  const consentRaw = textField(form, 'consent');
+  const body = {
+    bot_field: textField(form, 'bot_field') || '',
+    business_name: textField(form, 'business_name'),
+    contact_name: textField(form, 'contact_name'),
+    email: textField(form, 'email'),
+    phone: textField(form, 'phone'),
+    website: textField(form, 'website'),
+    street: textField(form, 'street'),
+    city: textField(form, 'city'),
+    state: textField(form, 'state'),
+    zip: textField(form, 'zip'),
+    service_area: textField(form, 'service_area'),
+    hours,
+    emergency_after_hours: textField(form, 'emergency_after_hours'),
+    brands,
+    brand_other: textField(form, 'brand_other'),
+    equipment,
+    license_numbers: textField(form, 'license_numbers'),
+    license_authority: textField(form, 'license_authority'),
+    insured: textField(form, 'insured'),
+    epa_608: textField(form, 'epa_608'),
+    brand_programs: textField(form, 'brand_programs'),
+    notes: textField(form, 'notes'),
+    consent: consentRaw === 'true' ? true : consentRaw === 'false' ? false : consentRaw,
+    consent_text_version: textField(form, 'consent_text_version'),
+    consent_text: textField(form, 'consent_text')
+  };
+  const logo = await inspectLogo(form.get('logo'));
+  if (logo.error) return { error: logo.error };
+  return { body, logo };
+}
+
+async function writeLogo(logoStore, applicationId, logo, uploadedAt) {
+  const body = logo.bytes.buffer.slice(logo.bytes.byteOffset, logo.bytes.byteOffset + logo.bytes.byteLength);
+  await logoStore.set(applicationId, body, {
+    metadata: {
+      content_type: logo.sniffed.contentType,
+      original_file_name: logo.original,
+      size: String(logo.bytes.length),
+      uploaded_at: uploadedAt
+    }
+  });
+}
+
+export async function downloadProLogo(applicationId, deps) {
+  const extra = deps || {};
+  if (!UUID_RE.test(String(applicationId || ''))) return json(404, { error: 'not_found' });
+  let store = extra.applicationStore || null;
+  if (!store) {
+    if (Object.keys(extra).length) return json(404, { error: 'not_found' });
+    store = await openProSignupStore();
+  }
+  const row = await store.get(applicationId, { type: 'json' });
+  if (!row || row.status !== 'pending_verification' || !row.logo_key) return json(404, { error: 'not_found' });
+  let logoStore = extra.logoStore || null;
+  if (!logoStore) {
+    if (Object.keys(extra).length) return json(404, { error: 'not_found' });
+    logoStore = await openLogoStore();
+  }
+  const logo = await readStoredLogo(logoStore, row.logo_key);
+  if (!logo) return json(404, { error: 'not_found' });
+  return logoDownloadResponse(logo.bytes, logo.metadata);
 }
 
 export async function openProSignupStore() {
@@ -238,12 +345,30 @@ export async function handleProSignup(request, deps) {
   if (!sameOrigin(request)) return json(403, { error: 'origin' });
   if (request.method === 'DELETE') return deleteApplication(request, extra);
   const contentType = request.headers.get('content-type') || '';
-  if (contentType.indexOf('application/json') !== 0) return json(415, { error: 'type' });
   let body;
-  try {
-    body = await request.json();
-  } catch (err) {
-    return json(400, { error: 'invalid_json' });
+  let logo = { bytes: null };
+  if (contentType.indexOf('multipart/form-data') === 0) {
+    const declared = Number(request.headers.get('content-length') || 0);
+    if (declared > LOGO_LIMIT + 256 * 1024) return json(413, { error: 'logo_too_large' });
+    let form;
+    try {
+      form = await request.formData();
+    } catch (err) {
+      return json(400, { error: 'invalid_form' });
+    }
+    const parsed = await bodyFromMultipart(form);
+    if (parsed.error === 'bot') return json(200, { stored: false });
+    if (parsed.error) return json(400, { error: parsed.error });
+    body = parsed.body;
+    logo = parsed.logo;
+  } else if (contentType.indexOf('application/json') === 0) {
+    try {
+      body = await request.json();
+    } catch (err) {
+      return json(400, { error: 'invalid_json' });
+    }
+  } else {
+    return json(415, { error: 'type' });
   }
   const prepared = prepareProSignup(body, extra.now);
   if (prepared.error === 'bot') return json(200, { stored: false });
@@ -252,12 +377,28 @@ export async function handleProSignup(request, deps) {
   const nowMs = (extra.now || new Date()).getTime();
   const limit = await rateLimit(store, prepared.record.email, nowMs);
   if (limit.limited) return json(429, { error: 'rate_limited' });
-  await store.setJSON(prepared.applicationId, prepared.record);
+  let logoStore = null;
+  if (logo.bytes) {
+    logoStore = extra.logoStore || null;
+    if (!logoStore) {
+      if (Object.keys(extra).length) return json(500, { error: 'store' });
+      logoStore = await openLogoStore();
+    }
+    prepared.record.logo_key = prepared.applicationId;
+    await writeLogo(logoStore, prepared.applicationId, logo, prepared.record.submitted_at);
+  }
+  try {
+    await store.setJSON(prepared.applicationId, prepared.record);
+  } catch (err) {
+    if (logo.bytes && logoStore) await logoStore.delete(prepared.applicationId);
+    return json(500, { error: 'store' });
+  }
   return json(200, {
     stored: true,
     pending: true,
     application_id: prepared.applicationId,
     status: 'pending_verification',
+    logo_key: prepared.record.logo_key,
     delete_token: prepared.deleteToken
   });
 }
@@ -279,9 +420,19 @@ async function deleteApplication(request, extra) {
   const row = await store.get(applicationId, { type: 'json' });
   if (!row) return json(404, { error: 'not_found' });
   if (!tokenMatches(row.delete_token_sha256, body.delete_token)) return json(401, { error: 'unauthorized' });
+  let logoDeleted = false;
+  if (row.logo_key) {
+    let logoStore = extra.logoStore || null;
+    if (!logoStore) {
+      if (Object.keys(extra).length) return json(500, { error: 'store' });
+      logoStore = await openLogoStore();
+    }
+    await logoStore.delete(row.logo_key);
+    logoDeleted = true;
+  }
   if (typeof store.delete === 'function') {
     await store.delete(applicationId);
     if (row.email) await store.delete(rateKey(row.email));
   }
-  return json(200, { deleted: true, application_id: applicationId });
+  return json(200, { deleted: true, logo_deleted: logoDeleted, application_id: applicationId });
 }

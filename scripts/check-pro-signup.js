@@ -88,7 +88,7 @@ async function main() {
   const row = await store.get(savedBody.application_id, { type: 'json' });
   assert(row && row.contractor_id === savedBody.application_id && !String(savedBody.application_id).includes('/'), 'the blob key is the application id');
   schema.required.forEach(key => assert(Object.prototype.hasOwnProperty.call(row, key), 'directory field ' + key));
-  assert(row.status === 'pending_verification' && row.submitted_at === now.toISOString() && row.consent_text_version === signup.CONSENT_TEXT_VERSION, 'status, time, and consent version are stored');
+  assert(row.status === 'pending_verification' && row.submitted_at === now.toISOString() && row.consent_text_version === signup.CONSENT_TEXT_VERSION && row.logo_key === null, 'status, time, consent version, and an empty logo key are stored');
   assert(row.active === false && row.paused === true && row.example === false, 'a pending application is not a live listing');
   assert(row.address.state === 'OH' && row.service_zip3s.includes('432') && row.service_zip3s.includes('430'), 'state and service ZIP prefixes are kept');
   assert(!JSON.stringify(row).match(/"ip"|x-forwarded-for|user_agent/), 'the record has no IP');

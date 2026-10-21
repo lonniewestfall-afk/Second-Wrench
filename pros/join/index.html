@@ -8,7 +8,7 @@
   <meta name="description" content="Invite-only contractor application for the Second Wrench pilot.">
   <link rel="canonical" href="https://secondwrench.co/pros/join/">
   <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/assets/styles.css?v=2026-10-20.13">
+  <link rel="stylesheet" href="/assets/styles.css?v=2026-10-20.14">
   <style>
     .join-page { max-width: 760px; margin: 0 auto; padding: 28px 20px 64px; }
     .join-page h1 { font-size: clamp(2rem, 6vw, 3.1rem); }
@@ -21,6 +21,7 @@
     .hours-grid { grid-template-columns: 1fr 1fr; }
     .choice-grid { grid-template-columns: 1fr 1fr; }
     .join-form label.field { display: block; }
+    .join-form input[type="file"] { display: block; width: 100%; max-width: 100%; margin-top: 6px; }
     .join-form input[type="text"], .join-form input[type="email"], .join-form input[type="tel"], .join-form input[type="url"], .join-form select, .join-form textarea {
       width: 100%; min-height: 44px; margin-top: 6px; padding: 10px 12px; border-radius: 9px;
       border: 1px solid var(--line); background: var(--surface); color: var(--ink);
@@ -141,6 +142,10 @@
           <label class="choice"><input type="radio" name="epa_608" value="no"> No</label>
         </fieldset>
       </div>
+      <label class="field">Company logo <span class="fine">(optional)</span>
+        <input name="logo" type="file" accept=".pdf,.png,.jpg,.jpeg,.webp,.gif,.heic,application/pdf,image/png,image/jpeg,image/webp,image/gif,image/heic">
+        <span class="fine">PDF, PNG, JPG, WEBP, GIF, or HEIC. Up to 5 MB. The file is not shown on the public site.</span>
+      </label>
       <label class="field">Brand dealer programs<textarea name="brand_programs" maxlength="400"></textarea></label>
       <label class="field">Notes<textarea name="notes" maxlength="1000"></textarea></label>
       <label class="consent"><input id="consent" name="consent" type="checkbox" required><span id="consent-text">I agree Second Wrench may show my business name, phone, hours, location and brands to homeowners once the referral network launches. This is a free pilot; nothing is charged. Second Wrench verifies licenses before listing.</span></label>
@@ -169,6 +174,12 @@
         var data = new FormData(form);
         var hours = {};
         days.forEach(function (day) { hours[day] = data.get('hours_' + day) || ''; });
+        var logo = form.querySelector('input[name="logo"]');
+        var logoFile = logo && logo.files && logo.files[0];
+        if (logoFile && logoFile.size > 5 * 1024 * 1024) {
+          status.textContent = 'The logo must be 5 MB or smaller.';
+          return;
+        }
         var payload = {
           bot_field: data.get('bot_field') || '',
           business_name: data.get('business_name') || '',
@@ -196,12 +207,26 @@
           consent_text_version: 'pro-signup-consent-2026-10-20.1',
           consent_text: document.getElementById('consent-text').textContent.trim()
         };
+        var request;
+        if (logoFile) {
+          var upload = new FormData();
+          Object.keys(payload).forEach(function (key) {
+            var value = payload[key];
+            if (key === 'hours') upload.set(key, JSON.stringify(value));
+            else if (Array.isArray(value)) value.forEach(function (item) { upload.append(key, item); });
+            else upload.set(key, value === true ? 'true' : value);
+          });
+          upload.set('logo', logoFile, logoFile.name);
+          request = fetch('/api/pro-signup', { method: 'POST', body: upload });
+        } else {
+          request = fetch('/api/pro-signup', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+        }
         status.textContent = 'Sending…';
-        fetch('/api/pro-signup', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify(payload)
-        }).then(function (response) {
+        request.then(function (response) {
           return response.json().then(function (body) { return { ok: response.ok, status: response.status, body: body }; });
         }).then(function (result) {
           if (result.ok && result.body && result.body.stored) {
@@ -210,6 +235,10 @@
             status.textContent = '';
           } else if (result.body && result.body.error === 'rate_limited') {
             status.textContent = 'Please wait before sending another application.';
+          } else if (result.body && result.body.error === 'logo_too_large') {
+            status.textContent = 'The logo must be 5 MB or smaller.';
+          } else if (result.body && result.body.error === 'logo_type') {
+            status.textContent = 'That logo file type is not accepted. Use PDF, PNG, JPG, WEBP, GIF, or HEIC.';
           } else {
             status.textContent = 'The application was not saved. Check the required fields and try again.';
           }
