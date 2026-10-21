@@ -81,7 +81,7 @@
     "landing_unusual_noise", "landing_wait_delay", "landing_want_to_fix", "landing_water_at_head",
     "landing_water_near_furnace", "landing_water_or_ice", "landing_water_outside",
     "landing_weak_airflow", "landing_wifi", "landing_will_not_start", "landing_wrong_reading",
-    "no_hot", "noise", "not_enough", "power", "smell", "too_hot"
+    "no_hot", "noise", "not_enough", "power", "smell", "smelly", "too_hot"
   ],
   "region_state": [
     "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FL", "GA", "HI", "ID", "IL", "IN", "IA",

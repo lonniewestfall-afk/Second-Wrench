@@ -12,7 +12,7 @@ module.exports = function (CO) {
   const RESET_STOP = 'Reset once, only once. If it stops or shows the same code again, don’t reset it again. Repeated shutdowns mean a safety device is doing its job. Call a licensed plumber or water heater professional and tell them the code and what you saw.';
   const BEFORE_RESET = 'Before you reset, write down or photograph the code. Don’t clear the error history. Your pro needs it.';
   const REF = 'a licensed plumber or water heater professional';
-  r('wh_gas_smell', 'Leave now and call from outside', 'Leave the house now and call the gas utility or 911 from outside. Gas, flammable vapors, or an unexplained strong smell near a water heater can mean immediate danger.', ['Leave the house now and call the gas utility or 911 from outside.', 'Do not use a phone, switch, thermostat, or flame inside. Do not look for the source.', 'Wait for emergency responders to say you may return.'], 'Do not operate gas controls, relight a pilot, or turn the appliance on.', 'Emergency', 'emergency_exit');
+  r('wh_gas_smell', 'Leave now and call from outside', 'Leave the house now and call the gas utility or 911 from outside. Gas, flammable vapors, or an unexplained strong smell near a water heater can mean immediate danger.', ['Leave the house now and call the gas utility or 911 from outside.', 'Don’t touch light switches or phones, or use lighters, matches, or anything that could spark or flame while you’re inside.', 'Wait for emergency responders to say you may return.'], 'Do not operate gas controls, relight a pilot, or turn the appliance on.', 'Emergency', 'emergency_exit');
   r('wh_co_alarm', 'Get everyone outside to fresh air', 'A CO alarm or possible CO symptoms need immediate attention.', ['Leave now.', 'Call 911 or the fire department from outside.', 'Do not return until responders say you may.'], 'Do not silence the alarm and stay inside.', 'Emergency', 'emergency_exit');
   r('wh_burning_sparks', 'Leave and call 911', 'Smoke, burning, sparks, or flames outside the appliance can mean a fire.', ['Get everyone and pets outside.', 'Call 911 from outside.', 'Wait for responders before returning.'], 'Do not operate equipment or investigate the source.', 'Emergency', 'emergency_exit');
   r('wh_water_electrical', 'Stay away from water and electrical equipment', 'Water near electrical parts or previously flooded equipment must not be used.', ['Stay out of the water and away from the appliance.', 'For sparks, rising water, or immediate danger, leave and call 911 from outside.', 'Call a licensed water heater professional before any use resumes.'], 'Do not touch switches, cords, breakers, or the wet equipment.', 'Stop / professional', 'emergency_exit');
@@ -20,7 +20,8 @@ module.exports = function (CO) {
   r('wh_scald', 'Care for the burned person first', 'For a serious burn, call 911. Do not keep testing the hot water.', ['Move away from the hot water.', 'For a serious burn, call 911.', 'Arrange professional inspection before using unusually hot water again.'], 'Do not change a gas valve, mixing valve, or hidden thermostat.', 'Emergency', 'emergency_exit');
   r('wh_gate_unsure', 'Stop and get professional help', 'A hazard has not been ruled out.', ['For possible gas, fumes, CO, fire, or illness, get outside and call for emergency help.', 'Otherwise stay away and contact a licensed plumber or water heater professional.'], 'Do not approach equipment to prove an answer.', 'Stop / professional');
   n('wh.gate.safety', 'Check for water-heater hazards', 'Answer only from what you already know. Keep all covers closed and do not touch a valve or discharge pipe.', [
-    o('gas_smell_or_unknown_smell', 'Gas, rotten-egg, gasoline, paint, solvent, or unexplained strong smell', '@wh_gas_smell'),
+    Object.assign(o('gas_smell_or_unknown_smell', 'A gas or rotten-egg smell in the air, a gasoline, paint, or solvent smell near the water heater, or a strong smell I can’t place', '@wh_gas_smell', 'Gas, rotten-egg in air, flammable-vapor, or unknown strong smell reported.'), { hint: 'Leave now. Call from outside.', gate: 'gas_co' }),
+    Object.assign(o('egg_sulfur_smell', 'A rotten-egg or sulfur smell that may be only from the hot water', 'wh.gate.egg_split', 'Rotten-egg or sulfur smell reported; asked where.'), { hint: 'One quick question about where you smell it. If it’s in the air, choose the gas choice above.' }),
     o('co_alarm_or_symptoms', 'CO alarm, or headache, dizziness, nausea, or unusual drowsiness', '@wh_co_alarm'),
     o('burning_smoke_sparks', 'Smoke, sparks, burning, or flame outside the appliance', '@wh_burning_sparks'),
     o('fumes_backdraft', 'Exhaust fumes, soot, scorch marks, or a loose or damaged vent', '@wh_vent_damage'),
@@ -91,9 +92,9 @@ module.exports = function (CO) {
     o('code', 'A code or light is showing', 'wh.code.capture', 'Water-heater code or light reported.'),
     o('power', 'Display is blank or equipment appears off', 'wh.power.look', 'Water-heater display blank or equipment appears off.')
   ];
-  n('wh.tank.landing', 'What is the hot-water problem?', 'Use observations from normal use. Do not touch water to measure its temperature.', land);
+  n('wh.tank.landing', 'What is the hot-water problem?', 'Use observations from normal use. Do not touch water to measure its temperature.', land.concat(o('smelly', 'Hot water smells like rotten eggs or sulfur', 'wh.gate.egg_split', 'Hot water rotten-egg or sulfur smell reported.')));
   n('wh.hpwh.landing', 'What is happening with the heat pump water heater?', 'This is a water heater, not the home’s heating heat pump. Modes, filter access, and temperature controls vary by exact model.', land.concat(o('filter', 'Filter reminder or visibly blocked air path', 'wh.hpwh.filter')));
-  n('wh.tankless.landing', 'What is happening with the tankless heater?', 'Do not adjust service valves, remove a cover, or reset a code to start this check.', land.concat(o('flow', 'It warms only at some faucets or flow rates', 'wh.fixture.scope')));
+  n('wh.tankless.landing', 'What is happening with the tankless heater?', 'Do not adjust service valves, remove a cover, or reset a code to start this check.', land.concat(o('flow', 'It warms only at some faucets or flow rates', 'wh.fixture.scope'), o('smelly', 'Hot water smells like rotten eggs or sulfur', 'wh.gate.egg_split', 'Hot water rotten-egg or sulfur smell reported.')));
   n('wh.fixture.scope', 'One fixture or the whole home?', 'Use what you have already noticed in ordinary use. Do not turn a faucet on to test for scalding water or increase the heater’s temperature.', [
     o('one', 'One shower or faucet only', '@wh_one_fixture', 'Problem reportedly limited to one fixture.'),
     o('all', 'Several or all fixtures', 'wh.usage.pattern', 'Several fixtures affected.'),
@@ -410,5 +411,88 @@ module.exports = function (CO) {
     ['wh_pm_visit', 'What a pro service visit should include', PRO_VISIT, ['Ask for the results in writing.']],
     ['wh_call_pro', 'Prepare for a water-heater service call', 'The cause has not been confirmed.', ['Tell the professional the heater type, exact model if already known, affected fixtures, timing, and any visible code.', 'New smell, CO alarm, smoke, steam, or water near electrical parts takes priority; use Stop / get help.']]
   ]) r(id, title, exp, acts, avoid, tier === 'Stop / professional' ? 'Stop / professional' : (outcome === 'next_step' ? 'Owner step' : 'Professional guidance'), outcome || 'call_pro');
+  const GAS_SENTENCE = 'If you smell rotten eggs in the air, not just from the hot water, leave the house now and call the gas utility or 911 from outside.';
+  const TANK_AVOID = 'Don’t remove the anode or add bleach or other chemicals to the tank. Makers say the tank needs an anode.';
+  const T_AVOID = 'Don’t add bleach or other chemicals to the water heater or open its cover.';
+  const NEUTRAL_AVOID = 'Don’t add bleach or other chemicals to the water heater.';
+  const SUPPLY_AVOID = 'Don’t add bleach or other chemicals to the well, the water heater, or the pipes.';
+  const LOCKED = 'Don’t change these. They protect your equipment and your safety, and they’re for professionals only: the relief valve on the side or top of the tank, its lever and its pipe (don’t lift or test the lever); the gas control, its temperature dial, the pilot and igniter buttons, the burner door, and every gas valve, including a propane tank valve; the covers over electric heating elements and thermostats (240 volts) and anything behind them; the anode rod; the drain valve, and any draining or flushing; the vent pipe, flue, and draft hood (you may only brush snow or debris away outside, by hand, from the ground); the expansion tank and anything that changes water pressure (reading a gauge that’s already there is fine); the water heater’s own water valves, filters, and service ports; the mixing valve; a heat pump water heater’s top cover and fan; switches, installer menus, and settings resets; breakers and GFCI outlets (look only); and boiler parts. If a step would take you to one of these, stop. If a screen asks you to enter a password or access code, stop. That’s for installers.';
+  const CO_LINE = 'If a CO alarm sounds or anyone feels sick, dizzy, or sleepy, get everyone outside and call 911.';
+  const OVERRIDE = 'I hear hissing, there’s a problem with the pilot, or someone has a headache';
+  const overrideChoice = (fact) => Object.assign(o('override_now', OVERRIDE, '@wh_gas_smell', fact), { hint: 'Leave now. Call from outside.', gate: 'gas_co' });
+  const odorHazard = () => Object.assign(o('hazard_now', 'New gas smell, CO alarm, smoke, sparks, burning smell, or water near wires right now', '@wh_hazard_now', 'New hazard reported during the water heater check.'), { hint: 'Stop. Get to safety.', gate: 'wh_new_hazard' });
+  const look = (id, title, body, options) => {
+    nodes[id] = { section: 'Smelly hot water', title, body, options: options.concat(odorHazard()), diyTier: 'basic', safetyGate: false, owner: 'wh', notice: 'look' };
+  };
+  n('wh.gate.egg_split', 'Where do you notice the rotten-egg or sulfur smell?', 'Answer from what you already know. Don’t go near the water heater or its gas line to check. If you have any doubt, choose Not sure.', [
+    Object.assign(o('override_hiss_pilot_headache', OVERRIDE, '@wh_gas_smell', 'Egg/sulfur smell with hissing, a pilot problem, or a headache reported.'), { hint: 'Leave now. Call from outside.', gate: 'gas_co' }),
+    Object.assign(o('smell_in_air', 'I smell it in the air near the water heater or gas lines, or anywhere in the house, even with no water running.', '@wh_gas_smell', 'Egg/sulfur smell in the air reported.'), { hint: 'Leave now. Call from outside.', gate: 'gas_co' }),
+    Object.assign(o('not_sure', 'Not sure.', '@wh_gas_smell', 'Not sure where the egg/sulfur smell is.'), { hint: 'Not sure means stop.', gate: 'gas_co' }),
+    o('hot_water_only', 'Only when hot water runs from a faucet; cold water and the air smell fine.', 'wh.water_odor', 'Egg/sulfur smell only from hot water reported (homeowner report).')
+  ], true);
+  nodes['wh.gate.egg_split'].section = 'Water heater safety';
+  look('wh.water_odor', 'Does the cold water smell too?', 'At a faucet you already use, run the cold water and smell it, then run the hot water and smell it. Only use the faucet. Don’t touch the water heater. If you also smell it in the air near the heater, or you’re unsure, treat it as gas: leave the house now and call the gas utility or 911 from outside.', [
+    overrideChoice('Override reported during the water odor check.'),
+    o('hot_only', 'Only the hot water smells', 'wh.water_odor.softener', 'Smell on hot only (homeowner report).'),
+    o('hot_and_cold', 'The cold water smells too', '@wh_water_supply_odor', 'Smell on hot and cold (homeowner report).'),
+    o('not_sure', 'I’m not sure', 'wh.water_odor.compare', 'Not sure whether cold smells.')
+  ]);
+  look('wh.water_odor.compare', 'Try one more time at the same faucet.', 'Fill a glass with cold water and step away from the sink to smell it. Then do the same with hot water. Which one smells?', [
+    overrideChoice('Override reported during the water odor check.'),
+    o('hot_only', 'Only the hot water smells', 'wh.water_odor.softener', 'Smell on hot only (homeowner report).'),
+    o('hot_and_cold', 'The cold water smells too', '@wh_water_supply_odor', 'Smell on hot and cold (homeowner report).'),
+    o('still_unsure', 'I still can’t tell', '@wh_water_odor', 'Still unsure whether cold water smells (homeowner report).')
+  ]);
+  nodes['wh.water_odor.softener'] = {
+    section: 'Smelly hot water',
+    title: 'Does your home have a water softener?',
+    body: '',
+    options: [
+      overrideChoice('Override reported during the water odor check.'),
+      o('yes', 'Yes', 'wh.water_odor.pattern', 'Water softener: yes (homeowner report).', { whSoftener: true }),
+      o('no', 'No', 'wh.water_odor.pattern', 'Water softener: no (homeowner report).', { whSoftener: false }),
+      o('not_sure', 'I’m not sure', 'wh.water_odor.pattern', 'Water softener: not sure (homeowner report).', { whSoftener: 'unknown' }),
+      odorHazard()
+    ],
+    diyTier: 'basic',
+    safetyGate: false,
+    owner: 'wh'
+  };
+  look('wh.water_odor.pattern', 'What do you notice when the hot water runs?', 'Run the hot water at one faucet and notice whether the smell fades as it keeps running. Also think about whether it started after a trip or after a faucet went unused for a while.', [
+    overrideChoice('Override reported during the water odor check.'),
+    o('fades', 'The smell fades as the water runs', '@wh_water_odor', 'Smell fades with running (homeowner report).', { whPattern: 'fades' }),
+    o('after_away', 'It started after a trip or after the hot water sat unused', '@wh_water_odor', 'Smell after low use (homeowner report).', { whPattern: 'after_away' }),
+    o('steady', 'It doesn’t fade, or I’m not sure', '@wh_water_odor', 'Smell steady or unsure (homeowner report).', { whPattern: 'steady' })
+  ]);
+  const TANK_EXPL = 'A rotten-egg smell that comes only from the hot water usually comes from the water itself. Sulfate in the water can react with the water heater’s anode rod (a metal rod that protects the tank), and bacteria can make it worse. A water softener can make the anode wear faster. Makers say a different type of anode rod can reduce or end the smell. Ask a licensed plumber or water heater professional to choose and fit the anode your maker specifies, and to tell you whether the tank also needs cleaning. Follow your owner’s manual.';
+  const T_EXPL = 'A rotten-egg smell that comes only from the hot water usually comes from the water itself, not gas. Write down what you noticed: whether the smell fades, whether you have a water softener, and whether it started after the water sat unused. Ask a licensed plumber or water heater professional to check it, and follow your owner’s manual.';
+  const NEUTRAL_EXPL = 'A rotten-egg smell that comes only from the hot water usually comes from the water itself. Ask a licensed plumber or water heater professional to check the water heater, and follow your owner’s manual.';
+  r('wh_water_odor', 'This sounds like a water odor from the hot water.', TANK_EXPL, [GAS_SENTENCE], TANK_AVOID, 'Professional guidance', 'call_pro');
+  Object.assign(results.wh_water_odor, {
+    reason: 'water_odor_pro',
+    gasSentence: GAS_SENTENCE,
+    explanationTank: TANK_EXPL,
+    explanationT: T_EXPL,
+    explanationNeutral: NEUTRAL_EXPL,
+    avoidTank: TANK_AVOID,
+    avoidT: T_AVOID,
+    avoidNeutral: NEUTRAL_AVOID,
+    locked: LOCKED,
+    coLine: CO_LINE,
+    genericSource: 'Follow your owner’s manual.',
+    sources: {
+      ao_smith: 'A.O. Smith Use & Care 100277666, pp. 23 and 28. A.O. Smith 100277666 pp. 23, 28 [MANUAL]',
+      rheem: 'Rheem gas water heater Use & Care, p. 21. Rheem p. 21 [MANUAL]',
+      ge: 'GE GeoSpring Owner’s Manual 49-50300-2, pp. 11 and 20. GE 49-50300-2 pp. 11, 20 [MANUAL]'
+    },
+    proNote: 'On a GE GeoSpring, the manual says the anode depletion sensing must be disabled after an aluminum-zinc rod is fitted (p. 11).'
+  });
+  r('wh_water_supply_odor', 'If the cold water smells too, the smell is likely in your water supply.', 'When both hot and cold water smell, the cause is usually the water coming into the house, not the water heater. If you have a well, have the water tested. If you get city water, call your water utility. If the smell is in the air too, or you’re unsure, treat it as gas: leave the house and call the gas utility or 911 from outside.', [GAS_SENTENCE], SUPPLY_AVOID, 'Professional guidance', 'call_pro');
+  Object.assign(results.wh_water_supply_odor, { reason: 'water_supply', locked: LOCKED, coLine: CO_LINE, gasSentence: GAS_SENTENCE });
+  r('wh_hydrogen_caution', 'After two weeks or more unused, run a hot tap first.', 'Makers warn that hydrogen gas can build up in a hot water system that hasn’t been used for two weeks or more, and it can catch fire. Before you use a dishwasher, washer, or other appliance on hot water, open a hot tap at a sink and let it run for several minutes. You may hear air or gas sputtering out of the pipe at first.', ['Before you use a dishwasher, washer, or other appliance on hot water, open a hot tap at a sink and let it run for several minutes.'], 'Don’t smoke, and keep any flame or spark away from the faucet while it runs.', 'Basic homeowner check', 'next_step');
+  results.wh_hydrogen_caution.source = 'Rheem gas water heater Use & Care, p. 18 [MANUAL]. GE gas water heater owner’s manual [MANUAL].';
+  r('wh_hazard_now', 'Stop and get to safety.', 'A new hazard comes before anything else.', ['Gas smell, CO alarm, or smoke: get everyone out and call 911 or the gas utility from outside.', 'Water near wires: stay out of the water and call a licensed electrician or plumber.', 'Don’t go back in until the fire department, the gas utility, or a licensed pro says you can.'], 'Don’t keep troubleshooting.', 'Emergency', 'emergency_exit');
+  results.wh_hazard_now.reason = 'wh_new_hazard';
+  results.wh_hazard_now.gate = 'wh_new_hazard';
   return { nodes, results, codes: CODES };
 };
