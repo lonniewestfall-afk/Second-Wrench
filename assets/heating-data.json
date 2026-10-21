@@ -11646,11 +11646,20 @@
         "options": [
           {
             "id": "gas_smell_or_unknown_smell",
-            "label": "Gas, rotten-egg, gasoline, paint, solvent, or unexplained strong smell",
+            "label": "A gas or rotten-egg smell in the air, a gasoline, paint, or solvent smell near the water heater, or a strong smell I can’t place",
             "next": "@wh_gas_smell",
-            "fact": "",
+            "fact": "Gas, rotten-egg in air, flammable-vapor, or unknown strong smell reported.",
             "set": {},
-            "hint": ""
+            "hint": "Leave now. Call from outside.",
+            "gate": "gas_co"
+          },
+          {
+            "id": "egg_sulfur_smell",
+            "label": "A rotten-egg or sulfur smell that may be only from the hot water",
+            "next": "wh.gate.egg_split",
+            "fact": "Rotten-egg or sulfur smell reported; asked where.",
+            "set": {},
+            "hint": "One quick question about where you smell it. If it’s in the air, choose the gas choice above."
           },
           {
             "id": "co_alarm_or_symptoms",
@@ -12229,6 +12238,14 @@
             "hint": ""
           },
           {
+            "id": "smelly",
+            "label": "Hot water smells like rotten eggs or sulfur",
+            "next": "wh.gate.egg_split",
+            "fact": "Hot water rotten-egg or sulfur smell reported.",
+            "set": {},
+            "hint": ""
+          },
+          {
             "id": "hazard_now",
             "label": "New gas smell, CO alarm, refrigerant leak alarm, smoke, sparks, leaking hot water or steam, or another hazard",
             "next": "wh.gate.safety",
@@ -12357,6 +12374,14 @@
             "label": "It warms only at some faucets or flow rates",
             "next": "wh.fixture.scope",
             "fact": "",
+            "set": {},
+            "hint": ""
+          },
+          {
+            "id": "smelly",
+            "label": "Hot water smells like rotten eggs or sulfur",
+            "next": "wh.gate.egg_split",
+            "fact": "Hot water rotten-egg or sulfur smell reported.",
             "set": {},
             "hint": ""
           },
@@ -13872,6 +13897,274 @@
         "diyTier": "basic",
         "safetyGate": false,
         "owner": "wh"
+      },
+      "wh.gate.egg_split": {
+        "section": "Water heater safety",
+        "title": "Where do you notice the rotten-egg or sulfur smell?",
+        "body": "Answer from what you already know. Don’t go near the water heater or its gas line to check. If you have any doubt, choose Not sure.",
+        "options": [
+          {
+            "id": "override_hiss_pilot_headache",
+            "label": "I hear hissing, there’s a problem with the pilot, or someone has a headache",
+            "next": "@wh_gas_smell",
+            "fact": "Egg/sulfur smell with hissing, a pilot problem, or a headache reported.",
+            "set": {},
+            "hint": "Leave now. Call from outside.",
+            "gate": "gas_co"
+          },
+          {
+            "id": "smell_in_air",
+            "label": "I smell it in the air near the water heater or gas lines, or anywhere in the house, even with no water running.",
+            "next": "@wh_gas_smell",
+            "fact": "Egg/sulfur smell in the air reported.",
+            "set": {},
+            "hint": "Leave now. Call from outside.",
+            "gate": "gas_co"
+          },
+          {
+            "id": "not_sure",
+            "label": "Not sure.",
+            "next": "@wh_gas_smell",
+            "fact": "Not sure where the egg/sulfur smell is.",
+            "set": {},
+            "hint": "Not sure means stop.",
+            "gate": "gas_co"
+          },
+          {
+            "id": "hot_water_only",
+            "label": "Only when hot water runs from a faucet; cold water and the air smell fine.",
+            "next": "wh.water_odor",
+            "fact": "Egg/sulfur smell only from hot water reported (homeowner report).",
+            "set": {},
+            "hint": ""
+          }
+        ],
+        "diyTier": "basic",
+        "safetyGate": true,
+        "owner": "wh"
+      },
+      "wh.water_odor": {
+        "section": "Smelly hot water",
+        "title": "Does the cold water smell too?",
+        "body": "At a faucet you already use, run the cold water and smell it, then run the hot water and smell it. Only use the faucet. Don’t touch the water heater. If you also smell it in the air near the heater, or you’re unsure, treat it as gas: leave the house now and call the gas utility or 911 from outside.",
+        "options": [
+          {
+            "id": "override_now",
+            "label": "I hear hissing, there’s a problem with the pilot, or someone has a headache",
+            "next": "@wh_gas_smell",
+            "fact": "Override reported during the water odor check.",
+            "set": {},
+            "hint": "Leave now. Call from outside.",
+            "gate": "gas_co"
+          },
+          {
+            "id": "hot_only",
+            "label": "Only the hot water smells",
+            "next": "wh.water_odor.softener",
+            "fact": "Smell on hot only (homeowner report).",
+            "set": {},
+            "hint": ""
+          },
+          {
+            "id": "hot_and_cold",
+            "label": "The cold water smells too",
+            "next": "@wh_water_supply_odor",
+            "fact": "Smell on hot and cold (homeowner report).",
+            "set": {},
+            "hint": ""
+          },
+          {
+            "id": "not_sure",
+            "label": "I’m not sure",
+            "next": "wh.water_odor.compare",
+            "fact": "Not sure whether cold smells.",
+            "set": {},
+            "hint": ""
+          },
+          {
+            "id": "hazard_now",
+            "label": "New gas smell, CO alarm, refrigerant leak alarm, smoke, sparks, leaking hot water or steam, or another hazard",
+            "next": "@wh_hazard_now",
+            "fact": "New hazard reported during the water heater check.",
+            "set": {},
+            "hint": "Stop. Get to safety.",
+            "gate": "wh_new_hazard"
+          }
+        ],
+        "diyTier": "basic",
+        "safetyGate": false,
+        "owner": "wh",
+        "notice": "look"
+      },
+      "wh.water_odor.compare": {
+        "section": "Smelly hot water",
+        "title": "Try one more time at the same faucet.",
+        "body": "Fill a glass with cold water and step away from the sink to smell it. Then do the same with hot water. Which one smells?",
+        "options": [
+          {
+            "id": "override_now",
+            "label": "I hear hissing, there’s a problem with the pilot, or someone has a headache",
+            "next": "@wh_gas_smell",
+            "fact": "Override reported during the water odor check.",
+            "set": {},
+            "hint": "Leave now. Call from outside.",
+            "gate": "gas_co"
+          },
+          {
+            "id": "hot_only",
+            "label": "Only the hot water smells",
+            "next": "wh.water_odor.softener",
+            "fact": "Smell on hot only (homeowner report).",
+            "set": {},
+            "hint": ""
+          },
+          {
+            "id": "hot_and_cold",
+            "label": "The cold water smells too",
+            "next": "@wh_water_supply_odor",
+            "fact": "Smell on hot and cold (homeowner report).",
+            "set": {},
+            "hint": ""
+          },
+          {
+            "id": "still_unsure",
+            "label": "I still can’t tell",
+            "next": "@wh_water_odor",
+            "fact": "Still unsure whether cold water smells (homeowner report).",
+            "set": {},
+            "hint": ""
+          },
+          {
+            "id": "hazard_now",
+            "label": "New gas smell, CO alarm, refrigerant leak alarm, smoke, sparks, leaking hot water or steam, or another hazard",
+            "next": "@wh_hazard_now",
+            "fact": "New hazard reported during the water heater check.",
+            "set": {},
+            "hint": "Stop. Get to safety.",
+            "gate": "wh_new_hazard"
+          }
+        ],
+        "diyTier": "basic",
+        "safetyGate": false,
+        "owner": "wh",
+        "notice": "look"
+      },
+      "wh.water_odor.softener": {
+        "section": "Smelly hot water",
+        "title": "Does your home have a water softener?",
+        "body": "",
+        "options": [
+          {
+            "id": "override_now",
+            "label": "I hear hissing, there’s a problem with the pilot, or someone has a headache",
+            "next": "@wh_gas_smell",
+            "fact": "Override reported during the water odor check.",
+            "set": {},
+            "hint": "Leave now. Call from outside.",
+            "gate": "gas_co"
+          },
+          {
+            "id": "yes",
+            "label": "Yes",
+            "next": "wh.water_odor.pattern",
+            "fact": "Water softener: yes (homeowner report).",
+            "set": {
+              "whSoftener": true
+            },
+            "hint": ""
+          },
+          {
+            "id": "no",
+            "label": "No",
+            "next": "wh.water_odor.pattern",
+            "fact": "Water softener: no (homeowner report).",
+            "set": {
+              "whSoftener": false
+            },
+            "hint": ""
+          },
+          {
+            "id": "not_sure",
+            "label": "I’m not sure",
+            "next": "wh.water_odor.pattern",
+            "fact": "Water softener: not sure (homeowner report).",
+            "set": {
+              "whSoftener": "unknown"
+            },
+            "hint": ""
+          },
+          {
+            "id": "hazard_now",
+            "label": "New gas smell, CO alarm, refrigerant leak alarm, smoke, sparks, leaking hot water or steam, or another hazard",
+            "next": "@wh_hazard_now",
+            "fact": "New hazard reported during the water heater check.",
+            "set": {},
+            "hint": "Stop. Get to safety.",
+            "gate": "wh_new_hazard"
+          }
+        ],
+        "diyTier": "basic",
+        "safetyGate": false,
+        "owner": "wh"
+      },
+      "wh.water_odor.pattern": {
+        "section": "Smelly hot water",
+        "title": "What do you notice when the hot water runs?",
+        "body": "Run the hot water at one faucet and notice whether the smell fades as it keeps running. Also think about whether it started after a trip or after a faucet went unused for a while.",
+        "options": [
+          {
+            "id": "override_now",
+            "label": "I hear hissing, there’s a problem with the pilot, or someone has a headache",
+            "next": "@wh_gas_smell",
+            "fact": "Override reported during the water odor check.",
+            "set": {},
+            "hint": "Leave now. Call from outside.",
+            "gate": "gas_co"
+          },
+          {
+            "id": "fades",
+            "label": "The smell fades as the water runs",
+            "next": "@wh_water_odor",
+            "fact": "Smell fades with running (homeowner report).",
+            "set": {
+              "whPattern": "fades"
+            },
+            "hint": ""
+          },
+          {
+            "id": "after_away",
+            "label": "It started after a trip or after the hot water sat unused",
+            "next": "@wh_water_odor",
+            "fact": "Smell after low use (homeowner report).",
+            "set": {
+              "whPattern": "after_away"
+            },
+            "hint": ""
+          },
+          {
+            "id": "steady",
+            "label": "It doesn’t fade, or I’m not sure",
+            "next": "@wh_water_odor",
+            "fact": "Smell steady or unsure (homeowner report).",
+            "set": {
+              "whPattern": "steady"
+            },
+            "hint": ""
+          },
+          {
+            "id": "hazard_now",
+            "label": "New gas smell, CO alarm, refrigerant leak alarm, smoke, sparks, leaking hot water or steam, or another hazard",
+            "next": "@wh_hazard_now",
+            "fact": "New hazard reported during the water heater check.",
+            "set": {},
+            "hint": "Stop. Get to safety.",
+            "gate": "wh_new_hazard"
+          }
+        ],
+        "diyTier": "basic",
+        "safetyGate": false,
+        "owner": "wh",
+        "notice": "look"
       }
     },
     "results": {
@@ -13880,7 +14173,7 @@
         "explanation": "Leave the house now and call the gas utility or 911 from outside. Gas, flammable vapors, or an unexplained strong smell near a water heater can mean immediate danger.",
         "actions": [
           "Leave the house now and call the gas utility or 911 from outside.",
-          "Do not use a phone, switch, thermostat, or flame inside. Do not look for the source.",
+          "Don’t touch light switches or phones, or use lighters, matches, or anything that could spark or flame while you’re inside.",
           "Wait for emergency responders to say you may return."
         ],
         "avoid": "Do not operate gas controls, relight a pilot, or turn the appliance on.",
@@ -14492,6 +14785,85 @@
         "reason": "wh_call_pro",
         "urgency": "",
         "owner": "wh"
+      },
+      "wh_water_odor": {
+        "title": "This sounds like a water odor from the hot water.",
+        "explanation": "A rotten-egg smell that comes only from the hot water usually comes from the water itself. Sulfate in the water can react with the water heater’s anode rod (a metal rod that protects the tank), and bacteria can make it worse. A water softener can make the anode wear faster. Makers say a different type of anode rod can reduce or end the smell. Ask a licensed plumber or water heater professional to choose and fit the anode your maker specifies, and to tell you whether the tank also needs cleaning. Follow your owner’s manual.",
+        "actions": [
+          "If you smell rotten eggs in the air, not just from the hot water, leave the house now and call the gas utility or 911 from outside."
+        ],
+        "avoid": "Don’t remove the anode or add bleach or other chemicals to the tank. Makers say the tank needs an anode.",
+        "tier": "Professional guidance",
+        "outcome": "call_pro",
+        "diyTier": "pro_only",
+        "reason": "water_odor_pro",
+        "urgency": "",
+        "owner": "wh",
+        "gasSentence": "If you smell rotten eggs in the air, not just from the hot water, leave the house now and call the gas utility or 911 from outside.",
+        "explanationTank": "A rotten-egg smell that comes only from the hot water usually comes from the water itself. Sulfate in the water can react with the water heater’s anode rod (a metal rod that protects the tank), and bacteria can make it worse. A water softener can make the anode wear faster. Makers say a different type of anode rod can reduce or end the smell. Ask a licensed plumber or water heater professional to choose and fit the anode your maker specifies, and to tell you whether the tank also needs cleaning. Follow your owner’s manual.",
+        "explanationT": "A rotten-egg smell that comes only from the hot water usually comes from the water itself, not gas. Write down what you noticed: whether the smell fades, whether you have a water softener, and whether it started after the water sat unused. Ask a licensed plumber or water heater professional to check it, and follow your owner’s manual.",
+        "explanationNeutral": "A rotten-egg smell that comes only from the hot water usually comes from the water itself. Ask a licensed plumber or water heater professional to check the water heater, and follow your owner’s manual.",
+        "avoidTank": "Don’t remove the anode or add bleach or other chemicals to the tank. Makers say the tank needs an anode.",
+        "avoidT": "Don’t add bleach or other chemicals to the water heater or open its cover.",
+        "avoidNeutral": "Don’t add bleach or other chemicals to the water heater.",
+        "locked": "Don’t change these. They protect your equipment and your safety, and they’re for professionals only: the relief valve on the side or top of the tank, its lever and its pipe (don’t lift or test the lever); the gas control, its temperature dial, the pilot and igniter buttons, the burner door, and every gas valve, including a propane tank valve; the covers over electric heating elements and thermostats (240 volts) and anything behind them; the anode rod; the drain valve, and any draining or flushing; the vent pipe, flue, and draft hood (you may only brush snow or debris away outside, by hand, from the ground); the expansion tank and anything that changes water pressure (reading a gauge that’s already there is fine); the water heater’s own water valves, filters, and service ports; the mixing valve; a heat pump water heater’s top cover and fan; switches, installer menus, and settings resets; breakers and GFCI outlets (look only); and boiler parts. If a step would take you to one of these, stop. If a screen asks you to enter a password or access code, stop. That’s for installers.",
+        "coLine": "If a CO alarm sounds or anyone feels sick, dizzy, or sleepy, get everyone outside and call 911.",
+        "genericSource": "Follow your owner’s manual.",
+        "sources": {
+          "ao_smith": "A.O. Smith Use & Care 100277666, pp. 23 and 28. A.O. Smith 100277666 pp. 23, 28 [MANUAL]",
+          "rheem": "Rheem gas water heater Use & Care, p. 21. Rheem p. 21 [MANUAL]",
+          "ge": "GE GeoSpring Owner’s Manual 49-50300-2, pp. 11 and 20. GE 49-50300-2 pp. 11, 20 [MANUAL]"
+        },
+        "proNote": "On a GE GeoSpring, the manual says the anode depletion sensing must be disabled after an aluminum-zinc rod is fitted (p. 11)."
+      },
+      "wh_water_supply_odor": {
+        "title": "If the cold water smells too, the smell is likely in your water supply.",
+        "explanation": "When both hot and cold water smell, the cause is usually the water coming into the house, not the water heater. If you have a well, have the water tested. If you get city water, call your water utility. If the smell is in the air too, or you’re unsure, treat it as gas: leave the house and call the gas utility or 911 from outside.",
+        "actions": [
+          "If you smell rotten eggs in the air, not just from the hot water, leave the house now and call the gas utility or 911 from outside."
+        ],
+        "avoid": "Don’t add bleach or other chemicals to the well, the water heater, or the pipes.",
+        "tier": "Professional guidance",
+        "outcome": "call_pro",
+        "diyTier": "pro_only",
+        "reason": "water_supply",
+        "urgency": "",
+        "owner": "wh",
+        "locked": "Don’t change these. They protect your equipment and your safety, and they’re for professionals only: the relief valve on the side or top of the tank, its lever and its pipe (don’t lift or test the lever); the gas control, its temperature dial, the pilot and igniter buttons, the burner door, and every gas valve, including a propane tank valve; the covers over electric heating elements and thermostats (240 volts) and anything behind them; the anode rod; the drain valve, and any draining or flushing; the vent pipe, flue, and draft hood (you may only brush snow or debris away outside, by hand, from the ground); the expansion tank and anything that changes water pressure (reading a gauge that’s already there is fine); the water heater’s own water valves, filters, and service ports; the mixing valve; a heat pump water heater’s top cover and fan; switches, installer menus, and settings resets; breakers and GFCI outlets (look only); and boiler parts. If a step would take you to one of these, stop. If a screen asks you to enter a password or access code, stop. That’s for installers.",
+        "coLine": "If a CO alarm sounds or anyone feels sick, dizzy, or sleepy, get everyone outside and call 911.",
+        "gasSentence": "If you smell rotten eggs in the air, not just from the hot water, leave the house now and call the gas utility or 911 from outside."
+      },
+      "wh_hydrogen_caution": {
+        "title": "After two weeks or more unused, run a hot tap first.",
+        "explanation": "Makers warn that hydrogen gas can build up in a hot water system that hasn’t been used for two weeks or more, and it can catch fire. Before you use a dishwasher, washer, or other appliance on hot water, open a hot tap at a sink and let it run for several minutes. You may hear air or gas sputtering out of the pipe at first.",
+        "actions": [
+          "Before you use a dishwasher, washer, or other appliance on hot water, open a hot tap at a sink and let it run for several minutes."
+        ],
+        "avoid": "Don’t smoke, and keep any flame or spark away from the faucet while it runs.",
+        "tier": "Basic homeowner check",
+        "outcome": "next_step",
+        "diyTier": "basic",
+        "reason": "wh_hydrogen_caution",
+        "urgency": "",
+        "owner": "wh",
+        "source": "Rheem gas water heater Use & Care, p. 18 [MANUAL]. GE gas water heater owner’s manual [MANUAL]."
+      },
+      "wh_hazard_now": {
+        "title": "Stop and get to safety.",
+        "explanation": "A new hazard comes before anything else.",
+        "actions": [
+          "Gas smell, CO alarm, or smoke: get everyone out and call 911 or the gas utility from outside.",
+          "Water near wires: stay out of the water and call a licensed electrician or plumber.",
+          "Don’t go back in until the fire department, the gas utility, or a licensed pro says you can."
+        ],
+        "avoid": "Don’t keep troubleshooting.",
+        "tier": "Emergency",
+        "outcome": "emergency_exit",
+        "diyTier": "pro_only",
+        "reason": "wh_new_hazard",
+        "urgency": "Act now",
+        "owner": "wh",
+        "gate": "wh_new_hazard"
       }
     },
     "codes": [

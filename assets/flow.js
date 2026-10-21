@@ -3213,10 +3213,28 @@
     }
     return state;
   }
+  function normalizeSession(state) {
+    if (!state || state.result !== 'wh_smelly_hot_water') return state;
+    state.result = null;
+    state.node = 'wh.gate.egg_split';
+    state.product = 'wh';
+    if (!state.treeVersion || state.treeVersion.indexOf('wh.') !== 0) state.treeVersion = 'wh.water_heater.v1';
+    return state;
+  }
   function resume(state) {
     if (!state || !state.result) throw new Error('This check has ended or is invalid.');
-    const res = results[state.result];
-    const target = res && res.continueTo;
+    normalizeSession(state);
+    if (!state.result) throw new Error('This check has ended or is invalid.');
+    const shown = presentResult(state) || results[state.result];
+    const target = shown && shown.continueTo;
+    if (typeof target === 'string' && target.charAt(0) === '@') {
+      const id = target.slice(1);
+      if (!results[id]) throw new Error('This result does not continue.');
+      state.result = id;
+      state.node = null;
+      pushAudit(state, 'session_resumed:' + id);
+      return state;
+    }
     if (!target || !nodes[target]) throw new Error('This result does not continue.');
     if (state.product === 'sd') throw new Error('This outdoor-unit check does not continue from a result.');
     if (hpEntry(state) && (target === 'ac.cool.power.breaker_visual' || target === 'ac.cool.power.breaker_reset_gate')) {
@@ -3391,6 +3409,7 @@
       tree_version: state.treeVersion || '' };
   }
   function presentResult(state) {
+    if (state) normalizeSession(state);
     let res = state && results[state.result];
     if (!res) return null;
     if (state.result === 'hp_outdoor_not_running_wave1' && (state.hpLanding === 'no_heat' || state.hpLanding === 'both_modes_fail')) {
@@ -3731,7 +3750,7 @@
   }
   return {
     acknowledgeStep: state => { HEAT.acknowledge(state); HEAT.entered(state, state.node); return state; },
-    nodes, results, create, answer, selectSystem, systemMenu, stop, resume, followResult, summary, activity, viewNode, presentResult, advancedEnabled,
+    nodes, results, create, answer, selectSystem, systemMenu, stop, resume, followResult, summary, activity, viewNode, presentResult, normalizeSession, advancedEnabled,
     treeVersion: TREE_VERSION, treeVersionHp: TREE_HP, treeVersionWshp: TREE_WSHP, treeVersionMs: TREE_MS, treeVersionTs: TREE_TS, tsV0: TS_V0, tsV1: TS_V1, msPr1: MS_PR1, msV1: MS_V1, wave1: WAVE1, wave2: WAVE2, advanced: ADVANCED,
     tsSteps: TS.steps, tsModels: TS.models, tsLc: TS.lc, tsFallbacks: TS.fallbacks, tsMirrors: { records: TS.records, byId: TS.byId, serve: TS.serve, hold: TS.hold },
     tsMirrorRenderable: TS.tsMirrorRenderable, renderTsPanel: (modelKey, nodeId, opts) => TA.decoratePanel(TS.renderTsPanel(modelKey, nodeId, opts), modelKey, nodeId, opts), assertTs: TS.assertTs, assertGraph: assertGraph,

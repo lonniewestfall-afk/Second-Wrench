@@ -56,8 +56,9 @@
     if(t==='bl.gate.carryover')t=BL;
     if(t==='>bl_to_fn'){s.fnHandoff='hydro';s.fnFuel='hydronic';s.bl=s.bl||{};s.bl.mode='heat';t=FN;}
     if(t==='>fn_to_bl'){s.bl=s.bl||{};s.bl.entry='fn_coil';s.bl.coil=true;t=BL;}
-    if(t==='>bl_to_wh'||t==='>coil_to_wh'){if(s.product!=='wh')s.whHandoffEntry=true;s.whFrom=s.product;s.whCoil=t==='>coil_to_wh';s.bl=s.bl||{};if(s.whCoil)s.bl.coil=true;if(s.bl.hwType)s.hwType=s.bl.hwType;s.bl.mode=s.whCoil?'heat':'dhw';if(s.whCoil)audit(s,'flag:tankless_lead');t=WH;}
+    if(t==='>bl_to_wh'||t==='>coil_to_wh'){if(s.product!=='wh')s.whHandoffEntry=true;s.whFrom=s.product;s.whCoil=t==='>coil_to_wh';s.bl=s.bl||{};if(s.whCoil)s.bl.coil=true;if(s.bl.hwType)s.hwType=s.bl.hwType;s.bl.mode=s.whCoil?'heat':'dhw';if(s.bl.hotTapOdor||s.bl.whOdor==='hot_tap'){s.whHotTapOdor=true;s.bl.hotTapOdor=true;applyHotTapType(s);}if(s.whCoil)audit(s,'flag:tankless_lead');t=WH;}
     if(id==='wh.gate.warning_signs'&&o.id==='none_of_these'&&s.whCoil)t='wh.hydro.cold_home';
+    if(id===WH&&(s.whHotTapOdor||(s.bl&&(s.bl.hotTapOdor||s.bl.whOdor==='hot_tap')))&&!s.heatingHazardReported&&(o.id==='none_of_these'||o.id==='egg_sulfur_smell')){s.whHotTapOdor=true;s.bl=s.bl||{};s.bl.hotTapOdor=true;applyHotTapType(s);if(o.id==='none_of_these')t='wh.gate.egg_split';}
     if(s.whCoil&&['wh.tank.landing','wh.tankless.landing','wh.hpwh.landing'].includes(t))t='wh.hydro.observations';
     if(t==='>fn_call_pro')t='fn.conclude.call_pro';
     if(id===FN&&o.id==='none_of_these'&&s.fnHandoff==='hydro'){s.fnHandoff=null;t='fn.hydro.air_side';}
@@ -216,8 +217,40 @@
     if(t==='ac.cool.power.seasonal_restore_step'&&s.warrantyAck&&s.warrantyAck[t]&&s.notices&&s.notices.ac&&!s.seasonalStepReserved){s.reset_count=(s.reset_count||0)+1;s.seasonalStepReserved=true;audit(s,'reset_attempt_reserved:seasonal');}
     if(t==='fn.power.switch_on_step'&&s.warrantyAck&&s.warrantyAck[t]&&s.notices&&s.notices.fn&&!s.switchStepReserved){s.reset_count=(s.reset_count||0)+1;s.switchStepReserved=true;audit(s,'reset_attempt_reserved:external_switch');}
   }
+  function applyHotTapType(s){
+    if(!s.whHotTapOdor)return;
+    const hw=(s.hwType!=null&&s.hwType!=='')?s.hwType:((s.bl&&s.bl.hwType)||'');
+    if(hw==='combi')s.whType='tankless';
+    else if(hw==='indirect')s.whType='tank';
+    else if(!hw||hw==='unknown'||hw==='missing')s.whType='unknown';
+  }
+  function waterOdorSource(s,r){
+    const brand=String(s.whBrand||'').toLowerCase();
+    const sources=r.sources||{};
+    if(/a\.?\s*o\.?\s*smith|aosmith|ao_smith/.test(brand))return sources.ao_smith;
+    if(/rheem|ruud/.test(brand))return sources.rheem;
+    if(/(^|[^a-z])ge([^a-z]|$)|geospring/.test(brand))return sources.ge;
+    return r.genericSource;
+  }
+  function odorCopy(s,r){
+    const actions=(r.actions||[]).slice();
+    const copy={title:r.title,explanation:r.explanation,actions:actions,avoid:r.avoid,tier:r.tier,outcome:r.outcome,diyTier:r.diyTier,reason:r.reason,urgency:r.urgency||'',owner:r.owner||'wh'};
+    if(s.result==='wh_water_supply_odor')copy.locked=r.locked;
+    else{
+      const type=s.whType||'';
+      const variantT=type==='tankless'||type==='combi';
+      const neutral=!!(s.whHotTapOdor&&type==='unknown');
+      if(neutral){copy.explanation=r.explanationNeutral;copy.avoid=r.avoidNeutral;copy.source=r.genericSource;}
+      else if(variantT){copy.explanation=r.explanationT;copy.avoid=r.avoidT;copy.source=r.genericSource;}
+      else{copy.explanation=r.explanationTank||r.explanation;copy.avoid=r.avoidTank||r.avoid;copy.locked=r.locked;copy.source=waterOdorSource(s,r);}
+      if(s.whPattern==='after_away'&&!variantT&&(!type||type==='tank'||type==='hpwh'||type==='unknown'))copy.continueTo='@wh_hydrogen_caution';
+    }
+    if(s.whFuel==='gas'&&r.coLine&&actions.indexOf(r.coLine)===-1)actions.push(r.coLine);
+    return copy;
+  }
   function present(s,r){
     if(!r)return r;
+    if(s&&(s.result==='wh_water_odor'||s.result==='wh_water_supply_odor'))return odorCopy(s,r);
     if(s.product==='ms'){
       if(r.outcome==='emergency_exit')return r;
       const copy={...r,actions:[...(r.actions||[])]},mode=s.msMode||'unknown';
