@@ -197,7 +197,7 @@
   }
   function feedbackData() {
     if (!feedbackId) feedbackId = 'SW-' + (globalThis.crypto?.randomUUID ? crypto.randomUUID().slice(0, 12) : Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8)).toUpperCase();
-    const attr = captureAttribution();
+    const attr = attributionFields();
     return { report_id: feedbackId, version: C.version, mode: state?state.mode:'site-feedback',
       outcome: feedbackDraft.outcome || '', clarity: feedbackDraft.clarity || '', safety_concern: feedbackDraft.safety ? 'yes':'no',
       email: (feedbackDraft.email || '').trim().slice(0,254), message: (feedbackDraft.message || '').trim().slice(0,2000),
@@ -210,7 +210,7 @@
       utm_medium: attr.utm_medium,
       utm_campaign: attr.utm_campaign,
       landing: attr.landing,
-      referrer: referrerClass() };
+      referrer: attr.referrer };
   }
   function feedbackText() {
     const d = feedbackData();
@@ -313,7 +313,7 @@
 <p>Your answers and progress stay in the open browser page unless you choose to share them. Reloading usually starts over. We don\u2019t require an account. You never have to give us a ZIP or postal code, a serial number, or a photo to run a check.</p>
 <h3>Anonymous visit counters</h3>
 <p>We count page views, check starts, results shown, and Stop / get help presses as daily totals. These counts carry no session ID and we don\u2019t store your IP address with them. If your browser sends Global Privacy Control, we don\u2019t count you.</p>
-<p>We count visits and feedback by campaign tag (source, medium, campaign) as daily totals, with no cookies and no IP or device ID, and skip counting when the browser sends Global Privacy Control.</p>
+<p>We count visits and feedback by campaign tag (source, medium, campaign) as daily totals. We don't use cookies for this, and we don't collect your IP address or a device ID for it. If you send us feedback, it also includes the campaign tag, the page you landed on, and the general type of site that sent you there (for example, search or social), but not the full address of that site. If your browser sends Global Privacy Control, we don't count your visit and we leave these details off your feedback.</p>
 <h3>Optional equipment catalog (only if you check the catalog box)</h3>
 <p>We store: your answer codes and the result (not your typed service note); timing and how many times you pressed Stop / get help; the equipment type; and any of these you choose to enter: brand, model number, serial number, state or province, and the first 3 characters of your ZIP or postal code. Later, if you answer the follow-up, we store what fixed it, which part was replaced or suggested, and who did it. We also store the date, the app, content and tree versions, the Terms, Privacy and catalog-consent versions you agreed to, and the hour you agreed. From a serial or model number, we may estimate the unit\u2019s age or size using the maker\u2019s published formats. Every equipment field can be skipped, including the serial number.</p>
 <h3>Contractor applications</h3>
@@ -552,15 +552,29 @@
     return 'other';
   }
   function classifyLanding(value) {
-    let path = String(value || '').split('?')[0].split('#')[0];
-    if (path.indexOf('/followup/') === 0) path = '/followup';
-    if (!/^\/[a-z0-9/_-]{0,80}$/i.test(path) || path.length > 80) return '/';
+    const text = String(value || '').trim();
+    if (/^[a-z][a-z0-9+.-]*:/i.test(text)) return '/';
+    let path = text.split('#')[0].split('?')[0];
+    if (path.charAt(0) !== '/' || path.indexOf('//') !== -1) return '/';
+    if (!/^\/[A-Za-z0-9/_.-]{0,80}$/.test(path) || path.length > 80) return '/';
     return path || '/';
   }
   function readLanding() {
-    const hashPath = String(location.hash || '').replace(/^#/, '').split('?')[0];
-    if (hashPath && hashPath.charAt(0) === '/') return classifyLanding(hashPath);
     return classifyLanding(location.pathname || '/');
+  }
+  function classifyReferrer(value) {
+    return value === 'none' || value === 'same_site' || value === 'external' ? value : 'none';
+  }
+  function attributionFields() {
+    if (gpcOn()) return { utm_source: '', utm_medium: '', utm_campaign: '', landing: '', referrer: '' };
+    const attr = captureAttribution();
+    return {
+      utm_source: attr.utm_source,
+      utm_medium: attr.utm_medium,
+      utm_campaign: attr.utm_campaign,
+      landing: attr.landing,
+      referrer: classifyReferrer(referrerClass())
+    };
   }
   function readParam(name) {
     const search = new URLSearchParams(location.search || '');
@@ -617,7 +631,7 @@
     const payload = {
       name: name,
       route: currentRoute(),
-      referrer: referrerClass(),
+      referrer: classifyReferrer(referrerClass()),
       utm_source: attr.utm_source,
       utm_medium: attr.utm_medium,
       utm_campaign: attr.utm_campaign

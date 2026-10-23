@@ -629,7 +629,7 @@ const HAZARDS = [
   ['hazard_unsure', 'Uncertainty is a good reason to stop.']
 ];
 const TERMS_BODY_SHA256 = '0781cb70a24ed4d7b27b162f7d812356d71f18314d06a288d27ac02db6d2aaae';
-const PRIVACY_BODY_SHA256 = 'a1900cb48f38e6d8110ca88224d87f9f2d2a8cf2f3d362e78685d130754d0e11';
+const PRIVACY_BODY_SHA256 = 'b1898d4b2021893860410300c275a23dfbd361cda9afa30a2e66ba4b2b1a85cb';
 
 // ---- WSHP Wave-1 PR-1 (A-1..A-28, T-1..T-26) ----
 const WSHP_IDS = ['wshp.hazard.flood_electrical', 'wshp.entry.equipment_gate', 'wshp.heat.cold_home_screen', 'wshp.openloop.complaint', 'wshp.openloop.chemistry_gate', 'wshp.handback.call_pro', 'wshp.diy.thermostat_check', 'wshp.diy.filter_check', 'wshp.diy.condensate_check', 'wshp.diy.loop_gauge_look', 'wshp.diy.lockout_brand_gate', 'wshp.diy.lockout_reset_once'];

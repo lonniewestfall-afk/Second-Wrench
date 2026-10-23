@@ -46,6 +46,10 @@ export function classifyCampaign(value) {
   return acceptCampaign(text) ? text : 'other';
 }
 
+export function acceptReferrer(value) {
+  return REFERRERS.has(value) && value.indexOf('/') === -1 && value.indexOf(':') === -1 && value.indexOf('.') === -1;
+}
+
 function utcDay(date) {
   return date.toISOString().slice(0, 10);
 }
@@ -132,7 +136,7 @@ function prepareHit(body) {
     if (typeof body[field] !== 'string') return null;
     hit[field] = body[field];
   }
-  if (!NAMES.has(hit.name) || !ROUTES.has(hit.route) || !REFERRERS.has(hit.referrer)) return null;
+  if (!NAMES.has(hit.name) || !ROUTES.has(hit.route) || !acceptReferrer(hit.referrer)) return null;
   if (!SOURCES.has(hit.utm_source) || !MEDIUMS.has(hit.utm_medium) || !acceptCampaign(hit.utm_campaign)) return null;
   return hit;
 }
