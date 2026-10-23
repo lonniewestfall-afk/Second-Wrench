@@ -21,7 +21,7 @@ function assert(cond, msg) {
     console.error('FAIL', msg);
   }
 }
-const META = { agreed: true, termsVersion: 'public-beta-2026-10-20.1', privacyVersion: 'privacy-public-beta-2026-10-18.1' };
+const META = { agreed: true, termsVersion: 'public-beta-2026-10-20.1', privacyVersion: 'privacy-public-beta-2026-10-23.1' };
 function walk(choices) {
   const state = F.create();
   choices.forEach(choice => {
@@ -40,10 +40,10 @@ const STOP_PRO = ['none_of_these', 'agree_18_terms', 'cooling_only_ac', 'split_c
 assert(/catalogEnabled:\s*false/.test(configText), 'catalogEnabled defaults to false');
 assert(/advancedRepairsEnabled:\s*false/.test(configText) && !/advancedRepairsEnabled:\s*true/.test(configText), 'advanced repairs stay off');
 assert(configText.includes("termsVersion: 'public-beta-2026-10-20.1'"), 'config terms version');
-assert(configText.includes("privacyVersion: 'privacy-public-beta-2026-10-18.1'"), 'config privacy version');
+assert(configText.includes("privacyVersion: 'privacy-public-beta-2026-10-23.1'"), 'config privacy version');
 assert(configText.includes("catalogConsentVersion: 'cat-consent-2026-10-18.1'"), 'config catalog consent version');
 assert(enums.versions.terms === 'public-beta-2026-10-20.1', 'enum terms version');
-assert(enums.versions.privacy === 'privacy-public-beta-2026-10-18.1', 'enum privacy version');
+assert(enums.versions.privacy === 'privacy-public-beta-2026-10-23.1', 'enum privacy version');
 assert(enums.versions.catalog_consent === 'cat-consent-2026-10-18.1', 'enum catalog consent version');
 assert(Array.isArray(enums.low_population_zip3) && enums.low_population_zip3.length === 0, 'low-population ZIP3 list stays empty until a cited Census list exists');
 assert(enums.zip3_policy === 'all_000_until_cited_census_list', 'ZIP3 policy stores 000 until that list exists');
@@ -59,10 +59,10 @@ assert(/consistency:\s*['"]strong['"]/.test(functionText), 'store consistency is
 assert(!/context\.ip|context\.geo|latitude|longitude|postalCode/.test(functionText), 'functions do not read a network address or precise location');
 assert(appText.includes("postForm('beta-session'"), 'the existing session form path remains while the catalog flag is off');
 assert(!/toDataURL|FormData|FileReader/.test(appText), 'the photo helper does not encode or attach the file');
-assert(!/localStorage|sessionStorage/.test(appText), 'catalog code is not written to browser storage');
+assert(!/localStorage|sessionStorage/.test(appText.replace(/\/\* sw-hits:start \*\/[\s\S]*?\/\* sw-hits:end \*\//, '')), 'catalog code is not written to browser storage');
 assert(appText.includes('9A. Optional equipment catalog and statistics'), 'terms include section 9A');
 assert(appText.includes('public-beta-2026-10-20.1'), 'terms body uses the new version');
-assert(appText.includes('privacy-public-beta-2026-10-18.1'), 'privacy body keeps the October 18 version');
+assert(appText.includes('privacy-public-beta-2026-10-23.1'), 'privacy body uses the October 23 version');
 assert(appText.includes('Privacy Officer, Second Wrench'), 'privacy names the person in charge');
 assert(appText.includes('support@secondwrench.co'), 'privacy keeps the support address');
 assert(appText.includes('Operated by:</strong> Second Wrench'), 'privacy names the operator');
@@ -110,9 +110,9 @@ F.answer(stale, 'none_of_these');
 F.answer(stale, 'agree_18_terms', { agreed: true, termsVersion: 'public-beta-2026-10-15.1', privacyVersion: 'privacy-public-beta-2026-10-12.1' });
 F.answer(stale, 'cooling_only_ac', META);
 const before = stale.node;
-assert(F.catalogReprompt(stale, { terms: 'public-beta-2026-10-20.1', privacy: 'privacy-public-beta-2026-10-18.1', catalog: 'cat-consent-2026-10-18.1' }).stale, 'a version mismatch asks for agreement again');
-F.acceptReprompt(stale, { terms: 'public-beta-2026-10-20.1', privacy: 'privacy-public-beta-2026-10-18.1' });
-assert(stale.node === before && stale.termsVersion === 'public-beta-2026-10-20.1' && stale.privacyVersion === 'privacy-public-beta-2026-10-18.1', 're-prompt keeps the place in the check');
+assert(F.catalogReprompt(stale, { terms: 'public-beta-2026-10-20.1', privacy: 'privacy-public-beta-2026-10-23.1', catalog: 'cat-consent-2026-10-18.1' }).stale, 'a version mismatch asks for agreement again');
+F.acceptReprompt(stale, { terms: 'public-beta-2026-10-20.1', privacy: 'privacy-public-beta-2026-10-23.1' });
+assert(stale.node === before && stale.termsVersion === 'public-beta-2026-10-20.1' && stale.privacyVersion === 'privacy-public-beta-2026-10-23.1', 're-prompt keeps the place in the check');
 
 function request(url, method, body, headers) {
   return new Request(url, {

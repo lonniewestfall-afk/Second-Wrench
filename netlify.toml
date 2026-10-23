@@ -51,3 +51,9 @@
   to = "/.netlify/functions/pro-signup"
   status = 200
   force = true
+
+[[redirects]]
+  from = "/api/hit"
+  to = "/.netlify/functions/hit"
+  status = 200
+  force = true

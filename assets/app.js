@@ -197,6 +197,7 @@
   }
   function feedbackData() {
     if (!feedbackId) feedbackId = 'SW-' + (globalThis.crypto?.randomUUID ? crypto.randomUUID().slice(0, 12) : Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8)).toUpperCase();
+    const attr = captureAttribution();
     return { report_id: feedbackId, version: C.version, mode: state?state.mode:'site-feedback',
       outcome: feedbackDraft.outcome || '', clarity: feedbackDraft.clarity || '', safety_concern: feedbackDraft.safety ? 'yes':'no',
       email: (feedbackDraft.email || '').trim().slice(0,254), message: (feedbackDraft.message || '').trim().slice(0,2000),
@@ -204,7 +205,12 @@
       use_consent: feedbackConsent ? 'yes' : 'no',
       use_consent_at: new Date().toISOString(),
       terms_version: C.termsVersion,
-      privacy_version: C.privacyVersion };
+      privacy_version: C.privacyVersion,
+      utm_source: attr.utm_source,
+      utm_medium: attr.utm_medium,
+      utm_campaign: attr.utm_campaign,
+      landing: attr.landing,
+      referrer: referrerClass() };
   }
   function feedbackText() {
     const d = feedbackData();
@@ -297,8 +303,8 @@
 <li><strong>Not medical or emergency.</strong> Do not use this site for medical advice, carbon monoxide poisoning treatment plans, or as an emergency call center.</li>
 <li><strong>Manufacturer priority.</strong> Your equipment manual and local code control access, shutdown, and repair.</li>
 </ol>`;
-  const PRIVACY_HTML = `<p><strong>Version:</strong> <code>privacy-public-beta-2026-10-18.1</code></p>
-<p><strong>Effective:</strong> October 18, 2026</p>
+  const PRIVACY_HTML = `<p><strong>Version:</strong> <code>privacy-public-beta-2026-10-23.1</code></p>
+<p><strong>Effective:</strong> October 23, 2026</p>
 <p><strong>Contact / privacy requests:</strong> <a href="mailto:support@secondwrench.co">support@secondwrench.co</a></p>
 <p><strong>Operated by:</strong> Second Wrench. <strong>Person in charge of personal information:</strong> Privacy Officer, Second Wrench, <a href="mailto:support@secondwrench.co">support@secondwrench.co</a>.</p>
 <p>This notice describes this free public beta. It is shorter than a full commercial Privacy Policy.</p>
@@ -307,6 +313,7 @@
 <p>Your answers and progress stay in the open browser page unless you choose to share them. Reloading usually starts over. We don\u2019t require an account. You never have to give us a ZIP or postal code, a serial number, or a photo to run a check.</p>
 <h3>Anonymous visit counters</h3>
 <p>We count page views, check starts, results shown, and Stop / get help presses as daily totals. These counts carry no session ID and we don\u2019t store your IP address with them. If your browser sends Global Privacy Control, we don\u2019t count you.</p>
+<p>We count visits and feedback by campaign tag (source, medium, campaign) as daily totals, with no cookies and no IP or device ID, and skip counting when the browser sends Global Privacy Control.</p>
 <h3>Optional equipment catalog (only if you check the catalog box)</h3>
 <p>We store: your answer codes and the result (not your typed service note); timing and how many times you pressed Stop / get help; the equipment type; and any of these you choose to enter: brand, model number, serial number, state or province, and the first 3 characters of your ZIP or postal code. Later, if you answer the follow-up, we store what fixed it, which part was replaced or suggested, and who did it. We also store the date, the app, content and tree versions, the Terms, Privacy and catalog-consent versions you agreed to, and the hour you agreed. From a serial or model number, we may estimate the unit\u2019s age or size using the maker\u2019s published formats. Every equipment field can be skipped, including the serial number.</p>
 <h3>Contractor applications</h3>
@@ -380,7 +387,7 @@
     '/about': () => content('Know what to check. Know when to call.', "<p class=\"lead\">Second Wrench helps homeowners find a clearer next step before a heating, cooling, or hot-water service call.</p><div class=\"document-panel\"><h2>How it works</h2><p>Hazards come first. Identify the equipment, answer one question at a time, and use only the owner steps offered for your situation. The result includes a short service-call note that separates your observations from what remains unknown.</p><h2>What the guide covers</h2><p>Central AC, ducted heat pumps, single-room and multi-room mini-splits, geothermal, thermostats, gas and oil furnaces, electric heat, and air handlers. Manufactured-home questions include closet return air and observations of crossover ducts from outside the skirting.</p><p>Boiler questions cover hot-water and steam heat, radiators, baseboard, and radiant floors. Tank, tankless, heat-pump, indirect, and combination water-heater questions start with their hazards. An ordinary air handler with a hydronic coil can move between air-side and water-side checks; each receiving system gets its own hazard screen.</p><h2>Useful homeowner steps, clear limits</h2><p>Eligible steps include ordinary settings, owner-accessible filters and batteries, moving ordinary room obstructions, and loose ground debris or snow. Each step states its access limits and stopping conditions. Codes and gauges are observations; they do not identify a failed part. Boiler and water-heater equipment work goes to a qualified professional.</p><p>A first or repeated breaker trip, an unknown shutdown, furnace breakers, electrical compartments, refrigerant, gas, and safety-device faults need a professional. A separate eligibility check covers one known seasonal AC power restoration or one accidentally switched-off external furnace switch. No generic fault reset is offered.</p><h2>What makes the decisions?</h2><p>The beta uses fixed, reviewable decision rules. It does not inspect equipment, interpret images, measure voltage, or verify your answers. Advanced repair procedures are off.</p><h2>Free public beta</h2><p>No account, payments, affiliate links, parts sales, or contractor booking. We are testing whether the questions, boundaries, and service notes help. Brand references identify equipment and source documents; manufacturers do not endorse this guide.</p>"+publicBetaNotice()+'<button class="button" data-action="test">Try a test scenario</button></div>'),
     '/safety': () => content('Safety is part of the path.', "<p class=\"lead\">Do not use a website as proof that equipment is all right to touch or operate.</p><div class=\"document-panel\"><h2>Emergency conditions come first</h2><p>Gas smell, a CO alarm, smoke, sparks, electrical danger, escaping hot water or steam, and serious illness from heat or cold take priority. Leave the affected area and get appropriate help. For a gas smell or CO alarm, get everyone outside and call from outside without operating switches. Call 911 in the U.S. or Canada; elsewhere use the local emergency number. Feedback is not an emergency channel.</p><button class=\"button danger\" data-action=\"stop\">Stop / get help</button><h2>Equipment stays closed</h2><p>No electrical or combustion-compartment access, live tests, gas work, refrigerant handling, pilot relighting, fuse work, safety bypasses, or reaching through grilles. Never use a pressure washer on an outdoor unit. It can flatten the fins and damage the coil. Trane, Daikin, and Amana outdoor coils get no water or chemical steps on this site. Do not touch coil fins or use ladders. Capacitor and contactor replacement are not guided.</p><h2>Off is not electrical isolation</h2><p>A thermostat or remote set to Off is a control request. Equipment can have multiple power sources and stored electrical energy. This guide does not verify absence of voltage. Where a check uses the shared power-off wording, switch off the breaker, outdoor disconnect, or service switch and leave both covers closed. Do not open the breaker panel cover or the disconnect box.</p><h2>Filter access must match the manual</h2><p>Ducted-system filters must be in an external, tool-free owner filter slot or return grille reachable from the floor. A tool-free furnace door is still an equipment compartment and stays closed. Use the exact size, quantity, and direction in the manual. A mini-split owner filter cover is eligible only when the manual permits the shown access without tools or climbing. If the manual says to switch the breaker, outdoor disconnect, or service switch off first, the shared power-off wording applies and the panel cover and the disconnect box stay closed. Unplugging still stops this check.</p><h2>Water heating and hydronic coils</h2><p>Do not touch pipes to test their temperature, add or drain boiler water, bleed radiators, flush a heater, change valves, or test a relief valve. Steam, spray, a leaking relief discharge, an empty steam sight glass, and water near electrical parts need prompt help. A room thermostat set to Off may leave other heating zones or hot-water calls active.</p><h2>Protective controls stay in place</h2><p>No furnace breaker resets, oil-primary resets, boiler fault resets, or repeat attempts. Leave an intentional shutdown or lock/tag alone. Do not defeat overflow switches, refrigerant alarms, leak-mitigation blowers, limits, rollout controls, or freeze protection. Never change a protected setting to make a warning go away.</p><h2>Choose the equipment you can confirm</h2><p>The guide includes thermostats, AC, heat pumps, mini-splits, geothermal, furnaces, air handlers, boilers, and water heaters. Coverage varies by equipment and model. Packaged rooftops, portable/window units, unknown equipment, and work outside a shown owner step go to a professional.</p><h2>Water-source limits</h2><p>Water-source / geothermal heat pumps up to 6 tons, residential water-to-air. Open-loop well, lake, or pond water-care problems always go to a pro, and there is no loop, pump, refrigerant, or electrical work. For water-source systems, this beta gives safety screens and a service note for a pro, not repairs.</p><h2>Keep people warm or cool while arranging help</h2><p>Do not wait through a test when someone is becoming ill or the home cannot maintain needed heating or cooling. Never use an oven, stove, grill, or generator indoors for heat. Use electric space heaters only as their instructions permit, directly in a wall outlet and clear of things that burn.</p><p>Always stop if access is unclear or an instruction conflicts with your exact owner’s manual.</p>"+publicBetaNotice()+'<p><a href="#/sources">Read the supporting references →</a></p></div>'),
     '/terms': () => legalPage('Terms of Use', 'Version '+C.termsVersion+'. Effective October 18, 2026. Operator-authored public beta terms. Not attorney-reviewed.', TERMS_HTML + publicBetaNotice()),
-    '/privacy': () => legalPage('Privacy note', 'Version '+C.privacyVersion+'. Effective October 18, 2026. Operator-authored beta privacy note. Not attorney-reviewed or approved.', PRIVACY_HTML + referralPrivacyHtml()),
+    '/privacy': () => legalPage('Privacy note', 'Version '+C.privacyVersion+'. Effective October 23, 2026. Operator-authored beta privacy note. Not attorney-reviewed or approved.', PRIVACY_HTML + referralPrivacyHtml()),
     '/disclosures': () => content('Independent by design.', '<div class="document-panel"><h2>No paid recommendation in this beta</h2><p>There are no affiliate links, paid contractor referrals, parts sales, repair sales, or subscription charges in this build. No payment or commercial relationship changes a safety decision.</p><h2>No manufacturer endorsement</h2><p>Second Wrench is not affiliated with or endorsed by an HVAC manufacturer. Brand references in supporting material identify sources only.</p><h2>Future commercial features</h2><p>Tools, supplies, or referrals may be considered in a later release. '+(advancedOn?'This private copy enables the gated capacitor guide only. It is not the public beta.':'Advanced repair guides are not enabled here. '+ADVANCED_OFF_LINE)+' Any future compensated recommendation will need an appropriate disclosure and a separately reviewed implementation.</p><h2>Beta limitations</h2><p>Results are not independently verified diagnoses. The site neither books nor dispatches a service company and makes no promise about pricing, availability, savings, or repair outcomes.</p></div>'),
     '/sources': () => content('What supports the guidance?', '<p class="lead">Primary safety references, plus a deliberately narrower beta scope. Sources do not certify or approve this website.</p><div class="document-panel source-list"><div><a href="https://www.cpsc.gov/safety-education/safety-guides/carbon-monoxide/carbon-monoxide-fact-sheet" target="_blank" rel="noopener noreferrer">CPSC · Carbon monoxide alarms</a><p>Get to fresh air, call for emergency help, and do not re-enter until cleared.</p></div><div><a href="https://www.mudomaha.com/safety/natural-gas-safety/carbon-monoxide-safety/" target="_blank" rel="noopener noreferrer">Metropolitan Utilities District · Gas safety</a><p>Leave a suspected gas area and avoid operating electrical switches or using a phone inside.</p></div><div><a href="https://www.osha.gov/heat-exposure/illness-first-aid" target="_blank" rel="noopener noreferrer">OSHA · Heat illness first aid</a><p>Emergency help for severe heat illness, including confusion or loss of consciousness.</p></div><div><a href="https://www.cpsc.gov/Newsroom/News-Releases/2022/CPSC-Issues-Carbon-Monoxide-Warning-Ahead-of-Hurricane-Ian" target="_blank" rel="noopener noreferrer">CPSC · Wet electrical equipment and generator safety</a><p>Keep away from wet energized appliances; do not use generators indoors.</p></div><div><a href="https://www.carrier.com/us/en/residential/hvac-resources/air-conditioners/will-frozen-ac-fix-itself/" target="_blank" rel="noopener noreferrer">Carrier · Frozen air conditioners</a><p>Turn cooling off; ice can have airflow or refrigerant-system causes. Thawing is not a repair.</p></div><div><a href="https://www.trane.com/residential/en/resources/troubleshooting/ductless-systems/mini-split-leaking-water/" target="_blank" rel="noopener noreferrer">Trane · Mini-split leaking water</a><p>Turn a frozen mini-split off and let it thaw. Have towels or a bucket ready. Thawing is not a repair.</p></div><div><a href="https://www.trane.com/residential/en/resources/troubleshooting/ductless-systems/do-mini-splits-have-filters/" target="_blank" rel="noopener noreferrer">Trane · Do mini-splits have filters?</a><p>Many indoor units have washable filters behind the front cover. Remote Off stops the unit running. It is not electrical isolation. Vacuum or rinse with lukewarm water only when the manual shows a tool-free path from the floor. If the manual asks for the breaker, outdoor disconnect, or service switch, the check shows the shared power-off wording and the covers stay closed. Unplugging still stops here. Those go to a licensed pro.</p></div><div><a href="https://www.carrier.com/us/en/residential/hvac-resources/heat-pumps/heat-pump-troubleshooting/" target="_blank" rel="noopener noreferrer">Carrier · Heat pump troubleshooting</a><p>A thin frost that clears during defrost is normal; thick ice, or ice that does not clear, is not. Never chip ice from the coil, and look for water runoff such as a leaky gutter. Call a professional.</p></div><div><a href="https://www.lennox.com/residential/lennox-life/consumer/heat-pump-defrost-cycle" target="_blank" rel="noopener noreferrer">Lennox · Heat pump defrost cycle</a><p>Defrost usually lasts 5 to 15 minutes and may bring steam and a whoosh. Repeated long defrost cycles need a professional.</p></div><div><a href="https://www.energy.gov/eere/geothermal/geothermal-heat-pumps" target="_blank" rel="noopener noreferrer">U.S. Department of Energy · Geothermal heat pumps</a><p>How geothermal heat pumps differ from air-source heat pumps. Used to describe the water-source / geothermal system type.</p></div><div><a href="https://www.waterfurnace.com/literature/collateral/om1500mw.pdf" target="_blank" rel="noopener noreferrer">WaterFurnace · Residential owner’s manual</a><p>Closed-loop and open-loop parts, lockouts, and why heat-exchanger cleaning and well-system service are left to the dealer.</p></div><div><a href="https://files.climatemaster.com/Unit-Owner-FAQ.pdf" target="_blank" rel="noopener noreferrer">ClimateMaster · Unit owner FAQ</a><p>Lockout indications and water temperatures. This beta records what is shown and does not interpret it.</p></div><div><a href="https://www.epa.gov/section608/section-608-technician-certification-requirements" target="_blank" rel="noopener noreferrer">EPA · Refrigerant technician certification</a><p>In the United States, activities that can release regulated refrigerant require applicable technician certification. This beta does not guide refrigerant handling.</p></div><div><a href="https://www.carrier.com/us/en/residential/hvac-resources/air-conditioners/how-to-perform-air-filter-replacement/" target="_blank" rel="noopener noreferrer">Carrier · Air-filter replacement</a><p>General filter guidance. Your actual equipment’s owner manual controls access, shutdown, specification, and installation.</p></div><div><a href="https://www.cpsc.gov/Newsroom/News-Releases/2025/Theres-a-Chill-in-the-Air-Stay-Warm-Safely-Be-Cautious-When-Using-Generators-Furnaces-and-Space-Heaters" target="_blank" rel="noopener noreferrer">CPSC · Generators, furnaces, and space heaters (2025)</a><p>Plug electric space heaters directly into a wall outlet, keep them three feet from things that burn, and never use a generator inside.</p></div><div><a href="https://pgealerts.alerts.pge.com/safety/gas/" target="_blank" rel="noopener noreferrer">PG&amp;E · Gas safety</a><p>Leave the area, avoid anything that could spark, and call 911 and the gas utility from outside.</p></div><div><a href="https://www.nfpa.org/education-and-research/home-fire-safety/carbon-monoxide" target="_blank" rel="noopener noreferrer">NFPA · Carbon monoxide safety</a><p>If the CO alarm sounds, move to a fresh air location outdoors.</p></div><div><a href="https://www.cdc.gov/natural-disasters/psa-toolkit/recognizing-hypothermia.html" target="_blank" rel="noopener noreferrer">CDC · Recognizing hypothermia</a><p>Confusion and drowsiness are warning signs. Seek immediate medical attention.</p></div><div><a href="https://www.carrier.com/us/en/residential/hvac-resources/furnaces/furnace-blowing-cold-air/" target="_blank" rel="noopener noreferrer">Carrier · Furnace blowing cold air</a><p>A fan set to On can circulate unheated air between heating calls. This beta does not follow its pilot-relight step.</p></div><div><a href="https://www.who.int/publications/i/item/9789241550376" target="_blank" rel="noopener noreferrer">WHO · Housing and health guidelines (2018)</a><p>The World Health Organization recommends at least 18 °C (64 °F) indoors in cold weather. Geneva: World Health Organization, 2018. Chapter 4, low indoor temperatures, NCBI Bookshelf NBK535294, https://www.ncbi.nlm.nih.gov/books/NBK535294/. Publication page checked October 11, 2026.</p></div><div><a href="https://firstco.com/wp-content/uploads/2021/08/HBXBX-HW420.pdf" target="_blank" rel="noopener noreferrer">First Co · HBXBX-HW hydronic air handlers</a><p>Hot-water coils, blower delay, freeze protection, and model-dependent filter requirements. Water and airflow concerns remain separate observations.</p></div><div><a href="https://www.enbridgegas.com/safety/keep-your-meter-clear" target="_blank" rel="noopener noreferrer">Enbridge Gas · Winter clearances</a><p>Exterior vent and meter obstructions. The guide limits snow clearing to loose material from dry, level ground and leaves ice and equipment work to a professional.</p></div><div><a href="https://www.shareddocs.com/hvac/docs/1009/Public/03/IM-38MURA-02.pdf" target="_blank" rel="noopener noreferrer">Carrier · 38MURA installation manual</a><p>Pages 8–9 describe snow and installation clearances. Changing mounting, drainage, or fixed obstacles is an installer task.</p></div><div><a href="https://www-origin.fujitsugeneral.com/us/resources/pdf/support/downloads/%28OM%299-12-15RLS3_English.pdf" target="_blank" rel="noopener noreferrer">Fujitsu · 9/12/15RLS3 operating manual</a><p>Pages 3, 5, and 7 cover remote batteries, matching the remote signal code, and defrost. Its electrical-isolation cleaning requirement is outside this guide’s filter steps.</p></div><div><a href="https://www.lennox.com/dA/f2cf40c8f3/DB68-12580A-00.pdf" target="_blank" rel="noopener noreferrer">Lennox · Mini-split user manual DB68-12580A-00</a><p>Pages 28 and 43 cover warm-up, defrost, and remote troubleshooting for the listed models. Page 44 does not support a generic remote-only fault restart.</p></div><div><a href="https://help.senville.com/support/solutions/articles/151000016892--on-the-display-mode-conflict-multi-zone-systems-" target="_blank" rel="noopener noreferrer">Senville · Multi-zone mode conflict</a><p>Compatible indoor units must use compatible modes. The guide screens for loss of needed heat before changing other rooms.</p></div><div><a href="https://help.pioneerminisplit.com/en-US/pa-error-code-multi-zone-1812395" target="_blank" rel="noopener noreferrer">Pioneer · Quantum Ultra PA indication</a><p>Model-specific mode conflict and compatible mode selection. A code on another model must be checked against its own manual.</p></div><div><a href="https://www.weil-mclain.com/wp-content/uploads/Evergreen-Series-2-550100580_0325-Users-Manaual.pdf" target="_blank" rel="noopener noreferrer">Weil-McLain · Evergreen Series 2 owner manual</a><p>Pages 6–7 cover model-dependent pressure, relief discharge, venting, and condensate concerns. This guide records observations and refers equipment work; it does not give a universal pressure range or a relief-valve test.</p></div><div><a href="https://www.weil-mclain.com/wp-content/uploads/SGO-Series-4-Boiler-Manual-2-B100-0225.pdf" target="_blank" rel="noopener noreferrer">Weil-McLain · SGO Series 4 steam boiler manual</a><p>Pages 4–6 address hot boilers, water level, flooding, and oil-reset hazards. This guide offers no water addition, oil-primary reset, draining, or valve work, even where the equipment manual describes a procedure.</p></div><div><a href="https://www.bosch-homecomfort.com/us/media/country_pool/documents/downloads-for-bosch-products/gas-fired-condensing-boilers-manuals/6720872363_greenstar_combi_100-151p_operating_instructions_en_05.2024.pdf" target="_blank" rel="noopener noreferrer">Bosch · Greenstar combi 100 p / 151 p operating instructions</a><p>Pages 5, 7, and 9 distinguish installation-specific pressure and heating/hot-water operation. Boiler controls and reset instructions are model-specific. This guide does not turn those instructions into a generic reset or filling step.</p></div><div><a href="https://www.aosmithatlowes.com/media/1017/100277324.pdf" target="_blank" rel="noopener noreferrer">A.O. Smith · Hybrid heat-pump water heater guide 100277324</a><p>Pages 4–5 cover scalding, electrical, and relief-discharge hazards. Page 30 requires breaker or fuse-box shutdown for that model’s filter maintenance. It does not support a generic filter-cleaning procedure; the guide records any work already reported.</p></div><div><a href="https://medlineplus.gov/ency/article/000030.htm" target="_blank" rel="noopener noreferrer">MedlinePlus · Burns</a><p>Emergency care for a severe or large burn, or uncertainty about severity. The hot-water flow prioritizes the injured person and does not use a water-temperature number as proof against scalding.</p></div><div><a href="https://health-infobase.canada.ca/datalab/carbon-monoxide-blog.html?wbdisable=true" target="_blank" rel="noopener noreferrer">Health Canada · Carbon monoxide response</a><p>For suspected CO exposure, leave, call 9-1-1, and wait for emergency responders before returning. This supports the Canadian emergency wording; it is not an equipment-code compliance review.</p></div><h2>Thermostat guides</h2>'+thermostatGuideHtml()+'<h2>How these sources are used</h2><p>Equipment manuals support specific observations and owner steps. They do not establish that your equipment matches, works properly, or has a particular fault. The exact manual controls. Second Wrench adds conservative limits for access, cold-weather waits, one-attempt power restoration, and professional handoffs.</p><p>Boiler and water-heater questions are observational. Mini-split mode matching uses the controls for compatible indoor units; cold-weather restrictions come first. No generic mini-split fault restart is provided. First-trip breaker resets, furnace breaker resets, equipment-compartment work, and refrigerant work are not guided.</p><p>Operator technical review: October 12, 2026. Content version: '+esc(C.contentVersion)+'. This is not a review by a licensed HVAC professional or an attorney. Manufacturers and source publishers do not approve this site.</p></div>')
   };
@@ -519,6 +526,108 @@
       return new URL(document.referrer).host === location.host ? "same_site" : "external";
     } catch (err) { return "none"; }
   }
+  /* sw-hits:start */
+  const ATTR_KEY = 'sw-attr';
+  let attributionMemo = null;
+  let visitSent = false;
+  function classifySource(value) {
+    const allowed = ['x', 'reddit', 'youtube', 'facebook'];
+    const text = String(value || '').trim().toLowerCase();
+    return allowed.indexOf(text) === -1 ? 'other' : text;
+  }
+  function classifyMedium(value) {
+    const allowed = ['reply', 'post', 'bio', 'video'];
+    const text = String(value || '').trim().toLowerCase();
+    return allowed.indexOf(text) === -1 ? 'other' : text;
+  }
+  function classifyCampaign(value) {
+    const text = String(value || '').trim().toLowerCase();
+    const date = /^(\d{4})(\d{2})(\d{2})-(am|pm)$/.exec(text);
+    if (date) {
+      const month = Number(date[2]);
+      const day = Number(date[3]);
+      if (month >= 1 && month <= 12 && day >= 1 && day <= 31) return text;
+    }
+    if (text.length <= 20 && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(text)) return text;
+    return 'other';
+  }
+  function classifyLanding(value) {
+    let path = String(value || '').split('?')[0].split('#')[0];
+    if (path.indexOf('/followup/') === 0) path = '/followup';
+    if (!/^\/[a-z0-9/_-]{0,80}$/i.test(path) || path.length > 80) return '/';
+    return path || '/';
+  }
+  function readLanding() {
+    const hashPath = String(location.hash || '').replace(/^#/, '').split('?')[0];
+    if (hashPath && hashPath.charAt(0) === '/') return classifyLanding(hashPath);
+    return classifyLanding(location.pathname || '/');
+  }
+  function readParam(name) {
+    const search = new URLSearchParams(location.search || '');
+    const hash = String(location.hash || '');
+    const queryAt = hash.indexOf('?');
+    const fromHash = queryAt === -1 ? new URLSearchParams() : new URLSearchParams(hash.slice(queryAt + 1));
+    const first = search.get(name);
+    if (first != null && first !== '') return first;
+    return fromHash.get(name) || '';
+  }
+  function captureAttribution() {
+    if (attributionMemo) return attributionMemo;
+    try {
+      const raw = sessionStorage.getItem(ATTR_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object') {
+          attributionMemo = {
+            utm_source: classifySource(parsed.utm_source),
+            utm_medium: classifyMedium(parsed.utm_medium),
+            utm_campaign: classifyCampaign(parsed.utm_campaign),
+            landing: classifyLanding(parsed.landing)
+          };
+          return attributionMemo;
+        }
+      }
+    } catch (err) { /* Storage can be blocked. This page still keeps the tags in memory. */ }
+    attributionMemo = {
+      utm_source: classifySource(readParam('utm_source')),
+      utm_medium: classifyMedium(readParam('utm_medium')),
+      utm_campaign: classifyCampaign(readParam('utm_campaign')),
+      landing: readLanding()
+    };
+    try { sessionStorage.setItem(ATTR_KEY, JSON.stringify(attributionMemo)); } catch (err) { /* The count can still be sent for this page. */ }
+    return attributionMemo;
+  }
+  function currentRoute() {
+    let route = String(location.hash || '').replace(/^#/, '').split('?')[0] || '/';
+    if (route.indexOf('/followup/') === 0) route = '/followup';
+    const known = {
+      '/': 1, '/check': 1, '/result': 1, '/feedback': 1, '/about': 1, '/safety': 1,
+      '/terms': 1, '/privacy': 1, '/disclosures': 1, '/sources': 1, '/my-data': 1, '/followup': 1
+    };
+    return known[route] ? route : '/';
+  }
+  function hit(name) {
+    if (name !== 'visit' && name !== 'feedback_sent') return;
+    if (gpcOn()) return;
+    if (name === 'visit') {
+      if (visitSent) return;
+      visitSent = true;
+    }
+    const attr = captureAttribution();
+    const payload = {
+      name: name,
+      route: currentRoute(),
+      referrer: referrerClass(),
+      utm_source: attr.utm_source,
+      utm_medium: attr.utm_medium,
+      utm_campaign: attr.utm_campaign
+    };
+    try {
+      const body = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+      if (typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function') navigator.sendBeacon('/api/hit', body);
+    } catch (err) { /* A missed count must not block the page. */ }
+  }
+  /* sw-hits:end */
   function trackPage(route) {
     if (catalogViewedRoute === route) return;
     catalogViewedRoute = route;
@@ -708,7 +817,7 @@
 
   function render() {
     readReferralFields();
-    let route = location.hash.slice(1) || '/';
+    let route = (location.hash.slice(1) || '/').split('?')[0];
     const follow = route.indexOf('/followup') === 0;
     const mine = route === '/my-data';
     if (!follow && !mine && !routes.has(route)) { go('/'); return; }
@@ -1015,7 +1124,7 @@
     const error=document.getElementById('feedback-error');error.textContent='';
     const button=document.getElementById('send-feedback');
     submitting=true;if(button){button.disabled=true;button.textContent='Sending…';}
-    try{await postForm('beta-feedback',feedbackData(),'feedback-schema');feedbackSent=true;render();}
+    try{await postForm('beta-feedback',feedbackData(),'feedback-schema');feedbackSent=true;hit('feedback_sent');render();}
     catch(err){if(error.isConnected)error.textContent=err.message||'Delivery is unconfirmed. Save your feedback before retrying.';}
     finally{submitting=false;if(button?.isConnected){button.disabled=false;button.textContent='Send feedback';}}
   });
@@ -1034,6 +1143,8 @@
     const check=buildCheck(serialStatus?'skipped':'skipped','none');
     sendCatalog({bot_field:'',gpc:gpcOn(),events:drainEvents(),check:check},true);
   });
+  captureAttribution();
+  hit('visit');
   window.addEventListener('hashchange',render);
   render();
 })();

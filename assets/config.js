@@ -2,7 +2,7 @@
 window.SW_CONFIG = Object.freeze({
   version: '0.1.0-beta',
   contentVersion: '2026-10-20.18',
-  privacyVersion: 'privacy-public-beta-2026-10-18.1',
+  privacyVersion: 'privacy-public-beta-2026-10-23.1',
   domain: 'secondwrench.co',
   contactEmail: 'support@secondwrench.co',
   operatorName: 'Second Wrench',
