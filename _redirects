@@ -1,9 +1,10 @@
 # Keep the beta host and www on the apex, after configuring both domains in Netlify.
 https://beta-secondwrench.netlify.app/* https://secondwrench.co/:splat 301!
 https://www.secondwrench.co/* https://secondwrench.co/:splat 301!
-/safety /#/safety 302
-/sources /#/sources 302
-/terms /#/terms 302
-/privacy /#/privacy 302
-/about /#/about 302
-/feedback /#/feedback 302
+# Hash routes. Targets add no query of their own, so the incoming query string stays.
+/safety /#/safety 301
+/sources /#/sources 301
+/terms /#/terms 301
+/privacy /#/privacy 301
+/about /#/about 301
+/feedback /#/feedback 301

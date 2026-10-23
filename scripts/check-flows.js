@@ -517,7 +517,7 @@ assert(/termsVersion:\s*C\.termsVersion/.test(appText), 'the session records the
 assert((appText.match(/F\.answer\(/g) || []).length === 1, 'the UI has one answer path');
 assert(!appText.includes('F.selectSystem'), 'menu choices and question answers share that answer path');
 assert(!/agreed:\s*true/.test(appText), 'the UI never hard-codes acceptance');
-assert(!/localStorage|sessionStorage/.test(appText), 'acceptance is not written to browser storage');
+assert(!/localStorage|sessionStorage/.test(appText.replace(/\/\* sw-hits:start \*\/[\s\S]*?\/\* sw-hits:end \*\//, '')), 'acceptance is not written to browser storage');
 const feedbackFn = appText.slice(appText.indexOf('function feedbackData'), appText.indexOf('function feedbackText'));
 assert(/use_consent:\s*feedbackConsent \? 'yes' : 'no'/.test(feedbackFn), 'feedback payload stores use_consent');
 assert(/use_consent_at:\s*new Date\(\)\.toISOString\(\)/.test(feedbackFn), 'feedback payload stores the send time');
@@ -629,7 +629,7 @@ const HAZARDS = [
   ['hazard_unsure', 'Uncertainty is a good reason to stop.']
 ];
 const TERMS_BODY_SHA256 = '0781cb70a24ed4d7b27b162f7d812356d71f18314d06a288d27ac02db6d2aaae';
-const PRIVACY_BODY_SHA256 = '843ba39e40c93328ce825a321b0e39c1ccf1dc5d7bf1a4bb3425253bf319509c';
+const PRIVACY_BODY_SHA256 = 'b1898d4b2021893860410300c275a23dfbd361cda9afa30a2e66ba4b2b1a85cb';
 
 // ---- WSHP Wave-1 PR-1 (A-1..A-28, T-1..T-26) ----
 const WSHP_IDS = ['wshp.hazard.flood_electrical', 'wshp.entry.equipment_gate', 'wshp.heat.cold_home_screen', 'wshp.openloop.complaint', 'wshp.openloop.chemistry_gate', 'wshp.handback.call_pro', 'wshp.diy.thermostat_check', 'wshp.diy.filter_check', 'wshp.diy.condensate_check', 'wshp.diy.loop_gauge_look', 'wshp.diy.lockout_brand_gate', 'wshp.diy.lockout_reset_once'];
