@@ -53,44 +53,49 @@ function textOf(message) {
   return content || 'What do you see in this photo? If a code or a reading is unclear, say what you see and ask.';
 }
 
-function providerError() {
+function providerError(status) {
   const error = new Error('provider');
-  error.status = 502;
+  error.status = Number.isInteger(status) ? status : 0;
   throw error;
 }
 
 export async function openaiComplete({ baseUrl, apiKey, model, messages, maxTokens, fetchImpl, signal }) {
   const root = String(baseUrl || 'https://api.openai.com/v1').replace(/\/$/, '');
-  const res = await fetchImpl(root + '/chat/completions', {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-      authorization: 'Bearer ' + apiKey
-    },
-    body: JSON.stringify({
-      model,
-      temperature: 0.2,
-      max_tokens: maxTokens,
-      messages: messages.map(message => {
-        if (message.role !== 'user' || !message.images || !message.images.length) {
-          return { role: message.role, content: message.content };
-        }
-        return {
-          role: 'user',
-          content: [{ type: 'text', text: textOf(message) }].concat(message.images.map(image => ({
-            type: 'image_url',
-            image_url: { url: 'data:image/jpeg;base64,' + image.data }
-          })))
-        };
-      })
-    }),
-    signal
-  });
+  let res;
+  try {
+    res = await fetchImpl(root + '/chat/completions', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: 'Bearer ' + apiKey
+      },
+      body: JSON.stringify({
+        model,
+        temperature: 0.2,
+        max_tokens: maxTokens,
+        messages: messages.map(message => {
+          if (message.role !== 'user' || !message.images || !message.images.length) {
+            return { role: message.role, content: message.content };
+          }
+          return {
+            role: 'user',
+            content: [{ type: 'text', text: textOf(message) }].concat(message.images.map(image => ({
+              type: 'image_url',
+              image_url: { url: 'data:image/jpeg;base64,' + image.data }
+            })))
+          };
+        })
+      }),
+      signal
+    });
+  } catch (err) {
+    providerError(0);
+  }
   let data = null;
   try { data = await res.json(); } catch (err) { data = null; }
-  if (!res.ok) providerError();
+  if (!res.ok) providerError(res.status);
   const text = data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
-  if (typeof text !== 'string' || !text.trim()) providerError();
+  if (typeof text !== 'string' || !text.trim()) providerError(res.status);
   return text.trim();
 }
 
@@ -107,28 +112,31 @@ export async function anthropicComplete({ apiKey, model, messages, maxTokens, fe
     }
     return { role: message.role, content: message.content };
   });
-  const res = await fetchImpl(ANTHROPIC_URL, {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01'
-    },
-    body: JSON.stringify({
-      model: model || ANTHROPIC_MODEL,
-      max_tokens: maxTokens,
-      temperature: 0.2,
-      system,
-      messages: chat
-    }),
-    signal
-  });
+  let res;
+  try {
+    res = await fetchImpl(ANTHROPIC_URL, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify(Object.assign({
+        model: model || ANTHROPIC_MODEL,
+        max_tokens: maxTokens,
+        messages: chat
+      }, system ? { system } : {})),
+      signal
+    });
+  } catch (err) {
+    providerError(0);
+  }
   let data = null;
   try { data = await res.json(); } catch (err) { data = null; }
-  if (!res.ok) providerError();
+  if (!res.ok) providerError(res.status);
   const blocks = data && Array.isArray(data.content) ? data.content : [];
   const text = blocks.filter(block => block && block.type === 'text' && typeof block.text === 'string').map(block => block.text).join('\n').trim();
-  if (!text) providerError();
+  if (!text) providerError(res.status);
   return text;
 }
 
