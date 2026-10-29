@@ -1,6 +1,11 @@
 /* Ask Second Wrench feature gate.
- * AI_CHAT_ENABLED: unset/false off, preview only with preview:true, true/1/on for everyone.
- * The public flag aiChatEnabled uses the same three states. Both default off. */
+ * AI_CHAT_ENABLED: unset/false off, true/1/on for everyone.
+ * Private preview does not use that flag. It requires a token from PREVIEW_TOKENS,
+ * carried in the sw_preview cookie. A wrong or missing token stays closed. */
+
+import { createHash, timingSafeEqual } from 'node:crypto';
+
+export const PREVIEW_COOKIE = 'sw_preview';
 
 export function chatMode(value) {
   const raw = String(value == null ? '' : value).trim().toLowerCase();
@@ -9,10 +14,51 @@ export function chatMode(value) {
   return 'off';
 }
 
-export function requestAllowed(mode, preview) {
+export function cookieSafe(token) {
+  return typeof token === 'string' && /^[A-Za-z0-9._~-]{1,200}$/.test(token);
+}
+
+export function previewTokens(raw) {
+  return String(raw || '').split(',').map(item => item.trim()).filter(cookieSafe);
+}
+
+export function tokenMatches(presented, raw) {
+  const token = String(presented || '').trim();
+  if (!cookieSafe(token)) return false;
+  const list = previewTokens(raw);
+  if (!list.length) return false;
+  const digest = value => createHash('sha256').update('sw-preview-v1|' + value).digest();
+  const got = digest(token);
+  return list.some(item => timingSafeEqual(got, digest(item)));
+}
+
+/* Public on serves everyone. Any other mode serves only a valid preview token. */
+export function requestAllowed(mode, tokenOk) {
   if (mode === 'on') return true;
-  if (mode === 'preview' && preview === true) return true;
-  return false;
+  return tokenOk === true;
+}
+
+export function readCookie(header, name) {
+  const raw = String(header || '');
+  const parts = raw.split(';');
+  for (const part of parts) {
+    const item = part.trim();
+    const eq = item.indexOf('=');
+    if (eq === -1) continue;
+    if (item.slice(0, eq) !== name) continue;
+    try { return decodeURIComponent(item.slice(eq + 1)); } catch (err) { return ''; }
+  }
+  return '';
+}
+
+export function previewSetCookie(token, secure) {
+  const parts = [PREVIEW_COOKIE + '=' + encodeURIComponent(token), 'Path=/', 'Max-Age=2592000', 'SameSite=Lax'];
+  if (secure) parts.push('Secure');
+  return parts.join('; ');
+}
+
+export function previewClearCookie(secure) {
+  return PREVIEW_COOKIE + '=; Path=/; Max-Age=0; SameSite=Lax' + (secure ? '; Secure' : '');
 }
 
 export function envInt(value, fallback, min, max) {

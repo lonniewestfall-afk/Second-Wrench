@@ -1157,8 +1157,15 @@
     const check=buildCheck(serialStatus?'skipped':'skipped','none');
     sendCatalog({bot_field:'',gpc:gpcOn(),events:drainEvents(),check:check},true);
   });
+  function previewInvitePresent() {
+    try {
+      if (/[?&]preview=[^&#]+/.test(location.search || '')) return true;
+      return /(?:^|;\s*)sw_preview=[^;]+/.test(document.cookie || '');
+    } catch (err) { return false; }
+  }
   function askChatWanted() {
     if (C.aiChatEnabled === true) return true;
+    if (previewInvitePresent()) return true;
     if (C.aiChatEnabled !== 'preview') return false;
     try { return /(?:^|[?&])aichat=1(?:&|$)/.test(location.search || ''); }
     catch (err) { return false; }
