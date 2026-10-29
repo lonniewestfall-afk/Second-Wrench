@@ -33,15 +33,18 @@ assert(!/localStorage|sessionStorage|FormData|FileReader/.test(chatText), 'chat 
 assert(chatText.includes('createImageBitmap') && chatText.includes("toDataURL('image/jpeg'"), 'photos are re-encoded so EXIF and GPS are dropped');
 assert(appText.includes('sw_preview') && appText.includes('previewInvitePresent'), 'invite link can load the chat script');
 assert(!/\b(safe|safely|safer|safest|unsafe)\b/i.test(chatText), 'chat UI copy avoids safe as an adjective');
-assert(chatText.includes('position:fixed') && chatText.includes('inset:0') && chatText.includes('height:100dvh') && chatText.includes('z-index:1000'), 'mobile chat is a fixed full-viewport sheet');
-assert(chatText.includes('ask-lock') && chatText.includes('overflow-y:auto') && chatText.includes('max-height:none'), 'the message list scrolls and the page scroll locks');
-assert(!/\.ask-log\{[^}]*max-height:(?!none)/.test(chatText), 'the message list has no clipping max-height');
-assert(chatText.includes('flex-wrap:wrap') && chatText.includes('gap:8px'), 'citation chips wrap with a gap');
-assert(chatText.includes('overflow-wrap:anywhere') && chatText.includes('box-sizing:border-box') && chatText.includes('max-width:100vw'), 'bubbles stay inside the viewport');
-assert(chatText.includes('-webkit-appearance:none') && chatText.includes('background-color:#b82030'), 'send control is scarlet, not the iOS default');
+assert(!/createElement\(['"]style['"]\)/.test(chatText) && !chatText.includes('ask-chat-style'), 'chat script does not inject an inline style element');
+const chatCss = read('assets/styles.css');
+assert(chatCss.includes('.ask-panel{position:fixed;inset:0') && chatCss.includes('height:100dvh') && chatCss.includes('z-index:1000'), 'linked stylesheet has the fixed chat sheet');
+assert(chatCss.includes('ask-lock') && chatCss.includes('overflow-y:auto') && chatCss.includes('max-height:none'), 'the message list scrolls and the page scroll locks');
+assert(!/\.ask-log\{[^}]*max-height:(?!none)/.test(chatCss), 'the message list has no clipping max-height');
+assert(chatCss.includes('flex-wrap:wrap') && chatCss.includes('gap:8px'), 'citation chips wrap with a gap');
+assert(chatCss.includes('overflow-wrap:anywhere') && chatCss.includes('box-sizing:border-box') && chatCss.includes('max-width:100vw'), 'bubbles stay inside the viewport');
+assert(chatCss.includes('-webkit-appearance:none') && chatCss.includes('background-color:#b82030'), 'send control is scarlet, not the iOS default');
+assert(read('scripts/build-public.js').includes("'assets/styles.css'"), 'the publish step copies the stylesheet');
 assert(appText.includes('ask-chat.js?v=2026-10-20.18&r=2026-10-29.5'), 'chat script url changes when the panel changes');
-assert(read('index.html').includes('styles.css?v=2026-10-20.18&r=2026-10-29.5') && read('index.html').includes('app.js?v=2026-10-20.18&r=2026-10-29.5'), 'homepage css and app urls are cache-busted');
-assert(read('_headers').includes('no-store'), 'html is not stored in a long cache');
+assert(read('index.html').includes('styles.css?v=2026-10-20.18&r=2026-10-29.6') && read('index.html').includes('app.js?v=2026-10-20.18&r=2026-10-29.5'), 'homepage css and app urls are cache-busted');
+assert(read('_headers').includes("style-src 'self'") && read('_headers').includes('no-store'), 'inline styles stay blocked and html is not stored');
 
 function post(body, headers) {
   return new Request('http://secondwrench.test/api/ask', {
