@@ -533,16 +533,18 @@ assert(indexText.includes('href="#/terms"') && indexText.includes('href="#/priva
 const SOCIAL_LINKS = [
   ['https://x.com/SecondWrench', 'Second Wrench on X'],
   ['https://www.facebook.com/profile.php?id=61595153885270', 'Second Wrench on Facebook'],
-  ['https://www.reddit.com/user/SecondWrench/', 'Second Wrench on Reddit']
+  ['https://www.reddit.com/user/SecondWrench/', 'Second Wrench on Reddit'],
+  ['https://www.instagram.com/secondwrench.co/', 'Second Wrench on Instagram']
 ];
 SOCIAL_LINKS.forEach(([href, label]) => {
   const anchor = 'href="' + href + '" target="_blank" rel="noopener noreferrer" aria-label="' + label + '"';
   assert(indexText.includes(anchor), 'site footer social link ' + label);
   assert(appText.includes(anchor), 'home social link ' + label);
 });
+assert(indexText.includes('"sameAs":["https://x.com/SecondWrench","https://www.facebook.com/profile.php?id=61595153885270","https://www.reddit.com/user/SecondWrench/","https://www.instagram.com/secondwrench.co/"]'), 'Organization sameAs lists the social profiles');
 assert((indexText.match(/class="social-follow"/g) || []).length === 1, 'site footer has one follow row');
 assert((appText.match(/aria-label="Follow Second Wrench"/g) || []).length === 1, 'home has one follow row');
-assert(!/instagram/i.test(indexText + '\n' + appText), 'no Instagram link or embed');
+assert(!/secondwrenchhvac/i.test(indexText + '\n' + appText), 'Instagram handle is secondwrench.co');
 
 const gas = F.create();
 F.answer(gas, 'co_no');
@@ -2349,12 +2351,11 @@ function pageChecks() {
     function assertSocial(nav, where) {
       assert(nav && nav.getAttribute('aria-label') === 'Follow Second Wrench', where + ' follow row');
       const links = [...nav.querySelectorAll('a')];
-      assert(links.length === SOCIAL_LINKS.length, where + ' follow row has only the three links');
-      SOCIAL_LINKS.forEach(([href, label]) => {
-        const link = links.find(el => el.getAttribute('href') === href);
-        assert(link && link.getAttribute('target') === '_blank' && link.getAttribute('rel') === 'noopener noreferrer' && link.getAttribute('aria-label') === label, where + ' link ' + label);
+      assert(links.length === SOCIAL_LINKS.length, where + ' follow row lists each profile once');
+      SOCIAL_LINKS.forEach(([href, label], index) => {
+        const link = links[index];
+        assert(link && link.getAttribute('href') === href && link.getAttribute('target') === '_blank' && link.getAttribute('rel') === 'noopener noreferrer' && link.getAttribute('aria-label') === label, where + ' link ' + label);
       });
-      assert(!links.some(el => /instagram/i.test(el.getAttribute('href') || '') || /instagram/i.test(el.textContent || '')), where + ' has no Instagram link');
     }
     const heroCta = doc.querySelector('.hero-cta');
     const startBtn = heroCta && heroCta.querySelector('[data-action="start"]');
@@ -2362,7 +2363,9 @@ function pageChecks() {
     assert(startBtn && heroFollow && (startBtn.compareDocumentPosition(heroFollow) & window.Node.DOCUMENT_POSITION_FOLLOWING), 'follow row sits below Start');
     assertSocial(heroFollow, 'home');
     assertSocial(doc.querySelector('.site-footer .social-follow'), 'site footer');
-    assert(![...doc.querySelectorAll('a')].some(el => /instagram/i.test(el.getAttribute('href') || '')), 'rendered page has no Instagram link');
+    const instagramHrefs = [...doc.querySelectorAll('a')].map(el => el.getAttribute('href') || '').filter(href => /instagram/i.test(href));
+    assert(instagramHrefs.length === 2 && instagramHrefs.every(href => href === 'https://www.instagram.com/secondwrench.co/'), 'rendered Instagram links use secondwrench.co');
+    assert(!/secondwrenchhvac/i.test(doc.documentElement.outerHTML), 'rendered page has no secondwrenchhvac handle');
     click(doc.querySelector('[data-action="start"]'));
     await flush();
     assert(window.location.hash === '#/check', 'CO question uses #/check');
