@@ -81,6 +81,10 @@ export function memoryStore() {
         blobs: [...data.keys()].map(key => ({ key, etag: etags.get(key) })),
         directories: []
       };
+    },
+    async delete(key) {
+      data.delete(key);
+      etags.delete(key);
     }
   };
 }

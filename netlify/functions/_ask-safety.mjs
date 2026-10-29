@@ -20,6 +20,7 @@ export const MESSAGES = {
   refrigerant: 'Refrigerant handling is not a homeowner step in this guide. Do not add, remove, recover, or gauge refrigerant, and do not open the sealed system or a service port. In the United States that work takes an EPA-certified technician. Call a licensed HVAC professional. The guided check stays on owner steps: /#/',
   gas_valve: 'Gas valves, burners, and pilot relighting are not homeowner steps here. Do not relight a pilot, do not turn a gas valve to feed it, and do not hold a button down to keep a flame lit. Leave the gas control, the burner door, and every gas valve as they are, including a propane tank valve. Call a licensed HVAC professional. If you smell gas in the air, leave and call the gas utility or 911 from outside. Read /answers/gas-smell-pilot-flame/ and start the guided check.',
   panel: 'Do not open an electrical panel, the breaker panel cover, a disconnect box, or a deadfront, and do not work on a live circuit. Leave the covers on. Call a licensed HVAC professional or electrician.',
+  panel_open: 'Stop. An open or removed panel, or a photo of a live board, is electrical work for a licensed pro. Do not touch the board, the wires, or the terminals. Leave the covers and the power as they are and call a licensed HVAC professional or electrician.',
   live_circuit: 'Do not work on a live circuit, and do not test voltage or touch terminals, wiring, or internal parts while the equipment has power. Leave the covers on. Call a licensed HVAC professional or electrician.',
   bypass: 'Do not bypass, jumper, tape, or defeat a safety control, limit, rollout, spill switch, pressure switch, float switch, or interlock. Leave it in place and call a licensed HVAC professional.',
   pressure_washer: 'Never use a pressure washer on your outdoor unit. It can flatten the fins and damage the coil. Coil cleaning depends on the brand. Use the maintenance checklist and your owner’s manual: /answers/ac-maintenance-checklist/',
@@ -42,6 +43,7 @@ const CITATIONS = {
   refrigerant: [CHECK],
   gas_valve: [GAS_PAGE, Object.assign({ flow: 'furnace' }, CHECK)],
   panel: [CHECK],
+  panel_open: [CHECK],
   live_circuit: [CHECK],
   bypass: [GAS_PAGE, CHECK],
   pressure_washer: [AC_MAINT],
@@ -99,28 +101,44 @@ function sparking(t) {
 }
 
 function refrigerantHandling(t) {
-  const ref = /\b(refrigerant|freon|r-?410a|r-?22|r-?32|r-?454b|r-?134a)\b/.test(t);
-  const ports = /\b(service port|schrader|manifold gauge)\b/.test(t);
-  if (!ref && !ports) return false;
-  if (/\b(add|charge|recharge|recover|vent|release|top off|top-off|put in|hook up|weigh in|pull a vacuum|vacuum down|handle)\b/.test(t)) return true;
-  if (ports && /\b(gauge|manifold|connect|open|hook)\b/.test(t)) return true;
-  if (/\b(reset|disable|silence|bypass)\b[^.]{0,40}\b(refrigerant|freon)\b[^.]{0,20}\b(alarm|sensor)\b/.test(t)) return true;
+  const ref = /\b(refrigerants?|freon|r-?410a|r-?22|r-?32|r-?454b|r-?134a)\b/.test(t);
+  const gaugeHit = /\b(manifold gauges?|gauge sets?|gauges)\b/.test(t)
+    || (/\bgauge\b/.test(t) && (ref || /\b(ports?|manifolds?|hook(?:ed|ing|s)?|connect(?:ed|ing|s)?|freon|refrigerants?|charg(?:e|es|ed|ing))\b/.test(t)));
+  const portHit = /\b((?:service|schrader|access)\s+ports?|schraders?|ports)\b/.test(t)
+    || (/\bport\b/.test(t) && (ref || gaugeHit || /\b(hook(?:ed|ing|s)?|connect(?:ed|ing|s)?|charg(?:e|es|ed|ing)|open(?:ed|ing|s)?|gauges?)\b/.test(t)));
+  if (!ref && !gaugeHit && !portHit) return false;
+  if (/\b(add(?:ed|ing|s)?|charg(?:e|es|ed|ing)|recharg(?:e|es|ed|ing)|recover(?:ed|ing|s)?|vent(?:ed|ing|s)?|releas(?:e|es|ed|ing)|top[\s-]?offs?|put in|hook(?:ed|ing|s)?(?:\s+up)?|weigh(?:ed|ing)? in|pull(?:ed|ing)? a vacuum|vacuum(?:ed|ing)? down|handl(?:e|es|ed|ing))\b/.test(t)) return true;
+  if (gaugeHit || portHit) return true;
+  if (/\b(reset|disable|silence|bypass)(?:s|d|ed|ing)?\b[^.]{0,40}\b(refrigerants?|freon)\b[^.]{0,24}\b(alarms?|sensors?)\b/.test(t)) return true;
   return false;
 }
 
 function gasValveOrPilot(t) {
   if (/\b(relight|re-light|light the pilot|lighting the pilot|pilot relight)\b/.test(t)) return true;
   if (/\b(burner door|open the burner|remove the burner|adjust the air)\b/.test(t)) return true;
-  if (/\b(gas valve|gas control|gas cock|pilot button|igniter button|tank valve)\b/.test(t) && /\b(turn|open|close|adjust|press|push|move|rotate|switch|hold)\b/.test(t)) return true;
+  if (/\b(gas valves?|gas controls?|gas cocks?|pilot buttons?|igniter buttons?|tank valves?)\b/.test(t) && /\b(turn|open|close|adjust|press|push|move|rotate|switch|hold)\b/.test(t)) return true;
   if (/\b(shut off|turn off|close) the gas\b/.test(t)) return true;
   if (/\bhow (do|can|to)\b[^.]{0,48}\b(pilot|gas valve|burner)\b/.test(t)) return true;
   return false;
 }
 
+function panelRemoved(t, images) {
+  if (/\btook the (?:access |service |electrical )?panels? off\b/.test(t)) return true;
+  if (/\btook off the (?:access |service |electrical )?panels?\b/.test(t)) return true;
+  if (/\b(?:removed|pulled|unscrewed) the (?:access |service |electrical )?panels?\b/.test(t)) return true;
+  if (/\b(?:take|pull|remove|unscrew) the (?:access |service |electrical )?panels? off\b/.test(t)) return true;
+  if (/\b(?:access |service |electrical |breaker )?panels?(?:'s|\s+is|\s+was|\s+are|\s+were)\s+(?:off|open|opened|removed|missing)\b/.test(t)) return true;
+  if (/\blive boards?\b/.test(t)) return true;
+  if (/\b(?:photos?|pictures?|pics?|images?) of the (?:live |open )?(?:control |circuit )?boards?\b/.test(t)) return true;
+  if (/\b(?:control|circuit) boards?\b/.test(t) && (images || /\b(?:photos?|pictures?|pics?|images?|exposed|showing)\b/.test(t))) return true;
+  if (images && /\b(?:boards?|wires?|terminals?)\b/.test(t)) return true;
+  return false;
+}
+
 function panelOrLive(t) {
-  if (/\b(open|remove|unscrew|take off)\b[^.]{0,48}\b(panel cover|breaker panel|electrical panel|dead ?front|disconnect box|disconnect door|service panel|fuse panel)\b/.test(t)) return 'panel';
-  if (/\btake\b[^.]{0,24}\b(panel cover|dead ?front|disconnect door)\b[^.]{0,16}\boff\b/.test(t)) return 'panel';
-  if (/\b(look|see|reach) inside\b[^.]{0,30}\b(breaker panel|electrical panel|panel|disconnect box)\b/.test(t)) return 'panel';
+  if (/\b(open|remove|unscrew|take off|opens|removes|removed|opening|removing)\b[^.]{0,48}\b(panel covers?|breaker panels?|electrical panels?|dead ?fronts?|disconnect box(?:es)?|disconnect doors?|service panels?|fuse panels?)\b/.test(t)) return 'panel';
+  if (/\btake\b[^.]{0,24}\b(panel covers?|dead ?fronts?|disconnect doors?)\b[^.]{0,16}\boff\b/.test(t)) return 'panel';
+  if (/\b(look|see|reach) inside\b[^.]{0,30}\b(breaker panels?|electrical panels?|panels?|disconnect box(?:es)?)\b/.test(t)) return 'panel';
   if (/\b(live circuit|live wire|live electrical|energized circuit|work (it )?hot|on a live)\b/.test(t)) return 'live_circuit';
   if (/\b(multimeter|test (the )?voltage|measure voltage)\b[^.]{0,40}\b(panel|breaker|circuit|wire|terminal)\b/.test(t)) return 'live_circuit';
   if (/\btouch (the )?(terminals|live wires|wiring)\b/.test(t)) return 'live_circuit';
@@ -130,7 +148,7 @@ function panelOrLive(t) {
 function bypassing(t) {
   if (/\b(jumper|jump the|jump out|jumper wire)\b/.test(t)) return true;
   if (/\bbypass\b/.test(t) && /\b(safety|limit|switch|control|rollout|float|pressure|interlock|spill)\b/.test(t)) return true;
-  if (/\b(tape|hold|wedge|defeat)\b[^.]{0,36}\b(safety switch|limit switch|rollout|float switch|pressure switch|interlock|spill switch)\b/.test(t)) return true;
+  if (/\b(tape|hold|wedge|defeat)\b[^.]{0,36}\b(safety switches?|limit switches?|rollouts?|float switches?|pressure switches?|interlocks?|spill switches?)\b/.test(t)) return true;
   return false;
 }
 
@@ -160,23 +178,28 @@ function hit(code) {
   };
 }
 
-export function screenUser(text) {
+export function screenUser(text, opts) {
   const t = norm(String(text || '').slice(0, 4000));
-  if (!t) return { action: 'allow', code: '', message: '', citations: [] };
-  const gas = explicitGas(t) || (mentionsRotten(t) && !hotWaterOnly(t));
-  const co = coAlarm(t);
-  const smoke = smokeOrFire(t);
-  const sparks = sparking(t);
-  if (gas || co || smoke || sparks) {
-    if (gas) return hit('gas_air');
-    if (co) return hit('co_alarm');
-    if (smoke) return hit('smoke_fire');
-    return hit('sparking');
+  const images = !!(opts && opts.images);
+  if (!t && !images) return { action: 'allow', code: '', message: '', citations: [] };
+  if (t) {
+    const gas = explicitGas(t) || (mentionsRotten(t) && !hotWaterOnly(t));
+    const co = coAlarm(t);
+    const smoke = smokeOrFire(t);
+    const sparks = sparking(t);
+    if (gas || co || smoke || sparks) {
+      if (gas) return hit('gas_air');
+      if (co) return hit('co_alarm');
+      if (smoke) return hit('smoke_fire');
+      return hit('sparking');
+    }
+    if (hotWaterOnly(t)) return hit('hot_water_odor');
+    if (pressureWasher(t)) return hit('pressure_washer');
+    if (refrigerantHandling(t)) return hit('refrigerant');
+    if (gasValveOrPilot(t)) return hit('gas_valve');
   }
-  if (hotWaterOnly(t)) return hit('hot_water_odor');
-  if (pressureWasher(t)) return hit('pressure_washer');
-  if (refrigerantHandling(t)) return hit('refrigerant');
-  if (gasValveOrPilot(t)) return hit('gas_valve');
+  if (panelRemoved(t, images)) return hit('panel_open');
+  if (!t) return { action: 'allow', code: '', message: '', citations: [] };
   const electrical = panelOrLive(t);
   if (electrical) return hit(electrical);
   if (bypassing(t)) return hit('bypass');
@@ -207,6 +230,7 @@ function prohibition(sentence) {
 function sentenceViolation(sentence) {
   if (prohibition(sentence)) return '';
   const t = norm(sentence);
+  if (panelRemoved(t, false)) return 'panel_open';
   if (pressureWasher(t)) return 'pressure_washer';
   if (refrigerantHandling(t) || /\b(add|charge|recover|vent) (the )?(refrigerant|freon|r-?410a)\b/.test(t)) return 'refrigerant';
   if (gasValveOrPilot(t)) return 'gas_valve';

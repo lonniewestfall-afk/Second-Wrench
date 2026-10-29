@@ -1,30 +1,33 @@
-/* Ask Second Wrench. Phase 1 is text only.
- * Later phases can add sign-in, photo input, and real-time voice by extending
- * the request alongside `messages`. Those fields are rejected until then.
- * Chat text is not logged unless AI_LOG_CONTENT=true, and never when Global
- * Privacy Control is on. Rate-limit keys store a daily hash, not a raw IP. */
+/* Ask Second Wrench.
+ * Public chat stays off unless AI_CHAT_ENABLED is on.
+ * A private preview token from PREVIEW_TOKENS is carried in the sw_preview cookie.
+ * Photos are resized and re-encoded by the browser, stripped of EXIF here, and
+ * never written to the blob store or the log. Chat text is not logged unless
+ * AI_LOG_CONTENT=true, and never when Global Privacy Control is on.
+ * Rate-limit keys store a daily hash, not a raw IP, and the previous day's
+ * hash keys are deleted. */
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { allowedBase, chatMode, envInt, requestAllowed } from './_ask-flags.mjs';
-import { clientIp, dayStamp, hashIp, hourStamp, takeSlot } from './_ask-limits.mjs';
-import { getAdapter } from './_ask-provider.mjs';
+import { allowedBase, chatMode, envInt, PREVIEW_COOKIE, previewClearCookie, previewSetCookie, readCookie, requestAllowed, tokenMatches } from './_ask-flags.mjs';
+import { clientIp, dayStamp, DEFAULT_DAILY_CAP, DEFAULT_HOUR_CAP, DEFAULT_VISITOR_CAP, hashIp, hourStamp, takeSlot } from './_ask-limits.mjs';
+import { ANTHROPIC_MODEL, getAdapter, stripJpegMetadata } from './_ask-provider.mjs';
 import { buildMessages, citationsFor, retrieve } from './_ask-retrieve.mjs';
 import { MESSAGES, outputHasSafeAdjective, screenModel, screenUser, stripSafeWords } from './_ask-safety.mjs';
 
 const LATER = new Set(['photo', 'photos', 'image', 'images', 'audio', 'voice', 'auth', 'signin', 'signIn']);
-const BODY_MAX = 12000;
+const BODY_TEXT = 12000;
+const BODY_IMAGES = 3000000;
 let indexCache = null;
 
-function json(status, body) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: {
-      'content-type': 'application/json; charset=utf-8',
-      'cache-control': 'no-store',
-      'x-content-type-options': 'nosniff'
-    }
+function json(status, body, extraHeaders) {
+  const headers = new Headers({
+    'content-type': 'application/json; charset=utf-8',
+    'cache-control': 'no-store',
+    'x-content-type-options': 'nosniff'
   });
+  (extraHeaders || []).forEach(pair => headers.append(pair[0], pair[1]));
+  return new Response(JSON.stringify(body), { status, headers });
 }
 
 export function logLine(event) {
@@ -46,6 +49,13 @@ function sameOrigin(request) {
   } catch (err) {
     return false;
   }
+}
+
+function secureRequest(request) {
+  try {
+    if (new URL(request.url).protocol === 'https:') return true;
+  } catch (err) { /* ignore */ }
+  return request.headers.get('x-forwarded-proto') === 'https';
 }
 
 function jsonType(value) {
@@ -72,6 +82,14 @@ export function resetIndexCache() {
   indexCache = null;
 }
 
+export function capsFor(env) {
+  return {
+    dailyCap: envInt(env.AI_DAILY_CAP, DEFAULT_DAILY_CAP, 1, 100000),
+    visitorCap: envInt(env.AI_VISITOR_DAILY_CAP, DEFAULT_VISITOR_CAP, 1, 100000),
+    hourCap: envInt(env.AI_RATE_PER_HOUR, DEFAULT_HOUR_CAP, 1, 1000)
+  };
+}
+
 function gpcOn(request, body) {
   if (request.headers.get('sec-gpc') === '1') return true;
   return !!(body && body.gpc === true);
@@ -82,23 +100,58 @@ function laterField(body) {
   return Object.keys(body).some(key => LATER.has(key));
 }
 
+function roughUserText(body) {
+  if (!body || typeof body !== 'object' || !Array.isArray(body.messages)) return '';
+  return body.messages.filter(message => message && message.role === 'user' && typeof message.content === 'string').map(message => message.content).join('\n');
+}
+
+function roughHasImages(body) {
+  if (!body || typeof body !== 'object' || !Array.isArray(body.messages)) return false;
+  return body.messages.some(message => message && Array.isArray(message.images) && message.images.length > 0);
+}
+
+function normalizeImages(value) {
+  if (value == null) return { list: [] };
+  if (!Array.isArray(value)) return { error: 'invalid' };
+  if (value.length > 2) return { error: 'invalid' };
+  const list = [];
+  for (const image of value) {
+    if (!image || typeof image !== 'object') return { error: 'invalid' };
+    const mediaType = String(image.mediaType || image.media_type || '').toLowerCase();
+    if (mediaType !== 'image/jpeg') return { error: 'invalid' };
+    const stripped = stripJpegMetadata(String(image.data || ''));
+    if (!stripped) return { error: 'invalid' };
+    list.push({ mediaType: 'image/jpeg', data: stripped });
+  }
+  return { list };
+}
+
 function normalizeMessages(body, maxChars) {
   if (!body || typeof body !== 'object' || Array.isArray(body)) return { error: 'invalid' };
   const messages = body.messages;
   if (!Array.isArray(messages) || messages.length < 1 || messages.length > 8) return { error: 'invalid' };
   const out = [];
   let total = 0;
-  for (const message of messages) {
+  for (let index = 0; index < messages.length; index += 1) {
+    const message = messages[index];
+    const last = index === messages.length - 1;
     if (!message || typeof message !== 'object') return { error: 'invalid' };
     if (message.role !== 'user' && message.role !== 'assistant') return { error: 'invalid' };
     if (typeof message.content !== 'string') return { error: 'invalid' };
     const content = message.content.trim();
-    if (!content) return { error: 'invalid' };
+    const hasImages = Array.isArray(message.images) ? message.images.length > 0 : message.images != null;
+    if (hasImages && (!last || message.role !== 'user')) return { error: 'invalid' };
+    const images = hasImages ? normalizeImages(message.images) : { list: [] };
+    if (images.error) return { error: 'invalid' };
+    if (!content && !images.list.length) return { error: 'invalid' };
     total += content.length;
-    out.push({ role: message.role, content });
+    const row = { role: message.role, content };
+    if (images.list.length) row.images = images.list;
+    out.push(row);
   }
   if (out[out.length - 1].role !== 'user') return { error: 'invalid' };
-  if (out[out.length - 1].content.length > maxChars || total > maxChars * 4) return { error: 'too_long', messages: out };
+  const latest = out[out.length - 1].content;
+  if (latest.length > maxChars || total > maxChars * 4) return { error: 'too_long', messages: out };
   return { messages: out };
 }
 
@@ -106,17 +159,24 @@ function userText(messages) {
   return messages.filter(message => message.role === 'user').map(message => message.content).join('\n');
 }
 
-function reply(status, payload, meta) {
+function reply(status, payload, meta, extraHeaders) {
   const event = Object.assign({ status, action: payload.safety && payload.safety.code || payload.error || '' }, meta || {});
-  return { response: json(status, payload), event };
+  return { response: json(status, payload, extraHeaders), event };
 }
 
 function configured(env) {
+  const provider = String(env.AI_PROVIDER || 'anthropic').trim().toLowerCase() || 'anthropic';
+  if (!getAdapter(provider)) return null;
+  if (provider === 'anthropic') {
+    const key = String(env.ANTHROPIC_API_KEY || '').trim();
+    const model = String(env.AI_MODEL || ANTHROPIC_MODEL).trim();
+    if (!key || !model) return null;
+    return { key, model, base: 'https://api.anthropic.com', provider };
+  }
   const key = String(env.AI_API_KEY || '').trim();
   const model = String(env.AI_MODEL || '').trim();
   const base = String(env.AI_BASE_URL || 'https://api.openai.com/v1').trim();
-  const provider = String(env.AI_PROVIDER || 'openai').trim();
-  if (!key || !model || !getAdapter(provider) || !allowedBase(base)) return null;
+  if (!key || !model || !allowedBase(base)) return null;
   return { key, model, base, provider };
 }
 
@@ -130,23 +190,38 @@ export async function handleAsk(request, deps) {
     log(Object.assign({ logContent }, result.event));
     return result.response;
   };
+  const presented = readCookie(request && request.headers && request.headers.get('cookie'), PREVIEW_COOKIE);
+  const tokenOk = tokenMatches(presented, env.PREVIEW_TOKENS);
+  const mode = chatMode(env.AI_CHAT_ENABLED);
+  const secure = request ? secureRequest(request) : false;
+  const cookieHeaders = tokenOk && presented
+    ? [['set-cookie', previewSetCookie(presented, secure)]]
+    : (presented && mode !== 'on' ? [['set-cookie', previewClearCookie(secure)]] : []);
 
-  if (!request || request.method !== 'POST') return finish(reply(405, { ok: false, error: 'method', message: 'Use POST.' }));
+  if (!request || (request.method !== 'POST' && request.method !== 'GET')) {
+    return finish(reply(405, { ok: false, error: 'method', message: 'Use POST.' }));
+  }
   if (!sameOrigin(request)) return finish(reply(403, { ok: false, error: 'origin', message: MESSAGES.disabled }));
+
+  if (request.method === 'GET') {
+    if (!presented) return finish(reply(405, { ok: false, error: 'method', message: 'Use POST.' }));
+    if (!tokenOk) return finish(reply(404, { ok: false, error: 'disabled', message: MESSAGES.disabled }, { gpc: false, content: '' }, cookieHeaders));
+    return finish(reply(200, { ok: true, preview: true }, { gpc: false, content: '', action: 'preview' }, cookieHeaders));
+  }
+
   if (!jsonType(request.headers.get('content-type'))) return finish(reply(415, { ok: false, error: 'type', message: 'Send JSON.' }));
 
+  const bodyCap = (tokenOk || mode === 'on') ? BODY_IMAGES : BODY_TEXT;
   const text = await request.text();
-  if (text.length > BODY_MAX) return finish(reply(413, { ok: false, error: 'too_large', message: 'That message is too long. Shorten it and try again, or use the guided check.' }));
+  if (text.length > bodyCap) return finish(reply(413, { ok: false, error: 'too_large', message: 'That message is too long. Shorten it and try again, or use the guided check.' }));
   let body;
   try { body = JSON.parse(text); } catch (err) { return finish(reply(400, { ok: false, error: 'invalid_json', message: 'Send a JSON message.' })); }
 
   const gpc = gpcOn(request, body);
   const meta = { gpc, content: '' };
-  const maxChars = envInt(env.AI_MAX_INPUT_CHARS, 800, 80, 4000);
-  const parsed = normalizeMessages(body, maxChars);
-  const candidate = parsed.messages || null;
-  if (candidate) {
-    const screened = screenUser(userText(candidate));
+  const rough = roughUserText(body);
+  if (rough || roughHasImages(body)) {
+    const screened = screenUser(rough, { images: roughHasImages(body) });
     if (screened.action !== 'allow') {
       return finish(reply(200, {
         ok: true,
@@ -159,13 +234,14 @@ export async function handleAsk(request, deps) {
   }
 
   if (laterField(body)) {
-    return finish(reply(400, { ok: false, error: 'unsupported', message: 'Sign-in, photos, and voice are not part of this chat yet. Type your question instead.' }, meta));
+    return finish(reply(400, { ok: false, error: 'unsupported', message: 'Sign-in and voice are not part of this chat. Add a photo with the photo button, or type your question.' }, meta));
+  }
+  if (!requestAllowed(mode, tokenOk)) {
+    return finish(reply(404, { ok: false, error: 'disabled', message: MESSAGES.disabled }, meta, cookieHeaders));
   }
 
-  const mode = chatMode(env.AI_CHAT_ENABLED);
-  if (!requestAllowed(mode, body && body.preview)) {
-    return finish(reply(404, { ok: false, error: 'disabled', message: MESSAGES.disabled }, meta));
-  }
+  const maxChars = envInt(env.AI_MAX_INPUT_CHARS, 800, 80, 4000);
+  const parsed = normalizeMessages(body, maxChars);
   if (parsed.error === 'too_long') {
     return finish(reply(400, { ok: false, error: 'too_long', message: 'That message is too long. Shorten it and try again, or use the guided check.' }, meta));
   }
@@ -177,9 +253,9 @@ export async function handleAsk(request, deps) {
   const index = (deps && deps.index) || loadIndex();
   if (!index) return finish(reply(503, { ok: false, error: 'unconfigured', message: MESSAGES.unconfigured }, meta));
 
-  const question = parsed.messages[parsed.messages.length - 1].content;
-  const found = retrieve(index, question, 6);
-  if (!found.known) {
+  const hasImages = parsed.messages.some(message => message.images && message.images.length);
+  const found = retrieve(index, userText(parsed.messages), 6);
+  if (!found.known && !hasImages) {
     return finish(reply(200, { ok: true, message: MESSAGES.unknown, citations: [{ title: 'Answers', href: '/answers/' }, { title: 'Start the guided check', href: '/#/' }], flow: null, safety: null }, Object.assign({}, meta, { action: 'unknown' })));
   }
 
@@ -195,14 +271,16 @@ export async function handleAsk(request, deps) {
 
   const day = dayStamp(now);
   const hash = hashIp(clientIp(request), env.AI_IP_HASH_SALT, day);
+  const caps = capsFor(env);
   let slot;
   try {
     slot = await takeSlot(store, {
       day,
       hour: hourStamp(now),
       hash,
-      dailyCap: envInt(env.AI_DAILY_CAP, 200, 1, 100000),
-      hourCap: envInt(env.AI_RATE_PER_HOUR, 20, 1, 1000)
+      dailyCap: caps.dailyCap,
+      visitorCap: caps.visitorCap,
+      hourCap: caps.hourCap
     });
   } catch (err) {
     return finish(reply(503, { ok: false, error: 'unconfigured', message: MESSAGES.unconfigured }, meta));
@@ -218,7 +296,7 @@ export async function handleAsk(request, deps) {
       baseUrl: setup.base,
       apiKey: setup.key,
       model: setup.model,
-      messages: buildMessages(question, found.chunks),
+      messages: buildMessages(parsed.messages, found.chunks),
       maxTokens,
       fetchImpl,
       signal
@@ -231,13 +309,14 @@ export async function handleAsk(request, deps) {
   const after = screenModel(clipped);
   const message = outputHasSafeAdjective(after.message) ? stripSafeWords(after.message) : after.message;
   const citations = after.ok ? citationsFor(found.chunks) : (after.citations || []);
+  const question = parsed.messages[parsed.messages.length - 1].content;
   return finish(reply(200, {
     ok: true,
     message,
     citations,
     flow: citations.find(item => item.flow) || null,
     safety: after.ok ? null : { action: 'refuse', code: after.code }
-  }, Object.assign({}, meta, { action: after.code || 'answer', content: logContent && !gpc ? question : '' })));
+  }, Object.assign({}, meta, { action: after.code || 'answer', content: logContent && !gpc ? question : '' }), cookieHeaders));
 }
 
 export async function openAskStore() {

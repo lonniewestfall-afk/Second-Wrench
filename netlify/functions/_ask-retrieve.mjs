@@ -124,7 +124,11 @@ export const SYSTEM_RULES = [
   'Never recommend a pressure washer on an outdoor unit or condenser.',
   'A rotten-egg smell only from the hot water is the water-odor path (/answers/hot-water-rotten-egg-smell/), unless it is also in the air or the person is not sure. Then tell them to leave and call the gas utility or 911 from outside.',
   'Gas smell in the air, a carbon monoxide alarm, smoke, fire, or sparking: tell them to leave and call 911 or the gas utility from outside. Do not keep troubleshooting.',
-  'This is free informational guidance, not a licensed HVAC technician, not a diagnosis, and not emergency help.'
+  'This is free informational guidance, not a licensed HVAC technician, not a diagnosis, and not emergency help.',
+  'Before you conclude, gather context the way a careful tech would. Ask short questions, one or two at a time, about unit age, service history, leaks or recharges, line-set or valve work (including brazing), past failures and repairs, and when the symptom started. Then reason across the whole story, any photos, and any readings the person has given.',
+  'If you are not sure what a display code or a reading says, do not state it as a fact. Say what you can see and ask the person to read it or send a clearer photo.',
+  'Inverter systems are critical-charge. Refrigerant work on an inverter system always goes to a licensed HVAC professional. Do not give homeowner steps for adding, removing, or gauging refrigerant.',
+  'A photo is for this conversation only. It is not saved. Do not ask anyone to remove a panel or photograph a live board. If a panel is already off, or a photo shows a board, wires, or terminals, tell them to stop and call a licensed HVAC professional or electrician.'
 ].join('\n');
 
 export function contextBlock(chunks) {
@@ -135,9 +139,13 @@ export function contextBlock(chunks) {
   }).join('\n\n');
 }
 
-export function buildMessages(question, chunks) {
-  return [
-    { role: 'system', content: SYSTEM_RULES + '\n\nCONTEXT:\n' + contextBlock(chunks) },
-    { role: 'user', content: question }
-  ];
+export function buildMessages(messages, chunks) {
+  const thread = Array.isArray(messages) ? messages : [{ role: 'user', content: String(messages || '') }];
+  const last = thread.length - 1;
+  const chat = thread.map((message, index) => {
+    const row = { role: message.role, content: message.content };
+    if (index === last && message.role === 'user' && message.images && message.images.length) row.images = message.images;
+    return row;
+  });
+  return [{ role: 'system', content: SYSTEM_RULES + '\n\nCONTEXT:\n' + contextBlock(chunks) }].concat(chat);
 }
