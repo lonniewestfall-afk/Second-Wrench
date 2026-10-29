@@ -77,6 +77,82 @@
     return typeof href === 'string' && /^\/(answers\/|#\/|maintenance\/)/.test(href);
   }
 
+  function alertKind(safety) {
+    if (!safety || typeof safety !== 'object') return '';
+    const code = String(safety.code || '');
+    if (safety.action === 'emergency') return 'stop';
+    if (code === 'gas_air' || code === 'co_alarm' || code === 'gas_valve' || code === 'smoke_fire' || code === 'sparking') return 'stop';
+    if (code === 'panel' || code === 'panel_open' || code === 'live_circuit' || code.indexOf('breaker') === 0) return 'stop';
+    return '';
+  }
+
+  function appendInline(doc, parent, text) {
+    const source = String(text || '');
+    const re = /(\*\*[^*]+\*\*|\/answers\/[a-z0-9-]+\/|\/#\/[a-z0-9/-]*|\/maintenance\/)/ig;
+    let last = 0;
+    let match;
+    while ((match = re.exec(source))) {
+      if (match.index > last) parent.appendChild(doc.createTextNode(source.slice(last, match.index)));
+      const token = match[0];
+      if (token.charAt(0) === '*') {
+        const strong = doc.createElement('strong');
+        strong.textContent = token.slice(2, -2);
+        parent.appendChild(strong);
+      } else if (hrefOk(token)) {
+        const link = doc.createElement('a');
+        link.href = token;
+        link.textContent = token;
+        parent.appendChild(link);
+      } else parent.appendChild(doc.createTextNode(token));
+      last = match.index + token.length;
+    }
+    if (last < source.length) parent.appendChild(doc.createTextNode(source.slice(last)));
+  }
+
+  function renderRich(doc, container, text) {
+    const lines = String(text || '').split('\n');
+    let list = null;
+    let listKind = '';
+    function closeList() { list = null; listKind = ''; }
+    if (!String(text || '').trim()) {
+      const empty = doc.createElement('p');
+      empty.textContent = '';
+      container.appendChild(empty);
+      return;
+    }
+    lines.forEach(line => {
+      const trimmed = line.trim();
+      const heading = /^(#{1,3})\s+(.+)$/.exec(trimmed);
+      const bullet = /^[-*]\s+(.+)$/.exec(trimmed);
+      const numbered = /^\d+[.)]\s+(.+)$/.exec(trimmed);
+      if (!trimmed) { closeList(); return; }
+      if (heading) {
+        closeList();
+        const h = doc.createElement('h3');
+        appendInline(doc, h, heading[2]);
+        container.appendChild(h);
+        return;
+      }
+      if (bullet || numbered) {
+        const kind = bullet ? 'ul' : 'ol';
+        if (!list || listKind !== kind) {
+          closeList();
+          list = doc.createElement(kind);
+          listKind = kind;
+          container.appendChild(list);
+        }
+        const li = doc.createElement('li');
+        appendInline(doc, li, (bullet || numbered)[1]);
+        list.appendChild(li);
+        return;
+      }
+      closeList();
+      const p = doc.createElement('p');
+      appendInline(doc, p, trimmed);
+      container.appendChild(p);
+    });
+  }
+
   function fitSize(width, height, maxEdge) {
     const w = Math.max(0, Math.round(Number(width) || 0));
     const h = Math.max(0, Math.round(Number(height) || 0));
@@ -122,28 +198,53 @@
     const style = doc.createElement('style');
     style.id = 'ask-chat-style';
     style.textContent = [
-      '.ask-launch{position:fixed;right:16px;bottom:16px;z-index:80;min-height:44px;padding:10px 16px;border:0;border-radius:999px;background:var(--scarlet,#b82030);color:#fff;font:inherit;font-weight:700;box-shadow:0 8px 24px #00000040}',
+      'body.ask-available{padding-bottom:76px}',
+      '.ask-launch{position:fixed;right:16px;bottom:16px;z-index:80;min-height:48px;padding:10px 16px;border:0;border-radius:999px;background:var(--scarlet,#b82030);color:#fff;font:inherit;font-size:16px;font-weight:700;box-shadow:0 8px 24px #00000040}',
       '.ask-launch:hover{background:var(--scarlet-hover,#ce2b3d);color:#fff}',
-      '.ask-panel{position:fixed;inset:0;z-index:81;background:var(--paper,#17181b);color:var(--ink,#f2f2f3);display:flex;flex-direction:column}',
+      '.ask-panel{position:fixed;left:0;right:0;top:0;z-index:81;width:100%;max-width:100vw;height:100vh;max-height:100vh;overflow:hidden;box-sizing:border-box;background:var(--paper,#17181b);color:var(--ink,#f2f2f3);display:flex;flex-direction:column;font-size:16px;line-height:1.45}',
       '.ask-panel[hidden]{display:none}',
-      '.ask-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:3px solid var(--scarlet,#b82030);background:#111215}',
-      '.ask-head h2{margin:0;font-size:1.15rem}',
-      '.ask-close{min-height:44px;min-width:44px;border:1px solid var(--line,#45464c);background:transparent;color:inherit;border-radius:9px}',
-      '.ask-disclaimer{margin:0;padding:10px 16px;border-bottom:1px solid var(--line,#45464c);font-size:.85rem;line-height:1.4}',
-      '.ask-log{flex:1;overflow:auto;padding:12px 16px;display:flex;flex-direction:column;gap:10px}',
-      '.ask-row{max-width:36rem;padding:10px 12px;border-radius:12px;background:var(--surface,#222328);border:1px solid var(--line,#45464c)}',
-      '.ask-row.user{align-self:flex-end;background:#2a1c20;border-color:#6a3038}',
-      '.ask-row p{margin:0}',
-      '.ask-cites{margin:8px 0 0;padding-left:1.1rem}',
-      '.ask-compose{display:flex;gap:8px;padding:12px 16px 8px;border-top:1px solid var(--line,#45464c)}',
-      '.ask-compose textarea{flex:1;min-height:44px;max-height:140px;resize:vertical;padding:10px;border-radius:9px;border:1px solid var(--line,#45464c);background:#111215;color:inherit;font-size:16px}',
-      '.ask-compose button{min-height:44px;padding:10px 14px;border:0;border-radius:9px;background:var(--scarlet,#b82030);color:#fff;font-weight:700}',
-      '.ask-tools{display:flex;align-items:center;gap:8px;padding:0 16px 8px}',
-      '.ask-photo{min-height:44px;padding:8px 12px;border:1px solid var(--line,#45464c);background:transparent;color:inherit;border-radius:9px}',
-      '.ask-thumbs{display:flex;gap:8px;padding:0 16px 8px;flex-wrap:wrap}',
+      '.ask-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:12px 14px;border-bottom:3px solid var(--scarlet,#b82030);background:#111215;flex-shrink:0;min-width:0}',
+      '.ask-head-copy{min-width:0}',
+      '.ask-head h2{margin:0;font-size:1.2rem;line-height:1.2}',
+      '.ask-credit{margin:4px 0 0;font-size:.8rem;font-weight:500;letter-spacing:.01em;color:#b7b8be}',
+      '.ask-close{min-height:44px;min-width:44px;flex-shrink:0;border:1px solid var(--line,#45464c);background:transparent;color:inherit;border-radius:9px;font-size:16px}',
+      '.ask-notice{margin:0;padding:8px 14px;border-bottom:1px solid var(--line,#45464c);flex:0 1 auto;min-height:0;max-height:46%;overflow:auto}',
+      '.ask-notice-short{margin:0;font-size:16px;line-height:1.4;color:#e4e4e8}',
+      '.ask-notice-toggle{margin-left:6px;padding:0;border:0;background:none;color:#f0a4ad;font:inherit;font-weight:700;text-decoration:underline;text-underline-offset:3px;min-height:44px}',
+      '.ask-disclaimer{margin:8px 0 0;font-size:16px;line-height:1.45;color:#f2f2f4}',
+      '.ask-disclaimer[hidden]{display:none}',
+      '.ask-log{flex:1;min-height:0;overflow:auto;padding:12px 14px;display:flex;flex-direction:column;gap:10px}',
+      '.ask-row{max-width:min(36rem,100%);padding:12px 14px;border-radius:16px 16px 16px 4px;background:var(--surface,#222328);border:1px solid var(--line,#45464c);align-self:flex-start}',
+      '.ask-row.user{align-self:flex-end;background:#b82030;color:#fff;border-color:#7e1522;border-radius:16px 16px 4px 16px}',
+      '.ask-row.ask-alert{align-self:stretch;max-width:none;background:#fff;color:#1a0a0d;border:3px solid #b82030;border-radius:12px}',
+      '.ask-kicker{margin:0 0 6px;font-size:.8rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#7e1522}',
+      '.ask-body p,.ask-body li{margin:0 0 8px;font-size:16px;line-height:1.45}',
+      '.ask-body p:last-child,.ask-body li:last-child{margin-bottom:0}',
+      '.ask-body h3{margin:0 0 6px;font-size:1.05rem;line-height:1.25;letter-spacing:-.02em}',
+      '.ask-body ul,.ask-body ol{margin:0 0 8px;padding-left:1.2rem}',
+      '.ask-body a{color:#f0a4ad}',
+      '.ask-row.user a{color:#fff}',
+      '.ask-row.ask-alert a{color:#7e1522}',
+      '.ask-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}',
+      '.ask-chips a{display:inline-flex;align-items:center;min-height:36px;padding:4px 10px;border-radius:999px;background:#111215;color:#fff;text-decoration:none;font-size:.95rem;font-weight:650}',
+      '.ask-row.ask-alert .ask-chips a{background:#7e1522;color:#fff}',
+      '.ask-typing{min-height:44px}',
+      '.ask-dots{display:inline-flex;gap:5px;align-items:center;height:16px}',
+      '.ask-dots i{width:8px;height:8px;border-radius:50%;background:#f0a4ad;display:block}',
+      '.ask-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}',
+      '.ask-compose{display:flex;gap:8px;align-items:flex-end;width:100%;box-sizing:border-box;padding:10px 12px 18px;border-top:1px solid var(--line,#45464c);flex-shrink:0;background:#111215}',
+      '.ask-compose textarea{flex:1 1 auto;min-width:0;width:100%;min-height:48px;max-height:140px;resize:vertical;padding:10px 12px;border-radius:12px;border:1px solid #6a6b74;background:#17181b;color:inherit;font-size:16px;line-height:1.4}',
+      '.ask-compose button[type="submit"]{flex:0 0 auto;min-height:48px;padding:10px 14px;border:0;border-radius:12px;background:var(--scarlet,#b82030);color:#fff;font-size:16px;font-weight:750}',
+      '.ask-photo{flex:0 0 auto;min-height:48px;padding:6px 10px;border:1px solid #f0a4ad;background:#2a1c20;color:#fff;border-radius:12px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:16px;font-weight:750;line-height:1}',
+      '@keyframes ask-pulse{0%,80%,100%{opacity:.3}40%{opacity:1}}',
+      '.ask-dots i{animation:ask-pulse 1.2s infinite}',
+      '.ask-dots i:nth-child(2){animation-delay:.15s}',
+      '.ask-dots i:nth-child(3){animation-delay:.3s}',
+      '.ask-photo svg{width:20px;height:20px;display:block}',
+      '.ask-thumbs{display:flex;gap:8px;padding:0 12px 8px;flex-wrap:wrap;flex-shrink:0;background:#111215}',
       '.ask-thumbs img{width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid var(--line,#45464c)}',
-      '.ask-credit{margin:0;padding:0 16px 12px;font-size:.75rem;color:#b7b8be}',
-      '@media(min-width:760px){.ask-panel{inset:auto 16px 16px auto;width:min(420px,calc(100vw - 32px));height:min(640px,calc(100vh - 32px));border:1px solid var(--line,#45464c);border-radius:16px;box-shadow:0 15px 50px #00000055}}'
+      '@media(min-width:760px){.ask-panel{left:auto;right:16px;top:auto;bottom:16px;width:min(440px,calc(100vw - 32px));height:min(680px,calc(100dvh - 32px));border:1px solid var(--line,#45464c);border-radius:16px;box-shadow:0 15px 50px #00000055}}',
+      '@media(prefers-reduced-motion:reduce){.ask-dots i{animation:none}}'
     ].join('');
     doc.head.appendChild(style);
   }
@@ -172,16 +273,31 @@
     panel.setAttribute('role', 'dialog');
     panel.setAttribute('aria-modal', 'true');
     panel.setAttribute('aria-labelledby', 'ask-title');
-    panel.innerHTML = '<div class="ask-head"><h2 id="ask-title">Ask Second Wrench</h2><button type="button" class="ask-close">Close</button></div>'
-      + '<p class="fine ask-disclaimer">' + esc(DISCLAIMER) + '</p>'
+    panel.innerHTML = '<div class="ask-head"><div class="ask-head-copy"><h2 id="ask-title">Ask Second Wrench</h2></div><button type="button" class="ask-close">Close</button></div>'
+      + '<div class="ask-notice"><p class="ask-notice-short">Free, AI-generated information. It can be wrong. Not a licensed HVAC tech, not a diagnosis, and not emergency help. <button type="button" class="ask-notice-toggle" aria-expanded="false" aria-controls="ask-disclaimer">Full notice</button></p>'
+      + '<p id="ask-disclaimer" class="fine ask-disclaimer" hidden></p></div>'
       + '<div class="ask-log" aria-live="polite"></div>'
-      + '<form class="ask-compose"><label class="visually-hidden" for="ask-input" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Your question</label>'
+      + '<form class="ask-compose"><button type="button" class="ask-photo" aria-label="Add a photo"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 8h3l2-2h6l2 2h3v10H4Z" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="13" r="3" fill="none" stroke="currentColor" stroke-width="1.7"/></svg><span>Photo</span></button>'
+      + '<input class="ask-file" type="file" accept="image/*" multiple hidden aria-label="Add a photo">'
+      + '<label class="ask-sr" for="ask-input">Your question</label>'
       + '<textarea id="ask-input" maxlength="800" rows="2" placeholder="Heating, cooling, or hot water"></textarea>'
       + '<button type="submit">Send</button></form>'
-      + '<div class="ask-tools"><button type="button" class="ask-photo">Add photo</button>'
-      + '<input class="ask-file" type="file" accept="image/*" multiple hidden aria-label="Add a photo"></div>'
-      + '<div class="ask-thumbs"></div>'
-      + (preview ? '<p class="ask-credit">' + esc(CREDIT) + '</p>' : '');
+      + '<div class="ask-thumbs"></div>';
+    panel.querySelector('.ask-disclaimer').textContent = DISCLAIMER;
+    if (preview) {
+      const credit = doc.createElement('p');
+      credit.className = 'ask-credit';
+      credit.textContent = CREDIT;
+      panel.querySelector('.ask-head-copy').appendChild(credit);
+    }
+    const noticeToggle = panel.querySelector('.ask-notice-toggle');
+    const disclaimerEl = panel.querySelector('.ask-disclaimer');
+    noticeToggle.addEventListener('click', () => {
+      const open = disclaimerEl.hidden;
+      disclaimerEl.hidden = !open;
+      noticeToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      noticeToggle.textContent = open ? 'Hide notice' : 'Full notice';
+    });
 
     const log = panel.querySelector('.ask-log');
     const form = panel.querySelector('form');
@@ -190,28 +306,72 @@
     const fileInput = panel.querySelector('.ask-file');
     const thumbs = panel.querySelector('.ask-thumbs');
 
-    function addRow(role, text, citations) {
+    function addRow(role, text, citations, safety) {
       const row = doc.createElement('div');
-      row.className = 'ask-row' + (role === 'user' ? ' user' : '');
-      const p = doc.createElement('p');
-      p.textContent = text;
-      row.appendChild(p);
+      const stop = role !== 'user' && alertKind(safety);
+      row.className = 'ask-row' + (role === 'user' ? ' user' : ' assistant') + (stop ? ' ask-alert' : '');
+      if (stop) {
+        const kicker = doc.createElement('p');
+        kicker.className = 'ask-kicker';
+        kicker.textContent = 'Stop';
+        row.appendChild(kicker);
+      }
+      const body = doc.createElement('div');
+      body.className = 'ask-body';
+      if (role === 'user') {
+        const p = doc.createElement('p');
+        p.textContent = text;
+        body.appendChild(p);
+      } else renderRich(doc, body, text);
+      row.appendChild(body);
       if (citations && citations.length) {
-        const list = doc.createElement('ul');
-        list.className = 'ask-cites';
+        const chips = doc.createElement('div');
+        chips.className = 'ask-chips';
         citations.forEach(item => {
           if (!item || !hrefOk(item.href)) return;
-          const li = doc.createElement('li');
           const a = doc.createElement('a');
           a.href = item.href;
           a.textContent = item.title || item.href;
-          li.appendChild(a);
-          list.appendChild(li);
+          chips.appendChild(a);
         });
-        if (list.childNodes.length) row.appendChild(list);
+        if (chips.childNodes.length) row.appendChild(chips);
       }
       log.appendChild(row);
       log.scrollTop = log.scrollHeight;
+    }
+
+    function showTyping() {
+      const existing = log.querySelector('.ask-typing');
+      if (existing) existing.remove();
+      const row = doc.createElement('div');
+      row.className = 'ask-row assistant ask-typing';
+      row.innerHTML = '<span class="ask-dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="ask-sr">Answering</span>';
+      log.appendChild(row);
+      log.scrollTop = log.scrollHeight;
+    }
+    function hideTyping() {
+      const existing = log.querySelector('.ask-typing');
+      if (existing) existing.remove();
+    }
+    function fitPanel() {
+      const narrow = !!(view && view.innerWidth < 760);
+      if (!narrow || panel.hidden) {
+        panel.style.height = '';
+        panel.style.top = '';
+        return;
+      }
+      const vv = view.visualViewport;
+      const height = vv ? Math.min(view.innerHeight, vv.height) : view.innerHeight;
+      const top = vv ? vv.offsetTop : 0;
+      panel.style.height = Math.max(180, Math.round(height)) + 'px';
+      panel.style.top = Math.round(top) + 'px';
+    }
+    if (view) {
+      view.addEventListener('resize', fitPanel);
+      if (view.visualViewport) {
+        view.visualViewport.addEventListener('resize', fitPanel);
+        view.visualViewport.addEventListener('scroll', fitPanel);
+      }
     }
 
     function renderThumbs() {
@@ -233,12 +393,14 @@
       panel.hidden = false;
       launch.setAttribute('aria-expanded', 'true');
       if (!history.length) addRow('assistant', 'Ask about a heating, cooling, or hot-water problem. Answers stay inside the published guides.');
+      fitPanel();
       input.focus();
     }
     function closePanel() {
       panel.hidden = true;
       launch.setAttribute('aria-expanded', 'false');
       dropPhotos();
+      fitPanel();
       launch.focus();
     }
 
@@ -276,6 +438,7 @@
       send.disabled = true;
       const previous = send.textContent;
       send.textContent = 'Sending…';
+      showTyping();
       try {
         const fetchImpl = (view && view.fetch) || fetch;
         const messages = history.slice(-6).map((item, index, list) => {
@@ -295,17 +458,22 @@
         let data = {};
         try { data = await res.json(); } catch (err) { data = {}; }
         const message = data && data.message ? data.message : 'The assistant did not answer. The guided check is still here.';
-        if (!res.ok && res.status !== 200) addRow('assistant', message, [{ title: 'Start the guided check', href: '/#/' }]);
-        else addRow('assistant', message, data.citations || []);
+        const safety = data && data.safety;
+        hideTyping();
+        if (!res.ok && res.status !== 200) addRow('assistant', message, [{ title: 'Start the guided check', href: '/#/' }], safety);
+        else addRow('assistant', message, data.citations || [], safety);
         if (data && data.ok !== false && data.message) history.push({ role: 'assistant', content: data.message });
       } catch (err) {
+        hideTyping();
         addRow('assistant', 'The assistant did not answer. The guided check is still here.', [{ title: 'Start the guided check', href: '/#/' }]);
       } finally {
+        hideTyping();
         send.disabled = false;
         send.textContent = previous;
       }
     });
 
+    doc.body.classList.add('ask-available');
     doc.body.appendChild(launch);
     doc.body.appendChild(panel);
     return panel;
