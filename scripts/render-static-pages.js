@@ -6,6 +6,12 @@ const root = path.resolve(__dirname, '..');
 const ORIGIN = 'https://secondwrench.co';
 const ICON = ORIGIN + '/assets/icons/icon-512.png';
 const UPDATED = '2026-10-15';
+const UPDATED_SEARCH = '2026-10-29';
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+function prettyDate(iso) {
+  const [y, m, d] = iso.split('-').map(Number);
+  return MONTHS[m - 1] + ' ' + d + ', ' + y;
+}
 const PO2 = "Turn the system Off at the thermostat. Then switch off its breaker (or the outdoor disconnect or service switch near the unit). When you're done and everything is dry, switch it back on. If a breaker trips again or keeps tripping, leave it off and call a licensed HVAC professional. Never open the breaker panel cover or the disconnect box.";
 const CC1 = 'Never use a pressure washer on your outdoor unit. It can flatten the fins and damage the coil.';
 const CC2 = 'If you use a coil cleaner, use one sold for home AC coils and follow its label exactly: mixing, how long it sits, rinsing, gloves and eye protection. Keep it off plants, pets and the electrical parts. Never mix cleaners.';
@@ -87,17 +93,6 @@ function coilBlocks() {
     ]}
   ];
 }
-function manualOnly(name, siblings) {
-  return [
-    { p: SCHEDULE },
-    { note: WARRANTY },
-    { p: `Follow your owner’s manual for ${name}. This page does not add tasks beyond the warranty note.` },
-    { p: 'When something is wrong, ' + link(GUIDE, 'start the guided check') + '.' },
-    { h2: 'Related' },
-    { ul: siblings }
-  ];
-}
-
 const WH_PM = abs('/answers/water-heater-maintenance-checklist/');
 const pages = [];
 
@@ -271,7 +266,8 @@ add({
     { h2: 'Related' },
     { ul: [
       link(abs('/answers/no-hot-water/'), 'No hot water'),
-      link(WH_PM, 'Water heater maintenance checklist')
+      link(WH_PM, 'Water heater maintenance checklist'),
+      link(abs('/answers/gas-smell-pilot-flame/'), 'Gas smell, pilot, or flame')
     ]}
   ]
 });
@@ -368,16 +364,18 @@ add({
     { h2: 'Related' },
     { ul: [
       link(abs('/answers/side-discharge-heat-pump-maintenance-checklist/'), 'Side-discharge heat pump maintenance checklist'),
-      link(abs('/answers/heat-pump-maintenance-checklist/'), 'Heat pump maintenance checklist')
+      link(abs('/answers/heat-pump-maintenance-checklist/'), 'Heat pump maintenance checklist'),
+      link(abs('/answers/furnace-ac-loud-noise/'), 'Furnace or AC loud noise')
     ]}
   ]
 });
 
-function pmCoilPage(path, title, description, crumb, lead, related) {
+function pmCoilPage(path, title, description, crumb, lead, related, before) {
   add({
-    path, title, description, crumb, kind: 'pm',
+    path, title, description, crumb, kind: 'pm', updated: UPDATED_SEARCH,
     blocks: [
       { p: lead },
+      ...(before || []),
       { p: SCHEDULE },
       { note: WARRANTY },
       ...coilBlocks(),
@@ -390,40 +388,79 @@ function pmCoilPage(path, title, description, crumb, lead, related) {
 pmCoilPage(
   '/answers/ac-maintenance-checklist/',
   'AC maintenance checklist',
-  SCHEDULE + ' Outdoor coil cleaning is the task on this page.',
+  'Filter, condensate, outdoor debris, and coil checks between pro visits for a cooling-only central air conditioner.',
   'AC maintenance checklist',
-  'Outdoor coil cleaning is the homeowner task published on this page. Other central-air tasks stay with your owner’s manual.',
-  [link(abs('/answers/heat-pump-maintenance-checklist/'), 'Heat pump maintenance checklist')]
+  'These are look-and-check tasks between visits from a licensed HVAC professional. Outdoor coil cleaning is below, split by brand. Other repairs stay with your owner’s manual.',
+  [
+    link(abs('/answers/heat-pump-maintenance-checklist/'), 'Heat pump maintenance checklist'),
+    link(abs('/answers/furnace-ac-loud-noise/'), 'Furnace or AC loud noise'),
+    link(abs('/answers/furnace-filter-size/'), 'Furnace filter size')
+  ],
+  [
+    { h2: 'Thermostat' },
+    { p: 'Set the system to Off at the thermostat and wait until the blower stops before you open a filter slot. This does not disconnect electricity. Don’t take the thermostat off the wall.' },
+    { h2: 'Air filter' },
+    { p: 'Use only a tool-free filter slot or return grille your owner’s manual names, reachable from the floor. Keep furnace and air-handler doors closed. The size is printed on the filter’s frame. Put one filter back with the airflow arrow pointing toward the blower, and close the slot. [ENERGY STAR](https://www.energystar.gov/saveathome/heating-cooling) says to check the filter every month in heavy-use seasons and to change it at least every 3 months, or sooner when it looks dirty. Your manual wins if it says something different.' },
+    { h2: 'Condensate drain' },
+    { p: 'Look at the drain tube or pan you can already see, outside the cabinet. If a tube you can reach without tools is kinked, gently straighten it by hand. Don’t pull it off. If water is near a switch, outlet, or the breaker panel, stay out of it and call a licensed HVAC professional. Don’t open the panel cover.' },
+    { h2: 'Outdoor unit' },
+    { p: 'From dry ground, move leaves, toys, and stored items away from the cabinet. Don’t reach through the grille or touch the fins. **' + CC1 + '** If the outdoor breaker looks tripped, leave it and use the guided check. That check is the only place a one-time outdoor reset is offered, and only for a cooling-only air conditioner. Never open the breaker panel cover or the disconnect box.' }
+  ]
 );
 pmCoilPage(
   '/answers/heat-pump-maintenance-checklist/',
   'Heat pump maintenance checklist',
-  SCHEDULE + ' Outdoor coil cleaning is the task on this page.',
+  'Filter, snow and ice, condensate, and coil checks between pro visits for an air-source heat pump.',
   'Heat pump maintenance checklist',
-  'Outdoor coil cleaning is the homeowner task published on this page. Other heat-pump tasks stay with your owner’s manual.',
+  'These are look-and-check tasks between visits from a licensed HVAC professional. Outdoor coil cleaning is below, split by brand. Refrigerant and electrical work stay with a pro.',
   [
     link(abs('/answers/ac-maintenance-checklist/'), 'AC maintenance checklist'),
-    link(abs('/answers/side-discharge-heat-pump-maintenance-checklist/'), 'Side-discharge maintenance checklist')
+    link(abs('/answers/side-discharge-heat-pump-maintenance-checklist/'), 'Side-discharge maintenance checklist'),
+    link(abs('/answers/furnace-ac-loud-noise/'), 'Furnace or AC loud noise'),
+    link(abs('/answers/high-heating-bill/'), 'High heating bill')
+  ],
+  [
+    { h2: 'Thermostat' },
+    { p: 'In heating season, mode is Heat, not Emergency Heat, unless a pro told you to use Emergency Heat while you wait. Emergency or Aux heat usually costs more to run. Don’t take the thermostat off the wall. A large overnight setback on a heat pump can call on backup electric heat. The [U.S. Department of Energy Energy Saver guide](https://www.energy.gov/sites/default/files/2022-08/energy-saver-guide-2022.pdf) says not to set a heat pump back 7°–10°F unless the thermostat is made for heat pumps.' },
+    { h2: 'Air filter' },
+    { p: 'Same rule as a furnace filter: thermostat Off, blower stopped, one filter, arrow toward the blower, tool-free slot you can reach from the floor. [ENERGY STAR](https://www.energystar.gov/saveathome/heating-cooling) says check monthly in heavy-use seasons and change at least every 3 months, or when the filter looks dirty.' },
+    { h2: 'Snow, ice, and the outdoor unit' },
+    { p: 'Brush loose snow off the ground around the unit. Don’t chip ice, don’t reach through the grille, and don’t try to turn the fan. In cold weather a cloud of steam during defrost can be normal and usually lasts a few minutes. Ice that is still there after about an hour of running is not normal. Call a licensed HVAC professional. **' + CC1 + '**' },
+    { p: 'Heat-pump breakers are not reset from this page. If a breaker looks tripped or a disconnect is off, leave it and call a licensed HVAC professional or electrician. Never open the breaker panel cover or the disconnect box.' },
+    { h2: 'Condensate' },
+    { p: 'In cooling season, look at the indoor drain tube you can already see. Straighten a kink by hand only if the tube is outside the cabinet and you don’t need tools. Stop if water is near electrical parts.' }
   ]
 );
 
 add({
   path: '/answers/mini-split-maintenance-checklist/',
   title: 'Mini-split maintenance checklist',
-  description: SCHEDULE + ' Filter power-off uses the shared wording. Indoor coil cleaning is not on this page.',
+  description: 'Floor-level filter, condensate, and outdoor-coil checks for a ductless mini-split between pro visits.',
   crumb: 'Mini-split maintenance checklist',
   kind: 'pm',
+  updated: UPDATED_SEARCH,
   blocks: [
-    { p: 'Filter cleaning you can reach from the floor is in the guided check. If your manual says to switch power off at a breaker, outdoor disconnect, or service switch first, the check uses this wording:' },
+    { p: 'A ductless mini-split has an indoor unit on a wall, floor, or ceiling and a small outdoor unit. These checks stay outside the cabinets. Cleaning the coil inside the indoor unit is not on this page.' },
+    { h2: 'Remote or app' },
+    { p: 'Before a filter check, turn the unit off with the remote or app and wait until the fan stops. That stops it running. It does not cut power. Don’t climb on a chair or ladder to reach the indoor unit.' },
+    { h2: 'Indoor filters' },
+    { p: 'Most mini-splits have washable filters behind a front cover that lifts by hand. Clean them only when your owner’s manual shows the steps without tools, the cover lifts without prying or unscrewing, and you can reach it standing on the floor. If the manual says to switch power off at a breaker or disconnect first, use this wording and stop if it asks for anything else:' },
     { p: PO2 },
-    { p: 'Cleaning the coil inside the indoor unit is not on this page.' },
+    { p: 'Rinse filters with water only if the manual says to, away from the electrical parts. Let them dry, put them back, and close the cover before you turn the unit on. If the cover needs tools, force, or a ladder, leave it for a licensed HVAC professional.' },
+    { h2: 'Water from the indoor unit' },
+    { p: 'A slow drip away from outlets can be a clogged condensate drain. Put down a towel and call a pro to clear the drain. If water reaches a cord, outlet, or switch, stay clear and don’t touch the unit or the breaker panel.' },
+    { h2: 'Outdoor unit' },
+    { p: 'Keep plants, snow, and stored items off the intake and the discharge. Don’t reach through the grille. **' + CC1 + '** Don’t reset a mini-split breaker to test it. If a breaker looks tripped, leave it and call a licensed HVAC professional or electrician. Never open the breaker panel cover or the disconnect box.' },
     { p: SCHEDULE },
     { note: WARRANTY },
-    { h2: 'Outdoor unit' },
     ...coilBlocks(),
-    { p: link(GUIDE, 'Start the guided check') + ' and choose Ductless mini-split.' },
+    { p: link(GUIDE, 'Start the guided check') + ' and choose Something else, then Ductless mini-split.' },
     { h2: 'Related' },
-    { ul: [link(abs('/answers/ac-maintenance-checklist/'), 'AC maintenance checklist')] }
+    { ul: [
+      link(abs('/answers/ac-maintenance-checklist/'), 'AC maintenance checklist'),
+      link(abs('/answers/heat-pump-maintenance-checklist/'), 'Heat pump maintenance checklist'),
+      link(abs('/answers/furnace-ac-loud-noise/'), 'Furnace or AC loud noise')
+    ]}
   ]
 });
 
@@ -458,45 +495,151 @@ add({
 add({
   path: '/answers/furnace-maintenance-checklist/',
   title: 'Furnace maintenance checklist',
-  description: SCHEDULE,
+  description: 'What to check before you turn the heat on for winter: thermostat, filter, vents, condensate, and outside pipes.',
   crumb: 'Furnace maintenance checklist',
   kind: 'pm',
-  blocks: manualOnly('a furnace', [
-    link(abs('/answers/heat-pump-maintenance-checklist/'), 'Heat pump maintenance checklist'),
-    link(abs('/answers/thermostat-maintenance-checklist/'), 'Thermostat maintenance checklist')
-  ])
+  updated: UPDATED_SEARCH,
+  blocks: [
+    { p: 'Do this on a mild day, before you need the heat. It is a look-and-check list. It does not open the furnace, relight a pilot, or turn a gas valve.' },
+    { p: '**If you smell gas or rotten eggs in the air, leave the house now and call the gas utility or 911 from outside.** Don’t touch light switches or phones until you are outside. A rotten-egg smell only from the hot water is a different problem: ' + link(abs('/answers/hot-water-rotten-egg-smell/'), 'hot water smells like rotten eggs') + '.' },
+    { note: WARRANTY },
+    { p: SCHEDULE },
+    { h2: 'Alarms' },
+    { p: 'Press the test button on each carbon monoxide alarm and smoke alarm. [CPSC](https://www.cpsc.gov/Newsroom/News-Releases/2026/CPSC-Issues-Winter-Weather-Safety-Tips-to-Prevent-Fires-and-Carbon-Monoxide-Poisoning) says to test them monthly. If a CO alarm sounds for real, get everyone outside and call 911. Don’t keep testing the furnace.' },
+    { h2: 'Thermostat' },
+    { p: 'Don’t take it off the wall. Set mode to Heat, fan to Auto, and the setpoint a few degrees above the room temperature. Wait one full cycle. Fan On blows room-temperature air between cycles and can feel like the heat failed. Some thermostats wait a few minutes before they start.' },
+    { h2: 'Filter, returns, and supplies' },
+    { p: 'Turn the system Off at the thermostat and wait until the blower stops. Use only a tool-free filter slot or return grille you can reach from the floor. Read the size on the old filter, put in one filter of that size, and point the arrow toward the furnace. Close the slot. Walk the house and make sure return grilles aren’t blocked by furniture and supply vents aren’t closed. Don’t open a burner door to find a filter. The ' + link(abs('/answers/furnace-filter-size/'), 'filter size page') + ' has the longer version.' },
+    { h2: 'Outside vent pipes' },
+    { p: 'A high-efficiency furnace has two plastic pipes on an outside wall. Brush snow, leaves, and shrub clippings away from both ends by hand or with a soft broom, from the ground. Leave ice that is stuck to a pipe. Stop if a pipe is cracked, loose, pulled apart, or full of ice, and call a licensed HVAC professional. [CPSC](https://www.cpsc.gov/Newsroom/News-Releases/2026/CPSC-Issues-Winter-Weather-Safety-Tips-to-Prevent-Fires-and-Carbon-Monoxide-Poisoning) says to clear snow from outside furnace vents so carbon monoxide does not build up in the house.' },
+    { h2: 'Condensate tube' },
+    { p: 'Look at the clear or white tube outside the cabinet. If it is kinked and you can reach it without tools, gently straighten it by hand. Don’t pull it off. Stop if it is frozen, cracked, or you would have to open the furnace. If water is near a switch or outlet, stay out of it and call a pro. Don’t open the breaker panel.' },
+    { h2: 'Switch and breaker, look only' },
+    { p: 'Many furnaces have a nearby switch that looks like a light switch. Look at it and at the breaker labeled for the furnace. Furnace breakers are never reset. If the breaker is in the middle or off, leave it and call a licensed HVAC professional. Never open the breaker panel cover. Don’t press a reset button on the furnace, and don’t open its doors.' },
+    { h2: 'What stays with a pro' },
+    { ul: [
+      'Burners, the gas valve, the pilot, the igniter, and the flame sensor.',
+      'Anything inside the electrical compartment, including a control board.',
+      'A blinking code you cannot read without taking a door off. Write down what you can see through the window and use the ' + link(abs('/answers/furnace-blinking-light/'), 'blinking light page') + '.',
+      'Refrigerant lines on a furnace that also has central air. If you hear hissing, turn the system Off at the thermostat and don’t touch the pipes, valves, or caps.'
+    ]},
+    { p: 'If the test run smells like burning, use the ' + link(abs('/answers/furnace-burning-smell/'), 'burning smell page') + ' before you leave the furnace running.' },
+    { p: link(GUIDE, 'Start the guided check') + ' and choose Furnace or air handler.' },
+    { h2: 'Related' },
+    { ul: [
+      link(abs('/answers/furnace-not-turning-on/'), 'Furnace not turning on'),
+      link(abs('/answers/furnace-filter-size/'), 'Furnace filter size'),
+      link(abs('/answers/thermostat-maintenance-checklist/'), 'Thermostat maintenance checklist'),
+      link(abs('/answers/heat-pump-maintenance-checklist/'), 'Heat pump maintenance checklist')
+    ]}
+  ]
 });
 add({
   path: '/answers/boiler-maintenance-checklist/',
   title: 'Boiler maintenance checklist',
-  description: SCHEDULE,
+  description: 'Look-only boiler checks before heating season: thermostat, gauge, leaks, and what to leave for a pro. No radiator bleeding steps.',
   crumb: 'Boiler maintenance checklist',
   kind: 'pm',
-  blocks: manualOnly('a boiler', [
-    link(WH_PM, 'Water heater maintenance checklist'),
-    link(abs('/answers/furnace-maintenance-checklist/'), 'Furnace maintenance checklist')
-  ])
+  updated: UPDATED_SEARCH,
+  blocks: [
+    { p: 'This is a look-only list for a hot-water or steam boiler, baseboard, or radiators. It does not open the boiler, turn a gas valve, or bleed a radiator or baseboard.' },
+    { p: '**If you smell gas or rotten eggs in the air, leave the house now and call the gas utility or 911 from outside.** Don’t touch light switches or phones until you are outside. A rotten-egg smell only from the hot water goes to the ' + link(abs('/answers/hot-water-rotten-egg-smell/'), 'rotten-egg smell') + ' page.' },
+    { p: 'If hot water or steam is spraying, or the relief pipe is discharging, stay back. Don’t touch a valve or try to plug the pipe. Call a licensed heating professional. For a serious burn, call 911.' },
+    { note: WARRANTY },
+    { p: SCHEDULE },
+    { h2: 'Alarms and the thermostat' },
+    { p: 'Test carbon monoxide and smoke alarms with their test buttons. If a CO alarm sounds for real, get everyone outside and call 911. On the thermostat, don’t take it off the wall. Set Heat and a setpoint a few degrees above the room temperature. Radiators and floors can take a while to warm up. Some homes have more than one thermostat, one per zone.' },
+    { h2: 'Around the boiler' },
+    { ul: [
+      'Look for water on the floor, rust at fittings, or a drip from the relief pipe. Don’t lift, cap, or plug the relief valve.',
+      'If you can already read the gauge from where you stand, write the number down. If it sits on a relief setting or warning mark identified for your boiler, don’t touch it. Call a licensed heating professional.',
+      'On a steam boiler, if the sight glass shows no water, don’t add water. Call a pro.',
+      'Look at the boiler’s switch and any nearby service switch. Don’t flip a switch or a breaker. If one is off or a breaker looks tripped, leave it and call.',
+      'Write down a code on the display. Don’t clear it, and don’t open the jacket to find a chart.'
+    ]},
+    { h2: 'Rooms' },
+    { p: 'Move furniture, curtains, and covers off baseboards and radiators so air can move. Give the system time after you do. Gurgling, or a radiator that is warm at the bottom and cold at the top, needs a pro. This page does not include bleeding instructions for radiators or baseboard.' },
+    { h2: 'What stays with a pro' },
+    { ul: [
+      'Burners, the gas valve, the pilot, and any oil-burner reset. Don’t press a red reset button.',
+      'Opening the boiler, adding water, or adjusting pressure.',
+      'Bleeding radiators or baseboard, and zone valves.',
+      'Electrical work inside a panel. Never open the breaker panel cover.'
+    ]},
+    { p: 'If the heat is already out, use ' + link(abs('/answers/boiler-not-heating/'), 'boiler or radiators not heating') + ' and ' + link(GUIDE, 'start the guided check') + '. Choose Something else, then Boiler, radiators, baseboard, or radiant floors.' },
+    { h2: 'Related' },
+    { ul: [
+      link(abs('/answers/boiler-not-heating/'), 'Boiler or radiators not heating'),
+      link(abs('/answers/furnace-maintenance-checklist/'), 'Furnace maintenance checklist'),
+      link(WH_PM, 'Water heater maintenance checklist'),
+      link(abs('/answers/hot-water-rotten-egg-smell/'), 'Rotten-egg smell')
+    ]}
+  ]
 });
 add({
   path: '/answers/thermostat-maintenance-checklist/',
   title: 'Thermostat maintenance checklist',
-  description: SCHEDULE,
+  description: 'Battery, schedule, fan, and screen checks you can do without pulling the thermostat off the wall.',
   crumb: 'Thermostat maintenance checklist',
   kind: 'pm',
-  blocks: manualOnly('a thermostat', [
-    link(abs('/answers/furnace-maintenance-checklist/'), 'Furnace maintenance checklist')
-  ])
+  updated: UPDATED_SEARCH,
+  blocks: [
+    { p: 'These checks use the thermostat you already have on the wall. Don’t pull it off, and don’t loosen wires. If a step asks for an installer menu, a password, or a wiring choice, stop and call the installer or a licensed HVAC professional.' },
+    { note: WARRANTY },
+    { p: SCHEDULE },
+    { h2: 'Batteries' },
+    { p: 'If your model takes batteries and the manual shows a cover that opens by hand, put in fresh batteries of the type it names. If the cover doesn’t match the manual, or you would have to take the thermostat off the wall, stop. A blank screen has its own page: ' + link(abs('/answers/smart-thermostat-no-power/'), 'smart thermostat has no power') + '.' },
+    { h2: 'Mode, fan, and schedule' },
+    { ul: [
+      'Heat season: mode Heat, setpoint a few degrees above the room, fan Auto. Fan On runs the blower between cycles and can feel cold.',
+      'Cool season: mode Cool, setpoint below the room temperature.',
+      'A heat pump: leave Emergency Heat and Aux off unless you are waiting on a pro. They usually cost more to run. Don’t use a deep setback unless the thermostat is made for a heat pump. See ' + link(abs('/answers/high-heating-bill/'), 'why a heating bill runs high') + '.',
+      'If the temperature changes on its own, check for a hold, a schedule, or an Eco or Away setting before you assume the equipment failed.'
+    ]},
+    { h2: 'What not to change' },
+    { p: 'Don’t change equipment type, wiring, cycle rate, or other installer settings to chase a problem. Don’t reset a breaker for the furnace or air conditioner from this page. If a breaker looks tripped, leave it and call a licensed professional. Never open the breaker panel cover.' },
+    { p: link(GUIDE, 'Start the guided check') + ' and choose Something else, then Thermostat or settings problem.' },
+    { h2: 'Related' },
+    { ul: [
+      link(abs('/answers/smart-thermostat-no-power/'), 'Smart thermostat no power'),
+      link(abs('/answers/furnace-maintenance-checklist/'), 'Furnace maintenance checklist'),
+      link(abs('/answers/furnace-not-turning-on/'), 'Furnace not turning on')
+    ]}
+  ]
 });
 add({
   path: '/answers/geothermal-heat-pump-maintenance-checklist/',
   title: 'Geothermal heat pump maintenance checklist',
-  description: SCHEDULE,
+  description: 'Filter, condensate, and look-only checks for a geothermal or water-source heat pump. Loop fluid and refrigerant stay with a pro.',
   crumb: 'Geothermal maintenance checklist',
   kind: 'pm',
-  blocks: manualOnly('a geothermal or water-source heat pump', [
-    link(abs('/answers/heat-pump-maintenance-checklist/'), 'Heat pump maintenance checklist')
-  ])
+  updated: UPDATED_SEARCH,
+  blocks: [
+    { p: 'A geothermal or water-source heat pump sits indoors, often in a basement or closet. Water or loop fluid comes in through pipes. There is no outdoor fan unit to hose down. These checks stay outside the cabinet.' },
+    { note: WARRANTY },
+    { p: SCHEDULE },
+    { h2: 'Thermostat and filter' },
+    { p: 'Set the mode you mean to use and leave Emergency Heat off unless a pro told you to use it while you wait. Turn the system Off at the thermostat and wait for the blower to stop. Change the filter only in a tool-free slot you can reach from the floor, one filter, arrow toward the blower. Don’t open the cabinet to find a filter. [ENERGY STAR](https://www.energystar.gov/saveathome/heating-cooling) says to check a filter every month in heavy-use seasons and change it at least every 3 months, or when it looks dirty. Your manual wins if it differs.' },
+    { h2: 'Condensate and water' },
+    { p: 'Look at a condensate tube you can already see outside the cabinet. Straighten a kink by hand only if you don’t need tools and you don’t pull the tube off. If water is on or near wiring, an outlet, or the breaker panel, stay out of it and call a licensed HVAC professional. Don’t touch the panel.' },
+    { h2: 'What stays with a pro' },
+    { ul: [
+      'Loop fluid, antifreeze, well water, and any chemical treatment. Don’t add anything to the loop.',
+      'Refrigerant. If you hear hissing, turn the system Off at the thermostat. Don’t touch the pipes, valves, or caps.',
+      'Opening the cabinet, resetting a breaker, or working on live wiring. Never open the breaker panel cover.',
+      'A loop gauge you cannot already read from where you stand. If you can read it, write the number down and give it to your pro. Don’t adjust a valve to change it.'
+    ]},
+    { p: link(GUIDE, 'Start the guided check') + ' and choose Something else, then Water-source / geothermal heat pump.' },
+    { h2: 'Related' },
+    { ul: [
+      link(abs('/answers/heat-pump-maintenance-checklist/'), 'Heat pump maintenance checklist'),
+      link(abs('/answers/furnace-filter-size/'), 'Furnace filter size'),
+      link(abs('/answers/high-heating-bill/'), 'High heating bill')
+    ]}
+  ]
 });
+
+require('./search-answer-pages')({ add, link, abs, GUIDE, CC1, UPDATED_SEARCH });
 
 const equipment = [
   ['Central air', '/answers/ac-maintenance-checklist/'],
@@ -520,6 +663,7 @@ const hubs = [
     description: 'Homeowner answers for heating, cooling, and hot water, plus maintenance checklists.',
     crumb: 'Answers',
     kind: 'hub',
+    updated: UPDATED_SEARCH,
     blocks: [
       { p: 'These pages are the answers and checklists published in this release. Each one is ordinary HTML.' },
       { h2: 'Answers' },
@@ -553,7 +697,7 @@ function jsonLd(page) {
     graph.push({
       '@type': 'Article',
       headline: page.title,
-      dateModified: UPDATED,
+      dateModified: page.updated || UPDATED,
       author: { '@type': 'Organization', name: 'Second Wrench' },
       publisher: {
         '@type': 'Organization',
@@ -611,7 +755,7 @@ function pageHtml(page) {
   <main id="main" class="content-wrap" tabindex="-1">
     <p class="fine">${crumbs}</p>
     <h1>${esc(page.title)}</h1>
-    <p class="fine">Last updated October 15, 2026.</p>
+    <p class="fine">Last updated ${prettyDate(page.updated || UPDATED)}.</p>
     ${blocksToHtml(page.blocks)}
     <p class="fine">Independent information, not an inspection or a confirmed diagnosis. Not attorney-reviewed and not a licensed HVAC review. <a href="mailto:support@secondwrench.co">support@secondwrench.co</a></p>
   </main>
