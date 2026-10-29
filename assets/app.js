@@ -1157,8 +1157,20 @@
     const check=buildCheck(serialStatus?'skipped':'skipped','none');
     sendCatalog({bot_field:'',gpc:gpcOn(),events:drainEvents(),check:check},true);
   });
+  function askChatWanted() {
+    if (C.aiChatEnabled === true) return true;
+    if (C.aiChatEnabled !== 'preview') return false;
+    try { return /(?:^|[?&])aichat=1(?:&|$)/.test(location.search || ''); }
+    catch (err) { return false; }
+  }
   captureAttribution();
   hit('visit');
+  if (askChatWanted()) {
+    const askScript = document.createElement('script');
+    askScript.src = 'assets/ask-chat.js?v=2026-10-20.18';
+    askScript.defer = true;
+    document.body.appendChild(askScript);
+  }
   window.addEventListener('hashchange',render);
   render();
 })();

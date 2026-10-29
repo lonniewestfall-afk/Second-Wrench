@@ -26,6 +26,10 @@ window.SW_CONFIG = Object.freeze({
   stageLatchStepsEnabled: false,
   // Blank-screen v2: one thermostat power check after the safety gate. Off keeps the battery alias.
   tsBlankScreenV2Enabled: true,
+  // Ask Second Wrench text chat. false hides the panel, including ?aichat=1.
+  // 'preview' shows it only when the URL has ?aichat=1. true shows it for everyone.
+  // The server reads AI_CHAT_ENABLED the same way and defaults off.
+  aiChatEnabled: false,
   releaseChecks: {
     operatorDetailsConfirmed: false,
     contactEmailApproved: true,

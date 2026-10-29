@@ -9,6 +9,7 @@
 
 [functions]
   external_node_modules = ["@netlify/blobs"]
+  included_files = ["netlify/functions/_ask-index.json"]
 
 [[redirects]]
   from = "/api/catalog/record"
@@ -55,5 +56,11 @@
 [[redirects]]
   from = "/api/hit"
   to = "/.netlify/functions/hit"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/ask"
+  to = "/.netlify/functions/ask"
   status = 200
   force = true
