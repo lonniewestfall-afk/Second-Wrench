@@ -539,11 +539,10 @@ const SOCIAL_LINKS = [
 SOCIAL_LINKS.forEach(([href, label]) => {
   const anchor = 'href="' + href + '" target="_blank" rel="noopener noreferrer" aria-label="' + label + '"';
   assert(indexText.includes(anchor), 'site footer social link ' + label);
-  assert(appText.includes(anchor), 'home social link ' + label);
 });
+assert(!appText.includes('class="social-follow"') && !appText.includes('aria-label="Follow Second Wrench"'), 'home does not render a follow row');
 assert(indexText.includes('"sameAs":["https://x.com/SecondWrench","https://www.facebook.com/profile.php?id=61595153885270","https://www.reddit.com/user/SecondWrench/","https://www.instagram.com/secondwrench.co/"]'), 'Organization sameAs lists the social profiles');
 assert((indexText.match(/class="social-follow"/g) || []).length === 1, 'site footer has one follow row');
-assert((appText.match(/aria-label="Follow Second Wrench"/g) || []).length === 1, 'home has one follow row');
 assert(!/secondwrenchhvac/i.test(indexText + '\n' + appText), 'Instagram handle is secondwrench.co');
 
 const gas = F.create();
@@ -2359,12 +2358,11 @@ function pageChecks() {
     }
     const heroCta = doc.querySelector('.hero-cta');
     const startBtn = heroCta && heroCta.querySelector('[data-action="start"]');
-    const heroFollow = heroCta && heroCta.querySelector('.social-follow');
-    assert(startBtn && heroFollow && (startBtn.compareDocumentPosition(heroFollow) & window.Node.DOCUMENT_POSITION_FOLLOWING), 'follow row sits below Start');
-    assertSocial(heroFollow, 'home');
+    assert(startBtn, 'home has a start button');
+    assert(!doc.querySelector('.hero-cta .social-follow') && !doc.querySelector('.home-hero .social-follow'), 'hero has no follow row');
     assertSocial(doc.querySelector('.site-footer .social-follow'), 'site footer');
     const instagramHrefs = [...doc.querySelectorAll('a')].map(el => el.getAttribute('href') || '').filter(href => /instagram/i.test(href));
-    assert(instagramHrefs.length === 2 && instagramHrefs.every(href => href === 'https://www.instagram.com/secondwrench.co/'), 'rendered Instagram links use secondwrench.co');
+    assert(instagramHrefs.length === 1 && instagramHrefs[0] === 'https://www.instagram.com/secondwrench.co/', 'rendered Instagram link is only in the footer');
     assert(!/secondwrenchhvac/i.test(doc.documentElement.outerHTML), 'rendered page has no secondwrenchhvac handle');
     click(doc.querySelector('[data-action="start"]'));
     await flush();

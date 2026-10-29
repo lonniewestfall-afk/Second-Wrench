@@ -33,6 +33,15 @@ assert(!/localStorage|sessionStorage|FormData|FileReader/.test(chatText), 'chat 
 assert(chatText.includes('createImageBitmap') && chatText.includes("toDataURL('image/jpeg'"), 'photos are re-encoded so EXIF and GPS are dropped');
 assert(appText.includes('sw_preview') && appText.includes('previewInvitePresent'), 'invite link can load the chat script');
 assert(!/\b(safe|safely|safer|safest|unsafe)\b/i.test(chatText), 'chat UI copy avoids safe as an adjective');
+assert(chatText.includes('position:fixed') && chatText.includes('inset:0') && chatText.includes('height:100dvh') && chatText.includes('z-index:1000'), 'mobile chat is a fixed full-viewport sheet');
+assert(chatText.includes('ask-lock') && chatText.includes('overflow-y:auto') && chatText.includes('max-height:none'), 'the message list scrolls and the page scroll locks');
+assert(!/\.ask-log\{[^}]*max-height:(?!none)/.test(chatText), 'the message list has no clipping max-height');
+assert(chatText.includes('flex-wrap:wrap') && chatText.includes('gap:8px'), 'citation chips wrap with a gap');
+assert(chatText.includes('overflow-wrap:anywhere') && chatText.includes('box-sizing:border-box') && chatText.includes('max-width:100vw'), 'bubbles stay inside the viewport');
+assert(chatText.includes('-webkit-appearance:none') && chatText.includes('background-color:#b82030'), 'send control is scarlet, not the iOS default');
+assert(appText.includes('ask-chat.js?v=2026-10-20.18&r=2026-10-29.5'), 'chat script url changes when the panel changes');
+assert(read('index.html').includes('styles.css?v=2026-10-20.18&r=2026-10-29.5') && read('index.html').includes('app.js?v=2026-10-20.18&r=2026-10-29.5'), 'homepage css and app urls are cache-busted');
+assert(read('_headers').includes('no-store'), 'html is not stored in a long cache');
 
 function post(body, headers) {
   return new Request('http://secondwrench.test/api/ask', {
@@ -182,6 +191,38 @@ async function main() {
   await new Promise(resolve => setTimeout(resolve, 30));
   assert(posted && posted.url === '/api/ask' && posted.body.includes('"gpc":true'), 'the panel posts to /api/ask and forwards GPC');
   assert(shown.window.document.querySelector('.ask-log').textContent.includes('not available right now'), 'the panel shows the 503 message');
+
+  const wide = new JSDOM('<!doctype html><html><head></head><body><footer class="site-footer"><p class="footer-fine">Independent information. 0.1.0-beta</p></footer></body></html>', { url: 'https://secondwrench.co/', pretendToBeVisual: true });
+  const longUrl = 'https://secondwrench.co/answers/furnace-blowing-cold-air/this-is-a-very-long-path-that-must-wrap-inside-the-bubble';
+  const ending = 'the mode should be Heat, not Cool, and the rest of this sentence stays visible.';
+  wide.window.fetch = () => Promise.resolve({
+    ok: true,
+    status: 200,
+    json: () => Promise.resolve({
+      ok: true,
+      message: '## What to check\n\n- Look at the thermostat.\n- Read ' + longUrl + '\n\n' + ending,
+      citations: [
+        { title: 'Furnace checklist', href: '/answers/furnace-maintenance-checklist/' },
+        { title: 'Geothermal heat pump', href: '/answers/geothermal-heat-pump-maintenance-checklist/' },
+        { title: 'Start the guided check', href: '/#/' }
+      ],
+      safety: null
+    })
+  });
+  Object.defineProperty(wide.window, 'innerWidth', { configurable: true, value: 390 });
+  chat.mount(wide.window.document, { aiChatEnabled: true });
+  wide.window.document.querySelector('.ask-launch').click();
+  wide.window.document.querySelector('#ask-input').value = 'The room is cold';
+  wide.window.document.querySelector('.ask-compose').dispatchEvent(new wide.window.Event('submit', { bubbles: true, cancelable: true }));
+  await new Promise(resolve => setTimeout(resolve, 30));
+  const wideLog = wide.window.document.querySelector('.ask-log');
+  assert(wideLog.textContent.includes(ending), 'a long answer stays whole in the message list');
+  assert(wideLog.textContent.includes(longUrl), 'a long url stays inside the bubble');
+  const wideChips = [...wideLog.querySelectorAll('.ask-chips a')];
+  assert(wideChips.length === 3 && wideChips[0].textContent === 'Furnace checklist' && wideChips[1].textContent === 'Geothermal heat pump', 'citation chips are separate links');
+  assert(wide.window.document.body.classList.contains('ask-lock'), 'an open phone sheet locks page scroll');
+  assert(wide.window.document.querySelector('.footer-fine').textContent.includes('0.1.0-beta'), 'footer copy stays in the page under the sheet');
+  wide.window.close();
 
   let fetches = 0;
   const fakeFetch = async () => {
