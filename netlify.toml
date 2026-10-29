@@ -11,6 +11,9 @@
   external_node_modules = ["@netlify/blobs"]
   included_files = ["netlify/functions/_ask-index.json"]
 
+[functions.ask]
+  timeout = 26
+
 [[redirects]]
   from = "/api/catalog/record"
   to = "/.netlify/functions/catalog-record"

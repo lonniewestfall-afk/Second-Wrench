@@ -382,11 +382,37 @@ async function main() {
   assert(ant.status === 200 && antBody.ok === true, 'Anthropic is the default provider, got ' + ant.status + ' ' + JSON.stringify(antBody).slice(0, 180));
   assert(anthropicCall && anthropicCall.url === 'https://api.anthropic.com/v1/messages' && anthropicCall.body.model === 'claude-opus-5-5', 'default model is claude-opus-5-5 on the Messages API');
   assert(anthropicCall.headers['x-api-key'] === 'sk-ant-test' && anthropicCall.headers['anthropic-version'] === '2023-06-01', 'Anthropic auth headers');
+  assert(!Object.prototype.hasOwnProperty.call(anthropicCall.body, 'temperature') && !Object.prototype.hasOwnProperty.call(anthropicCall.body, 'top_p') && !Object.prototype.hasOwnProperty.call(anthropicCall.body, 'top_k'), 'Opus requests omit sampling parameters');
   assert(typeof anthropicCall.body.system === 'string' && anthropicCall.body.system.includes('critical-charge') && !anthropicCall.body.messages.some(message => message.role === 'system'), 'system prompt is separate and includes the inverter rule');
   assert(anthropicCall.body.messages.some(message => message.content === 'Yesterday. What does this nameplate say?' || (Array.isArray(message.content) && message.content.some(block => block.text && block.text.indexOf('nameplate') !== -1))), 'the thread is sent to the model');
   const imageBlock = anthropicCall.body.messages.flatMap(message => Array.isArray(message.content) ? message.content : []).find(block => block.type === 'image');
   assert(imageBlock && Buffer.from(imageBlock.source.data, 'base64').indexOf(Buffer.from('GPSLATITUDE')) === -1, 'GPS is not sent to the model');
   assert(!antLogs.some(event => JSON.stringify(event).includes('GPSLATITUDE') || JSON.stringify(event).includes('sk-ant-test') || JSON.stringify(event).includes('invite-one')), 'image bytes, the key, and the token are not logged');
+  const echo = 'UNIQUE_PROVIDER_ECHO temperature deprecated';
+  const providerLogs = [];
+  const providerFail = await ask.handleAsk(post({ messages: [{ role: 'user', content: 'My central air conditioner is not cooling' }] }), {
+    env: { AI_CHAT_ENABLED: 'true', ANTHROPIC_API_KEY: 'sk-ant-test', AI_IP_HASH_SALT: 'salt' },
+    fetch: async () => ({ ok: false, status: 400, json: async () => ({ type: 'error', error: { message: echo } }) }),
+    log: event => providerLogs.push(event),
+    index,
+    store: hits.memoryStore(),
+    now: () => new Date('2026-10-29T18:00:00Z')
+  });
+  const providerBody = await providerFail.json();
+  const providerLine = ask.logLine(Object.assign({ logContent: true }, providerLogs[providerLogs.length - 1]));
+  assert(providerFail.status === 502 && providerBody.error === 'provider' && providerLine.providerStatus === 400, 'a provider 400 is logged as a status code');
+  assert(!JSON.stringify(providerBody).includes(echo) && !JSON.stringify(providerLine).includes(echo) && !JSON.stringify(providerLogs).includes(echo), 'provider error text is not logged or returned');
+  const networkLogs = [];
+  const networkFail = await ask.handleAsk(post({ messages: [{ role: 'user', content: 'My central air conditioner is not cooling' }] }), {
+    env: { AI_CHAT_ENABLED: 'true', ANTHROPIC_API_KEY: 'sk-ant-test', AI_IP_HASH_SALT: 'salt' },
+    fetch: async () => { throw new Error('connect ECONNREFUSED ' + echo); },
+    log: event => networkLogs.push(event),
+    index,
+    store: hits.memoryStore(),
+    now: () => new Date('2026-10-29T18:05:00Z')
+  });
+  const networkLine = ask.logLine(Object.assign({ logContent: false }, networkLogs[networkLogs.length - 1]));
+  assert((await networkFail.json()).error === 'provider' && networkLine.providerStatus === 0 && !JSON.stringify(networkLine).includes(echo) && !JSON.stringify(networkLogs).includes('ECONNREFUSED'), 'a network failure logs status 0 and not the error text');
   assert(antLogs.some(event => event.content === 'Yesterday. What does this nameplate say?'), 'text logging keeps the question only');
   const stored = await antStore.list();
   for (const blob of stored.blobs) {

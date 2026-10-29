@@ -37,6 +37,7 @@ export function logLine(event) {
     action: event.action || '',
     gpc: event.gpc === true
   };
+  if (Number.isInteger(event.providerStatus)) line.providerStatus = event.providerStatus;
   if (event.logContent === true && event.gpc !== true && event.content) line.content = event.content;
   return line;
 }
@@ -302,7 +303,8 @@ export async function handleAsk(request, deps) {
       signal
     });
   } catch (err) {
-    return finish(reply(502, { ok: false, error: 'provider', message: 'The assistant did not answer. Please use the guided check: /#/' }, meta));
+    const providerStatus = Number.isInteger(err && err.status) ? err.status : 0;
+    return finish(reply(502, { ok: false, error: 'provider', message: 'The assistant did not answer. Please use the guided check: /#/' }, Object.assign({}, meta, { action: 'provider', providerStatus })));
   }
 
   const clipped = String(raw).slice(0, maxTokens * 8);
