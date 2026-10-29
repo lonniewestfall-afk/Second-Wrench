@@ -164,16 +164,21 @@ input::placeholder,textarea::placeholder{color:#aaaab4;opacity:1}
 .nav-more[open] .nav-more-links{display:flex;flex-direction:column;position:absolute;right:12px;top:64px;z-index:40;min-width:220px;padding:8px;background:#222328;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}
 .nav-more-links a{display:flex;align-items:center;min-height:44px;padding:0 10px;font-size:1rem;text-decoration:none}
 .nav-stop-short,.nav-menu-bars{display:none}
+.nav-actions{display:flex;flex-direction:row;align-items:center;gap:8px;margin:0;padding:0}
+.nav-more{margin:0}
+.nav-more summary{margin:0}
+.nav-more summary::marker{content:""}
 @media(max-width:979px){
   .nav-links{display:none}
-  .nav-more{display:block}
+  .nav-actions{display:flex;flex-direction:row;align-items:center;margin:0;padding:0;gap:8px}
+  .nav-more{display:flex;align-items:center;height:44px;min-height:44px;max-height:44px;margin:0;padding:0}
   .site-header{align-items:center;padding:8px 12px;gap:8px}
-  .site-header nav{align-items:center;gap:8px}
+  .site-header nav{align-items:center;gap:8px;margin:0}
   .nav-stop-full{display:none}
   .nav-stop-short{display:inline}
-  .nav-stop.button.small{background:#b82030;background-color:#b82030;color:#fff;border:0;border-radius:999px;min-height:44px;height:44px;padding:0 14px;font-size:.95rem;font-weight:700;line-height:1;box-shadow:none}
+  .nav-stop.button.small{background:#b82030;background-color:#b82030;color:#fff;border:0;border-radius:999px;height:44px;min-height:44px;max-height:44px;margin:0;padding:0 14px;font-size:.95rem;font-weight:700;line-height:44px;box-shadow:none;box-sizing:border-box}
   .nav-stop.button.small:hover{background:#ce2b3d;background-color:#ce2b3d;color:#fff}
-  .nav-more summary{width:44px;height:44px;min-width:44px;min-height:44px;padding:0;border-radius:999px;border:1px solid #5c5d66;background:#1c1d21;display:inline-flex;align-items:center;justify-content:center;position:relative}
+  .nav-more summary{width:44px;height:44px;min-width:44px;min-height:44px;max-height:44px;margin:0;padding:0;border-radius:999px;border:1px solid #5c5d66;background:#1c1d21;display:inline-flex;align-items:center;justify-content:center;position:relative;box-sizing:border-box;line-height:0}
   .nav-menu-label{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
   .nav-menu-bars{display:block;width:18px;height:2px;border-radius:1px;background:#f2f2f3;position:relative}
   .nav-menu-bars:before,.nav-menu-bars:after{content:"";position:absolute;left:0;width:18px;height:2px;border-radius:1px;background:#f2f2f3}
