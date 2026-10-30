@@ -162,7 +162,10 @@ input::placeholder,textarea::placeholder{color:#aaaab4;opacity:1}
 .nav-more summary:hover{color:#fff}
 .site-header nav{flex-wrap:nowrap}
 .nav-more[open] .nav-more-links{display:flex;flex-direction:column;position:absolute;right:12px;top:64px;z-index:40;min-width:220px;padding:8px;background:#222328;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}
-.nav-more-links a{display:flex;align-items:center;min-height:44px;padding:0 10px;font-size:1rem;text-decoration:none}
+.nav-more-links a,.nav-more-links button.nav-ask{display:flex;align-items:center;min-height:44px;padding:0 10px;font-size:1rem;text-decoration:none}
+.nav-more-links button.nav-ask{width:100%;margin:0;border:0;border-radius:0;background:transparent;background-color:transparent;color:#d1d1d7;font-weight:580;text-align:left;-webkit-appearance:none;appearance:none}
+.site-header nav .nav-more-links button.nav-ask:hover{color:#fff}
+@media(max-width:680px){.site-header nav .nav-more-links button.nav-ask{font-size:.75rem}}
 .nav-stop-short,.nav-menu-bars{display:none}
 .nav-actions{display:flex;flex-direction:row;align-items:center;gap:8px;margin:0;padding:0}
 .nav-more{margin:0}

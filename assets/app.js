@@ -1232,7 +1232,7 @@
   hit('visit');
   if (askChatWanted()) {
     const askScript = document.createElement('script');
-    askScript.src = 'assets/ask-chat.js?v=2026-10-20.18&r=2026-10-30.2';
+    askScript.src = 'assets/ask-chat.js?v=2026-10-20.18&r=2026-10-30.3';
     askScript.async = false;
     document.body.appendChild(askScript);
   }
