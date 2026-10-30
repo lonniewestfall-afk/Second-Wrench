@@ -43,8 +43,11 @@ assert(chatCss.includes('flex-wrap:wrap') && chatCss.includes('gap:8px'), 'citat
 assert(chatCss.includes('overflow-wrap:anywhere') && chatCss.includes('box-sizing:border-box') && chatCss.includes('max-width:100vw'), 'bubbles stay inside the viewport');
 assert(chatCss.includes('-webkit-appearance:none') && chatCss.includes('background-color:#b82030'), 'send control is scarlet, not the iOS default');
 assert(read('scripts/build-public.js').includes("'assets/styles.css'"), 'the publish step copies the stylesheet');
-assert(appText.includes('ask-chat.js?v=2026-10-20.18&r=2026-10-30.2'), 'chat script url changes when the panel changes');
-assert(read('index.html').includes('styles.css?v=2026-10-20.18&r=2026-10-30.2') && read('index.html').includes('app.js?v=2026-10-20.18&r=2026-10-30.2'), 'homepage css and app urls are cache-busted');
+assert(appText.includes('ask-chat.js?v=2026-10-20.18&r=2026-10-30.3'), 'chat script url changes when the panel changes');
+assert(read('index.html').includes('styles.css?v=2026-10-20.18&r=2026-10-30.3') && read('index.html').includes('app.js?v=2026-10-20.18&r=2026-10-30.3'), 'homepage css and app urls are cache-busted');
+assert(!read('index.html').includes('nav-ask') && !read('index.html').includes('>Ask Second Wrench<'), 'the ask menu item is not in the static html');
+assert(chatCss.includes('.nav-more-links button.nav-ask') && chatCss.includes('color:#d1d1d7'), 'ask menu item styles live in the stylesheet');
+assert(chatText.includes("className = 'nav-ask'") && chatText.includes('menu.open = false'), 'the ask menu item is created by the chat mount and closes the menu');
 assert(read('_headers').includes("style-src 'self'") && read('_headers').includes('no-store'), 'inline styles stay blocked and html is not stored');
 
 function post(body, headers) {
@@ -522,6 +525,27 @@ async function main() {
   assert(await chat.mountIfPreview(offline.window.document, { aiChatEnabled: false }) === null, 'a failed confirm does not mount');
   assert(offline.window.location.search.indexOf('preview=invite-one') !== -1, 'a failed confirm leaves the preview link in place');
   assert(offline.window.localStorage.getItem('sw_preview') === 'invite-one', 'a failed confirm keeps the stored token');
+
+  const menuMarkup = '<!doctype html><head></head><body><details class="nav-more" open><summary aria-label="Menu" aria-expanded="true">Menu</summary><div class="nav-more-links"><a href="#/safety">Safety</a></div></details></body>';
+  const menuPreview = new JSDOM(menuMarkup, { url: 'http://127.0.0.1/?preview=invite-one' });
+  menuPreview.window.fetch = () => Promise.resolve({ ok: true, status: 200, json: async () => ({ ok: true, preview: true }) });
+  const menuPanel = await chat.mountIfPreview(menuPreview.window.document, { aiChatEnabled: false });
+  const askItem = menuPreview.window.document.querySelector('.nav-more-links .nav-ask');
+  assert(menuPanel && askItem && askItem.tagName === 'BUTTON' && askItem.textContent === 'Ask Second Wrench', 'a confirmed invite adds the ask menu item');
+  assert(menuPreview.window.document.querySelector('.nav-more').open === true, 'the menu is open before the ask item is used');
+  askItem.click();
+  assert(menuPreview.window.document.querySelector('.nav-more').open === false, 'the ask menu item closes the menu');
+  assert(menuPreview.window.document.querySelector('.ask-panel').hidden === false, 'the ask menu item opens the chat sheet');
+  const menuPublic = new JSDOM(menuMarkup, { url: 'http://127.0.0.1/' });
+  let menuPublicCalled = false;
+  menuPublic.window.fetch = () => { menuPublicCalled = true; return Promise.resolve({ ok: false, status: 404, json: async () => ({}) }); };
+  assert(await chat.mountIfPreview(menuPublic.window.document, { aiChatEnabled: false }) === null && menuPublicCalled === false && !menuPublic.window.document.querySelector('.nav-ask'), 'public visitors get no ask menu item and no ask request');
+  const menuBad = new JSDOM(menuMarkup, { url: 'http://127.0.0.1/?preview=not-a-real-token' });
+  menuBad.window.fetch = () => Promise.resolve({ ok: false, status: 404, json: async () => ({ ok: false, error: 'disabled' }) });
+  assert(await chat.mountIfPreview(menuBad.window.document, { aiChatEnabled: false }) === null && !menuBad.window.document.querySelector('.nav-ask'), 'an invalid invite adds no ask menu item');
+  const menuOffline = new JSDOM(menuMarkup, { url: 'http://127.0.0.1/?preview=invite-one' });
+  menuOffline.window.fetch = () => Promise.reject(new Error('offline'));
+  assert(await chat.mountIfPreview(menuOffline.window.document, { aiChatEnabled: false }) === null && !menuOffline.window.document.querySelector('.nav-ask'), 'a failed confirm adds no ask menu item');
 
   if (failed) {
     console.error(failed + ' ask check(s) failed');

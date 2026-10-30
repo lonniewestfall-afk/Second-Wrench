@@ -464,6 +464,20 @@
       }
     });
 
+    const menuLinks = doc.querySelector('.nav-more-links');
+    if (menuLinks && !menuLinks.querySelector('.nav-ask')) {
+      const menuItem = doc.createElement('button');
+      menuItem.type = 'button';
+      menuItem.className = 'nav-ask';
+      menuItem.textContent = 'Ask Second Wrench';
+      menuItem.addEventListener('click', () => {
+        const menu = menuItem.closest('.nav-more');
+        if (menu) menu.open = false;
+        if (panel.hidden) launch.click();
+      });
+      menuLinks.appendChild(menuItem);
+    }
+
     doc.body.classList.add('ask-available');
     doc.body.appendChild(launch);
     doc.body.appendChild(panel);
