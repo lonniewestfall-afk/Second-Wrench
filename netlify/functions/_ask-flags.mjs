@@ -38,6 +38,14 @@ export function requestAllowed(mode, tokenOk) {
   return tokenOk === true;
 }
 
+export function readPreviewToken(request) {
+  if (!request || !request.headers || typeof request.headers.get !== 'function') return '';
+  const fromCookie = readCookie(request.headers.get('cookie'), PREVIEW_COOKIE);
+  if (cookieSafe(fromCookie)) return fromCookie;
+  const header = String(request.headers.get('x-sw-preview') || '').trim();
+  return cookieSafe(header) ? header : '';
+}
+
 export function readCookie(header, name) {
   const raw = String(header || '');
   const parts = raw.split(';');

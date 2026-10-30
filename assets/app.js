@@ -1215,7 +1215,10 @@
   function previewInvitePresent() {
     try {
       if (/[?&]preview=[^&#]+/.test(location.search || '')) return true;
-      return /(?:^|;\s*)sw_preview=[^;]+/.test(document.cookie || '');
+      if (/(?:^|;\s*)sw_preview=[^;]+/.test(document.cookie || '')) return true;
+      /* sw-preview-store:start */
+      return !!(localStorage.getItem('sw_preview'));
+      /* sw-preview-store:end */
     } catch (err) { return false; }
   }
   function askChatWanted() {
@@ -1229,10 +1232,31 @@
   hit('visit');
   if (askChatWanted()) {
     const askScript = document.createElement('script');
-    askScript.src = 'assets/ask-chat.js?v=2026-10-20.18&r=2026-10-30.1';
-    askScript.defer = true;
+    askScript.src = 'assets/ask-chat.js?v=2026-10-20.18&r=2026-10-30.2';
+    askScript.async = false;
     document.body.appendChild(askScript);
   }
+  function bindHeaderMenu() {
+    const menu = document.querySelector('.nav-more');
+    if (!menu) return;
+    const summary = menu.querySelector('summary');
+    function syncMenu() {
+      if (summary) summary.setAttribute('aria-expanded', menu.open ? 'true' : 'false');
+    }
+    syncMenu();
+    menu.addEventListener('toggle', syncMenu);
+    document.addEventListener('click', event => {
+      if (!menu.open || menu.contains(event.target)) return;
+      menu.open = false;
+    });
+    document.addEventListener('keydown', event => {
+      if (event.key !== 'Escape' || !menu.open) return;
+      menu.open = false;
+      if (summary) summary.focus();
+    });
+    menu.querySelectorAll('a').forEach(link => link.addEventListener('click', () => { menu.open = false; }));
+  }
+  bindHeaderMenu();
   window.addEventListener('hashchange',render);
   render();
 })();

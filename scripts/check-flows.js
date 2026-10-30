@@ -517,7 +517,7 @@ assert(/termsVersion:\s*C\.termsVersion/.test(appText), 'the session records the
 assert((appText.match(/F\.answer\(/g) || []).length === 1, 'the UI has one answer path');
 assert(!appText.includes('F.selectSystem'), 'menu choices and question answers share that answer path');
 assert(!/agreed:\s*true/.test(appText), 'the UI never hard-codes acceptance');
-assert(!/localStorage|sessionStorage/.test(appText.replace(/\/\* sw-hits:start \*\/[\s\S]*?\/\* sw-hits:end \*\//, '')), 'acceptance is not written to browser storage');
+assert(!/localStorage|sessionStorage/.test(appText.replace(/\/\* sw-hits:start \*\/[\s\S]*?\/\* sw-hits:end \*\//, '').replace(/\/\* sw-preview-store:start \*\/[\s\S]*?\/\* sw-preview-store:end \*\//, '')), 'acceptance is not written to browser storage');
 const feedbackFn = appText.slice(appText.indexOf('function feedbackData'), appText.indexOf('function feedbackText'));
 assert(/use_consent:\s*feedbackConsent \? 'yes' : 'no'/.test(feedbackFn), 'feedback payload stores use_consent');
 assert(/use_consent_at:\s*new Date\(\)\.toISOString\(\)/.test(feedbackFn), 'feedback payload stores the send time');

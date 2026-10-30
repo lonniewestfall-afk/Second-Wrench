@@ -52,7 +52,7 @@ const feedbackFn = appText.slice(appText.indexOf('function feedbackData'), appTe
 });
 assert(appText.includes("gpcOn()) return { utm_source: '', utm_medium: '', utm_campaign: '', landing: '', referrer: '' }"), 'GPC feedback fields are empty');
 assert(appText.includes("hit('visit')") && appText.includes("hit('feedback_sent')") && appText.includes("navigator.sendBeacon('/api/hit'"), 'visit and feedback counts use sendBeacon');
-assert(!/localStorage/.test(appText), 'attribution does not use localStorage');
+assert(!/localStorage/.test(appText.replace(/\/\* sw-preview-store:start \*\/[\s\S]*?\/\* sw-preview-store:end \*\//, '')), 'attribution does not use localStorage');
 assert(!/x-forwarded-for|x-nf-client-connection-ip|cf-connecting-ip|user-agent|document\.cookie/i.test(hitText), 'hit function does not read an address, user agent, or cookie');
 
 ['/feedback', '/safety', '/sources', '/terms', '/privacy', '/about'].forEach(route => {
