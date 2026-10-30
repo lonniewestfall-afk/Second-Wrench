@@ -29,7 +29,8 @@ assert(appText.includes("C.aiChatEnabled === true") && appText.includes("C.aiCha
 assert(/from = "\/api\/ask"/.test(tomlText) && /to = "\/\.netlify\/functions\/ask"/.test(tomlText), 'ask function route');
 assert(chatText.includes('signIn: null') && chatText.includes('voice: null'), 'sign-in and voice stay unwired');
 assert(chatText.includes("photoInput: 'jpeg'"), 'photo upload is a re-encoded jpeg');
-assert(!/localStorage|sessionStorage|FormData|FileReader/.test(chatText), 'chat does not store or attach original files');
+assert(!/sessionStorage|FormData|FileReader/.test(chatText), 'chat does not store a session or attach original files');
+assert(chatText.includes("const PREVIEW_STORE = 'sw_preview'") && chatText.includes('localStorage.getItem(PREVIEW_STORE)') && chatText.includes('localStorage.setItem(PREVIEW_STORE, token)'), 'a blocked cookie can keep the preview token locally');
 assert(chatText.includes('createImageBitmap') && chatText.includes("toDataURL('image/jpeg'"), 'photos are re-encoded so EXIF and GPS are dropped');
 assert(appText.includes('sw_preview') && appText.includes('previewInvitePresent'), 'invite link can load the chat script');
 assert(!/\b(safe|safely|safer|safest|unsafe)\b/i.test(chatText), 'chat UI copy avoids safe as an adjective');
@@ -42,8 +43,8 @@ assert(chatCss.includes('flex-wrap:wrap') && chatCss.includes('gap:8px'), 'citat
 assert(chatCss.includes('overflow-wrap:anywhere') && chatCss.includes('box-sizing:border-box') && chatCss.includes('max-width:100vw'), 'bubbles stay inside the viewport');
 assert(chatCss.includes('-webkit-appearance:none') && chatCss.includes('background-color:#b82030'), 'send control is scarlet, not the iOS default');
 assert(read('scripts/build-public.js').includes("'assets/styles.css'"), 'the publish step copies the stylesheet');
-assert(appText.includes('ask-chat.js?v=2026-10-20.18&r=2026-10-29.5'), 'chat script url changes when the panel changes');
-assert(read('index.html').includes('styles.css?v=2026-10-20.18&r=2026-10-29.6') && read('index.html').includes('app.js?v=2026-10-20.18&r=2026-10-29.5'), 'homepage css and app urls are cache-busted');
+assert(appText.includes('ask-chat.js?v=2026-10-20.18&r=2026-10-30.2'), 'chat script url changes when the panel changes');
+assert(read('index.html').includes('styles.css?v=2026-10-20.18&r=2026-10-30.2') && read('index.html').includes('app.js?v=2026-10-20.18&r=2026-10-30.2'), 'homepage css and app urls are cache-busted');
 assert(read('_headers').includes("style-src 'self'") && read('_headers').includes('no-store'), 'inline styles stay blocked and html is not stored');
 
 function post(body, headers) {
@@ -377,6 +378,12 @@ async function main() {
   const previewGetBody = await previewGet.json();
   const setCookie = typeof previewGet.headers.getSetCookie === 'function' ? previewGet.headers.getSetCookie().join(';') : previewGet.headers.get('set-cookie');
   assert(previewGet.status === 200 && previewGetBody.preview === true && setCookie.indexOf('sw_preview=invite-two') !== -1 && fetches === beforeToken + 1, 'GET confirms a token without spending a model call');
+  const headerGet = await ask.handleAsk(new Request('http://secondwrench.test/api/ask', { method: 'GET', headers: { 'x-sw-preview': 'invite-one' } }), {
+    env: tokenEnv, fetch: fakeFetch, log: event => tokenLogs.push(event), index
+  });
+  const headerBody = await headerGet.json();
+  assert(headerGet.status === 200 && headerBody.preview === true && fetches === beforeToken + 1, 'GET accepts the preview token from the header when a cookie is not stored');
+  assert(!tokenLogs.some(event => JSON.stringify(event).includes('invite-one')), 'the header token is not logged');
   const previewMiss = await ask.handleAsk(new Request('http://secondwrench.test/api/ask', { method: 'GET' }), {
     env: tokenEnv, fetch: fakeFetch, log: quiet, index
   });
@@ -501,6 +508,20 @@ async function main() {
   let publicCalled = false;
   publicPage.window.fetch = () => { publicCalled = true; return Promise.resolve({ ok: false, status: 404, json: async () => ({}) }); };
   assert(await chat.mountIfPreview(publicPage.window.document, { aiChatEnabled: false }) === null && publicCalled === false, 'the public page does not call the ask API');
+  const storedInvite = new JSDOM('<!doctype html><head></head><body></body>', { url: 'http://127.0.0.1/' });
+  storedInvite.window.localStorage.setItem('sw_preview', 'invite-one');
+  let storedHeader = '';
+  storedInvite.window.fetch = (url, init) => {
+    storedHeader = init && init.headers && init.headers['x-sw-preview'];
+    return Promise.resolve({ ok: true, status: 200, json: async () => ({ ok: true, preview: true }) });
+  };
+  const storedPanel = await chat.mountIfPreview(storedInvite.window.document, { aiChatEnabled: false });
+  assert(storedPanel && storedInvite.window.document.querySelector('.ask-launch') && storedHeader === 'invite-one', 'a stored preview token still asks the server and shows the button');
+  const offline = new JSDOM('<!doctype html><head></head><body></body>', { url: 'http://127.0.0.1/?preview=invite-one' });
+  offline.window.fetch = () => Promise.reject(new Error('offline'));
+  assert(await chat.mountIfPreview(offline.window.document, { aiChatEnabled: false }) === null, 'a failed confirm does not mount');
+  assert(offline.window.location.search.indexOf('preview=invite-one') !== -1, 'a failed confirm leaves the preview link in place');
+  assert(offline.window.localStorage.getItem('sw_preview') === 'invite-one', 'a failed confirm keeps the stored token');
 
   if (failed) {
     console.error(failed + ' ask check(s) failed');

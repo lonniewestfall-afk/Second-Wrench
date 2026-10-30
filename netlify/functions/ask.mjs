@@ -9,7 +9,7 @@
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { allowedBase, chatMode, envInt, PREVIEW_COOKIE, previewClearCookie, previewSetCookie, readCookie, requestAllowed, tokenMatches } from './_ask-flags.mjs';
+import { allowedBase, chatMode, envInt, PREVIEW_COOKIE, previewClearCookie, previewSetCookie, readPreviewToken, requestAllowed, tokenMatches } from './_ask-flags.mjs';
 import { clientIp, dayStamp, DEFAULT_DAILY_CAP, DEFAULT_HOUR_CAP, DEFAULT_VISITOR_CAP, hashIp, hourStamp, takeSlot } from './_ask-limits.mjs';
 import { ANTHROPIC_MODEL, getAdapter, stripJpegMetadata } from './_ask-provider.mjs';
 import { buildMessages, citationsFor, retrieve } from './_ask-retrieve.mjs';
@@ -191,7 +191,7 @@ export async function handleAsk(request, deps) {
     log(Object.assign({ logContent }, result.event));
     return result.response;
   };
-  const presented = readCookie(request && request.headers && request.headers.get('cookie'), PREVIEW_COOKIE);
+  const presented = readPreviewToken(request);
   const tokenOk = tokenMatches(presented, env.PREVIEW_TOKENS);
   const mode = chatMode(env.AI_CHAT_ENABLED);
   const secure = request ? secureRequest(request) : false;

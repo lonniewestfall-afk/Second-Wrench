@@ -2989,6 +2989,7 @@
   function selectSystem(state, id, meta = {}) {
     if (id === 'boiler_hot_water_steam') id = 'boiler';
     if (!state || state.result || state.node !== 'sw.intake.system_type') throw new Error('Choose a system only from the system menu.');
+    if (!state.safetyCleared || !state.consent) throw new Error('Safety and consent are required before troubleshooting.');
     const selected = systemMenu().flatMap(group => group.choices).find(choice => choice.id === id);
     if (!selected) throw new Error('That system choice is not available.');
     const next = JSON.parse(JSON.stringify(state));
@@ -3002,6 +3003,7 @@
       node: CO_NODE, result: null, seed, mode, stopping: false, safetyCleared: false,
       coReturn: null, coSkip: null, fnNoHeat: null, fnAfterWarmup: false,
       consent: false, consentAt: null, termsVersion: null, privacyVersion: null, telemetry: false,
+      pendingAfterConsent: null, consentPrompt: null,
       stopCount: 0, catalogConsent: false, catalogConsentVersion: null, catalogConsentAt: null,
       answers: [], startedAt: Date.now(), id: uuid(), landing: null,
       preselectChoice: null, treeVersion: '', audit: [],
@@ -3127,7 +3129,13 @@
     return next;
   }
   function applySessionOverlay(state, nodeId, choice, target) {
-    if (nodeId === CONSENT && choice === 'agree_18_terms') target = 'sw.intake.system_type';
+    if (nodeId === CONSENT && choice === 'agree_18_terms') {
+      if (state.pendingAfterConsent && nodes[state.pendingAfterConsent]) {
+        target = state.pendingAfterConsent;
+        state.pendingAfterConsent = null;
+        state.consentPrompt = null;
+      } else target = 'sw.intake.system_type';
+    }
     if (typeof target !== 'string') return target;
     if (state.product === 'fn') return fnOverlay(state, nodeId, choice, target);
     if (state.product !== 'ac' && (target === CONCLUDE || target.indexOf('ac.adv.cap.') === 0 || target === '@suspected_capacitor_contactor_advanced_off' || target === '@next_step_advanced')) {
@@ -3241,6 +3249,22 @@
     view = blankDecorate(id, state, view);
     return TA.view(id, state, state ? HEAT.view(id, state, view) : view);
   }
+  function routeToConsentGate(state, resumeNode) {
+    state.consentPrompt = 'Confirm safety and consent to continue this check.';
+    if (resumeNode && nodes[resumeNode]) state.pendingAfterConsent = resumeNode;
+    else state.pendingAfterConsent = null;
+    state.result = null;
+    state.stopping = false;
+    if (!state.safetyCleared) {
+      state.node = ENTRY;
+      pushAudit(state, 'consent_reprompt:safety');
+    } else {
+      state.node = CONSENT;
+      pushAudit(state, 'consent_reprompt:consent');
+    }
+    pushAudit(state, 'node_entered:' + state.node);
+    return state;
+  }
   function answer(state, choice, meta = {}) {
     if (choice === 'boiler_hot_water_steam') choice = 'boiler';
     if (!state || state.result || !nodes[state.node]) throw new Error('This check has ended or is invalid.');
@@ -3267,7 +3291,7 @@
     if (!option || option.disabled || (choice === 'filter_clean_weak_airflow' && state.product !== 'hp')) throw new Error('Choose an answer shown on the current screen.');
     const heatingGateWhileStopping = !!(state.stopping && CO_HOOKS[nodeId]);
     if (nodeId !== ENTRY && nodeId !== CONSENT && nodeId !== CO_NODE && !heatingGateWhileStopping && (!state.safetyCleared || !state.consent)) {
-      throw new Error('Safety and consent are required before troubleshooting.');
+      return routeToConsentGate(state, nodeId);
     }
     if (HEAT.before(state, nodeId, option)) { HEAT.entered(state, state.node); return state; }
     if (nodeId === CONSENT && choice === 'agree_18_terms') {
@@ -3277,8 +3301,11 @@
       state.termsVersion = String(meta.termsVersion);
       state.privacyVersion = meta.privacyVersion ? String(meta.privacyVersion) : null;
       state.telemetry = false;
+      state.consentPrompt = null;
     }
-    if (nodeId === ENTRY || heatingGateWhileStopping) state.safetyCleared = choice === 'none_of_these';
+    // Only the shared hazard ENTRY updates safetyCleared here. Lane gates that
+    // run while stopping are handled after the next target is known (Fix A).
+    if (nodeId === ENTRY) state.safetyCleared = choice === 'none_of_these';
     if (nodeId === 'ac.cool.landing.picker' && LANDING[choice]) state.landing = LANDING[choice];
     if (nodeId === 'hp.landing.picker' && HP_LANDING[choice]) state.hpLanding = HP_LANDING[choice];
     if (nodeId === 'hp.ambient.outdoor_band' && HP_BAND[choice]) state.hpAmbient = HP_BAND[choice];
@@ -3459,7 +3486,12 @@
       target = state.coReturn || ENTRY;
       state.coSkip = target;
       state.coReturn = null;
-      if (target !== ENTRY && state.consent) state.safetyCleared = true;
+      if (target !== ENTRY && state.consent) {
+        state.safetyCleared = true;
+        // Resume normal troubleshooting after a consented stop return so a
+        // continuing safety child (e.g. egg_split) does not inherit a wiped flag.
+        state.stopping = false;
+      }
     }
     if (typeof target === 'string' && CO_HOOKS[target]) {
       if (state.coSkip === target) state.coSkip = null;
@@ -3498,6 +3530,18 @@
     if (blankV2() && target === 'ts.power.float_mode') {
       if (state.hvacMode === 'heat') state.preselectChoice = 'mode_heat';
       else if (state.hvacMode === 'cool') state.preselectChoice = 'mode_cool';
+    }
+    if (heatingGateWhileStopping) {
+      if (state.consent && typeof target === 'string' && target.charAt(0) !== '@' && nodes[target] && nodes[target].safetyGate) {
+        state.safetyCleared = true;
+      } else {
+        state.safetyCleared = choice === 'none_of_these';
+      }
+    }
+    if (!state.consent && typeof target === 'string' && target.charAt(0) !== '@'
+        && target !== ENTRY && target !== CONSENT && target !== CO_NODE) {
+      // Hazard @results stay allowed while stopping; mid-tree nodes need consent.
+      return routeToConsentGate(state, target);
     }
     if (typeof target !== 'string') throw new Error('Unknown next step.');
     if (target.indexOf('ac.adv.cap.') === 0 && !advancedEnabled()) {
@@ -3601,9 +3645,12 @@
   function normalizeSession(state) {
     if (!state || state.result !== 'wh_smelly_hot_water') return state;
     state.result = null;
-    state.node = 'wh.gate.egg_split';
     state.product = 'wh';
     if (!state.treeVersion || state.treeVersion.indexOf('wh.') !== 0) state.treeVersion = 'wh.water_heater.v1';
+    if (!state.consent || !state.safetyCleared) {
+      return routeToConsentGate(state, 'wh.gate.egg_split');
+    }
+    state.node = 'wh.gate.egg_split';
     return state;
   }
   function resume(state) {

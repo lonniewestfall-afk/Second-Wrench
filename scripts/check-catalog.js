@@ -59,7 +59,7 @@ assert(/consistency:\s*['"]strong['"]/.test(functionText), 'store consistency is
 assert(!/context\.ip|context\.geo|latitude|longitude|postalCode/.test(functionText), 'functions do not read a network address or precise location');
 assert(appText.includes("postForm('beta-session'"), 'the existing session form path remains while the catalog flag is off');
 assert(!/toDataURL|FormData|FileReader/.test(appText), 'the photo helper does not encode or attach the file');
-assert(!/localStorage|sessionStorage/.test(appText.replace(/\/\* sw-hits:start \*\/[\s\S]*?\/\* sw-hits:end \*\//, '')), 'catalog code is not written to browser storage');
+assert(!/localStorage|sessionStorage/.test(appText.replace(/\/\* sw-hits:start \*\/[\s\S]*?\/\* sw-hits:end \*\//, '').replace(/\/\* sw-preview-store:start \*\/[\s\S]*?\/\* sw-preview-store:end \*\//, '')), 'catalog code is not written to browser storage');
 assert(appText.includes('9A. Optional equipment catalog and statistics'), 'terms include section 9A');
 assert(appText.includes('public-beta-2026-10-20.1'), 'terms body uses the new version');
 assert(appText.includes('privacy-public-beta-2026-10-23.1'), 'privacy body uses the October 23 version');

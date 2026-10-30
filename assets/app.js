@@ -178,7 +178,8 @@
     const tsAffiliation = state.product === 'ts' && F.tsLc ? '<p class="fine ts-affiliation">'+esc(F.tsLc.lc1)+'</p>' : '';
     const renderOption = op => {const agreeBtn=consentUI&&op.id==='agree_18_terms';const pre=state.preselectChoice===op.id?' preselected':'';const hazardChoice=op.id==='hazard_now'||/^hazard_/.test(op.id)||op.id==='cold_exposure_risk'||op.id==='hot_water_or_steam'||op.id==='water_steam_release'||op.id==='bang_or_puffback'||op.id==='steam_glass_empty'||op.id==='soot_scorch_flame'||op.id==='pressure_at_relief';const caption=op.caption?'<small class="option-caption">'+esc(op.caption)+'</small>':'';const source=op.source?'<small class="option-source">'+esc(op.source)+'</small>':'';return '<button class="option'+(op.id==='none_of_these'?' safe':'')+((emergencyFirst&&op.id!=='none_of_these')||hazardChoice?' stop-option':'')+pre+'" data-answer="'+esc(op.id)+'" '+(op.disabled||blockAnswer?'disabled aria-disabled="true" ': '')+(blockAnswer?'data-reprompt-lock="1" ': '')+(agreeBtn?'id="continue-consent"'+(termsChecked?'':' disabled'):'')+'><span><strong>'+esc(op.label)+'</strong>'+(op.hint&&!agreeBtn?'<small>'+esc(op.hint)+'</small>':'')+caption+source+'</span><span class="arrow" aria-hidden="true">→</span></button>';};
     const optionsHtml = systemUI ? '<div class="system-menu">'+F.systemMenu().map(group=>'<section class="system-group system-group--'+esc(group.id)+'" aria-labelledby="system-'+esc(group.id)+'"><h2 id="system-'+esc(group.id)+'">'+esc(group.title)+'</h2><div class="options system-options">'+group.choices.map(renderOption).join('')+'</div></section>').join('')+'</div>' : '<div class="options">'+node.options.map(renderOption).join('')+'</div>';
-    return '<div class="flow-wrap"><div class="flow-top"><a href="#/">← Home</a><span>'+ (coScreen||emergencyFirst?'Safety comes first':systemUI?'Choose your check':'Question '+count+' · The length depends on your answers')+'</span></div>'+pendingLine+(state.mode==='test'?'<div class="mode-banner">TEST SCENARIO · Answer hypothetically. Do not perform work to test the website.</div>':'')+'<div class="flow-layout"><section class="flow-card" data-node="'+esc(state.node)+'"><div class="eyebrow">'+esc(node.section)+'</div><h1>'+esc(systemUI?'What would you like help with?':node.title)+'</h1><p class="lead">'+esc(leadBody)+'</p>'+panelHtml+(node.caution?'<div class="caution">'+esc(node.caution)+'</div>':'')+advancedLine+(consentUI?terms+catalogConsentHtml():'')+(repromptUI?terms:'')+optionsHtml+'<p id="flow-error" class="inline-error" role="alert"></p>'+(emergencyFirst?'<p class="source-note">For immediate danger in the U.S. or Canada, move away and call 911. Elsewhere, use your local emergency number. <a href="#/sources">Safety references</a></p>':'<p class="source-note">'+esc(C.contentVersion)+' · <a href="#/safety">Scope and safety</a></p>')+tsAffiliation+'</section>'+sidebar()+'</div></div>';
+    const consentPromptLine = state.consentPrompt ? '<p class="consent-recovery" role="status">'+esc(state.consentPrompt)+'</p>' : '';
+    return '<div class="flow-wrap"><div class="flow-top"><a href="#/">← Home</a><span>'+ (coScreen||emergencyFirst?'Safety comes first':systemUI?'Choose your check':'Question '+count+' · The length depends on your answers')+'</span></div>'+pendingLine+consentPromptLine+(state.mode==='test'?'<div class="mode-banner">TEST SCENARIO · Answer hypothetically. Do not perform work to test the website.</div>':'')+'<div class="flow-layout"><section class="flow-card" data-node="'+esc(state.node)+'"><div class="eyebrow">'+esc(node.section)+'</div><h1>'+esc(systemUI?'What would you like help with?':node.title)+'</h1><p class="lead">'+esc(leadBody)+'</p>'+panelHtml+(node.caution?'<div class="caution">'+esc(node.caution)+'</div>':'')+advancedLine+(consentUI?terms+catalogConsentHtml():'')+(repromptUI?terms:'')+optionsHtml+'<p id="flow-error" class="inline-error" role="alert"></p>'+(emergencyFirst?'<p class="source-note">For immediate danger in the U.S. or Canada, move away and call 911. Elsewhere, use your local emergency number. <a href="#/sources">Safety references</a></p>':'<p class="source-note">'+esc(C.contentVersion)+' · <a href="#/safety">Scope and safety</a></p>')+tsAffiliation+'</section>'+sidebar()+'</div></div>';
   }
   function analogResultExtras(r) {
     if (!r) return '';
@@ -939,7 +940,16 @@
         F.answer(state, selected.dataset.answer, { agreed: agreeing&&accepted, telemetry:false, termsVersion:C.termsVersion, privacyVersion:C.privacyVersion });
         sendActivity(wasConsent?'start':state.result?'result':'progress');
         go(state.result?'/result':'/check');
-      }catch(error){const el=document.getElementById('flow-error');if(el)el.textContent=error.message;}
+      }catch(error){
+        if(state && /Safety and consent are required/.test(error.message) && F.nodes){
+          state.consentPrompt='Confirm safety and consent to continue this check.';
+          state.pendingAfterConsent=state.node;
+          state.result=null;state.stopping=false;
+          state.node=state.safetyCleared?'ac.session.consent':'ac.gate.cluster_entry';
+          go('/check');return;
+        }
+        const el=document.getElementById('flow-error');if(el)el.textContent=error.message;
+      }
       return;
     }
     const tsChoice=event.target.closest('[data-ts-ack="warranty"]');
@@ -1205,7 +1215,10 @@
   function previewInvitePresent() {
     try {
       if (/[?&]preview=[^&#]+/.test(location.search || '')) return true;
-      return /(?:^|;\s*)sw_preview=[^;]+/.test(document.cookie || '');
+      if (/(?:^|;\s*)sw_preview=[^;]+/.test(document.cookie || '')) return true;
+      /* sw-preview-store:start */
+      return !!(localStorage.getItem('sw_preview'));
+      /* sw-preview-store:end */
     } catch (err) { return false; }
   }
   function askChatWanted() {
@@ -1219,10 +1232,31 @@
   hit('visit');
   if (askChatWanted()) {
     const askScript = document.createElement('script');
-    askScript.src = 'assets/ask-chat.js?v=2026-10-20.18&r=2026-10-29.5';
-    askScript.defer = true;
+    askScript.src = 'assets/ask-chat.js?v=2026-10-20.18&r=2026-10-30.2';
+    askScript.async = false;
     document.body.appendChild(askScript);
   }
+  function bindHeaderMenu() {
+    const menu = document.querySelector('.nav-more');
+    if (!menu) return;
+    const summary = menu.querySelector('summary');
+    function syncMenu() {
+      if (summary) summary.setAttribute('aria-expanded', menu.open ? 'true' : 'false');
+    }
+    syncMenu();
+    menu.addEventListener('toggle', syncMenu);
+    document.addEventListener('click', event => {
+      if (!menu.open || menu.contains(event.target)) return;
+      menu.open = false;
+    });
+    document.addEventListener('keydown', event => {
+      if (event.key !== 'Escape' || !menu.open) return;
+      menu.open = false;
+      if (summary) summary.focus();
+    });
+    menu.querySelectorAll('a').forEach(link => link.addEventListener('click', () => { menu.open = false; }));
+  }
+  bindHeaderMenu();
   window.addEventListener('hashchange',render);
   render();
 })();

@@ -32,19 +32,43 @@
     return /^[A-Za-z0-9._~-]{1,200}$/.test(token) ? token : '';
   }
 
-  function previewCandidate(search, cookie) {
+  const PREVIEW_STORE = 'sw_preview';
+  let activePreview = '';
+
+  function previewCandidate(search, cookie, stored) {
     const query = String(search || '');
     const match = /[?&]preview=([^&#]+)/.exec(query);
     if (match && match[1]) {
-      try { return cleanToken(decodeURIComponent(match[1].replace(/\+/g, ' '))); } catch (err) { return ''; }
+      try {
+        const fromUrl = cleanToken(decodeURIComponent(match[1].replace(/\+/g, ' ')));
+        if (fromUrl) return fromUrl;
+      } catch (err) { /* fall through to the cookie or stored copy */ }
     }
     const parts = String(cookie || '').split(';');
     for (let i = 0; i < parts.length; i += 1) {
       const item = parts[i].trim();
       if (item.indexOf('sw_preview=') !== 0) continue;
-      try { return cleanToken(decodeURIComponent(item.slice('sw_preview='.length))); } catch (err) { return ''; }
+      try {
+        const fromCookie = cleanToken(decodeURIComponent(item.slice('sw_preview='.length)));
+        if (fromCookie) return fromCookie;
+      } catch (err) { /* try the stored copy */ }
     }
-    return '';
+    return cleanToken(stored);
+  }
+
+  function readStored(view) {
+    try { return cleanToken(view && view.localStorage && view.localStorage.getItem(PREVIEW_STORE)); }
+    catch (err) { return ''; }
+  }
+
+  function writeStored(view, token) {
+    try { if (view && view.localStorage) view.localStorage.setItem(PREVIEW_STORE, token); }
+    catch (err) { /* the cookie may still be enough */ }
+  }
+
+  function clearStored(view) {
+    try { if (view && view.localStorage) view.localStorage.removeItem(PREVIEW_STORE); }
+    catch (err) { /* nothing was stored */ }
   }
 
   function secureSuffix(doc) {
@@ -416,7 +440,7 @@
         const res = await fetchImpl('/api/ask', {
           method: 'POST',
           credentials: 'same-origin',
-          headers: { 'content-type': 'application/json' },
+          headers: Object.assign({ 'content-type': 'application/json' }, activePreview ? { 'x-sw-preview': activePreview } : {}),
           body: JSON.stringify({
             messages: messages,
             gpc: !!(view && view.navigator && view.navigator.globalPrivacyControl === true)
@@ -450,23 +474,31 @@
     if (!doc || !doc.body) return null;
     const view = doc.defaultView;
     const search = view && view.location ? view.location.search : '';
-    const token = previewCandidate(search, doc.cookie || '');
+    const token = previewCandidate(search, doc.cookie || '', readStored(view));
     if (!token) return null;
     writeCookie(doc, token);
-    stripPreviewParam(view);
+    writeStored(view, token);
+    activePreview = token;
     try {
       const fetchImpl = (view && view.fetch) || fetch;
-      const res = await fetchImpl('/api/ask', { method: 'GET', credentials: 'same-origin', headers: { accept: 'application/json' } });
+      const res = await fetchImpl('/api/ask', {
+        method: 'GET',
+        credentials: 'same-origin',
+        headers: { accept: 'application/json', 'x-sw-preview': token }
+      });
       let data = {};
       try { data = await res.json(); } catch (err) { data = {}; }
       if (!res.ok || !data || data.preview !== true) {
         clearCookie(doc);
+        clearStored(view);
+        activePreview = '';
         return null;
       }
     } catch (err) {
-      clearCookie(doc);
+      /* Keep the link and the stored token so a later load can try again. */
       return null;
     }
+    stripPreviewParam(view);
     return mount(doc, config, { preview: true });
   }
 
