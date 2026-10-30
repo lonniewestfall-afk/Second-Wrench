@@ -303,3 +303,5 @@ body.ask-lock{position:fixed;left:0;right:0}
 .ask-thumbs img{width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid var(--line,#45464c)}
 @media(min-width:760px){.ask-panel{inset:auto 16px 16px auto;width:min(440px,calc(100vw - 32px));max-width:calc(100vw - 32px);height:min(680px,calc(100dvh - 32px));border:1px solid #45464c;border-radius:16px;box-shadow:0 15px 50px #00000055}}
 @media(prefers-reduced-motion:reduce){.ask-dots i{animation:none}}
+
+.consent-recovery{margin:0 0 16px;padding:14px 16px;border:1px solid #93606b;background:var(--danger-bg,#2a1518);border-radius:12px;color:#f0c4c8;font-size:.9rem;line-height:1.5}

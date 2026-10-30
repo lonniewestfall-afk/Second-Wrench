@@ -42,8 +42,8 @@ assert(chatCss.includes('flex-wrap:wrap') && chatCss.includes('gap:8px'), 'citat
 assert(chatCss.includes('overflow-wrap:anywhere') && chatCss.includes('box-sizing:border-box') && chatCss.includes('max-width:100vw'), 'bubbles stay inside the viewport');
 assert(chatCss.includes('-webkit-appearance:none') && chatCss.includes('background-color:#b82030'), 'send control is scarlet, not the iOS default');
 assert(read('scripts/build-public.js').includes("'assets/styles.css'"), 'the publish step copies the stylesheet');
-assert(appText.includes('ask-chat.js?v=2026-10-20.18&r=2026-10-29.5'), 'chat script url changes when the panel changes');
-assert(read('index.html').includes('styles.css?v=2026-10-20.18&r=2026-10-29.6') && read('index.html').includes('app.js?v=2026-10-20.18&r=2026-10-29.5'), 'homepage css and app urls are cache-busted');
+assert(appText.includes('ask-chat.js?v=2026-10-20.18&r=2026-10-30.1'), 'chat script url changes when the panel changes');
+assert(read('index.html').includes('styles.css?v=2026-10-20.18&r=2026-10-30.1') && read('index.html').includes('app.js?v=2026-10-20.18&r=2026-10-30.1'), 'homepage css and app urls are cache-busted');
 assert(read('_headers').includes("style-src 'self'") && read('_headers').includes('no-store'), 'inline styles stay blocked and html is not stored');
 
 function post(body, headers) {

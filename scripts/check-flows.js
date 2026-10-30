@@ -576,20 +576,43 @@ try {
   F.answer(s, 'agree_18_terms', { agreed: true, termsVersion: '' });
 } catch (err) { blockedVersion = /accept the beta terms/.test(err.message); }
 assert(blockedVersion, 'the engine rejects continue without a terms version');
-let skippedConsent = false;
-try {
-  const s = F.create();
-  F.answer(s, 'co_no');
-  F.answer(s, 'none_of_these');
-  s.node = 'sw.intake.system_type';
-  F.answer(s, 'cooling_only_ac', { agreed: true, termsVersion: 'public-beta-2026-10-08' });
-} catch (err) { skippedConsent = /Safety and consent are required/.test(err.message); }
-assert(skippedConsent, 'troubleshooting cannot skip the consent gate');
+const skipped = F.create();
+F.answer(skipped, 'co_no');
+F.answer(skipped, 'none_of_these');
+skipped.node = 'sw.intake.system_type';
+F.answer(skipped, 'cooling_only_ac', { agreed: true, termsVersion: 'public-beta-2026-10-08' });
+assert(skipped.node === 'ac.session.consent' && skipped.consent === false && skipped.pendingAfterConsent === 'sw.intake.system_type', 'troubleshooting without consent returns to the consent step');
+assert(skipped.consentPrompt === 'Confirm safety and consent to continue this check.', 'missing consent shows a clear recovery prompt');
 const accepted = F.create();
 F.answer(accepted, 'co_no');
 F.answer(accepted, 'none_of_these');
 F.answer(accepted, 'agree_18_terms', { agreed: true, termsVersion: 'public-beta-2026-10-08' });
 assert(accepted.consent === true && accepted.termsVersion === 'public-beta-2026-10-08' && /^\d{4}-\d{2}-\d{2}T/.test(accepted.consentAt), 'the session stores the terms version and acceptance time');
+
+// Stop on WH safety, CO No, egg_sulfur_smell, hot_water_only must advance (not dead-end).
+const metaWH = { agreed: true, termsVersion: 'public-beta-2026-10-08', privacyVersion: 'privacy-public-beta-2026-10-23.1' };
+function replyWH(s, c) {
+  if (s.node === 'sw.co.fast_exit' && c !== 'co_yes' && c !== 'co_no') F.answer(s, 'co_no', metaWH);
+  F.answer(s, c, metaWH);
+}
+const whStop = F.create('', 'test');
+['co_no', 'none_of_these', 'agree_18_terms', 'other_heat_or_ductless', 'water_heater', 'co_no'].forEach(c => replyWH(whStop, c));
+assert(whStop.node === 'wh.gate.safety' && whStop.consent === true && whStop.safetyCleared === true, 'WH stop regression reaches the water-heater safety gate');
+F.stop(whStop);
+assert(whStop.stopping === true && whStop.node === 'sw.co.fast_exit' && whStop.coReturn === 'wh.gate.safety', 'WH stop opens CO with water-heater return');
+F.answer(whStop, 'co_no', metaWH);
+assert(whStop.node === 'wh.gate.safety' && whStop.stopping === false && whStop.safetyCleared === true, 'WH stop then CO No resumes the safety gate without stopping');
+F.answer(whStop, 'egg_sulfur_smell', metaWH);
+assert(whStop.node === 'wh.gate.egg_split' && whStop.safetyCleared === true && whStop.consent === true, 'egg_sulfur_smell after stop keeps safety cleared on egg_split');
+F.answer(whStop, 'hot_water_only', metaWH);
+assert(whStop.node === 'wh.water_odor' && !whStop.result, 'hot_water_only after stop advances past Question 2');
+
+const legacy = F.create('', 'test');
+legacy.result = 'wh_smelly_hot_water';
+legacy.node = null;
+F.normalizeSession(legacy);
+assert(legacy.node === 'ac.gate.cluster_entry' && legacy.pendingAfterConsent === 'wh.gate.egg_split', 'legacy smelly alias without consent routes to the safety gate');
+assert(legacy.consentPrompt === 'Confirm safety and consent to continue this check.', 'legacy alias sets the recovery prompt');
 
 assert(indexText.includes('Second Wrench free public beta:'), 'meta description says free public beta');
 assert(indexText.includes('Free public beta. A better next step. · Not an emergency service'), 'beta bar says free public beta and not an emergency service');
@@ -847,13 +870,11 @@ let t23 = false;
 try { F.answer(F.create(), 'water_source_geo', { agreed: true, termsVersion: 'public-beta-2026-10-08' }); }
 catch (err) { t23 = true; }
 assert(t23, 'T-23 water_source_geo before the gate throws');
-let a27 = false;
-try {
-  const early = F.create();
-  early.node = 'wshp.entry.equipment_gate';
-  F.answer(early, 'wshp_closed_loop', { agreed: true, termsVersion: 'public-beta-2026-10-08' });
-} catch (err) { a27 = /Safety and consent are required/.test(err.message); }
-assert(a27, 'A-27 wshp answer before safety and consent throws');
+const early = F.create();
+early.node = 'wshp.entry.equipment_gate';
+F.answer(early, 'wshp_closed_loop', { agreed: true, termsVersion: 'public-beta-2026-10-08' });
+assert(early.node === 'ac.gate.cluster_entry' && early.consent === false && early.pendingAfterConsent === 'wshp.entry.equipment_gate', 'A-27 wshp answer before safety and consent returns to the safety gate');
+assert(early.consentPrompt === 'Confirm safety and consent to continue this check.', 'A-27 recovery prompt is set');
 const stopped = walk('ask', gate.concat(['other_heat_or_ductless', 'water_source_geo', 'wshp_hz_none']));
 F.stop(stopped);
 assert(stopped.node === 'sw.co.fast_exit' && stopped.coReturn === 'ac.gate.cluster_entry' && stopped.safetyCleared === false, 'A-28 stop opens the CO screen');
