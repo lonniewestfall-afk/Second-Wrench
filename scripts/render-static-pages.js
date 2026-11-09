@@ -93,6 +93,52 @@ function coilBlocks() {
     ]}
   ];
 }
+function sdCoilBlocks() {
+  const shared = coilBlocks();
+  const carrier = shared.find(block => block.section === 'brand-carrier');
+  const silent = shared.find(block => block.section === 'brand-silent');
+  return [
+    { section: 'brand-cc5', blocks: [
+      { h3: 'Trane, Daikin, and Amana' },
+      { p: CC5 },
+      { p: 'No water or chemical steps are shown for Trane, Daikin, or Amana.' },
+      { h3: 'Goodman GZV6S' },
+      { p: CC5 },
+      { p: 'Do not wash the outdoor unit with excessive water. An electric shock or fire could result.' },
+      { p: 'Clean Outside Coil (Qualified Servicer Only)' },
+      { p: 'If cleaning of the outdoor coil becomes necessary, hire a qualified servicer.' },
+      { p: 'Goodman IM-3P761829-3B, p. 1 and p. 56.' },
+      { h3: 'Goodman GSZS6 / GSXS6' },
+      { p: CC5 },
+      { p: 'Do not wash the outdoor unit with excessive water. An electric shock or fire could result.' },
+      { p: 'Goodman 3P731493-3 / EM23A003, wash caution in the front matter.' },
+      { h3: 'Lennox MWHD' },
+      { p: CC5 },
+      { p: 'Do not clean the appliance by spraying water directly onto it.' },
+      { p: 'This should be done by a qualified technician.' },
+      { p: 'Do not clean the inside of the Mini-Split by yourself.' },
+      { p: 'Lennox DB68-12580A-00, English p. 13.' },
+      { p: '**' + CC1 + '**' }
+    ]},
+    carrier,
+    { section: 'brand-cc4', blocks: [
+      { h3: 'Bosch, including Climate 5000, and Luxaire/York HMH7 and HH8' },
+      { p: CC4 },
+      { note: WARRANTY },
+      ...coilSteps()
+    ]},
+    silent,
+    { h3: 'Sources for the side-discharge brand split' },
+    { ul: [
+      'Goodman IM-3P761829-3B, p. 1 and p. 56.',
+      'Goodman 3P731493-3 / EM23A003, wash caution in the front matter.',
+      'Lennox DB68-12580A-00, English p. 13.',
+      'Trane DLR-SVN004A-EN, page 3. The public URL was not recorded with that file, so it is not linked here.',
+      '[Daikin 3P515859-5S](https://www.daikincity.com/document/Installation%20Manual/3P515859-5S)',
+      '[Amana ASXS6/ASZS6 installation reference](https://www.gearypacific.com/ASSETS/DOCUMENTS/CMS/EN/Static_PDF/Amana_SSeries/AC%20Install%20man%20ASXS6.pdf)'
+    ]}
+  ];
+}
 const WH_PM = abs('/answers/water-heater-maintenance-checklist/');
 const pages = [];
 
@@ -475,7 +521,7 @@ add({
     { p: SCHEDULE },
     { note: WARRANTY },
     { p: '**' + CC1 + '**' },
-    ...coilBlocks().slice(2),
+    ...sdCoilBlocks(),
     { h2: 'Why some jobs stay with a pro' },
     { ul: [
       'Re-leveling means lifting a unit that is still connected to refrigerant pipes and wiring. A bent pipe can leak refrigerant. Bosch lists a pad at least 1–2 in. larger than the unit on all sides (IDS Edge IOM, p. 20). Don’t push, lean on, or try to level the unit. Call a licensed HVAC professional.',
@@ -743,7 +789,7 @@ function pageHtml(page) {
   <meta name="twitter:description" content="${esc(page.description)}">
   <meta name="twitter:image" content="${ICON}">
   <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/assets/styles.css?v=2026-10-20.18">
+  <link rel="stylesheet" href="/assets/styles.css?v=2026-11-09.1">
   <script type="application/ld+json">${jsonLd(page)}</script>
 </head>
 <body>

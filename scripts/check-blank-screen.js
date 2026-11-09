@@ -7,7 +7,7 @@ globalThis.SW_CONFIG = {
   stageLatchStepsEnabled: false,
   catalogEnabled: false,
   tsBlankScreenV2Enabled: true,
-  contentVersion: '2026-10-20.18'
+  contentVersion: '2026-11-09.1'
 };
 const F = require('../assets/flow.js');
 const meta = { agreed: true, termsVersion: 'public-beta-2026-10-18.1' };

@@ -827,7 +827,7 @@
         "options": [
           {
             "id": "someone_at_risk",
-            "label": "Someone at home is getting too cold (a baby, an older adult, or someone with a medical need)",
+            "label": "The house is getting cold, and someone at home is at risk from the cold (an infant, an older adult, or someone who is ill or medically fragile)",
             "hint": "",
             "next": {
               "bySd": {
@@ -921,7 +921,7 @@
           },
           {
             "id": "cold_exposure",
-            "label": "Someone at home is getting too cold (a baby, an older adult, or someone with a medical need)",
+            "label": "The house is getting cold, and someone at home is at risk from the cold (an infant, an older adult, or someone who is ill or medically fragile)",
             "hint": "",
             "next": {
               "bySd": {
@@ -1101,7 +1101,7 @@
       "sd.look.discharge_clearance": {
         "section": "Side-discharge outdoor unit",
         "title": "Outdoor unit",
-        "body": "For example, Carrier lists at least 24 in. in front of the fan for its 38MURA models (IM-38MURA-02, p. 8). Daikin lists a wall on the fan side as no taller than 47 in. for its Fit models (3P515859-5S, p. 4). Check your unit’s manual. These numbers are only for the models named. Your unit’s installation manual lists its own numbers. Check your unit’s manual. They describe how the unit should be installed. They aren’t a check of your unit. Look from where you’re standing or from a window. Don’t open, touch, climb on, or reach into the unit.",
+        "body": "For example, Carrier lists at least 24 in. in front of the fan for its 38MURA models (IM-38MURA-02, p. 8). Daikin lists a wall on the fan side as no taller than 47 in. for its Fit models (3P515859-5S, p. 4). Check your unit’s manual. For example, Luxaire lists more than 20 in. (500 mm) in front of the fan for its HMH7 models (HMH7 Series Installation Manual, Fig. 6, p. 9). Bosch lists 200 cm (79 in.) in front for its Climate 5000 Gen 4 wall-mounted models (BTC 769203305 D, Fig. 25, p. 23). Check your unit’s manual. Local code may differ. These numbers are only for the models named. Your unit’s installation manual lists its own numbers. Check your unit’s manual. They describe how the unit should be installed. They aren’t a check of your unit. Look from where you’re standing or from a window. Don’t open, touch, climb on, or reach into the unit.",
         "owner": "sd",
         "diyTier": "basic",
         "safetyGate": false,
@@ -1198,7 +1198,7 @@
       "sd.look.snow_height": {
         "section": "Side-discharge outdoor unit",
         "title": "Outdoor unit",
-        "body": "For example, Carrier lists at least 2 in. above the deepest expected snow for its 38MURA models (IM-38MURA-02, p. 8). Daikin lists the bottom frame at more than 19-3/4 in. above expected snowfall for its Fit models (3P515859-5S, p. 6). Check your unit’s manual. These numbers are only for the models named. Your unit’s installation manual lists its own numbers. Check your unit’s manual. They describe how the unit should be installed. They aren’t a check of your unit. Look from where you’re standing or from a window. Don’t open, touch, climb on, or reach into the unit.",
+        "body": "For example, Carrier lists at least 2 in. above the deepest expected snow for its 38MURA models (IM-38MURA-02, p. 8). Daikin lists the bottom frame at more than 19-3/4 in. above expected snowfall for its Fit models (3P515859-5S, p. 6). Check your unit’s manual. For example, Luxaire tells installers to set HMH7 models on a solid base 2 in. above grade and to elevate the unit so snow cannot block the air entrances (HMH7 Series Installation Manual, pp. 8–9). Bosch tells installers, where snowfall is anticipated on Climate 5000 Gen 4 models, to take measures that prevent ice buildup and coil damage (BTC 769203305 D, p. 23). These are installation requirements, not homeowner steps. Don’t raise, remount, or move the unit yourself. Ask your installer. Check your unit’s manual. Local code may differ. These numbers are only for the models named. Your unit’s installation manual lists its own numbers. Check your unit’s manual. They describe how the unit should be installed. They aren’t a check of your unit. Don’t use a shovel, plow, or snowblower near the unit or pile snow against it, and don’t chip ice off it. Look from where you’re standing or from a window. Don’t open, touch, climb on, or reach into the unit.",
         "owner": "sd",
         "diyTier": "basic",
         "safetyGate": true,
@@ -1624,6 +1624,48 @@
             "fact": ""
           },
           {
+            "id": "brand_climate_5000",
+            "label": "Climate 5000 Gen 4",
+            "hint": "",
+            "next": "sd.read.climate_codes",
+            "fact": ""
+          },
+          {
+            "id": "brand_puz_ha",
+            "label": "Mitsubishi PUZ-HA",
+            "hint": "",
+            "next": "sd.read.puz_codes",
+            "fact": ""
+          },
+          {
+            "id": "brand_gree",
+            "label": "Gree Sapphire, Vireo Gen3, and Livo Gen4",
+            "hint": "",
+            "next": "sd.read.gree_codes",
+            "fact": ""
+          },
+          {
+            "id": "brand_aurora",
+            "label": "Daikin Aurora RXL",
+            "hint": "",
+            "next": "sd.read.aurora_codes",
+            "fact": ""
+          },
+          {
+            "id": "brand_gszs6",
+            "label": "Goodman GSZS6 / GSXS6",
+            "hint": "",
+            "next": "sd.read.gszs6_codes",
+            "fact": ""
+          },
+          {
+            "id": "brand_bcc",
+            "label": "Bosch BCC",
+            "hint": "",
+            "next": "sd.read.bcc_codes",
+            "fact": ""
+          },
+          {
             "id": "hazard_now",
             "label": "Something unsafe is happening now (burning smell, smoke, sparks, gas smell, an alarm, water or ice at electrical parts, or someone at risk)",
             "hint": "Stop checking. We’ll show you where to get help.",
@@ -1883,6 +1925,689 @@
           "undo": "If you’re not sure what you changed, put back the thermostat settings you wrote down. If you can’t, leave it and call a licensed HVAC professional.",
           "locked": "Don’t change these. They protect your equipment and your safety, and they’re for professionals only: any side, top, or front panel or cover; the electrical or control box; the disconnect box and its handle or fuses; buttons, switches, or displays on the board inside the unit; the fan blade and fan motor; refrigerant valves, caps, and pipes; the pipe cover and insulation; the stand, wall bracket, and their bolts; any heater, sensor, or wire on the unit; service menus and anything that clears or deletes stored codes or error history. If a step would take you to one of these, stop. If a screen asks you to enter a password or access code, stop. That’s for installers. Writing down an error code that’s already showing is fine."
         }
+      },
+      "sd.read.climate_codes": {
+        "section": "Side-discharge outdoor unit",
+        "title": "Outdoor unit",
+        "body": "These Climate 5000 code meanings come from Bosch’s Climate 5000 Gen 4 Wall Mounted Ductless installation and operating instructions (BTC 769203305 D, Table 16, p. 37). Other Climate 5000 generations and other brands may differ. A code explains what the unit detected. It isn’t a diagnosis. Don’t clear the code, delete the error history, reset the unit, or switch the power off and on to make the code go away. The code and its history help your technician.",
+        "owner": "sd",
+        "diyTier": "basic",
+        "safetyGate": true,
+        "options": [
+          {
+            "id": "someone_at_risk",
+            "label": "The house is getting cold, and someone at home is at risk from the cold (an infant, an older adult, or someone who is ill or medically fragile)",
+            "hint": "",
+            "next": {
+              "bySd": {
+                "ms:*": "@ms_cold_exposure",
+                "hp:*": "@hp_cold_exposure"
+              },
+              "default": "@sd_cold_exposure"
+            },
+            "gate": "cold_exposure_911",
+            "fact": ""
+          },
+          {
+            "id": "c_climate5000_dF",
+            "label": "dF",
+            "hint": "Defrost\n\nBosch lists dF as “Defrost.” A cloud of steam and a stopped outdoor fan can be part of a normal defrost. If ice is still there after about an hour of running, call a licensed HVAC professional. If the house is getting cold, use the cold-home choice first.",
+            "next": "@sd_code_info_pro",
+            "fact": "dF"
+          },
+          {
+            "id": "c_climate5000_EC_07",
+            "label": "EC 07",
+            "hint": "The outdoor fan speed is operating outside of the normal range\n\nWrite the code down. From the ground, look for ice, snow, or debris at the outdoor fan grille. Don’t reach into the grille or touch the fan. Call a licensed HVAC professional.",
+            "next": "@sd_code_recorded_pro",
+            "fact": "EC 07"
+          },
+          {
+            "id": "c_climate5000_EC_51",
+            "label": "EC 51",
+            "hint": "Outdoor unit EEPROM parameter error",
+            "next": "@sd_code_recorded_pro",
+            "fact": "EC 51"
+          },
+          {
+            "id": "c_climate5000_EC_52",
+            "label": "EC 52",
+            "hint": "Condenser coil temperature sensor T3 open/short",
+            "next": "@sd_code_recorded_pro",
+            "fact": "EC 52"
+          },
+          {
+            "id": "c_climate5000_EC_53",
+            "label": "EC 53",
+            "hint": "Outdoor room temperature sensor T4 open/short",
+            "next": "@sd_code_recorded_pro",
+            "fact": "EC 53"
+          },
+          {
+            "id": "c_climate5000_EC_54",
+            "label": "EC 54",
+            "hint": "Compressor discharge temperature sensor TP open/short",
+            "next": "@sd_code_recorded_pro",
+            "fact": "EC 54"
+          },
+          {
+            "id": "c_climate5000_EC_56",
+            "label": "EC 56",
+            "hint": "Evaporator coil outlet temperature sensor T2B open/short (multi)",
+            "next": "@sd_code_recorded_pro",
+            "fact": "EC 56"
+          },
+          {
+            "id": "c_climate5000_EL_0C",
+            "label": "EL 0C",
+            "hint": "System lacks refrigerant\n\nWrite the code down. Don’t touch the pipes, valves, or caps. Call a licensed HVAC professional (refrigerant work needs an EPA-certified technician).",
+            "next": "@sd_refrigerant_pro",
+            "fact": "EL 0C"
+          },
+          {
+            "id": "c_climate5000_FH_CC",
+            "label": "FH CC",
+            "hint": "Refrigerant sensor error\n\nWrite the code down. If a refrigerant-leak alarm sounds, or you notice a sweet or chemical smell, use Stop / get help.",
+            "next": "@sd_code_recorded_pro",
+            "fact": "FH CC"
+          },
+          {
+            "id": "c_climate5000_EH_C1",
+            "label": "EH C1",
+            "hint": "Refrigerant sensor detects leakage\n\nDon’t reset or clear the code.",
+            "next": "@leak",
+            "fact": "EH C1"
+          },
+          {
+            "id": "c_climate5000_EH_C2",
+            "label": "EH C2",
+            "hint": "Sensor out of range and leakage detected\n\nDon’t reset or clear the code.",
+            "next": "@leak",
+            "fact": "EH C2"
+          },
+          {
+            "id": "c_climate5000_EH_C3",
+            "label": "EH C3",
+            "hint": "Sensor working condition out of range\n\nWrite the code down. If a refrigerant-leak alarm sounds, or you notice a sweet or chemical smell, use Stop / get help.",
+            "next": "@sd_code_recorded_pro",
+            "fact": "EH C3"
+          },
+          {
+            "id": "c_climate5000_EC_C1",
+            "label": "EC C1",
+            "hint": "Other indoor unit refrigerant leakage detection (Multi-zone)\n\nDon’t reset or clear the code.",
+            "next": "@leak",
+            "fact": "EC C1"
+          },
+          {
+            "id": "c_climate5000_PC_00",
+            "label": "PC 00",
+            "hint": "IPM malfunction or IGBT over-strong current protection",
+            "next": "@sd_code_recorded_pro",
+            "fact": "PC 00"
+          },
+          {
+            "id": "c_climate5000_PC_01",
+            "label": "PC 01",
+            "hint": "Over voltage or over low voltage protection\n\nWrite the code down. If your lights dim or flicker too, tell the pro or your power company. You can switch the breaker off. If it has tripped, leave it as it is. Don’t reset it. Call a licensed HVAC professional. Never open the panel cover.",
+            "next": "@sd_code_recorded_pro",
+            "fact": "PC 01"
+          },
+          {
+            "id": "c_climate5000_PC_02",
+            "label": "PC 02",
+            "hint": "High Temperature protection of IPM module",
+            "next": "@sd_code_recorded_pro",
+            "fact": "PC 02"
+          },
+          {
+            "id": "c_climate5000_PC_03",
+            "label": "PC 03",
+            "hint": "Pressure protection (low or high) (for some models)",
+            "next": "@sd_code_recorded_pro",
+            "fact": "PC 03"
+          },
+          {
+            "id": "c_climate5000_PC_04",
+            "label": "PC 04",
+            "hint": "Inverter compressor drive error",
+            "next": "@sd_code_recorded_pro",
+            "fact": "PC 04"
+          },
+          {
+            "id": "not_listed",
+            "label": "It’s not listed, or I don’t have the manual",
+            "hint": "",
+            "next": "@sd_code_recorded_pro",
+            "fact": ""
+          },
+          {
+            "id": "hazard_now",
+            "label": "Something unsafe is happening now (burning smell, smoke, sparks, gas smell, an alarm, water or ice at electrical parts, or someone at risk)",
+            "hint": "Stop checking. We’ll show you where to get help.",
+            "fact": "New hazard reported during the outdoor-unit check.",
+            "next": "sd.gate.outdoor_hazard_screen"
+          }
+        ]
+      },
+      "sd.read.puz_codes": {
+        "section": "Side-discharge outdoor unit",
+        "title": "Outdoor unit",
+        "body": "The display on the board inside the outdoor unit is for technicians. Reaching it means removing panels. These code meanings come from manufacturers’ documents for some models. Your model may differ. A code explains what the unit detected. It isn’t a diagnosis. Don’t clear the code, delete the error history, reset the unit, or switch the power off and on to make the code go away. The code and its history help your technician.",
+        "owner": "sd",
+        "diyTier": "basic",
+        "safetyGate": true,
+        "options": [
+          {
+            "id": "c_puz_U1_Ud",
+            "label": "U1 / Ud",
+            "hint": "Abnormal high pressure (63H) / Overheating protection\n\nWrite the code down. From the ground, look for blocked clearance, snow, or debris around the outdoor unit. Don’t reach into the grille. Call a licensed HVAC professional.",
+            "next": "@sd_code_recorded_pro",
+            "fact": "U1 / Ud"
+          },
+          {
+            "id": "c_puz_U2",
+            "label": "U2",
+            "hint": "Abnormal high discharge temperature / 49C / insufficient refrigerant\n\nWrite the code down. Don’t touch the pipes, valves, or caps. Call a licensed HVAC professional.",
+            "next": "@sd_refrigerant_pro",
+            "fact": "U2"
+          },
+          {
+            "id": "c_puz_U3_U4",
+            "label": "U3 / U4",
+            "hint": "Open/short of outdoor unit thermistors",
+            "next": "@sd_code_recorded_pro",
+            "fact": "U3 / U4"
+          },
+          {
+            "id": "c_puz_U5",
+            "label": "U5",
+            "hint": "Abnormal temperature of heatsink",
+            "next": "@sd_code_recorded_pro",
+            "fact": "U5"
+          },
+          {
+            "id": "c_puz_U6",
+            "label": "U6",
+            "hint": "Compressor overcurrent interruption / Abnormal of power module",
+            "next": "@sd_code_recorded_pro",
+            "fact": "U6"
+          },
+          {
+            "id": "c_puz_U7",
+            "label": "U7",
+            "hint": "Abnormality of super heat due to low discharge temperature",
+            "next": "@sd_code_recorded_pro",
+            "fact": "U7"
+          },
+          {
+            "id": "c_puz_U8",
+            "label": "U8",
+            "hint": "Outdoor unit fan protection stop\n\nWrite the code down. From the ground, look for ice, snow, or debris at the outdoor fan grille. Don’t reach into the grille or touch the fan. Call a licensed HVAC professional.",
+            "next": "@sd_code_recorded_pro",
+            "fact": "U8"
+          },
+          {
+            "id": "c_puz_U9_UH",
+            "label": "U9 / UH",
+            "hint": "Overvoltage / voltage shortage / synchronous signal / current sensor\n\nWrite the code down. If your lights dim or flicker too, tell the pro or your power company. You can switch the breaker off. If it has tripped, leave it as it is. Don’t reset it. Call a licensed HVAC professional. Never open the panel cover.",
+            "next": "@sd_code_recorded_pro",
+            "fact": "U9 / UH"
+          },
+          {
+            "id": "c_puz_UF_UP",
+            "label": "UF / UP",
+            "hint": "Compressor overcurrent interruption (locked / starting)",
+            "next": "@sd_code_recorded_pro",
+            "fact": "UF / UP"
+          },
+          {
+            "id": "c_puz_UE",
+            "label": "UE",
+            "hint": "",
+            "next": "@sd_code_recorded_pro",
+            "fact": "UE"
+          },
+          {
+            "id": "c_puz_UL",
+            "label": "UL",
+            "hint": "",
+            "next": "@sd_code_recorded_pro",
+            "fact": "UL"
+          },
+          {
+            "id": "c_puz_F5",
+            "label": "F5",
+            "hint": "High-pressure switch connector open (power-on)",
+            "next": "@sd_code_recorded_pro",
+            "fact": "F5"
+          },
+          {
+            "id": "c_puz_PA",
+            "label": "PA",
+            "hint": "Forced compressor stop (water leakage)",
+            "next": "@sd_code_recorded_pro",
+            "fact": "PA"
+          },
+          {
+            "id": "c_puz_PL",
+            "label": "PL",
+            "hint": "Abnormal refrigerant circuit\n\nWrite the code down. Don’t touch the pipes, valves, or caps. Call a licensed HVAC professional.",
+            "next": "@sd_refrigerant_pro",
+            "fact": "PL"
+          },
+          {
+            "id": "c_puz_E0_E9_family",
+            "label": "E0–E9 family",
+            "hint": "Remote / indoor–outdoor communication",
+            "next": "@sd_code_recorded_pro",
+            "fact": "E0–E9 family"
+          },
+          {
+            "id": "c_puz_P2_P5_P8_P9",
+            "label": "P2 / P5 / P8 / P9",
+            "hint": "Indoor pipe / drain / condenser family",
+            "next": "@sd_code_recorded_pro",
+            "fact": "P2 / P5 / P8 / P9"
+          },
+          {
+            "id": "not_listed",
+            "label": "It’s not listed, or I don’t have the manual",
+            "hint": "",
+            "next": "@sd_code_recorded_pro",
+            "fact": ""
+          },
+          {
+            "id": "hazard_now",
+            "label": "Something unsafe is happening now (burning smell, smoke, sparks, gas smell, an alarm, water or ice at electrical parts, or someone at risk)",
+            "hint": "Stop checking. We’ll show you where to get help.",
+            "fact": "New hazard reported during the outdoor-unit check.",
+            "next": "sd.gate.outdoor_hazard_screen"
+          }
+        ]
+      },
+      "sd.read.gree_codes": {
+        "section": "Side-discharge outdoor unit",
+        "title": "Outdoor unit",
+        "body": "These Gree Sapphire, Vireo Gen3, and Livo Gen4 code groupings come from the GREE owner’s manuals for those lines (Sapphire CAT NO GREE_SAPPHIRE_OWNERS MANUAL_09132022, Error Code panel, p. 18; Vireo Gen3 CAT NO GREE_VIREO_GEN3_OWNERS MANUAL_08122022, Error Code panel, p. 18; Livo Gen4 CAT NO GREE_LIVO_GEN4_OWNERS MANUAL_03012022, Error Code panel, p. 18). Other Gree generations and other brands may differ. A code explains what the unit detected. It isn’t a diagnosis. Don’t clear the code, delete the error history, reset the unit, or switch the power off and on to make the code go away. The code and its history help your technician.",
+        "owner": "sd",
+        "diyTier": "basic",
+        "safetyGate": true,
+        "options": [
+          {
+            "id": "c_gree_U8_H6_H3_E1_E5_E6_E8",
+            "label": "U8, H6, H3, E1, E5, E6, E8",
+            "hint": "Write the code down exactly as it’s shown, or take a photo. Call a licensed HVAC professional.",
+            "next": "@sd_code_recorded_pro",
+            "fact": "U8, H6, H3, E1, E5, E6, E8"
+          },
+          {
+            "id": "c_gree_C5_F0_F1_F2",
+            "label": "C5, F0, F1, F2",
+            "hint": "",
+            "next": "@sd_code_recorded_pro",
+            "fact": "C5, F0, F1, F2"
+          },
+          {
+            "id": "c_gree_E7",
+            "label": "E7",
+            "hint": "Write the code down. On a multi-zone system, Gree lists E7 as a mode conflict — every indoor unit needs the same Cool or Heat mode. Call a licensed HVAC professional if you’re not sure.",
+            "next": "@sd_code_recorded_pro",
+            "fact": "E7"
+          },
+          {
+            "id": "c_gree_E2_E9",
+            "label": "E2, E9",
+            "hint": "Gree lists E2 and E9 as operational status codes, not error codes. If the unit still isn’t heating or cooling, write down what you see and call a licensed HVAC professional.",
+            "next": "@sd_code_recorded_pro",
+            "fact": "E2, E9"
+          },
+          {
+            "id": "c_gree_Any_other_code",
+            "label": "Any other code",
+            "hint": "",
+            "next": "@sd_code_recorded_pro",
+            "fact": "Any other code"
+          },
+          {
+            "id": "not_listed",
+            "label": "It’s not listed, or I don’t have the manual",
+            "hint": "",
+            "next": "@sd_code_recorded_pro",
+            "fact": ""
+          },
+          {
+            "id": "hazard_now",
+            "label": "Something unsafe is happening now (burning smell, smoke, sparks, gas smell, an alarm, water or ice at electrical parts, or someone at risk)",
+            "hint": "Stop checking. We’ll show you where to get help.",
+            "fact": "New hazard reported during the outdoor-unit check.",
+            "next": "sd.gate.outdoor_hazard_screen"
+          }
+        ]
+      },
+      "sd.read.aurora_codes": {
+        "section": "Side-discharge outdoor unit",
+        "title": "Outdoor unit",
+        "body": "These Daikin Aurora RXL code meanings come from Daikin’s Service Manual SiUS091601ED, Error Codes and Description, p. 131 (models including RXL09/12/15QMVJU(A), RXL12QMVJU9, RXL18/24UMVJU with matching FTX/FVXS/FDMQ indoors). Other Aurora generations and other brands may differ. A code explains what the unit detected. It isn’t a diagnosis. Don’t clear the code, delete the error history, reset the unit, or switch the power off and on to make the code go away. The code and its history help your technician.",
+        "owner": "sd",
+        "diyTier": "basic",
+        "safetyGate": true,
+        "options": [
+          {
+            "id": "someone_at_risk",
+            "label": "The house is getting cold, and someone at home is at risk from the cold (an infant, an older adult, or someone who is ill or medically fragile)",
+            "hint": "",
+            "next": {
+              "bySd": {
+                "ms:*": "@ms_cold_exposure",
+                "hp:*": "@hp_cold_exposure"
+              },
+              "default": "@sd_cold_exposure"
+            },
+            "gate": "cold_exposure_911",
+            "fact": ""
+          },
+          {
+            "id": "c_aurora_00",
+            "label": "00",
+            "hint": "Normal",
+            "next": "@sd_code_info_pro",
+            "fact": "00"
+          },
+          {
+            "id": "c_aurora_U0",
+            "label": "U0",
+            "hint": "Refrigerant shortage\n\nWrite the code down. Don’t touch the pipes, valves, or caps. Call a licensed HVAC professional (refrigerant work needs an EPA-certified technician).",
+            "next": "@sd_refrigerant_pro",
+            "fact": "U0"
+          },
+          {
+            "id": "c_aurora_U2",
+            "label": "U2",
+            "hint": "Low-voltage detection or over-voltage detection\n\nWrite the code down. If your lights dim or flicker too, tell the pro or your power company. You can switch the breaker off. If it has tripped, leave it as it is. Don’t reset it. Call a licensed HVAC professional. Never open the panel cover.",
+            "next": "@sd_code_recorded_pro",
+            "fact": "U2"
+          },
+          {
+            "id": "c_aurora_U4",
+            "label": "U4",
+            "hint": "Signal transmission error (indoor↔outdoor)",
+            "next": "@sd_code_recorded_pro",
+            "fact": "U4"
+          },
+          {
+            "id": "c_aurora_UA",
+            "label": "UA",
+            "hint": "Unspecified voltage (indoor↔outdoor)\n\nWrite the code down. If your lights dim or flicker too, tell the pro or your power company. You can switch the breaker off. If it has tripped, leave it as it is. Don’t reset it. Call a licensed HVAC professional. Never open the panel cover.",
+            "next": "@sd_code_recorded_pro",
+            "fact": "UA"
+          },
+          {
+            "id": "c_aurora_E1",
+            "label": "E1",
+            "hint": "Outdoor unit PCB abnormality",
+            "next": "@sd_code_recorded_pro",
+            "fact": "E1"
+          },
+          {
+            "id": "c_aurora_E5",
+            "label": "E5",
+            "hint": "OL activation (compressor overload) / HPS activation (high pressure switch)\n\nWrite the code down. From the ground, look for blocked clearance, snow, or debris around the outdoor unit. Don’t reach into the grille. Call a licensed HVAC professional.",
+            "next": "@sd_code_recorded_pro",
+            "fact": "E5"
+          },
+          {
+            "id": "c_aurora_E6",
+            "label": "E6",
+            "hint": "Compressor lock",
+            "next": "@sd_code_recorded_pro",
+            "fact": "E6"
+          },
+          {
+            "id": "c_aurora_E7",
+            "label": "E7",
+            "hint": "DC fan lock\n\nWrite the code down. From the ground, look for ice, snow, or debris at the outdoor fan grille. Don’t reach into the grille or touch the fan. Call a licensed HVAC professional.",
+            "next": "@sd_code_recorded_pro",
+            "fact": "E7"
+          },
+          {
+            "id": "c_aurora_E8",
+            "label": "E8",
+            "hint": "Input overcurrent detection",
+            "next": "@sd_code_recorded_pro",
+            "fact": "E8"
+          },
+          {
+            "id": "c_aurora_EA",
+            "label": "EA",
+            "hint": "Four way valve abnormality",
+            "next": "@sd_code_recorded_pro",
+            "fact": "EA"
+          },
+          {
+            "id": "c_aurora_F3",
+            "label": "F3",
+            "hint": "Discharge pipe temperature control",
+            "next": "@sd_code_recorded_pro",
+            "fact": "F3"
+          },
+          {
+            "id": "c_aurora_F6",
+            "label": "F6",
+            "hint": "High pressure control in cooling\n\nWrite the code down. From the ground, look for blocked clearance, snow, or debris around the outdoor unit. Don’t reach into the grille. Call a licensed HVAC professional.",
+            "next": "@sd_code_recorded_pro",
+            "fact": "F6"
+          },
+          {
+            "id": "c_aurora_F8",
+            "label": "F8",
+            "hint": "System shutdown due to temperature abnormality in the compressor",
+            "next": "@sd_code_recorded_pro",
+            "fact": "F8"
+          },
+          {
+            "id": "c_aurora_H0",
+            "label": "H0",
+            "hint": "Compressor system sensor abnormality",
+            "next": "@sd_code_recorded_pro",
+            "fact": "H0"
+          },
+          {
+            "id": "c_aurora_H6",
+            "label": "H6",
+            "hint": "Position sensor abnormality",
+            "next": "@sd_code_recorded_pro",
+            "fact": "H6"
+          },
+          {
+            "id": "c_aurora_H9_J3_J6_P4",
+            "label": "H9 / J3 / J6 / P4",
+            "hint": "Outdoor / discharge / heat-exchanger / radiation-fin thermistors",
+            "next": "@sd_code_recorded_pro",
+            "fact": "H9 / J3 / J6 / P4"
+          },
+          {
+            "id": "c_aurora_L3_L4",
+            "label": "L3 / L4",
+            "hint": "Electrical box temperature rise / Radiation fin temperature rise",
+            "next": "@sd_code_recorded_pro",
+            "fact": "L3 / L4"
+          },
+          {
+            "id": "c_aurora_L5",
+            "label": "L5",
+            "hint": "Output overcurrent detection",
+            "next": "@sd_code_recorded_pro",
+            "fact": "L5"
+          },
+          {
+            "id": "c_aurora_U7",
+            "label": "U7",
+            "hint": "Signal transmission error on outdoor unit PCB",
+            "next": "@sd_code_recorded_pro",
+            "fact": "U7"
+          },
+          {
+            "id": "c_aurora_A1_A3_A5_A6_A8_AF_C4_C5_C9_CJ",
+            "label": "A1 / A3 / A5 / A6 / A8 / AF / C4 / C5 / C9 / CJ",
+            "hint": "Indoor PCB / drain / freeze-up / indoor fan / humidifier / indoor thermistors",
+            "next": "@sd_code_recorded_pro",
+            "fact": "A1 / A3 / A5 / A6 / A8 / AF / C4 / C5 / C9 / CJ"
+          },
+          {
+            "id": "c_aurora_U5_U8",
+            "label": "U5 / U8",
+            "hint": "Indoor↔remote / MAIN↔SUB remote (FDMQ)",
+            "next": "@sd_code_recorded_pro",
+            "fact": "U5 / U8"
+          },
+          {
+            "id": "not_listed",
+            "label": "It’s not listed, or I don’t have the manual",
+            "hint": "",
+            "next": "@sd_code_recorded_pro",
+            "fact": ""
+          },
+          {
+            "id": "hazard_now",
+            "label": "Something unsafe is happening now (burning smell, smoke, sparks, gas smell, an alarm, water or ice at electrical parts, or someone at risk)",
+            "hint": "Stop checking. We’ll show you where to get help.",
+            "fact": "New hazard reported during the outdoor-unit check.",
+            "next": "sd.gate.outdoor_hazard_screen"
+          }
+        ]
+      },
+      "sd.read.gszs6_codes": {
+        "section": "Side-discharge outdoor unit",
+        "title": "Outdoor unit",
+        "body": "These Goodman GSZS6 / GSXS6 communicating-thermostat code meanings come from Goodman’s Outdoor Unit Installation & Service Reference 3P731493-3 / EM23A003, Troubleshooting starting at p. 39. They use the same Fit-platform 2-digit thermostat / E-number board pairs as Daikin Fit and related side-discharge models. Other Goodman generations and other brands may differ. The outdoor 7-segment / control-board LED is behind a service panel — pro-only. A code explains what the unit detected. It isn’t a diagnosis. Don’t clear the code, delete the error history, reset the unit, or switch the power off and on to make the code go away. The code and its history help your technician.",
+        "owner": "sd",
+        "diyTier": "basic",
+        "safetyGate": true,
+        "options": [
+          {
+            "id": "someone_at_risk",
+            "label": "The house is getting cold, and someone at home is at risk from the cold (an infant, an older adult, or someone who is ill or medically fragile)",
+            "hint": "",
+            "next": {
+              "bySd": {
+                "ms:*": "@ms_cold_exposure",
+                "hp:*": "@hp_cold_exposure"
+              },
+              "default": "@sd_cold_exposure"
+            },
+            "gate": "cold_exposure_911",
+            "fact": ""
+          },
+          {
+            "id": "c_gszs6_13_E13_14",
+            "label": "13 / E13, 14",
+            "hint": "Frequent high-pressure faults (CRITICAL / MINOR). Causes include blocked/restricted outdoor coil, outdoor fan not running, stop valve, overcharge\n\nWrite the code down. From the ground, look for blocked clearance, snow, or debris around the outdoor unit. Don’t reach into the grille. Call a licensed HVAC professional.",
+            "next": "@sd_code_recorded_pro",
+            "fact": "13 / E13, 14"
+          },
+          {
+            "id": "c_gszs6_19_E19",
+            "label": "19 / E19",
+            "hint": "Frequent outdoor unit control board and/or motor faults. Causes include obstruction in fan rotation\n\nWrite the code down. From the ground, look for ice, snow, or debris at the outdoor fan grille. Don’t reach into the grille or touch the fan. Call a licensed HVAC professional.",
+            "next": "@sd_code_recorded_pro",
+            "fact": "19 / E19"
+          },
+          {
+            "id": "c_gszs6_32_E32_33",
+            "label": "32 / E32, 33",
+            "hint": "High-temperature faults on outdoor control board",
+            "next": "@sd_code_recorded_pro",
+            "fact": "32 / E32, 33"
+          },
+          {
+            "id": "c_gszs6_44_E44",
+            "label": "44 / E44",
+            "hint": "Write the code down. Goodman lists this when the outdoor temperature is outside the operating range. The unit may keep running. If heating or cooling is lost, or someone at home is at risk from the cold, use the cold-home choice. Call a licensed HVAC professional.",
+            "next": "@sd_code_recorded_pro",
+            "fact": "44 / E44"
+          },
+          {
+            "id": "c_gszs6_15_E15_16_41_E41",
+            "label": "15 / E15, 16, 41 / E41",
+            "hint": "Frequent low-pressure faults / low refrigerant condition. Causes include leak, low charge\n\nWrite the code down. Don’t touch the pipes, valves, or caps. Call a licensed HVAC professional (refrigerant work needs an EPA-certified technician).",
+            "next": "@sd_refrigerant_pro",
+            "fact": "15 / E15, 16, 41 / E41"
+          },
+          {
+            "id": "c_gszs6_42_E42_43_E43",
+            "label": "42 / E42, 43 / E43",
+            "hint": "Low / high power supply voltage\n\nWrite the code down. If your lights dim or flicker too, tell the pro or your power company. You can switch the breaker off. If it has tripped, leave it as it is. Don’t reset it. Call a licensed HVAC professional. Never open the panel cover.",
+            "next": "@sd_code_recorded_pro",
+            "fact": "42 / E42, 43 / E43"
+          },
+          {
+            "id": "c_gszs6_B0_Eb0_B9_Eb9",
+            "label": "B0 / Eb0, B9 / Eb9",
+            "hint": "Indoor airflow near 0 CFM / lower than required",
+            "next": "@sd_code_recorded_pro",
+            "fact": "B0 / Eb0, B9 / Eb9"
+          },
+          {
+            "id": "c_gszs6_12_E12_17_E17_18_E18_20_30_34_40_45_47_49_50_E50_51_E51_56_E56_58_E58_",
+            "label": "12 / E12, 17 / E17, 18 / E18, 20–30, 34–40, 45 / 47 / 49, 50 / E50, 51 / E51, 56 / E56, 58 / E58, 59 / E59",
+            "hint": "Memory, compressor, board, EEV, sensors, current, startup, mismatch, installer test/charge modes, comms, overload, reversing valve",
+            "next": "@sd_code_recorded_pro",
+            "fact": "12 / E12, 17 / E17, 18 / E18, 20–30, 34–40, 45 / 47 / 49, 50 / E50, 51 / E51, 56 / E56, 58 / E58, 59 / E59"
+          },
+          {
+            "id": "c_gszs6_52_55_57",
+            "label": "52–55, 57",
+            "hint": "Minor stored faults (board “–”)",
+            "next": "@sd_code_recorded_pro",
+            "fact": "52–55, 57"
+          },
+          {
+            "id": "c_gszs6_D0_Ed0_D1_Ed1",
+            "label": "D0 / Ed0, D1 / Ed1",
+            "hint": "Communicating-system data missing/invalid",
+            "next": "@sd_code_recorded_pro",
+            "fact": "D0 / Ed0, D1 / Ed1"
+          },
+          {
+            "id": "not_listed",
+            "label": "It’s not listed, or I don’t have the manual",
+            "hint": "",
+            "next": "@sd_code_recorded_pro",
+            "fact": ""
+          },
+          {
+            "id": "hazard_now",
+            "label": "Something unsafe is happening now (burning smell, smoke, sparks, gas smell, an alarm, water or ice at electrical parts, or someone at risk)",
+            "hint": "Stop checking. We’ll show you where to get help.",
+            "fact": "New hazard reported during the outdoor-unit check.",
+            "next": "sd.gate.outdoor_hazard_screen"
+          }
+        ]
+      },
+      "sd.read.bcc_codes": {
+        "section": "Side-discharge outdoor unit",
+        "title": "Outdoor unit",
+        "body": "Your Bosch BCC thermostat lists named alarms only for Bosch water-source heat pumps. It doesn’t explain Bosch outdoor unit codes. If your outdoor unit shows a code, write it down exactly as shown or take a photo, and call a licensed HVAC professional. A code explains what the unit detected. It isn’t a diagnosis.",
+        "owner": "sd",
+        "diyTier": "basic",
+        "safetyGate": true,
+        "options": [
+          {
+            "id": "not_listed",
+            "label": "It’s not listed, or I don’t have the manual",
+            "hint": "",
+            "next": "@sd_code_recorded_pro",
+            "fact": ""
+          },
+          {
+            "id": "hazard_now",
+            "label": "Something unsafe is happening now (burning smell, smoke, sparks, gas smell, an alarm, water or ice at electrical parts, or someone at risk)",
+            "hint": "Stop checking. We’ll show you where to get help.",
+            "fact": "New hazard reported during the outdoor-unit check.",
+            "next": "sd.gate.outdoor_hazard_screen"
+          }
+        ]
       }
     },
     "results": {
