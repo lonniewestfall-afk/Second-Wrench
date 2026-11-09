@@ -2588,7 +2588,7 @@
       "sd.read.bcc_codes": {
         "section": "Side-discharge outdoor unit",
         "title": "Outdoor unit",
-        "body": "Your Bosch BCC thermostat lists named alarms only for Bosch water-source heat pumps. It doesn’t explain Bosch outdoor unit codes. If your outdoor unit shows a code, write it down exactly as shown or take a photo, and call a licensed HVAC professional. A code explains what the unit detected. It isn’t a diagnosis.",
+        "body": "Your Bosch BCC thermostat lists named alarms only for Bosch water-source heat pumps. It doesn't explain Bosch outdoor unit codes. If your outdoor unit shows a code, write it down exactly as shown or take a photo, and call a licensed HVAC professional. A code explains what the unit detected. It isn't a diagnosis.",
         "owner": "sd",
         "diyTier": "basic",
         "safetyGate": true,
