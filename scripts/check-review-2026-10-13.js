@@ -2,7 +2,7 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-global.SW_CONFIG = { advancedRepairsEnabled: false, aiThermostatEnabled: false, mirrorsEnabled: false, stageLatchStepsEnabled: false, contentVersion: '2026-10-20.18' };
+global.SW_CONFIG = { advancedRepairsEnabled: false, aiThermostatEnabled: false, mirrorsEnabled: false, stageLatchStepsEnabled: false, contentVersion: '2026-11-09.1' };
 const F = require('../assets/flow');
 const meta = { agreed: true, termsVersion: 'test' };
 function go(choices) {
@@ -47,7 +47,9 @@ for (const [id, node] of Object.entries(F.nodes)) {
   assert.equal(node.safetyGate, [
     'sd.heat.cold_home_screen', 'sd.gate.outdoor_hazard_screen', 'sd.gate.intent_screen',
     'sd.observe.defrost_or_ice', 'sd.look.intake_clearance', 'sd.look.snow_height',
-    'sd.step.clear_outside', 'sd.step.clear_snow', 'sd.read.code_compare'
+    'sd.step.clear_outside', 'sd.step.clear_snow', 'sd.read.code_compare',
+    'sd.read.climate_codes', 'sd.read.puz_codes', 'sd.read.gree_codes',
+    'sd.read.aurora_codes', 'sd.read.gszs6_codes', 'sd.read.bcc_codes'
   ].includes(id), id);
   assert.doesNotMatch(JSON.stringify(node), banned);
 }
@@ -118,7 +120,7 @@ assert.equal(filter.node, 'ac.cool.filter.clean_restart');
 // Every Legal-cleared side-discharge string has to show up in a node, a result,
 // a step, the service note, or the shared code field.
 const LEGAL = JSON.parse(fs.readFileSync(path.join(__dirname, 'sd-legal-cleared.json'), 'utf8'));
-assert.equal(Object.keys(LEGAL).length, 68);
+assert.equal(Object.keys(LEGAL).length, 75);
 function flatten(value, out) {
   if (typeof value === 'string') out.push(value);
   else if (Array.isArray(value)) value.forEach(v => flatten(v, out));
@@ -151,6 +153,81 @@ for (const id of ['sd.look.discharge_clearance', 'sd.look.intake_clearance', 'sd
 }
 assert.equal(F.nodes['sd.heat.cold_home_screen'].options.find(o => o.id === 'someone_at_risk').label, LEGAL['020']);
 assert.equal(F.nodes['sd.gate.outdoor_hazard_screen'].options.find(o => o.id === 'cold_exposure').label, LEGAL['020']);
+assert.equal(F.nodes['sd.step.clear_snow'].options.find(o => o.id === 'someone_at_risk_cold').label, LEGAL['020']);
+for (const spot of [
+  F.nodes['sd.heat.cold_home_screen'].options.find(o => o.id === 'someone_at_risk'),
+  F.nodes['sd.gate.outdoor_hazard_screen'].options.find(o => o.id === 'cold_exposure'),
+  F.nodes['sd.step.clear_snow'].options.find(o => o.id === 'someone_at_risk_cold')
+]) {
+  assert.equal(spot.label, 'The house is getting cold, and someone at home is at risk from the cold (an infant, an older adult, or someone who is ill or medically fragile)');
+  assert.equal(spot.gate, 'cold_exposure_911');
+}
+const discharge = F.nodes['sd.look.discharge_clearance'].body;
+assert.ok(discharge.indexOf(LEGAL['050']) < discharge.indexOf(LEGAL['132']) && discharge.indexOf(LEGAL['132']) < discharge.indexOf(LEGAL['029']), '132 sits with 050 and 029');
+const snow = F.nodes['sd.look.snow_height'].body;
+assert.ok(snow.indexOf(LEGAL['051']) < snow.indexOf(LEGAL['133']) && snow.indexOf(LEGAL['133']) < snow.indexOf(LEGAL['029']) && snow.indexOf(LEGAL['029']) < snow.indexOf(LEGAL['031']), '133 sits with 051, 029, and 031');
+for (const id of ['020', '132', '133', '134', '135', '136', '137', '138']) {
+  assert.equal(LEGAL[id], {
+    '020': 'The house is getting cold, and someone at home is at risk from the cold (an infant, an older adult, or someone who is ill or medically fragile)',
+    '132': 'For example, Luxaire lists more than 20 in. (500 mm) in front of the fan for its HMH7 models (HMH7 Series Installation Manual, Fig. 6, p. 9). Bosch lists 200 cm (79 in.) in front for its Climate 5000 Gen 4 wall-mounted models (BTC 769203305 D, Fig. 25, p. 23). Check your unit’s manual. Local code may differ.',
+    '133': 'For example, Luxaire tells installers to set HMH7 models on a solid base 2 in. above grade and to elevate the unit so snow cannot block the air entrances (HMH7 Series Installation Manual, pp. 8–9). Bosch tells installers, where snowfall is anticipated on Climate 5000 Gen 4 models, to take measures that prevent ice buildup and coil damage (BTC 769203305 D, p. 23). These are installation requirements, not homeowner steps. Don’t raise, remount, or move the unit yourself. Ask your installer. Check your unit’s manual. Local code may differ.',
+    '134': 'These Climate 5000 code meanings come from Bosch’s Climate 5000 Gen 4 Wall Mounted Ductless installation and operating instructions (BTC 769203305 D, Table 16, p. 37). Other Climate 5000 generations and other brands may differ. A code explains what the unit detected. It isn’t a diagnosis.',
+    '135': 'These Gree Sapphire, Vireo Gen3, and Livo Gen4 code groupings come from the GREE owner’s manuals for those lines (Sapphire CAT NO GREE_SAPPHIRE_OWNERS MANUAL_09132022, Error Code panel, p. 18; Vireo Gen3 CAT NO GREE_VIREO_GEN3_OWNERS MANUAL_08122022, Error Code panel, p. 18; Livo Gen4 CAT NO GREE_LIVO_GEN4_OWNERS MANUAL_03012022, Error Code panel, p. 18). Other Gree generations and other brands may differ. A code explains what the unit detected. It isn’t a diagnosis.',
+    '136': 'These Daikin Aurora RXL code meanings come from Daikin’s Service Manual SiUS091601ED, Error Codes and Description, p. 131 (models including RXL09/12/15QMVJU(A), RXL12QMVJU9, RXL18/24UMVJU with matching FTX/FVXS/FDMQ indoors). Other Aurora generations and other brands may differ. A code explains what the unit detected. It isn’t a diagnosis.',
+    '137': 'These Goodman GSZS6 / GSXS6 communicating-thermostat code meanings come from Goodman’s Outdoor Unit Installation & Service Reference 3P731493-3 / EM23A003, Troubleshooting starting at p. 39. They use the same Fit-platform 2-digit thermostat / E-number board pairs as Daikin Fit and related side-discharge models. Other Goodman generations and other brands may differ. The outdoor 7-segment / control-board LED is behind a service panel — pro-only. A code explains what the unit detected. It isn’t a diagnosis.',
+    '138': 'Your Bosch BCC thermostat lists named alarms only for Bosch water-source heat pumps. It doesn\'t explain Bosch outdoor unit codes. If your outdoor unit shows a code, write it down exactly as shown or take a photo, and call a licensed HVAC professional. A code explains what the unit detected. It isn\'t a diagnosis.'
+  }[id], 'exact sd.legal.' + id);
+}
+function codeBlob(id) {
+  const node = F.nodes[id];
+  return node.body + '\n' + node.options.map(op => [op.label, op.hint, op.next].join('\n')).join('\n');
+}
+const climateBlob = codeBlob('sd.read.climate_codes');
+assert.equal(climateBlob.indexOf(LEGAL['134']), 0, '134 is first on the Climate 5000 screen');
+assert.ok(climateBlob.indexOf(LEGAL['134']) < climateBlob.indexOf('Defrost'), '134 is before a Climate 5000 meaning');
+assert.equal(F.nodes['sd.read.climate_codes'].options[0].label, LEGAL['020']);
+assert.equal(F.nodes['sd.read.climate_codes'].options.find(o => o.id === 'c_climate5000_EH_C1').next, '@leak');
+assert.equal(F.nodes['sd.read.climate_codes'].options.find(o => o.id === 'c_climate5000_EH_C2').next, '@leak');
+assert.equal(F.nodes['sd.read.climate_codes'].options.find(o => o.id === 'c_climate5000_EC_C1').next, '@leak');
+assert.ok(F.nodes['sd.read.climate_codes'].options.find(o => o.id === 'c_climate5000_FH_CC').hint.includes(LEGAL['024']) === false);
+assert.notEqual(F.nodes['sd.read.climate_codes'].options.find(o => o.id === 'c_climate5000_FH_CC').next, '@leak');
+assert.notEqual(F.nodes['sd.read.climate_codes'].options.find(o => o.id === 'c_climate5000_EH_C3').next, '@leak');
+const greeBlob = codeBlob('sd.read.gree_codes');
+assert.equal(greeBlob.indexOf(LEGAL['135']), 0);
+assert.equal(F.nodes['sd.read.aurora_codes'].body.indexOf(LEGAL['136']), 0);
+assert.equal(F.nodes['sd.read.gszs6_codes'].body.indexOf(LEGAL['137']), 0);
+assert.equal(F.nodes['sd.read.bcc_codes'].body, LEGAL['138']);
+for (const held of ['U8', 'H6', 'H3', 'E1', 'E5', 'E6', 'E8', 'C5', 'F0', 'F1', 'F2']) {
+  assert.equal(F.nodes['sd.read.gree_codes'].options.some(op => op.label === held), false, 'no standalone Gree row ' + held);
+}
+assert.doesNotMatch(greeBlob, /Try restarting|U8\s*=/);
+assert.doesNotMatch(codeBlob('sd.read.aurora_codes'), /Method 1|Method 2|TIMER CANCEL|self-diagnosis/);
+assert.doesNotMatch(codeBlob('sd.read.puz_codes'), /self-check|self-diagnosis/);
+assert.doesNotMatch(codeBlob('sd.read.gszs6_codes'), /cycle power/);
+assert.doesNotMatch(codeBlob('sd.read.bcc_codes'), /IDS Edge|EasyAir|dF|UNKNOWN|Do not show/);
+const sdHomeowner = Object.entries(F.nodes).filter(([id]) => id.startsWith('sd.')).map(([, node]) => JSON.stringify(node)).join('\n')
+  + Object.entries(F.results).filter(([id]) => id.startsWith('sd_')).map(([, res]) => JSON.stringify(res)).join('\n');
+assert.equal(sdHomeowner.includes('UNKNOWN'), false);
+assert.equal(sdHomeowner.includes('Do not show'), false);
+for (const page of ['side-discharge-outdoor-unit-error-code', 'side-discharge-heat-pump-maintenance-checklist']) {
+  const html = fs.readFileSync(path.join(__dirname, '../answers/' + page + '/index.html'), 'utf8');
+  assert.equal(html.includes('UNKNOWN'), false, page);
+  assert.equal(html.includes('Do not show'), false, page);
+}
+const maint = fs.readFileSync(path.join(__dirname, '../answers/side-discharge-heat-pump-maintenance-checklist/index.html'), 'utf8');
+const cc5 = maint.match(/<section id="brand-cc5">[\s\S]*?<\/section>/);
+assert.ok(cc5, 'side-discharge CC-5 section');
+assert.ok(cc5[0].includes('Goodman GZV6S') && cc5[0].includes('IM-3P761829-3B, p. 1 and p. 56'));
+assert.ok(cc5[0].includes('Lennox MWHD') && cc5[0].includes('DB68-12580A-00, English p. 13'));
+assert.ok(cc5[0].includes('GSZS6') && cc5[0].includes('GSXS6'));
+assert.equal(/garden hose|coil cleaner|pump sprayer/i.test(cc5[0]), false);
+const cc4 = maint.match(/<section id="brand-cc4">[\s\S]*?<\/section>/);
+assert.ok(cc4[0].includes('Climate 5000') && cc4[0].includes('HMH7') && cc4[0].includes('HH8'));
+assert.equal(cc4[0].includes('GZV6S'), false);
+assert.equal(cc4[0].includes('GSZS6'), false);
+for (const blocked of ['Samsung', 'Midea', 'PUY', 'MXZ', 'HMH7 board', 'HH8 board']) {
+  assert.equal(sdHomeowner.includes(blocked), false, blocked);
+}
 assert.ok(F.nodes['sd.read.code_capture'].body.includes(LEGAL['025']));
 assert.ok(F.nodes['sd.look.discharge_clearance'].body.includes(LEGAL['029']));
 assert.ok(F.nodes['sd.look.snow_height'].body.includes(LEGAL['029']));

@@ -43,8 +43,8 @@ assert(chatCss.includes('flex-wrap:wrap') && chatCss.includes('gap:8px'), 'citat
 assert(chatCss.includes('overflow-wrap:anywhere') && chatCss.includes('box-sizing:border-box') && chatCss.includes('max-width:100vw'), 'bubbles stay inside the viewport');
 assert(chatCss.includes('-webkit-appearance:none') && chatCss.includes('background-color:#b82030'), 'send control is scarlet, not the iOS default');
 assert(read('scripts/build-public.js').includes("'assets/styles.css'"), 'the publish step copies the stylesheet');
-assert(appText.includes('ask-chat.js?v=2026-10-20.18&r=2026-10-30.3'), 'chat script url changes when the panel changes');
-assert(read('index.html').includes('styles.css?v=2026-10-20.18&r=2026-10-30.3') && read('index.html').includes('app.js?v=2026-10-20.18&r=2026-10-30.3'), 'homepage css and app urls are cache-busted');
+assert(appText.includes('ask-chat.js?v=2026-11-09.1&r=2026-10-30.3'), 'chat script url changes when the panel changes');
+assert(read('index.html').includes('styles.css?v=2026-11-09.1&r=2026-10-30.3') && read('index.html').includes('app.js?v=2026-11-09.1&r=2026-10-30.3'), 'homepage css and app urls are cache-busted');
 assert(!read('index.html').includes('nav-ask') && !read('index.html').includes('>Ask Second Wrench<'), 'the ask menu item is not in the static html');
 assert(chatCss.includes('.nav-more-links button.nav-ask') && chatCss.includes('color:#d1d1d7'), 'ask menu item styles live in the stylesheet');
 assert(chatText.includes("className = 'nav-ask'") && chatText.includes('menu.open = false'), 'the ask menu item is created by the chat mount and closes the menu');

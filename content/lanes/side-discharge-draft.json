@@ -37,7 +37,7 @@
       "options": [
         {
           "id": "someone_at_risk",
-          "label": "Someone at home is getting too cold (a baby, an older adult, or someone with a medical need)",
+          "label": "The house is getting cold, and someone at home is at risk from the cold (an infant, an older adult, or someone who is ill or medically fragile)",
           "hint": "",
           "next": "cold_exposure_911",
           "fact": "Someone at home at risk from cold reported."
@@ -112,7 +112,7 @@
         },
         {
           "id": "cold_exposure",
-          "label": "Someone at home is getting too cold (a baby, an older adult, or someone with a medical need)",
+          "label": "The house is getting cold, and someone at home is at risk from the cold (an infant, an older adult, or someone who is ill or medically fragile)",
           "hint": "",
           "next": "R-cold",
           "fact": ""

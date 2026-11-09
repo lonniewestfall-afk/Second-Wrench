@@ -19,7 +19,13 @@ module.exports = function (draft) {
     'sd.look.snow_height',
     'sd.step.clear_outside',
     'sd.step.clear_snow',
-    'sd.read.code_compare'
+    'sd.read.code_compare',
+    'sd.read.climate_codes',
+    'sd.read.puz_codes',
+    'sd.read.gree_codes',
+    'sd.read.aurora_codes',
+    'sd.read.gszs6_codes',
+    'sd.read.bcc_codes'
   ]);
   const router = (bySd, otherwise) => ({ bySd, default: otherwise });
   const routes = {
@@ -80,11 +86,9 @@ module.exports = function (draft) {
   get('sd.observe.defrost_or_ice', 'actually_cooling').set = { sdMode: 'cool' };
   for (const [id, mode] of [['mode_heat', 'heat'], ['mode_cool', 'cool'], ['mode_unsure', 'unsure']]) get('sd.entry.outdoor', id).set = { sdMode: mode };
   const LEGAL = require('./sd-legal-cleared.json');
-  const R11 = 'The house is getting cold, and someone at home is at risk from the cold (an infant, an older adult, or someone who is ill or medically fragile)';
-  for (const [n, c] of [['sd.heat.cold_home_screen', 'someone_at_risk'], ['sd.gate.outdoor_hazard_screen', 'cold_exposure']]) {
+  for (const [n, c] of [['sd.heat.cold_home_screen', 'someone_at_risk'], ['sd.gate.outdoor_hazard_screen', 'cold_exposure'], ['sd.step.clear_snow', 'someone_at_risk_cold']]) {
     Object.assign(get(n, c), { label: LEGAL['020'], next: routes['R-cold'], gate: 'cold_exposure_911' });
   }
-  Object.assign(get('sd.step.clear_snow', 'someone_at_risk_cold'), { label: R11, next: routes['R-cold'], gate: 'cold_exposure_911' });
   const sideFan = get('sd.intake.cabinet_confirm', 'side_fan_confirmed');
   sideFan.set = { sdSideConfirmed: true };
   sideFan.hint = LEGAL['045'];
@@ -119,8 +123,8 @@ module.exports = function (draft) {
   }
   addBody('sd.observe.defrost_or_ice', ['021', '056', '063']);
   addBody('sd.read.code_capture', ['025']);
-  addBody('sd.look.discharge_clearance', ['029']);
-  addBody('sd.look.snow_height', ['029']);
+  addBody('sd.look.discharge_clearance', ['132', '029']);
+  addBody('sd.look.snow_height', ['133', '029', '031']);
   for (const id of ['sd.look.discharge_clearance', 'sd.look.intake_clearance', 'sd.look.snow_height', 'sd.observe.defrost_or_ice', 'sd.look.base_ice_drain', 'sd.look.mount_condition', 'sd.observe.fan_state']) {
     addBody(id, ['005']);
   }
@@ -146,6 +150,40 @@ module.exports = function (draft) {
   }
   results.sd_cold_exposure.tier = 'Emergency';
   results.sd_cold_exposure.gate = 'cold_exposure_911';
+  const CODE_ROWS = require('./sd-codes').rows;
+  function codeList(brand, disclaimerKey, withCold) {
+    const opts = [];
+    if (withCold) opts.push({ id: 'someone_at_risk', label: LEGAL['020'], hint: '', next: routes['R-cold'], gate: 'cold_exposure_911', fact: '' });
+    for (const row of CODE_ROWS.filter(item => item.brand === brand)) {
+      const hint = [row.showMeaning ? row.meaning : '', row.cell || ''].filter(Boolean).join('\n\n');
+      let next = '@sd_code_recorded_pro';
+      if (row.route === 'leak') next = '@leak';
+      else if (row.route === 'refrigerant') next = '@sd_refrigerant_pro';
+      else if (row.route === 'info') next = '@sd_code_info_pro';
+      opts.push({ id: row.id, label: row.code, hint, next, fact: row.code });
+    }
+    const listed = nodes['sd.read.code_compare'].options.find(item => item.id === 'not_listed');
+    opts.push(Object.assign({}, listed, { fact: '' }));
+    opts.push(Object.assign({}, hazard));
+    const body = disclaimerKey ? LEGAL[disclaimerKey] + (disclaimerKey === '138' ? '' : ' ' + LEGAL['024']) : [LEGAL['025'], LEGAL['026'], LEGAL['024']].join(' ');
+    return { section: 'Side-discharge outdoor unit', title: 'Outdoor unit', body, owner: 'sd', diyTier: 'basic', safetyGate: true, options: opts };
+  }
+  nodes['sd.read.climate_codes'] = codeList('climate5000', '134', true);
+  nodes['sd.read.puz_codes'] = codeList('puz', '', false);
+  nodes['sd.read.gree_codes'] = codeList('gree', '135', false);
+  nodes['sd.read.aurora_codes'] = codeList('aurora', '136', true);
+  nodes['sd.read.gszs6_codes'] = codeList('gszs6', '137', true);
+  nodes['sd.read.bcc_codes'] = codeList('bcc', '138', false);
+  const compare = nodes['sd.read.code_compare'];
+  const atHazard = compare.options.findIndex(item => item.id === 'hazard_now');
+  compare.options.splice(atHazard, 0,
+    { id: 'brand_climate_5000', label: 'Climate 5000 Gen 4', hint: '', next: 'sd.read.climate_codes', fact: '' },
+    { id: 'brand_puz_ha', label: 'Mitsubishi PUZ-HA', hint: '', next: 'sd.read.puz_codes', fact: '' },
+    { id: 'brand_gree', label: 'Gree Sapphire, Vireo Gen3, and Livo Gen4', hint: '', next: 'sd.read.gree_codes', fact: '' },
+    { id: 'brand_aurora', label: 'Daikin Aurora RXL', hint: '', next: 'sd.read.aurora_codes', fact: '' },
+    { id: 'brand_gszs6', label: 'Goodman GSZS6 / GSXS6', hint: '', next: 'sd.read.gszs6_codes', fact: '' },
+    { id: 'brand_bcc', label: 'Bosch BCC', hint: '', next: 'sd.read.bcc_codes', fact: '' }
+  );
   for (const n of Object.values(nodes)) for (const o of n.options) {
     if (typeof o.next === 'string' && o.next.startsWith('@')) {
       const r = results[o.next.slice(1)];
